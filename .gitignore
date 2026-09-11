@@ -1,0 +1,5 @@
+.sites-runtime/
+**/.vercel/
+**/.env*
+tmp/*.png
+

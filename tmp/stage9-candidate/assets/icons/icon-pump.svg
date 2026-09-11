@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" color="#202020" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" shape-rendering="geometricPrecision" focusable="false">
+  <path d="M2 9h5v6H2zM17 9h5v6h-5zM7 7h10v10H7z"/>
+  <path d="m12 8.5 3.5 3.5-3.5 3.5L8.5 12z"/>
+  <path d="M11 11h2v2h-2z" fill="currentColor" stroke="none"/>
+  <path d="M4.5 7v10M19.5 7v10"/>
+</svg>

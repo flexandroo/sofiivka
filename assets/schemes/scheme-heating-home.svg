@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="340" viewBox="0 0 720 340" fill="none" focusable="false">
+  <style>
+    .pipe{stroke:#202020;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.return{stroke:#275D8C;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.box{fill:#fff;stroke:#202020;stroke-width:1.5}.node{fill:#FFC808;stroke:#202020;stroke-width:1.5}.label{fill:#202020;font:600 15px Manrope,Arial,sans-serif}.note{fill:#686762;font:500 12px Manrope,Arial,sans-serif}.tiny{fill:#275D8C;font:700 11px Manrope,Arial,sans-serif}
+  </style>
+  <path class="pipe" d="M120 164H242M278 164H390M430 164H564V96M564 164v82"/>
+  <path class="return" d="M120 214H250M290 214H410M450 214H620V116M620 214v52"/>
+  <rect class="box" x="28" y="112" width="92" height="132" rx="8"/>
+  <path class="pipe" d="M49 142h50M59 171h30M57 212h34"/><path d="M65 201c0-12 12-16 12-28 12 9 17 18 10 28-5 8-17 8-22 0Z" stroke="#FFC808" stroke-width="2"/>
+  <text class="label" x="46" y="274">Котел</text><text class="note" x="28" y="294">джерело тепла</text>
+  <circle class="box" cx="260" cy="164" r="18"/><path class="pipe" d="m255 154 11 10-11 10"/><text class="label" x="230" y="136">Насос</text>
+  <rect class="box" x="390" y="142" width="40" height="94" rx="6"/><path class="pipe" d="M401 154h18M401 168h18M401 182h18M401 196h18M401 210h18M401 224h18"/><text class="label" x="370" y="270">Колектор</text>
+  <rect class="box" x="538" y="54" width="52" height="62" rx="5"/><path class="pipe" d="M548 68v34M558 68v34M568 68v34M578 68v34"/>
+  <text class="label" x="518" y="34">Радіатори</text>
+  <path class="return" d="M538 246h112v20H538zM554 246v20M570 246v20M586 246v20M602 246v20M618 246v20M634 246v20"/>
+  <text class="label" x="522" y="300">Тепла підлога</text>
+  <rect class="box" x="248" y="56" width="110" height="48" rx="7"/><circle class="node" cx="271" cy="80" r="6"/><path class="pipe" d="M286 74h54M286 85h37M303 104v25"/><text class="tiny" x="255" y="48">КЕРУВАННЯ</text>
+  <circle class="node" cx="120" cy="164" r="5"/><circle class="node" cx="430" cy="164" r="5"/>
+  <text class="tiny" x="134" y="154">ПОДАЧА</text><text class="tiny" x="134" y="232">ЗВОРОТНИЙ КОНТУР</text>
+</svg>

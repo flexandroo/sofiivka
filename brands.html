@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#202020">
+  <meta name="description" content="Виробники обладнання та комплектуючих, представлені в каталозі ТД «Софіївка».">
+  <title>Бренди | ТД «Софіївка»</title>
+  <link rel="preload" href="assets/fonts/Manrope-700.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="styles.css?v=20260818-photo-icons-1">
+  <script src="brands-data.js?v=20260818-photo-icons-1" defer></script>
+  <script src="script.js?v=20260818-photo-icons-1" defer></script>
+</head>
+<body class="brands-page">
+  <a class="skip-link" href="#main">Перейти до основного вмісту</a>
+
+  <div class="utility-bar">
+    <div class="container utility-bar__inner">
+      <p>м. Софіївка, вул. Соборна, 45</p>
+      <ul aria-label="Переваги магазину">
+        <li>Доставка по Україні</li>
+        <li>Офіційна продукція</li>
+      </ul>
+      <div class="utility-bar__contact">
+        <a href="tel:+380501234567">+38 (050) 123 45 67</a>
+        <span>Пн-Пт 9:00-18:00</span>
+      </div>
+    </div>
+  </div>
+
+  <header class="site-header" data-header>
+    <div class="container site-header__inner">
+      <a class="brand" href="index.html" aria-label="Софіївка, головна">
+        <img src="assets/logo-sofievka-transparent.png" width="1942" height="809" alt="Софіївка">
+      </a>
+
+      <button class="catalog-button" type="button" data-menu-toggle aria-expanded="false" aria-controls="catalog-menu">
+        <span class="catalog-button__mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        Каталог
+      </button>
+
+      <form class="search" data-search role="search" action="catalog.html" method="get">
+        <label class="sr-only" for="site-search">Пошук товарів, брендів і категорій</label>
+        <input id="site-search" name="q" type="search" autocomplete="off" placeholder="Пошук товарів, брендів і категорій" aria-controls="search-results" aria-expanded="false">
+        <button type="submit" data-search-submit>Знайти</button>
+        <div class="search-results" id="search-results" aria-live="polite" hidden></div>
+      </form>
+
+      <nav class="header-actions" aria-label="Особисті дії">
+        <button class="header-action" type="button" data-profile aria-label="Профіль">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7 8a7 7 0 0 0-14 0"/></svg>
+          <span class="header-action__label">Профіль</span>
+        </button>
+        <button class="header-action" type="button" data-favorites aria-label="Обране, 0 товарів">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>
+          <span class="header-action__label">Обране</span>
+          <span class="header-action__count" data-favorite-count>0</span>
+        </button>
+        <button class="header-action" type="button" data-cart aria-label="Кошик, 0 товарів">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 8H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
+          <span class="header-action__label">Кошик</span>
+          <span class="header-action__count" data-cart-count>0</span>
+        </button>
+      </nav>
+    </div>
+
+    <nav class="catalog-menu" id="catalog-menu" aria-label="Каталог товарів" hidden>
+      <div class="container catalog-menu__grid">
+        <a href="catalog.html?category=heating"><strong>Опалення</strong><span>Котли, радіатори, тепла підлога</span></a>
+        <a href="catalog.html?category=water"><strong>Водопостачання</strong><span>Насоси, баки, фільтри</span></a>
+        <a href="catalog.html"><strong>Сантехніка</strong><span>Змішувачі, арматура, труби</span></a>
+        <a href="solutions.html"><strong>Клімат</strong><span>Кондиціонери та вентиляція</span></a>
+        <a href="services.html"><strong>Монтаж і сервіс</strong><span>Від підбору до запуску</span></a>
+        <a href="brands.html" aria-current="page"><strong>Бренди</strong><span>Виробники в каталозі</span></a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="brand-directory-hero">
+      <div class="container brand-directory-hero__inner">
+        <nav class="breadcrumbs" aria-label="Хлібні крихти">
+          <a href="index.html">Головна</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Бренди</span>
+        </nav>
+        <h1>Бренди</h1>
+        <p>Виробники обладнання та комплектуючих, представлені в каталозі ТД «Софіївка».</p>
+      </div>
+    </section>
+
+    <section class="brand-directory-all" aria-labelledby="all-brands-title" data-reveal>
+      <div class="container brand-directory-section">
+        <div class="directory-toolbar">
+          <div>
+            <h2 id="all-brands-title">Усі бренди</h2>
+            <p>33 виробники в підтвердженому каталозі.</p>
+          </div>
+          <form class="brand-search" data-brand-search role="search">
+            <label for="brand-search">Знайти бренд</label>
+            <input id="brand-search" type="search" autocomplete="off" placeholder="Введіть назву бренду…">
+          </form>
+        </div>
+        <nav class="brand-alphabet" data-brand-alphabet aria-label="Алфавітний покажчик брендів"></nav>
+        <p class="brand-search-status" data-brand-search-status role="status" aria-live="polite"></p>
+        <div class="brand-groups" data-brand-groups></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__top">
+      <a class="brand brand--footer" href="index.html" aria-label="Софіївка, головна">
+        <img src="assets/logo-sofievka-transparent.png" width="1942" height="809" alt="Софіївка">
+      </a>
+      <p>Обладнання для тепла, води та клімату з людською інженерною підтримкою.</p>
+    </div>
+    <div class="container footer__grid">
+      <nav aria-label="Каталог у підвалі"><h2>Каталог</h2><a href="catalog.html?category=heating">Опалення</a><a href="catalog.html?category=water">Водопостачання</a><a href="catalog.html">Сантехніка</a><a href="solutions.html">Клімат</a></nav>
+      <nav aria-label="Послуги у підвалі"><h2>Послуги</h2><a href="solutions.html">Готові рішення</a><a href="services.html">Монтаж</a><a href="warranty.html">Сервіс</a><a href="delivery.html">Доставка</a></nav>
+      <nav aria-label="Компанія у підвалі"><h2>Компанія</h2><a href="brands.html" aria-current="page">Бренди</a><a href="partnership.html">Для партнерів</a><a href="contact.html">Контакти</a><a href="warranty.html">Гарантія</a></nav>
+      <div class="footer__contacts"><h2>Зв'язок</h2><a href="tel:+380501234567">+38 (050) 123 45 67</a><a href="mailto:info@sofievka.ua">info@sofievka.ua</a><p>Доставка Новою поштою<br>Оплата карткою або при отриманні</p></div>
+    </div>
+    <div class="container footer__bottom"><span>© 2026 Торговий дім «Софіївка»</span><span><a href="privacy.html">Конфіденційність</a> · <a href="terms.html">Умови</a></span></div>
+  </footer>
+
+  <div class="toast" data-toast role="status" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>

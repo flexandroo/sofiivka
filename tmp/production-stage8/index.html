@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#202020">
+  <meta name="description" content="Торговий дім Софіївка: обладнання для опалення, водопостачання, сантехніки та клімату. Доставка по Україні, монтаж і сервіс.">
+  <title>Софіївка | Опалення, вода та клімат</title>
+  <link rel="preload" href="assets/fonts/Manrope-700.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="assets/images/hero-heating.webp" as="image" type="image/webp">
+  <link rel="stylesheet" href="styles.css?v=20260911-card-5">
+  <script src="brands-data.js?v=20260818-phase1-1" defer></script>
+  <script src="products-data.js?v=20260825-feed-1" defer></script>
+  <script src="water-catalog-data.js?v=20260911-card-5" defer></script>
+  <script src="termojet-products-data.js?v=20260825-termojet-1" defer></script>
+  <script src="catalog-data.js?v=20260911-card-5" defer></script>
+  <script src="catalog-ui.js?v=20260911-card-5" defer></script>
+  <script src="script.js?v=20260911-card-5" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти до основного вмісту</a>
+
+  <div class="utility-bar">
+    <div class="container utility-bar__inner">
+      <ul aria-label="Інформація про магазин">
+        <li>Магазин інженерного обладнання</li>
+        <li>Доставка по Україні</li>
+        <li><a href="partnership.html">Для професіоналів</a></li>
+      </ul>
+      <div class="utility-bar__contact">
+        <span>Пн–Пт 9:00–18:00</span>
+        <a href="tel:+380501234567">+38 (050) 123 45 67</a>
+      </div>
+    </div>
+  </div>
+
+  <header class="site-header" data-header>
+    <nav class="site-nav" aria-label="Основна навігація">
+      <div class="container site-nav__inner">
+        <a href="about.html">Про нас</a>
+        <a href="delivery.html">Доставка</a>
+        <a href="payment.html">Оплата</a>
+        <a href="blog.html">Блог</a>
+        <a href="installation.html">Монтаж</a>
+        <a href="service-center.html">Сервісний центр</a>
+        <a href="contact.html">Контакти</a>
+      </div>
+    </nav>
+    <div class="container site-header__inner">
+      <a class="brand" href="#top" aria-label="Софіївка, головна">
+        <img src="assets/logo-sofievka-transparent.png" width="1942" height="809" alt="Софіївка">
+      </a>
+
+      <div class="catalog-navigation">
+        <button class="catalog-button" type="button" data-menu-toggle aria-expanded="false" aria-controls="catalog-menu" aria-haspopup="true" aria-label="Відкрити каталог і меню">
+          <span class="catalog-button__mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          Каталог
+        </button>
+        <nav class="catalog-menu" id="catalog-menu" aria-label="Каталог товарів" hidden>
+          <div data-catalog-menu-root></div>
+          <div class="catalog-menu__support">
+            <a href="about.html">Про нас</a><a href="delivery.html">Доставка</a><a href="payment.html">Оплата</a><a href="blog.html">Блог</a><a href="installation.html">Монтаж</a><a href="service-center.html">Сервіс</a><a href="contact.html">Контакти</a>
+          </div>
+        </nav>
+      </div>
+
+      <form class="search" data-search role="search" action="/search" method="get">
+        <label class="sr-only" for="site-search">Пошук товарів, брендів і категорій</label>
+        <input id="site-search" name="q" type="search" autocomplete="off" placeholder="Назва, бренд, модель або артикул" aria-controls="search-results" aria-expanded="false">
+        <button type="submit" data-search-submit>Знайти</button>
+        <div class="search-results" id="search-results" aria-live="polite" hidden></div>
+      </form>
+
+      <nav class="header-actions" aria-label="Особисті дії">
+        <a class="header-action" href="favorites.html" data-favorites aria-label="Обране, 0 товарів">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>
+          <span class="header-action__label">Обране</span>
+          <span class="header-action__count" data-favorite-count>0</span>
+        </a>
+        <a class="header-action" href="cart.html" data-cart aria-label="Кошик, 0 товарів">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 8H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
+          <span class="header-action__label">Кошик</span>
+          <span class="header-action__count" data-cart-count>0</span>
+        </a>
+      </nav>
+    </div>
+
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top" aria-roledescription="карусель" aria-label="Головні пропозиції" data-slider>
+      <div class="hero__viewport">
+        <div class="hero__track" data-slider-track>
+          <article class="hero-slide is-active" data-slide aria-label="Слайд 1 з 3">
+            <div class="hero-slide__content">
+              <p class="eyebrow">Опалення</p>
+              <h1>Опалення для будинку і квартири</h1>
+              <p>Котли, насоси, радіатори й автоматика. Підбір обладнання та комплектуючих під вашу систему.</p>
+              <div class="hero-slide__actions">
+                <a class="button button--primary" href="/catalog/heating">Обладнання для опалення <span class="arrow-mark" aria-hidden="true"></span></a>
+              </div>
+            </div>
+            <figure class="hero-slide__media">
+              <img src="assets/images/hero-heating.webp" width="1536" height="1024" alt="Сучасна котельня з настінним котлом і системою розподілу тепла">
+            </figure>
+          </article>
+
+          <article class="hero-slide" data-slide aria-label="Слайд 2 з 3" aria-hidden="true" inert>
+            <div class="hero-slide__content">
+              <p class="eyebrow">Вода</p>
+              <h2>Водопостачання та очищення води</h2>
+              <p>Насоси, автоматика, накопичувальні баки та фільтрація для будинку й комерційних об'єктів.</p>
+              <div class="hero-slide__actions">
+                <a class="button button--primary" href="/catalog/water-supply" tabindex="-1" data-slider-tabindex="">Перейти до каталогу <span class="arrow-mark" aria-hidden="true"></span></a>
+              </div>
+            </div>
+            <figure class="hero-slide__media">
+              <img src="assets/images/hero-water.webp" width="1536" height="1024" loading="lazy" alt="Система водопостачання з насосом, баком і фільтрами">
+            </figure>
+          </article>
+
+          <article class="hero-slide" data-slide aria-label="Слайд 3 з 3" aria-hidden="true" inert>
+            <div class="hero-slide__content">
+              <p class="eyebrow">Комплексне оснащення</p>
+              <h2>Обладнання за однією специфікацією</h2>
+              <p>Опалення, вода, клімат і монтажні матеріали — з перевіркою комплектності перед поставкою.</p>
+              <div class="hero-slide__actions">
+                <a class="button button--primary" href="solutions.html" tabindex="-1" data-slider-tabindex="">Комплексні рішення <span class="arrow-mark" aria-hidden="true"></span></a>
+              </div>
+            </div>
+            <figure class="hero-slide__media">
+              <img src="assets/images/hero-climate.webp" width="1536" height="1024" loading="lazy" alt="Сучасний кондиціонер у теплому житловому інтер'єрі">
+            </figure>
+          </article>
+        </div>
+      </div>
+
+      <button class="hero__arrow hero__arrow--prev" type="button" data-slide-prev aria-label="Попередній слайд"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button class="hero__arrow hero__arrow--next" type="button" data-slide-next aria-label="Наступний слайд"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+      <div class="hero__dots" role="tablist" aria-label="Вибір слайда">
+        <button class="is-active" type="button" data-slide-dot="0" role="tab" aria-selected="true" aria-label="Показати слайд 1"></button>
+        <button type="button" data-slide-dot="1" role="tab" aria-selected="false" aria-label="Показати слайд 2"></button>
+        <button type="button" data-slide-dot="2" role="tab" aria-selected="false" aria-label="Показати слайд 3"></button>
+      </div>
+      <p class="sr-only" aria-live="polite" data-slide-live></p>
+    </section>
+
+    <section class="trust-strip" aria-label="Переваги покупки">
+      <div class="container trust-strip__grid">
+        <div><img class="trust-strip__icon" src="assets/icons/icon-warranty.svg?v=20260818-tech-1" alt="" aria-hidden="true"><p><strong>Гарантія виробника</strong>Серійні номери й документи</p></div>
+        <div><img class="trust-strip__icon" src="assets/icons/icon-delivery.svg?v=20260818-tech-1" alt="" aria-hidden="true"><p><strong>Відправлення по Україні</strong>Спосіб і строк — після підтвердження</p></div>
+        <div><img class="trust-strip__icon" src="assets/icons/icon-engineer.svg?v=20260818-tech-1" alt="" aria-hidden="true"><p><strong>Підбір інженером</strong>Потужність, напір і сумісність</p></div>
+        <div><img class="trust-strip__icon" src="assets/icons/icon-return.svg?v=20260818-tech-1" alt="" aria-hidden="true"><p><strong>14 днів на повернення</strong>Для товарів належної якості</p></div>
+      </div>
+    </section>
+
+    <section class="section categories" id="categories" data-reveal>
+      <div class="container">
+        <div class="section-heading">
+          <h2>Каталог за типом обладнання</h2>
+          <a class="text-link" href="/catalog">Увесь каталог <span class="arrow-mark" aria-hidden="true"></span></a>
+        </div>
+
+        <div class="category-grid" data-home-catalog aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="section products" id="products" data-reveal>
+      <div class="container">
+        <div class="products__head">
+          <h2>Популярні товари</h2>
+          <a class="text-link" href="/catalog">Перейти до каталогу <span class="arrow-mark" aria-hidden="true"></span></a>
+        </div>
+
+        <div class="product-grid" data-product-grid aria-live="polite" aria-busy="true">
+          <div class="product-skeleton"></div><div class="product-skeleton"></div><div class="product-skeleton"></div><div class="product-skeleton"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section solutions" id="solutions" data-reveal>
+      <div class="container">
+        <h2>Рішення для будинку</h2>
+        <p class="section-intro">Основне обладнання, автоматика, арматура та монтажні матеріали в узгодженій комплектації.</p>
+        <div class="solutions-grid">
+          <a class="system-card system-card--primary" href="solutions.html">
+            <span class="system-card__media"><img src="assets/images/solution-boiler-room.webp" width="1536" height="1024" loading="lazy" alt="Комплектація котельні приватного будинку з котлом, баком, насосними групами та колектором"></span>
+            <span class="system-card__copy"><span class="technical-label">Опалення</span><strong>Опалення приватного будинку</strong><small>Котел, насосна група, колектор, контури тепла й автоматика в одній специфікації.</small></span>
+            <span class="system-card__link">Обговорити комплектацію <b class="arrow-mark" aria-hidden="true"></b></span>
+          </a>
+          <a class="system-card" href="solutions.html">
+            <span class="system-card__media"><img src="assets/images/hero-water.webp" width="1536" height="1024" loading="lazy" alt="Реальна комплектація системи водопостачання з насосом, баком і фільтрами"></span>
+            <span class="system-card__copy"><span class="technical-label">Водопостачання</span><strong>Вода для будинку</strong><small>Насос, гідробак, автоматика й фільтрація під потрібний напір.</small></span>
+            <span class="system-card__link">Підібрати систему <b class="arrow-mark" aria-hidden="true"></b></span>
+          </a>
+          <a class="system-card" href="solutions.html">
+            <span class="system-card__media"><img src="assets/images/hero-climate.webp" width="1536" height="1024" loading="lazy" alt="Кліматична система з внутрішнім і зовнішнім блоками в сучасному будинку"></span>
+            <span class="system-card__copy"><span class="technical-label">Клімат</span><strong>Клімат для кількох зон</strong><small>Обладнання, розподіл повітря по зонах і централізоване керування.</small></span>
+            <span class="system-card__link">Розрахувати потужність <b class="arrow-mark" aria-hidden="true"></b></span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="brands" id="brands" aria-labelledby="brands-title" data-reveal>
+      <div class="container brands__inner">
+        <div class="brands__head">
+          <div class="brands__copy">
+            <h2 id="brands-title">Провідні бренди</h2>
+            <p>Обладнання перевірених виробників для опалення, води та інженерних систем.</p>
+          </div>
+          <a class="brands__all" href="brands.html">Усі бренди <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="brand-wall" aria-label="Добірка провідних брендів" data-homepage-brands>
+          <div class="brand-wall__track">
+            <div class="brand-wall__group" role="list">
+              <a class="brand-logo-cell" href="brands.html" role="listitem" aria-label="Bosch"><span class="brand-media"><img src="assets/brands/bosch.svg" alt="Логотип Bosch"></span></a>
+              <a class="brand-logo-cell" href="brands.html" role="listitem" aria-label="Buderus"><span class="brand-media"><img src="assets/brands/buderus.svg" alt="Логотип Buderus"></span></a>
+              <a class="brand-logo-cell" href="brands.html" role="listitem" aria-label="Baxi"><span class="brand-media"><img src="assets/brands/baxi.svg" alt="Логотип Baxi"></span></a>
+              <a class="brand-logo-cell" href="brands.html" role="listitem" aria-label="Grundfos"><span class="brand-media"><img src="assets/brands/grundfos.jpg" alt="Логотип Grundfos"></span></a>
+              <a class="brand-logo-cell" href="brands.html" role="listitem" aria-label="Wilo"><span class="brand-media"><img src="assets/brands/wilo.svg" alt="Логотип Wilo"></span></a>
+              <a class="brand-logo-cell" href="brands.html" role="listitem" aria-label="Rehau"><span class="brand-media"><img src="assets/brands/rehau.svg" alt="Логотип Rehau"></span></a>
+              <a class="brand-logo-cell" href="brands.html" role="listitem" aria-label="Ecosoft"><span class="brand-media"><img src="assets/brands/ecosoft.png" alt="Логотип Ecosoft"></span></a>
+              <a class="brand-logo-cell" href="brands.html" role="listitem" aria-label="Termojet"><span class="brand-media"><img src="assets/brands/termojet.png" alt="Логотип Termojet"></span></a>
+              <a class="brand-logo-cell" href="brands.html" role="listitem" aria-label="Gorenje"><span class="brand-media"><img src="assets/brands/gorenje.svg" alt="Логотип Gorenje"></span></a>
+              <a class="brand-logo-cell" href="brands.html" role="listitem" aria-label="Protherm"><span class="brand-media"><img src="assets/brands/protherm.png" alt="Логотип Protherm"></span></a>
+            </div>
+            <div class="brand-wall__group" aria-hidden="true">
+              <a class="brand-logo-cell" href="brands.html" tabindex="-1"><span class="brand-media"><img src="assets/brands/bosch.svg" alt=""></span></a>
+              <a class="brand-logo-cell" href="brands.html" tabindex="-1"><span class="brand-media"><img src="assets/brands/buderus.svg" alt=""></span></a>
+              <a class="brand-logo-cell" href="brands.html" tabindex="-1"><span class="brand-media"><img src="assets/brands/baxi.svg" alt=""></span></a>
+              <a class="brand-logo-cell" href="brands.html" tabindex="-1"><span class="brand-media"><img src="assets/brands/grundfos.jpg" alt=""></span></a>
+              <a class="brand-logo-cell" href="brands.html" tabindex="-1"><span class="brand-media"><img src="assets/brands/wilo.svg" alt=""></span></a>
+              <a class="brand-logo-cell" href="brands.html" tabindex="-1"><span class="brand-media"><img src="assets/brands/rehau.svg" alt=""></span></a>
+              <a class="brand-logo-cell" href="brands.html" tabindex="-1"><span class="brand-media"><img src="assets/brands/ecosoft.png" alt=""></span></a>
+              <a class="brand-logo-cell" href="brands.html" tabindex="-1"><span class="brand-media"><img src="assets/brands/termojet.png" alt=""></span></a>
+              <a class="brand-logo-cell" href="brands.html" tabindex="-1"><span class="brand-media"><img src="assets/brands/gorenje.svg" alt=""></span></a>
+              <a class="brand-logo-cell" href="brands.html" tabindex="-1"><span class="brand-media"><img src="assets/brands/protherm.png" alt=""></span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section services" data-reveal data-motion="process">
+      <div class="container services__layout">
+        <div class="services__title">
+          <h2>Монтаж і сервіс</h2>
+          <p>Підбір обладнання, комплектація об'єкта, монтаж, запуск і подальше обслуговування.</p>
+        </div>
+        <div class="service-process" aria-label="Етапи роботи">
+          <article><span class="service-process__marker"><b>01</b></span><h3>Підбір обладнання</h3><p>Розраховуємо потужність, напір і робочі параметри.</p></article>
+          <article><span class="service-process__marker"><b>02</b></span><h3>Комплектація об'єкта</h3><p>Зводимо обладнання і комплектуючі в одну специфікацію.</p></article>
+          <article><span class="service-process__marker"><b>03</b></span><h3>Монтаж і запуск</h3><p>Встановлюємо, підключаємо та вводимо систему в роботу.</p></article>
+          <article><span class="service-process__marker"><b>04</b></span><h3>Післягарантійний сервіс</h3><p>Діагностика та планове обслуговування обладнання.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="b2b" id="b2b" data-reveal data-motion="installer">
+      <img class="b2b__motif" src="assets/schemes/motif-specification.svg" width="1200" height="720" loading="lazy" alt="" aria-hidden="true">
+      <div class="container b2b__grid">
+        <div class="b2b__copy">
+          <p class="eyebrow">Професійні закупівлі</p>
+          <h2>Для монтажників і бізнесу</h2>
+          <p>Робота зі специфікаціями, рахунками та поставками обладнання на об'єкт.</p>
+          <a class="button button--primary" href="partnership.html">Стати партнером <span class="arrow-mark" aria-hidden="true"></span></a>
+        </div>
+        <div class="b2b__benefits">
+          <article><span>01</span><div><h3>Специфікації</h3><p>Приймаємо перелік позицій у PDF або XLS, перевіряємо коди й кількість.</p></div></article>
+          <article><span>02</span><div><h3>Наявність і аналоги</h3><p>Уточнюємо строки, резерв і можливі заміни за технічними параметрами.</p></div></article>
+          <article><span>03</span><div><h3>Рахунок і поставка</h3><p>Рахунок, супровідні документи та погоджена поставка на об'єкт.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <template id="deferred-homepage-sections">
+      <section class="section cases" aria-labelledby="cases-title">
+        <div class="container"><h2 id="cases-title">Приклади комплектації</h2><div class="cases-grid" data-case-list></div></div>
+      </section>
+      <section class="section knowledge" aria-labelledby="knowledge-title">
+        <div class="container"><h2 id="knowledge-title">Корисно знати</h2><div class="knowledge-grid" data-article-list></div></div>
+      </section>
+    </template>
+
+    <section class="contact" id="contact" data-reveal>
+      <div class="contact__media">
+        <img src="assets/images/showroom.webp" width="1536" height="1024" loading="lazy" alt="Шоурум опалювального та насосного обладнання Софіївка">
+      </div>
+      <div class="contact__content">
+        <h2>Продаж, комплектація та сервіс</h2>
+        <dl>
+          <div><dt>Підбір</dt><dd>Обладнання для опалення, води та клімату</dd></div>
+          <div><dt>Комплектація</dt><dd>Специфікації для будинків і комерційних об'єктів</dd></div>
+          <div><dt>Після покупки</dt><dd>Монтаж, запуск і сервісне обслуговування</dd></div>
+        </dl>
+        <div class="contact__actions">
+          <a class="button button--primary" href="contact.html">Контакти магазину</a>
+          <a class="button button--outline-dark" href="partnership.html">Надіслати специфікацію</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__top">
+      <a class="brand brand--footer" href="#top" aria-label="Софіївка, на початок сторінки">
+        <img src="assets/logo-sofievka-transparent.png" width="1942" height="809" alt="Софіївка">
+      </a>
+      <p>Обладнання для опалення, водопостачання, сантехніки та клімату.</p>
+    </div>
+    <div class="container footer__grid">
+      <nav class="footer__section" aria-label="Каталог у підвалі" data-footer-section><button class="footer__toggle" type="button" aria-expanded="false"><span>Каталог</span><b aria-hidden="true">+</b></button><div class="footer__links"><a href="/catalog/heating">Опалення</a><a href="/catalog/water-supply">Водопостачання</a><a href="/catalog/plumbing">Сантехніка</a><a href="/catalog/climate">Клімат</a></div></nav>
+      <nav class="footer__section" aria-label="Послуги у підвалі" data-footer-section><button class="footer__toggle" type="button" aria-expanded="false"><span>Послуги</span><b aria-hidden="true">+</b></button><div class="footer__links"><a href="solutions.html">Комплексні рішення</a><a href="installation.html">Монтаж</a><a href="service-center.html">Сервісний центр</a><a href="delivery.html">Доставка</a></div></nav>
+      <nav class="footer__section" aria-label="Покупцям у підвалі" data-footer-section><button class="footer__toggle" type="button" aria-expanded="false"><span>Покупцям</span><b aria-hidden="true">+</b></button><div class="footer__links"><a href="buyers.html">Допомога покупцю</a><a href="payment.html">Оплата</a><a href="warranty.html">Гарантія</a><a href="returns.html">Обмін і повернення</a></div></nav>
+      <div class="footer__contacts"><h2>Компанія</h2><a href="about.html">Про нас</a><a href="contact.html">Контакти магазину</a><a href="partnership.html">Для монтажників</a><p><a href="brands.html">Бренди</a><br><a href="faq.html">Часті запитання</a></p></div>
+    </div>
+    <div class="container footer__bottom"><span>© 2026 Торговий дім «Софіївка»</span><span><a href="privacy.html">Конфіденційність</a> · <a href="terms.html">Умови</a></span></div>
+  </footer>
+
+  <div class="toast" data-toast role="status" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
