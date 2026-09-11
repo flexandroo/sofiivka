@@ -5,9 +5,17 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const root = path.resolve(__dirname, "..");
-const sourceFiles = fs.readdirSync(root)
-  .filter(file => /\.(?:html|css|js)$/i.test(file))
-  .filter(file => !file.startsWith("tests"));
+const sourceFiles = [];
+const collect = (directory, relative = "") => {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const childRelative = path.join(relative, entry.name);
+    if (entry.isDirectory()) {
+      if (["assets", "tests", "tools", ".vercel", ".git"].includes(entry.name)) continue;
+      collect(path.join(directory, entry.name), childRelative);
+    } else if (/\.(?:html|css|js)$/i.test(entry.name)) sourceFiles.push(childRelative);
+  }
+};
+collect(root);
 const assetPattern = /(?:src|href)=["'](\/[^"'?#]+\.(?:js|css|png|jpe?g|webp|svg|ico))["']|url\(["']?(\/[^)'"?#]+)["']?\)/gi;
 const missing = [];
 const duplicateScripts = [];

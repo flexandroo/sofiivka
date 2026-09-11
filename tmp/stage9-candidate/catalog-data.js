@@ -44,8 +44,8 @@
       description: "Трубні системи, фітинги, арматура та монтажні матеріали.",
       menuDescription: "Труби, фітинги, арматура та колектори",
       order: 30,
-      status: "future",
-      visibility: "navigation",
+      status: "active",
+      visibility: "catalog",
       allowedFacetIds: [],
       seo: { title: "Сантехніка | ТД «Софіївка»", description: "Трубні системи, фітинги, арматура та монтажні матеріали." }
     },
@@ -59,8 +59,8 @@
       description: "Кондиціонування, вентиляція, рекуперація та керування кліматом.",
       menuDescription: "Кондиціонування, вентиляція та рекуперація",
       order: 40,
-      status: "future",
-      visibility: "navigation",
+      status: "active",
+      visibility: "catalog",
       allowedFacetIds: [],
       seo: { title: "Кліматичне обладнання | ТД «Софіївка»", description: "Кондиціонування, вентиляція, рекуперація та керування кліматом." }
     },
@@ -735,7 +735,7 @@
     const attributeResult = normalizeAttributes(product, supplier, category);
     const sourceAttributes = Object.freeze(sourceAttributeEntries(rawProduct).map(item => Object.freeze({ label: item.label, value: item.value })));
     const imageOrigin = supplierConfig.imageOrigin || "";
-    const resolveImage = value => typeof value === "string" && imageOrigin && value.startsWith("/images/") ? `${imageOrigin}${value}` : value;
+    const resolveImage = value => typeof value === "string" && imageOrigin && /^\/(?:images|uploads)\//.test(value) ? `${imageOrigin}${value}` : value;
     const images = Object.freeze((Array.isArray(product.images) && product.images.length ? [...product.images] : [product.image].filter(Boolean)).map(resolveImage));
     const tags = Object.freeze([...new Set([...(Array.isArray(product.tags) ? product.tags : []), ...mapping.tags])]);
     const collections = Object.freeze([...new Set([...(Array.isArray(product.collections) ? product.collections : []), ...mapping.collectionIds])]);
@@ -1039,16 +1039,40 @@
   }
 
   function brandUrl(brandId) { return `/brands/${encodeURIComponent(brandId)}`; }
+  function productUrl(productOrId) {
+    const product = typeof productOrId === "object" ? productOrId : products.find(item => item.id === productOrId);
+    if (!product) return "/catalog";
+    return `/products/${encodeURIComponent(product.slug || product.id)}`;
+  }
   function descendantIds(categoryId) { return new Set([categoryId, ...taxonomy.descendantsOf(categoryId).map(category => category.id)]); }
   function productsForSection(sectionId) { return sectionId === "all" ? [...products] : products.filter(product => product.sectionId === sectionId); }
   function productsForCategory(categoryId) {
     const ids = descendantIds(categoryId);
     return products.filter(product => ids.has(product.primaryCategoryId));
   }
+  function featuredProducts(limit = 4) {
+    const buckets = sections
+      .map(section => productsForSection(section.id).filter(product => {
+        const amount = Number(product.pricing?.amount ?? product.price);
+        const status = product.inventory?.status || product.availability;
+        return status === "in_stock" && Number.isFinite(amount) && amount > 0 && Boolean(product.image || product.images?.[0]);
+      }))
+      .filter(bucket => bucket.length);
+    const selected = [];
+    let index = 0;
+    while (selected.length < Math.max(0, Number(limit) || 0) && buckets.some(bucket => index < bucket.length)) {
+      for (const bucket of buckets) {
+        const product = bucket[index];
+        if (product && selected.length < limit) selected.push(product);
+      }
+      index += 1;
+    }
+    return selected;
+  }
   function availableCategories(sectionId) {
     return taxonomy.childrenOf(sectionId).filter(category => category.status === "active" && productsForCategory(category.id).length > 0);
   }
-  const activeSections = Object.freeze(sections.filter(section => section.status === "active" && productsForSection(section.id).length > 0));
+  const activeSections = Object.freeze(sections.filter(section => section.status === "active"));
   const navigationSections = Object.freeze([catalogState, ...activeSections]);
 
   function resolveRoute(pathname = location.pathname, search = location.search, pageName = "catalog") {
@@ -1129,8 +1153,10 @@
     getCategoryPath: routing.getCategoryPath,
     getCategoryAncestors: routing.getCategoryAncestors,
     brandUrl,
+    productUrl,
     productsForSection,
     productsForCategory,
+    featuredProducts,
     availableCategories,
     resolveRoute,
     valueLabel,

@@ -162,7 +162,7 @@ function setupSearch() {
 }
 
 const productGroups = {
-  popular: catalogProducts.slice(0, 4)
+  popular: window.sofievkaCatalog?.featuredProducts(4) || catalogProducts.slice(0, 4)
 };
 
 function createProductCard(product, favoriteIds, compareIds, storedCart) {
@@ -288,9 +288,9 @@ function setupProducts() {
 }
 
 function setupHeaderActions() {
-  document.querySelector("[data-profile]")?.addEventListener("click", () => { window.location.href = "account.html"; });
-  document.querySelector("[data-favorites]")?.addEventListener("click", () => { window.location.href = "favorites.html"; });
-  document.querySelector("[data-cart]")?.addEventListener("click", () => { window.location.href = "cart.html"; });
+  document.querySelector("[data-profile]")?.addEventListener("click", () => { window.location.href = "/account"; });
+  document.querySelector("[data-favorites]")?.addEventListener("click", () => { window.location.href = "/favorites"; });
+  document.querySelector("[data-cart]")?.addEventListener("click", () => { window.location.href = "/cart"; });
 }
 
 function setupReveal() {

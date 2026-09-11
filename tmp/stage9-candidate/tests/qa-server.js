@@ -20,9 +20,16 @@ const mimeTypes = {
 
 function pageFor(urlPath) {
   if (urlPath === "/") return "index.html";
-  if (urlPath === "/brands" || /^\/brands\/[^/]+$/.test(urlPath)) return urlPath === "/brands" ? "brands.html" : "brand.html";
-  if (urlPath === "/catalog" || urlPath.startsWith("/catalog/")) return "catalog.html";
-  const clean = urlPath.replace(/^\//, "").replace(/\/$/, "");
+  let clean = urlPath.replace(/^\//, "").replace(/\/$/, "");
+  if (clean === "catalog/water-treatment" || clean.startsWith("catalog/water-treatment/")) {
+    clean = clean.replace(/^catalog\/water-treatment/, "catalog/water-supply/water-treatment");
+  }
+  const directoryIndex = path.join(clean, "index.html");
+  if (clean && fs.existsSync(path.join(projectRoot, directoryIndex))) return directoryIndex;
+  const legacyDirectoryIndex = clean.endsWith(".html") ? path.join(clean.slice(0, -5), "index.html") : "";
+  if (legacyDirectoryIndex && fs.existsSync(path.join(projectRoot, legacyDirectoryIndex))) return legacyDirectoryIndex;
+  if (urlPath === "/brands") return "brands.html";
+  if (urlPath === "/catalog") return "catalog.html";
   return clean.includes(".") ? clean : `${clean}.html`;
 }
 

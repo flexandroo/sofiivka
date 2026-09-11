@@ -74,6 +74,8 @@ const productIdHash = crypto.createHash("sha256").update(products.map(product =>
 assert.equal(productIdHash, "48f7e7e60940ac12c2be5923cb2fe6c93cb382337b3593dfb4c9780baf7757d3", "product IDs changed");
 
 assert.ok(catalog.brands.every(brand => catalog.brandUrl(brand.id) === `/brands/${brand.slug}`), "brand URLs must be canonical");
+assert.ok(products.every(product => catalog.productUrl(product) === `/products/${encodeURIComponent(product.slug)}`), "product URLs must use canonical static paths");
+assert.ok(products.every(product => !catalog.productUrl(product).includes("?")), "product canonical URLs must not use query state");
 assert.equal(catalog.formatPrice(6418), new Intl.NumberFormat("uk-UA").format(6418) + " грн", "price formatter mismatch");
 assert.equal(catalog.availabilityState("in_stock").label, "В наявності", "availability label mismatch");
 assert.equal(catalog.availabilityState("out_of_stock").label, "Немає в наявності", "out-of-stock label mismatch");
@@ -81,6 +83,8 @@ assert.equal(catalog.availabilityState("unexpected").label, "Наявність 
 
 const exactSku = "MO550MECOSTD";
 assert.equal(search.search(exactSku).products[0]?.id, exactSku, "exact SKU search must rank the product first");
+assert.equal(catalog.featuredProducts(4).length, 4, "homepage must have four deterministic featured products");
+assert.deepEqual([...new Set(catalog.featuredProducts(4).map(product => product.sectionId))].sort(), ["heating", "water-supply"], "homepage featured products must represent the available business directions");
 for (const query of ["Termojet", "Ecosoft", "зворотний осмос", "Termojet насос"]) {
   assert.ok(search.search(query).totalProducts > 0, `search returned no products for: ${query}`);
 }

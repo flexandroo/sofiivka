@@ -42,7 +42,7 @@
     const compareActive = containsProduct(options.compareIds, product.id);
     const cartQuantity = Number(options.cart?.[product.id] || 0);
     const title = product.title || product.shortTitle || product.model || "Товар";
-    const productHref = `/product?id=${encodeURIComponent(product.id)}`;
+    const productHref = catalog.productUrl(product);
     const brandHref = catalog.brandUrl(product.brandId || catalog.slugify(product.brand || ""));
     const status = product.inventory?.status || product.stockStatus || product.availability || "unknown";
     const availability = catalog.availabilityState(status);
@@ -62,7 +62,7 @@
       : `<strong class="product-card__price product-card__price--request">Ціну уточнюйте</strong>`;
     const primaryAction = inStock && hasPrice
       ? `<button class="product-card__buy${cartQuantity ? " is-in-cart" : ""}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${escapeHtml(cartQuantity ? `У кошику ${cartQuantity} шт. Додати ще` : `Додати ${title} до кошика`)}">${cartQuantity ? `У кошику · ${cartQuantity}` : "До кошика"}</button>`
-      : `<a class="product-card__buy product-card__buy--consult" href="/contact.html?product=${encodeURIComponent(product.sku || product.id)}">Уточнити</a>`;
+      : `<a class="product-card__buy product-card__buy--consult" href="/contact?product=${encodeURIComponent(product.sku || product.id)}">Уточнити</a>`;
     const imageMarkup = image
       ? `<img src="${escapeHtml(image)}" width="800" height="800" loading="lazy" decoding="async" data-product-image onerror="this.hidden=true;this.parentElement.classList.add('is-fallback')" alt="${escapeHtml(title)}">`
       : "";
@@ -565,7 +565,7 @@
       if (currentRequest !== request) return;
       let index = 0;
       const blocks = [];
-      const productGroup = group("Товари", "product", found.products, index, product => ({ href: `/product?id=${encodeURIComponent(product.id)}`, title: product.title, meta: `${product.brand} · Код ${product.sku}`, image: product.image || product.images?.[0] || "" }));
+      const productGroup = group("Товари", "product", found.products, index, product => ({ href: catalog.productUrl(product), title: product.title, meta: `${product.brand} · Код ${product.sku}`, image: product.image || product.images?.[0] || "" }));
       blocks.push(productGroup.html); index = productGroup.next;
       const categoryGroup = group("Категорії", "category", found.categories, index, hit => ({ href: hit.href, title: hit.entity.title, meta: countLabel(hit.count) }));
       blocks.push(categoryGroup.html); index = categoryGroup.next;

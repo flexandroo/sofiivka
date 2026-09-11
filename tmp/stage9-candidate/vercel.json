@@ -2,9 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [
-    { "source": "/catalog/:path*", "destination": "/catalog" },
-    { "source": "/brands/:slug", "destination": "/brand" }
+  "redirects": [
+    { "source": "/catalog/:path*.html", "destination": "/catalog/:path*", "permanent": true },
+    { "source": "/catalog/water-treatment", "destination": "/catalog/water-supply/water-treatment", "permanent": true },
+    { "source": "/catalog/water-treatment/:path*", "destination": "/catalog/water-supply/water-treatment/:path*", "permanent": true },
+    { "source": "/heating", "destination": "/catalog/heating", "permanent": true },
+    { "source": "/water-supply", "destination": "/catalog/water-supply", "permanent": true },
+    { "source": "/plumbing", "destination": "/catalog/plumbing", "permanent": true },
+    { "source": "/climate", "destination": "/catalog/climate", "permanent": true }
   ],
   "headers": [
     {
