@@ -350,6 +350,9 @@
       document.title = "Товар не знайдено | ТД «Софіївка»";
       return `<section class="pdp-missing"><div class="container">${crumbs("Товар не знайдено")}<span class="pdp-missing__code">404</span><h1>Товар не знайдено</h1><p>${id ? "Посилання містить невідомий ідентифікатор товару." : "У посиланні немає ідентифікатора товару."}</p><div><a class="button button--primary" href="/catalog">До каталогу</a><button class="text-link pdp-back" type="button" data-history-back>← Повернутися назад</button></div></div></section>`;
     }
+    if (queryId && !/^\/products\//.test(location.pathname)) {
+      history.replaceState({}, "", productUrl(product));
+    }
     document.title = `${product.title} | ТД «Софіївка»`;
     setCanonical(productUrl(product));
     const keyFacts = selectKeyFacts(product);
