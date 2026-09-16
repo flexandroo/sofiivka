@@ -3,7 +3,7 @@
    engineering-storefront layout selected for the homepage. */
 
 .home-page {
-  --home-edge: var(--layout-edge);
+  --home-edge: clamp(10px, 1.2vw, 18px);
   --home-gap: clamp(6px, .7vw, 10px);
   --home-product-gap: clamp(6px, .8vw, 12px);
   --home-border: #d9d7d1;
@@ -72,7 +72,7 @@
   grid-template-columns: clamp(204px, 20.6vw, 274px) minmax(0, 1fr) clamp(262px, 26vw, 348px);
   grid-template-rows: clamp(440px, 40vw, 520px) auto auto;
   gap: var(--home-gap);
-  width: min(100%, var(--container));
+  width: min(100%, 1440px);
   height: auto;
   margin-inline: auto;
 }
@@ -590,7 +590,7 @@
 .home-products,
 .home-brands,
 .home-contact {
-  width: min(calc(100% - (var(--home-edge) * 2)), var(--container));
+  width: min(calc(100% - (var(--home-edge) * 2)), 1440px);
   margin-inline: auto;
 }
 
@@ -1100,7 +1100,6 @@
 }
 
 .home-b2b .b2b__benefits article {
-  align-items: center;
   grid-template-columns: 48px 1fr;
   gap: 22px;
   padding-block: 24px;
@@ -1112,10 +1111,9 @@
 }
 
 .home-b2b .b2b__benefits article > span {
-  padding-top: 0;
+  padding-top: 4px;
   font-variant-numeric: tabular-nums;
   letter-spacing: .08em;
-  text-align: center;
 }
 
 .home-b2b .b2b__benefits h3 {
@@ -1157,10 +1155,6 @@
   .storefront-promo__action {
     left: 18px;
   }
-
-  .home-contact__details {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 900px) {
@@ -1198,7 +1192,7 @@
   .storefront-categories {
     grid-column: 1;
     grid-row: auto;
-    grid-template: repeat(2, minmax(58px, auto)) / repeat(4, minmax(0, 1fr));
+    grid-template: repeat(2, minmax(58px, auto)) / repeat(4, 1fr);
     order: 4;
     padding: 0;
   }
@@ -1268,6 +1262,10 @@
 
   .home-contact__grid {
     grid-template-columns: minmax(320px, .9fr) minmax(0, 1.1fr);
+  }
+
+  .home-contact__details {
+    grid-template-columns: 1fr;
   }
 
   .home-b2b .b2b__grid {
