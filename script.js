@@ -40,6 +40,111 @@ function setupCatalogMenu() {
   });
 }
 
+const storefrontCategoryGroups = {
+  heating: {
+    title: "Опалення",
+    href: "catalog.html?category=heating",
+    items: ["Радіатори", "Тепла підлога", "Циркуляційні насоси", "Колектори опалення", "Автоматика опалення"]
+  },
+  boilers: {
+    title: "Котли та водонагрівачі",
+    href: "catalog.html?category=heating",
+    items: ["Газові котли", "Електричні котли", "Твердопаливні котли", "Бойлери непрямого нагріву", "Електричні водонагрівачі"]
+  },
+  water: {
+    title: "Водопостачання",
+    href: "catalog.html?category=water",
+    items: ["Свердловинні насоси", "Поверхневі насоси", "Насосні станції", "Гідроакумулятори", "Автоматика для насосів"]
+  },
+  treatment: {
+    title: "Водоочищення",
+    href: "catalog.html?category=water",
+    items: ["Зворотний осмос", "Проточні фільтри", "Магістральні фільтри", "Картриджі", "Системи пом'якшення"]
+  },
+  plumbing: {
+    title: "Сантехніка",
+    href: "plumbing.html",
+    items: ["Змішувачі", "Інсталяції", "Санітарна кераміка", "Душові системи", "Сифони та трапи"]
+  },
+  climate: {
+    title: "Клімат",
+    href: "climate.html",
+    items: ["Кондиціонери", "Вентиляція", "Теплові насоси", "Конвектори", "Осушувачі повітря"]
+  },
+  pipes: {
+    title: "Труби та арматура",
+    href: "catalog.html",
+    items: ["Поліпропіленові труби", "Труби PEX", "Металопластикові труби", "Фітинги", "Запірна арматура"]
+  },
+  automation: {
+    title: "Автоматика",
+    href: "catalog.html",
+    items: ["Термостати", "Реле тиску", "Датчики", "Контролери систем", "Сервоприводи"]
+  }
+};
+
+function setupStorefrontCategories() {
+  const navigation = document.querySelector("[data-storefront-categories]");
+  const panel = navigation?.querySelector("[data-storefront-subcategories]");
+  const title = panel?.querySelector("[data-storefront-subcategories-title]");
+  const list = panel?.querySelector("[data-storefront-subcategories-list]");
+  const allLink = panel?.querySelector("[data-storefront-subcategories-all]");
+  const closeButton = panel?.querySelector("[data-storefront-subcategories-close]");
+  const buttons = [...(navigation?.querySelectorAll("[data-storefront-category]") || [])];
+  if (!navigation || !panel || !title || !list || !allLink || !buttons.length) return;
+
+  let activeButton = null;
+
+  const close = (restoreFocus = false) => {
+    panel.hidden = true;
+    buttons.forEach(button => {
+      button.classList.remove("is-open");
+      button.setAttribute("aria-expanded", "false");
+    });
+    if (restoreFocus) activeButton?.focus();
+    activeButton = null;
+  };
+
+  const open = button => {
+    const group = storefrontCategoryGroups[button.dataset.storefrontCategory];
+    if (!group) return;
+
+    buttons.forEach(item => {
+      const active = item === button;
+      item.classList.toggle("is-open", active);
+      item.setAttribute("aria-expanded", String(active));
+    });
+
+    title.textContent = group.title;
+    list.replaceChildren(...group.items.map(item => {
+      const link = document.createElement("a");
+      link.href = `search.html?q=${encodeURIComponent(item)}`;
+      link.textContent = item;
+      return link;
+    }));
+    allLink.href = group.href;
+    allLink.setAttribute("aria-label", `Усі товари категорії ${group.title}`);
+    panel.hidden = false;
+    activeButton = button;
+  };
+
+  buttons.forEach(button => button.addEventListener("click", () => {
+    if (button === activeButton && !panel.hidden) close(true);
+    else open(button);
+  }));
+
+  closeButton?.addEventListener("click", () => close(true));
+  navigation.addEventListener("click", event => {
+    if (event.target.closest(".storefront-subcategories__list a, [data-storefront-subcategories-all]")) close();
+  });
+  document.addEventListener("click", event => {
+    if (!panel.hidden && !navigation.contains(event.target)) close();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && !panel.hidden) close(true);
+  });
+}
+
 function setupHeroSlider() {
   const slider = document.querySelector("[data-slider]");
   const track = slider?.querySelector("[data-slider-track]");
@@ -52,6 +157,7 @@ function setupHeroSlider() {
   let timer;
   let pointerStart = null;
   let paused = false;
+  const autoplay = slider?.dataset.sliderAutoplay !== "false";
 
   const render = (nextIndex, announce = true) => {
     index = (nextIndex + slides.length) % slides.length;
@@ -80,9 +186,11 @@ function setupHeroSlider() {
       });
     });
 
+    dots.forEach(dot => dot.classList.remove("is-active"));
+    void slider.offsetWidth;
     dots.forEach((dot, dotIndex) => {
       const active = dotIndex === index;
-      dot.classList.toggle("is-active", active);
+      if (active) dot.classList.add("is-active");
       dot.setAttribute("aria-selected", String(active));
       dot.tabIndex = active ? 0 : -1;
     });
@@ -93,7 +201,7 @@ function setupHeroSlider() {
   const stop = () => window.clearInterval(timer);
   const start = () => {
     stop();
-    if (!reducedMotion && !paused) timer = window.setInterval(() => render(index + 1, false), 7000);
+    if (autoplay && !reducedMotion && !paused) timer = window.setInterval(() => render(index + 1, false), 7000);
   };
 
   slider.querySelector("[data-slide-prev]")?.addEventListener("click", () => {
@@ -113,19 +221,23 @@ function setupHeroSlider() {
 
   slider.addEventListener("mouseenter", () => {
     paused = true;
+    slider.classList.add("is-paused");
     stop();
   });
   slider.addEventListener("mouseleave", () => {
     paused = false;
+    slider.classList.remove("is-paused");
     start();
   });
   slider.addEventListener("focusin", () => {
     paused = true;
+    slider.classList.add("is-paused");
     stop();
   });
   slider.addEventListener("focusout", event => {
     if (!slider.contains(event.relatedTarget)) {
       paused = false;
+      slider.classList.remove("is-paused");
       start();
     }
   });
@@ -153,13 +265,23 @@ function setupHeroSlider() {
   });
 
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) stop();
-    else start();
+    if (document.hidden) {
+      slider.classList.add("is-paused");
+      stop();
+    } else {
+      slider.classList.toggle("is-paused", paused);
+      start();
+    }
   });
 
   render(0, false);
   start();
 }
+
+const catalogProducts = [
+  ...(Array.isArray(window.sofievkaProducts) ? window.sofievkaProducts : []),
+  ...(Array.isArray(window.sofievkaTermojetProducts) ? window.sofievkaTermojetProducts : [])
+];
 
 const searchItems = [
   { name: "Газові котли", meta: "Опалення", href: "catalog.html?category=heating" },
@@ -170,7 +292,11 @@ const searchItems = [
   { name: "Труби та фітинги", meta: "Сантехніка", href: "catalog.html" },
   { name: "Монтаж і сервіс", meta: "Послуги", href: "services.html" },
   { name: "Бренди", meta: "Виробники", href: "brands.html" }
-];
+].concat(catalogProducts.map(product => ({
+  name: product.title,
+  meta: `${product.type} · ${product.sku}`,
+  href: `product.html?id=${encodeURIComponent(product.id)}`
+})));
 
 function setupSearch() {
   const form = document.querySelector("[data-search]");
@@ -260,119 +386,112 @@ function setupSearch() {
   });
 }
 
-// Homepage product data follows the same shape as the future catalog response.
-const homepageProducts = {
-  boiler: {
-    id: "boiler",
-    brand: "Vaillant",
-    model: "ecoTEC pure VUW 246/7-2",
-    code: "Модель VUW 246/7-2",
-    specs: ["24 кВт", "конденсаційний", "2 контури"],
-    price: "Ціну уточнюйте",
-    oldPrice: "",
-    availability: "Наявність уточнюйте",
-    image: "assets/images/product-boiler.webp"
-  },
-  pump: {
-    id: "pump",
-    brand: "Grundfos",
-    model: "ALPHA1 L 25-60 180",
-    code: "Модель ALPHA1 L 25-60 180",
-    specs: ["Напір 6 м", "до 3,6 м³/год", "180 мм"],
-    price: "Ціну уточнюйте",
-    oldPrice: "",
-    availability: "Наявність уточнюйте",
-    image: "assets/images/product-pump.webp"
-  },
-  radiator: {
-    id: "radiator",
-    brand: "Korado",
-    model: "RADIK KLASIK 22 500 × 1000",
-    code: "Модель RADIK KLASIK 22",
-    specs: ["тип 22", "500 × 1000 мм", "бокове підключення"],
-    price: "Ціну уточнюйте",
-    oldPrice: "",
-    availability: "Наявність уточнюйте",
-    image: "assets/images/product-radiator.webp"
-  },
-  heater: {
-    id: "heater",
-    brand: "Atlantic",
-    model: "O’Pro Profi VM 080 D400-1-M",
-    code: "Модель VM 080 D400-1-M",
-    specs: ["75 л", "1,5 кВт", "вертикальний"],
-    price: "Ціну уточнюйте",
-    oldPrice: "",
-    availability: "Наявність уточнюйте",
-    image: "assets/images/product-water-heater.webp"
-  }
+const homepageProductIds = [
+  "termojet-wp_20506",
+  "MO650MECOSTD",
+  "termojet-excel_84040BOX2",
+  "CPV3ECOSTD",
+  "termojet-excel_47025230",
+  "FP1054CTPL",
+  "ROBUST1000STD",
+  "termojet-wp_8997"
+];
+const homepageProducts = homepageProductIds
+  .map(id => catalogProducts.find(product => product.id === id))
+  .filter(Boolean);
+const homepageSaleProducts = catalogProducts
+  .filter(product => (
+    product.typeSlug === "rozprodazh"
+    || product.primaryCategory === "termojet-rozprodazh"
+    || product.type === "Акція"
+  ) && (product.availability === "in_stock" || product.availabilityLabel === "В наявності"))
+  .slice(0, 8);
+const productGroups = {
+  popular: homepageProducts.length >= 5 ? homepageProducts : catalogProducts.slice(0, 8),
+  sale: homepageSaleProducts.length >= 5 ? homepageSaleProducts : catalogProducts.slice(8, 16)
 };
 
-const productGroups = {
-  popular: [
-    homepageProducts.boiler,
-    homepageProducts.pump,
-    homepageProducts.radiator,
-    homepageProducts.heater
-  ]
+// Supplier photos use different canvas proportions and amounts of baked-in whitespace.
+// These presentation hints keep the visible equipment optically balanced without
+// changing source assets or catalogue data.
+const homepageProductMediaFit = {
+  "termojet-wp_20506": "dominant",
+  "termojet-excel_84040BOX2": "compact",
+  CPV3ECOSTD: "compact",
+  FP1054CTPL: "slender",
+  ROBUST1000STD: "compact",
+  "termojet-wp_8997": "slender"
 };
 
 function createProductCard(product, favoriteIds) {
-  const productName = `${product.brand} ${product.model}`;
+  const productName = product.title || product.model;
+  const available = product.availability === "in_stock" || product.availabilityLabel === "В наявності";
   const escapeMarkup = value => String(value ?? "").replace(/[&<>'"]/g, character => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
   })[character]);
   const card = document.createElement("article");
   card.className = "product-card";
+  const mediaFit = homepageProductMediaFit[product.id];
+  if (mediaFit) card.dataset.mediaFit = mediaFit;
   card.innerHTML = `
-    <div class="product-card__image"><img src="${escapeMarkup(product.image)}" width="1536" height="1536" loading="lazy" alt="${escapeMarkup(productName)}"></div>
-    <span class="product-card__status product-card__status--pending">${escapeMarkup(product.availability)}</span>
+    <a class="product-card__image" href="product.html?id=${encodeURIComponent(product.id)}"><img src="${escapeMarkup(product.image)}" width="1536" height="1536" loading="lazy" alt="${escapeMarkup(productName)}"></a>
+    <span class="product-card__status product-card__status--${available ? "available" : "unavailable"}">${escapeMarkup(product.availabilityLabel || (available ? "В наявності" : "Немає в наявності"))}</span>
     <span class="product-card__brand">${escapeMarkup(product.brand)}</span>
-    <h3>${escapeMarkup(product.model)}</h3>
+    <h3><a href="product.html?id=${encodeURIComponent(product.id)}">${escapeMarkup(productName)}</a></h3>
     <span class="product-card__code">${escapeMarkup(product.code)}</span>
-    <ul class="product-card__specs" aria-label="Ключові характеристики">${product.specs.slice(0, 3).map(spec => `<li>${escapeMarkup(spec)}</li>`).join("")}</ul>
-    <strong class="product-card__price">${escapeMarkup(product.price)}</strong>
-    <span class="product-card__old-price">${escapeMarkup(product.oldPrice)}</span>
+    <ul class="product-card__specs" aria-label="Дані товару"><li>${escapeMarkup(product.type)}</li></ul>
+    <strong class="product-card__price">${new Intl.NumberFormat("uk-UA").format(product.price)} грн</strong>
     <div class="product-card__actions">
-      <button class="product-card__buy" type="button" data-buy="${escapeMarkup(product.id)}">Додати до запиту</button>
+      <button class="product-card__buy" type="button" data-buy="${escapeMarkup(product.id)}">До кошика</button>
       <button class="product-card__favorite${favoriteIds.has(product.id) ? " is-active" : ""}" type="button" data-favorite="${escapeMarkup(product.id)}" aria-label="Додати ${escapeMarkup(productName)} в обране" aria-pressed="${favoriteIds.has(product.id)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg></button>
     </div>`;
   return card;
 }
 
 function setupProducts() {
-  const grid = document.querySelector("[data-product-grid]");
-  const tabs = [...document.querySelectorAll("[data-product-tab]")];
+  const sections = [...document.querySelectorAll("[data-product-section]")];
   const cartCount = document.querySelector("[data-cart-count]");
   const favoriteCount = document.querySelector("[data-favorite-count]");
-  if (!grid) return;
+  if (!sections.length) return;
 
   let storedCart = {};
   let storedFavorites = [];
   try { storedCart = JSON.parse(localStorage.getItem("sofievka-cart")) || {}; } catch {}
   try { storedFavorites = JSON.parse(localStorage.getItem("sofievka-favorites")) || []; } catch {}
+  const validProductIds = new Set(catalogProducts.map(product => product.id));
+  storedCart = Object.fromEntries(Object.entries(storedCart).filter(([id, quantity]) => validProductIds.has(id) && Number(quantity) > 0));
+  storedFavorites = storedFavorites.filter(id => validProductIds.has(id));
   const favoriteIds = new Set(storedFavorites);
   let cart = Object.values(storedCart).reduce((sum, quantity) => sum + Number(quantity || 0), 0);
   if (cartCount) cartCount.textContent = String(cart);
   if (favoriteCount) favoriteCount.textContent = String(favoriteIds.size);
+  document.querySelector("[data-cart]")?.setAttribute("aria-label", `Кошик, ${cart} товарів`);
+  document.querySelector("[data-favorites]")?.setAttribute("aria-label", `Обране, ${favoriteIds.size} товарів`);
 
-  const render = group => {
+  const render = (grid, group) => {
     grid.setAttribute("aria-busy", "true");
     grid.replaceChildren();
-    productGroups[group].forEach(product => grid.append(createProductCard(product, favoriteIds)));
+    const products = productGroups[group] || productGroups.popular;
+    if (!products.length) {
+      const message = document.createElement("p");
+      message.className = "empty-state";
+      message.textContent = "Каталог товарів тимчасово недоступний.";
+      grid.append(message);
+    } else {
+      products.forEach(product => grid.append(createProductCard(product, favoriteIds)));
+    }
+    grid.scrollLeft = 0;
     grid.setAttribute("aria-busy", "false");
   };
 
-  tabs.forEach(tab => tab.addEventListener("click", () => {
-    tabs.forEach(item => {
-      const active = item === tab;
-      item.classList.toggle("is-active", active);
-      item.setAttribute("aria-selected", String(active));
-    });
-    render(tab.dataset.productTab);
-  }));
+  const scrollProducts = (grid, direction) => {
+    const firstCard = grid.querySelector(".product-card");
+    if (!firstCard) return;
+    const gap = Number.parseFloat(getComputedStyle(grid).columnGap) || 0;
+    grid.scrollBy({ left: direction * (firstCard.getBoundingClientRect().width + gap), behavior: reducedMotion ? "auto" : "smooth" });
+  };
 
-  grid.addEventListener("click", event => {
+  const handleProductAction = event => {
     const buyButton = event.target.closest("[data-buy]");
     const favoriteButton = event.target.closest("[data-favorite]");
 
@@ -390,16 +509,30 @@ function setupProducts() {
       const active = favoriteIds.has(id);
       if (active) favoriteIds.delete(id);
       else favoriteIds.add(id);
-      favoriteButton.classList.toggle("is-active", !active);
-      favoriteButton.setAttribute("aria-pressed", String(!active));
+      document.querySelectorAll("[data-favorite]").forEach(button => {
+        if (button.dataset.favorite !== id) return;
+        button.classList.toggle("is-active", !active);
+        button.setAttribute("aria-pressed", String(!active));
+      });
       if (favoriteCount) favoriteCount.textContent = String(favoriteIds.size);
       localStorage.setItem("sofievka-favorites", JSON.stringify([...favoriteIds]));
       document.querySelector("[data-favorites]")?.setAttribute("aria-label", `Обране, ${favoriteIds.size} товарів`);
       showToast(active ? "Товар видалено з обраного" : "Товар додано в обране");
     }
-  });
+  };
 
-  render("popular");
+  sections.forEach(section => {
+    const grid = section.querySelector("[data-product-grid]");
+    const previousButton = section.querySelector("[data-products-prev]");
+    const nextButton = section.querySelector("[data-products-next]");
+    const group = section.dataset.productGroup || "popular";
+    if (!grid) return;
+
+    previousButton?.addEventListener("click", () => scrollProducts(grid, -1));
+    nextButton?.addEventListener("click", () => scrollProducts(grid, 1));
+    grid.addEventListener("click", handleProductAction);
+    render(grid, group);
+  });
 }
 
 function setupHeaderActions() {
@@ -424,6 +557,64 @@ function setupReveal() {
   }, { threshold: .12, rootMargin: "0px 0px -40px" });
 
   elements.forEach(element => observer.observe(element));
+}
+
+function setupSignatureMotion() {
+  if (reducedMotion) return;
+
+  const motionSections = [...document.querySelectorAll("[data-motion]")];
+  if (!motionSections.length) return;
+
+  motionSections.forEach(section => {
+    section.classList.add("motion-ready");
+
+    const staggeredItems = section.matches('[data-motion="brands"]')
+      ? section.querySelectorAll(".brand-logo-cell")
+      : section.matches('[data-motion="process"]')
+        ? section.querySelectorAll(".service-process article")
+        : section.querySelectorAll(".b2b__benefits article");
+
+    staggeredItems.forEach((item, itemIndex) => {
+      item.style.setProperty("--motion-index", itemIndex);
+    });
+  });
+
+  if (!("IntersectionObserver" in window)) {
+    motionSections.forEach(section => section.classList.add("is-motion-active"));
+    return;
+  }
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-motion-active");
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: .22, rootMargin: "0px 0px -8%" });
+
+  motionSections.forEach(section => observer.observe(section));
+
+  const installerSection = document.querySelector('[data-motion="installer"]');
+  const motif = installerSection?.querySelector(".b2b__motif");
+  if (!installerSection || !motif || !window.matchMedia("(pointer: fine)").matches) return;
+
+  let animationFrame;
+  installerSection.addEventListener("pointermove", event => {
+    if (animationFrame) return;
+    animationFrame = window.requestAnimationFrame(() => {
+      const bounds = installerSection.getBoundingClientRect();
+      const x = ((event.clientX - bounds.left) / bounds.width - .5) * 18;
+      const y = ((event.clientY - bounds.top) / bounds.height - .5) * 12;
+      motif.style.setProperty("--motif-x", `${x}px`);
+      motif.style.setProperty("--motif-y", `${y}px`);
+      animationFrame = null;
+    });
+  });
+
+  installerSection.addEventListener("pointerleave", () => {
+    motif.style.setProperty("--motif-x", "0px");
+    motif.style.setProperty("--motif-y", "0px");
+  });
 }
 
 const brands = Array.isArray(window.sofievkaBrands) ? window.sofievkaBrands : [];
@@ -459,14 +650,19 @@ function createBrandMedia(brand, fallbackTarget) {
   return media;
 }
 
-function createLogoCell(brand, linkToDirectory = false) {
+function createLogoCell(brand, linkToDirectory = false, decorativeDuplicate = false) {
   const cell = document.createElement(linkToDirectory ? "a" : "div");
   cell.className = "brand-logo-cell";
   cell.dataset.brand = brand.slug;
   cell.dataset.brandType = brand.type;
   cell.dataset.futureHref = brand.futurePath;
-  cell.setAttribute("aria-label", brand.name);
-  if (linkToDirectory) cell.href = `brands.html#brand-${brand.slug}`;
+  if (decorativeDuplicate) {
+    cell.tabIndex = -1;
+    cell.setAttribute("aria-hidden", "true");
+  } else {
+    cell.setAttribute("aria-label", brand.name);
+  }
+  if (linkToDirectory) cell.href = "brands.html";
   cell.append(createBrandMedia(brand, cell));
   return cell;
 }
@@ -506,12 +702,133 @@ function getLetterId(letter) {
 function setupHomepageBrands() {
   const wall = document.querySelector("[data-homepage-brands]");
   if (!wall) return;
-  const cells = featuredBrands.slice(0, 10).map(brand => {
-    const cell = createLogoCell(brand, true);
-    cell.setAttribute("role", "listitem");
-    return cell;
+
+  const brands = featuredBrands.slice(0, 9);
+  const createGroup = decorativeDuplicate => {
+    const group = document.createElement("div");
+    group.className = "brand-wall__group";
+
+    if (decorativeDuplicate) {
+      group.setAttribute("aria-hidden", "true");
+    } else {
+      group.setAttribute("role", "list");
+    }
+
+    brands.forEach(brand => {
+      const cell = createLogoCell(brand, true, decorativeDuplicate);
+      if (!decorativeDuplicate) cell.setAttribute("role", "listitem");
+      group.append(cell);
+    });
+
+    return group;
+  };
+
+  const track = document.createElement("div");
+  track.className = "brand-wall__track";
+  track.append(createGroup(false), createGroup(true));
+  wall.replaceChildren(track);
+}
+
+const homepageStoreLocations = {
+  kyiv: {
+    name: "Київ",
+    kicker: "Магазин у Києві",
+    address: "с. Софіївська Борщагівка, вул. Київська, 3",
+    phone: "+38 (050) 358-22-84",
+    phoneHref: "tel:+380503582284",
+    email: "sofievkakyiv@ukr.net",
+    hours: ["Пн–Пт 9:00–18:00", "Сб 9:00–14:00"],
+    mapQuery: "с. Софіївська Борщагівка, вул. Київська, 3"
+  },
+  zhytomyr: {
+    name: "Житомир",
+    kicker: "Магазин у Житомирі",
+    address: "м. Житомир, проспект Незалежності, 79",
+    phone: "+38 (067) 726-00-00",
+    phoneHref: "tel:+380677260000",
+    email: "sofievka.zt.ua@gmail.com",
+    hours: ["Пн–Пт 8:30–17:00", "Сб 8:30–14:00"],
+    mapQuery: "Житомир, проспект Незалежності, 79"
+  }
+};
+
+function setupHomepageContact() {
+  const form = document.querySelector("[data-home-contact-form]");
+  if (!form) return;
+
+  const storeInput = form.querySelector("[data-home-contact-store]");
+  const storeButtons = [...document.querySelectorAll("[data-store-location]")];
+  const map = document.querySelector(".home-contact__map iframe");
+  const kicker = document.querySelector("[data-store-kicker]");
+  const address = document.querySelector("[data-store-address]");
+  const route = document.querySelector("[data-store-route]");
+  const phone = document.querySelector("[data-store-phone]");
+  const email = document.querySelector("[data-store-email]");
+  const hours = document.querySelector("[data-store-hours]");
+
+  const selectStore = key => {
+    const store = homepageStoreLocations[key];
+    if (!store) return;
+
+    storeButtons.forEach(button => {
+      button.setAttribute("aria-pressed", String(button.dataset.storeLocation === key));
+    });
+
+    const encodedQuery = encodeURIComponent(store.mapQuery);
+    if (map) {
+      map.src = `https://www.google.com/maps?q=${encodedQuery}&output=embed`;
+      map.title = `Магазин Софіївка у місті ${store.name} на мапі`;
+    }
+    if (kicker) kicker.textContent = store.kicker;
+    if (address) address.textContent = store.address;
+    if (route) route.href = `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
+    if (phone) {
+      phone.textContent = store.phone;
+      phone.href = store.phoneHref;
+    }
+    if (email) {
+      email.textContent = store.email;
+      email.href = `mailto:${store.email}`;
+    }
+    if (hours) {
+      hours.replaceChildren();
+      store.hours.forEach((line, index) => {
+        if (index) hours.append(document.createElement("br"));
+        hours.append(line);
+      });
+    }
+
+    if (storeInput) storeInput.value = store.name;
+    form.dataset.contactEmail = store.email;
+    form.action = `mailto:${store.email}`;
+  };
+
+  storeButtons.forEach(button => {
+    button.addEventListener("click", () => selectStore(button.dataset.storeLocation));
   });
-  wall.replaceChildren(...cells);
+
+  selectStore("kyiv");
+
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+
+    const data = new FormData(form);
+    const name = String(data.get("name") || "").trim();
+    const phone = String(data.get("phone") || "").trim();
+    const request = String(data.get("request") || "").trim();
+    const store = String(data.get("store") || "Київ").trim();
+    const recipient = form.dataset.contactEmail;
+    const subject = `Зворотний дзвінок — ${name}`;
+    const body = [
+      `Магазин: ${store}`,
+      `Ім'я: ${name}`,
+      `Телефон: ${phone}`,
+      request ? `Запит: ${request}` : "Запит: консультація щодо обладнання"
+    ].join("\n");
+
+    window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  });
 }
 
 function setupFooterAccordion() {
@@ -589,11 +906,14 @@ function setupBrandDirectory() {
 }
 
 setupCatalogMenu();
+setupStorefrontCategories();
 setupHeroSlider();
 setupSearch();
 setupProducts();
 setupHeaderActions();
 setupHomepageBrands();
+setupHomepageContact();
 setupBrandDirectory();
 setupFooterAccordion();
 setupReveal();
+setupSignatureMotion();

@@ -155,6 +155,7 @@ window.sofievkaBrands = Object.freeze([
   {
     slug: "protherm",
     name: "Protherm",
+    logo: "assets/brands/protherm.png",
     description: "Газові й електричні котли та компоненти керування для автономного опалення.",
     type: "catalog",
     featured: true,
@@ -231,6 +232,7 @@ window.sofievkaBrands = Object.freeze([
   {
     slug: "termojet",
     name: "Termojet",
+    logo: "assets/brands/termojet.png",
     description: "Насосні групи, колектори, гідравлічні розділювачі, модульні рішення та автоматика котелень.",
     type: "catalog",
     featured: true,
@@ -286,5 +288,16 @@ window.sofievkaBrands = Object.freeze([
   }
 ].map(brand => Object.freeze({
   ...brand,
-  futurePath: brand.type === "catalog" ? `/brands/${brand.slug}/` : ""
+  id: brand.slug,
+  country: brand.country || "",
+  visibility: brand.type === "catalog" ? "catalog" : "service",
+  featuredOrder: Number.isFinite(brand.featuredOrder) ? brand.featuredOrder : null,
+  futurePath: brand.type === "catalog" ? `/brands/${brand.slug}/` : "",
+  seo: Object.freeze({
+    title: `${brand.name} — товари та категорії | ТД «Софіївка»`,
+    description: brand.description || `${brand.name}: обладнання, сервіс і підтримка ТД «Софіївка».`
+  })
 })));
+
+// Compatibility alias; both names point to the same immutable registry.
+window.sofievkaBrandRegistry = window.sofievkaBrands;

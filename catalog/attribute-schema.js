@@ -1,0 +1,153 @@
+(function () {
+  "use strict";
+
+  const define = (id, definition) => Object.freeze({
+    id,
+    type: "select",
+    unit: "",
+    aliases: Object.freeze([]),
+    options: null,
+    filterable: true,
+    sortable: false,
+    categoryScope: Object.freeze([]),
+    rank: 100,
+    ...definition,
+    aliases: Object.freeze([...(definition.aliases || [])]),
+    categoryScope: Object.freeze([...(definition.categoryScope || [])])
+  });
+
+  const definitions = Object.freeze({
+    productType: define("productType", { label: "Тип обладнання", rank: 1, aliases: [/^тип обладнання$/i, /^тип продукту$/i, /^категорія$/i] }),
+    purpose: define("purpose", { label: "Призначення", rank: 2, aliases: [/^призначення$/i, /^застосування$/i] }),
+    type: define("type", { label: "Тип", rank: 3, aliases: [/^тип$/i, /^виконання$/i] }),
+    technology: define("technology", { label: "Технологія очищення", rank: 4, aliases: [/^технологія(?: очищення)?$/i, /^технология$/i] }),
+    waterSource: define("waterSource", { label: "Джерело води", rank: 5, aliases: [/^джерело води$/i] }),
+    installation: define("installation", { label: "Монтаж", rank: 6, aliases: [/^монтаж$/i, /^встановлення$/i, /^спосіб встановлення$/i] }),
+    capacityLh: define("capacityLh", { label: "Продуктивність, л/год", type: "number", unit: "л/год", rank: 7, aliases: [/^продуктивність(?:,?\s*л\/год)?$/i] }),
+    flowM3h: define("flowM3h", { label: "Продуктивність, м³/год", type: "number", unit: "м³/год", rank: 8, aliases: [/^qmax$/i, /^gmax$/i, /^макс\.?\s*продуктивність$/i, /^максимальна витрата$/i, /^витрата$/i, /^пропускна здатність(?:\s*\(м[³3]\/год\))?$/i, /^швидкість потоку(?:\s*\(м[³3]\/год\))?$/i, /^номінальна витрата$/i] }),
+    kvs: define("kvs", { label: "Kvs, м³/год", type: "number", unit: "м³/год", rank: 9, aliases: [/^kvs(?:\s*\(.+\))?$/i, /^kv$/i] }),
+    headM: define("headM", { semanticId: "maxHeadM", label: "Максимальний напір, м", type: "number", unit: "м", rank: 9, aliases: [/^hmax$/i, /^макс\.?\s*напір$/i, /^максимальний напір$/i, /^висота підйому$/i] }),
+    powerKw: define("powerKw", { label: "Потужність, кВт", type: "number", unit: "кВт", rank: 10, aliases: [/^потужність$/i, /^споживана потужність$/i, /^макс\.?\s*споживана потужність$/i, /^мощность$/i] }),
+    heatOutputKw: define("heatOutputKw", { label: "Теплова потужність, кВт", type: "number", unit: "кВт", rank: 11, aliases: [/^теплова потужність$/i, /^потужність макс\./i, /^qmax:.*(?:20|10)/i] }),
+    mountingLengthMm: define("mountingLengthMm", { semanticId: "installationLengthMm", label: "Монтажна довжина, мм", type: "number", unit: "мм", rank: 12, aliases: [/^довжина насоса$/i, /^монтажна довжина$/i, /^будівельна довжина$/i] }),
+    diameterMm: define("diameterMm", { label: "Діаметр, мм", type: "number", unit: "мм", rank: 13, aliases: [/^d\s*\(?мм\)?$/i, /^d\s*\(?mm\)?$/i, /^діаметр,?\s*мм$/i, /^диаметр,?\s*мм$/i] }),
+    widthMm: define("widthMm", { label: "Ширина, мм", type: "number", unit: "мм", rank: 14, filterable: false, aliases: [/^ширина(?:\s*\(мм\))?$/i, /^w\s*\(?mm\)?$/i] }),
+    heightMm: define("heightMm", { label: "Висота, мм", type: "number", unit: "мм", rank: 15, filterable: false, aliases: [/^висота(?:\s*\(мм\))?$/i, /^h\s*\(?mm\)?$/i, /^h\s*\(?мм\)?$/i] }),
+    depthMm: define("depthMm", { label: "Глибина, мм", type: "number", unit: "мм", rank: 16, filterable: false, aliases: [/^глибина(?:\s*\(мм\))?$/i, /^глубина(?:\s*\(мм\))?$/i] }),
+    volumeL: define("volumeL", { label: "Об’єм, л", type: "number", unit: "л", rank: 17, aliases: [/^об[’'`]?єм(?: бойлера)?$/i, /^объем$/i, /^місткість$/i] }),
+    weightKg: define("weightKg", { label: "Вага, кг", type: "number", unit: "кг", rank: 18, filterable: false, aliases: [/^вага(?:\s*\(кг\))?$/i, /^маса(?:\s*\(кг\))?$/i, /^weight$/i] }),
+    filtrationMicron: define("filtrationMicron", { label: "Тонкість фільтрації, мкм", type: "number", unit: "мкм", rank: 19, aliases: [/^тонкість фільтрації$/i] }),
+    pressureBar: define("pressureBar", { label: "Робочий тиск, бар", type: "number", unit: "бар", rank: 15, aliases: [/^робочий тиск$/i, /^макс\.?\s*тиск$/i, /^максимальний робочий тиск$/i, /^тиск максимальний$/i, /^давление$/i] }),
+    diameter: define("diameter", { label: "Діаметр / DN", rank: 16, aliases: [/^dn$/i, /^діаметр$/i, /^диаметр$/i] }),
+    connection: define("connection", { label: "Підключення", rank: 20, aliases: [/^підключення$/i, /^приєднання$/i, /^розмір$/i, /^підключення котла$/i, /^підключення системи$/i, /^підключення контура? опалення$/i, /^підключення до контуру опалення$/i, /^підключення до колектора$/i, /^підключення контурів$/i, /^різьба(?: підключення)?$/i, /^з'єднання$/i] }),
+    compatibility: define("compatibility", { label: "Сумісність", rank: 21, filterable: false, aliases: [/^сумісність$/i] }),
+    protectionClass: define("protectionClass", { label: "Клас захисту", rank: 22, aliases: [/^клас захисту$/i, /^ступінь захисту$/i, /^ip$/i] }),
+    outlets: define("outlets", { label: "Кількість виходів", rank: 18, aliases: [/^кількість виходів$/i, /^виходи$/i, /^кількість контурів$/i] }),
+    material: define("material", { label: "Матеріал", rank: 19, aliases: [/^матеріал корпусу$/i, /^матеріал$/i, /^материал$/i] }),
+    voltage: define("voltage", { label: "Живлення", rank: 20, aliases: [/^напруга$/i, /^живлення$/i, /^привід\s*\/\s*напруга$/i, /^напряжение$/i] }),
+    control: define("control", { label: "Тип керування", rank: 21, aliases: [/^керування$/i, /^управління$/i, /^управление$/i, /^тип керування$/i] }),
+    temperature: define("temperature", { label: "Температурний діапазон", rank: 22, aliases: [/^діапазон температур$/i, /^температура рідини$/i, /^макс\.?\s*температура$/i, /^максимальна температура$/i, /^температура$/i] }),
+    waterType: define("waterType", { label: "Тип води", rank: 23, aliases: [/^вода$/i, /^тип води$/i] }),
+    format: define("format", { label: "Формат / типорозмір", rank: 24, aliases: [/^формат$/i, /^типорозмір$/i] }),
+    pump: define("pump", { label: "Помпа", rank: 25, aliases: [/^помпа$/i, /^насос підвищення тиску$/i] }),
+    mineralizer: define("mineralizer", { label: "Мінералізація", rank: 26, aliases: [/^мінералізація$/i, /^мінералізатор$/i] }),
+    flowType: define("flowType", { label: "Тип системи", rank: 27, aliases: [/^тип системи$/i, /^формат системи$/i] }),
+    scope: define("scope", { label: "Для об’єкта", rank: 28, aliases: [/^для об'єкта$/i, /^сфера застосування$/i] })
+  });
+
+  const valueLabels = Object.freeze({
+    yes: "Так",
+    no: "Ні",
+    direct: "Прямоточна",
+    tank: "З баком",
+    apartment: "Квартира",
+    house: "Будинок",
+    business: "Бізнес / HoReCa",
+    mains: "Водогін",
+    borehole: "Свердловина",
+    "under-sink": "Під мийку",
+    mechanical: "Механічне очищення",
+    softening: "Пом’якшення",
+    "iron-removal": "Знезалізнення",
+    "chlorine-odor": "Хлор і запахи",
+    complex: "Комплексне очищення"
+  });
+
+  const cardPriorityByCategory = Object.freeze({
+    "circulation-pumps": Object.freeze(["headM", "flowM3h", "mountingLengthMm", "connection", "diameter", "powerKw"]),
+    "underfloor-heating": Object.freeze(["diameter", "connection", "material", "pressureBar", "temperature", "outlets"]),
+    "distribution-hydraulics": Object.freeze(["flowM3h", "heatOutputKw", "outlets", "connection", "diameter", "pressureBar", "mountingLengthMm"]),
+    automation: Object.freeze(["control", "voltage", "protectionClass", "compatibility", "temperature", "outlets"]),
+    valves: Object.freeze(["diameter", "connection", "kvs", "pressureBar", "control", "material", "temperature"]),
+    "heating-components": Object.freeze(["connection", "diameter", "diameterMm", "mountingLengthMm", "compatibility", "material", "pressureBar"]),
+    "reverse-osmosis": Object.freeze(["capacityLh", "pump", "mineralizer", "flowType", "installation", "technology"]),
+    "drinking-system-cartridges": Object.freeze(["purpose", "type", "filtrationMicron", "compatibility", "mineralizer"]),
+    "mainline-cartridges": Object.freeze(["purpose", "type", "filtrationMicron", "format", "compatibility"]),
+    "mainline-filters-housings": Object.freeze(["connection", "waterType", "purpose", "scope"]),
+    "filter-media": Object.freeze(["purpose", "type", "waterSource"]),
+    "complex-treatment": Object.freeze(["purpose", "flowM3h", "waterSource", "installation", "scope", "technology"]),
+    "water-softening": Object.freeze(["purpose", "flowM3h", "waterSource", "installation", "scope"]),
+    "mechanical-treatment": Object.freeze(["purpose", "flowM3h", "waterSource", "installation", "scope"]),
+    "chlorine-odor-removal": Object.freeze(["purpose", "flowM3h", "waterSource", "installation", "scope"]),
+    "flow-filters": Object.freeze(["type", "purpose", "installation", "filtrationMicron"])
+  });
+
+  const cardFallbackPriority = Object.freeze([
+    "purpose", "type", "technology", "capacityLh", "flowM3h", "headM", "kvs", "powerKw", "heatOutputKw",
+    "connection", "diameter", "diameterMm", "mountingLengthMm", "pressureBar", "filtrationMicron", "material",
+    "control", "voltage", "protectionClass", "compatibility", "waterSource", "installation", "format", "pump",
+    "mineralizer", "flowType", "scope", "volumeL", "weightKg", "widthMm", "heightMm", "depthMm", "productType"
+  ]);
+
+  const pdpPriorityByCategory = Object.freeze({
+    "circulation-pumps": Object.freeze(["headM", "flowM3h", "mountingLengthMm", "connection", "powerKw", "control"]),
+    "underfloor-heating": Object.freeze(["diameter", "connection", "outlets", "material", "pressureBar", "temperature"]),
+    "distribution-hydraulics": Object.freeze(["flowM3h", "heatOutputKw", "outlets", "connection", "diameter", "pressureBar"]),
+    automation: Object.freeze(["control", "voltage", "protectionClass", "compatibility", "temperature", "outlets"]),
+    valves: Object.freeze(["diameter", "kvs", "pressureBar", "connection", "material", "control"]),
+    "heating-components": Object.freeze(["connection", "diameter", "pressureBar", "temperature", "material", "compatibility"]),
+    "reverse-osmosis": Object.freeze(["capacityLh", "pump", "mineralizer", "flowType", "installation", "technology"]),
+    "drinking-system-cartridges": Object.freeze(["type", "purpose", "compatibility", "filtrationMicron", "mineralizer"]),
+    "mainline-cartridges": Object.freeze(["filtrationMicron", "format", "type", "purpose", "compatibility"]),
+    "mainline-filters-housings": Object.freeze(["connection", "format", "waterType", "purpose", "scope"]),
+    "filter-media": Object.freeze(["type", "purpose", "waterSource", "format"]),
+    "complex-treatment": Object.freeze(["flowM3h", "purpose", "waterSource", "installation", "scope", "technology"]),
+    "water-softening": Object.freeze(["flowM3h", "purpose", "waterSource", "installation", "scope"]),
+    "mechanical-treatment": Object.freeze(["flowM3h", "purpose", "waterSource", "installation", "scope"]),
+    "chlorine-odor-removal": Object.freeze(["flowM3h", "purpose", "waterSource", "installation", "scope"]),
+    "flow-filters": Object.freeze(["type", "purpose", "installation", "filtrationMicron", "flowM3h"])
+  });
+
+  const pdpFallbackPriority = Object.freeze([
+    ...cardFallbackPriority,
+    "outlets", "widthMm", "heightMm", "depthMm", "volumeL", "weightKg"
+  ]);
+
+  const cardAttributeLabels = Object.freeze({
+    capacityLh: "Продуктивність",
+    flowM3h: "Подача",
+    headM: "Макс. напір",
+    powerKw: "Потужність",
+    heatOutputKw: "Теплова потужність",
+    mountingLengthMm: "Монтажна довжина",
+    filtrationMicron: "Фільтрація",
+    pressureBar: "Робочий тиск",
+    diameter: "Діаметр / DN",
+    diameterMm: "Діаметр",
+    connection: "Підключення",
+    protectionClass: "Клас захисту",
+    outlets: "Кількість виходів",
+    voltage: "Живлення",
+    control: "Керування",
+    temperature: "Температура",
+    waterSource: "Джерело води",
+    productType: "Тип обладнання"
+  });
+
+  const seriesLabels = Object.freeze({
+    "termojet-mega": "Mega",
+    "termojet-box": "Box"
+  });
+
+  window.sofievkaAttributeSchema = Object.freeze({ definitions, valueLabels, cardPriorityByCategory, cardFallbackPriority, pdpPriorityByCategory, pdpFallbackPriority, cardAttributeLabels, seriesLabels });
+})();

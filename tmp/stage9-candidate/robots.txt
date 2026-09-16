@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://sofievka.vercel.app/sitemap.xml

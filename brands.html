@@ -7,9 +7,14 @@
   <meta name="description" content="Виробники обладнання та комплектуючих, представлені в каталозі ТД «Софіївка».">
   <title>Бренди | ТД «Софіївка»</title>
   <link rel="preload" href="assets/fonts/Manrope-700.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="styles.css?v=20260818-photo-icons-1">
+  <link rel="stylesheet" href="styles.css?v=20260911-card-5">
   <script src="brands-data.js?v=20260818-photo-icons-1" defer></script>
-  <script src="script.js?v=20260818-photo-icons-1" defer></script>
+  <script src="products-data.js?v=20260825-feed-1" defer></script>
+  <script src="termojet-products-data.js?v=20260825-termojet-1" defer></script>
+  <script src="water-catalog-data.js?v=20260911-card-5" defer></script>
+  <script src="catalog-data.js?v=20260911-card-5" defer></script>
+  <script src="catalog-ui.js?v=20260911-card-5" defer></script>
+  <script src="script.js?v=20260911-card-5" defer></script>
 </head>
 <body class="brands-page">
   <a class="skip-link" href="#main">Перейти до основного вмісту</a>
@@ -34,10 +39,15 @@
         <img src="assets/logo-sofievka-transparent.png" width="1942" height="809" alt="Софіївка">
       </a>
 
-      <button class="catalog-button" type="button" data-menu-toggle aria-expanded="false" aria-controls="catalog-menu">
-        <span class="catalog-button__mark" aria-hidden="true"><i></i><i></i><i></i></span>
-        Каталог
-      </button>
+      <div class="catalog-navigation">
+        <button class="catalog-button" type="button" data-menu-toggle aria-expanded="false" aria-controls="catalog-menu" aria-haspopup="true" aria-label="Відкрити каталог і меню">
+          <span class="catalog-button__mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          Каталог
+        </button>
+        <nav class="catalog-menu" id="catalog-menu" aria-label="Каталог товарів" hidden>
+          <div data-catalog-menu-root></div>
+        </nav>
+      </div>
 
       <form class="search" data-search role="search" action="catalog.html" method="get">
         <label class="sr-only" for="site-search">Пошук товарів, брендів і категорій</label>
@@ -64,16 +74,6 @@
       </nav>
     </div>
 
-    <nav class="catalog-menu" id="catalog-menu" aria-label="Каталог товарів" hidden>
-      <div class="container catalog-menu__grid">
-        <a href="catalog.html?category=heating"><strong>Опалення</strong><span>Котли, радіатори, тепла підлога</span></a>
-        <a href="catalog.html?category=water"><strong>Водопостачання</strong><span>Насоси, баки, фільтри</span></a>
-        <a href="catalog.html"><strong>Сантехніка</strong><span>Змішувачі, арматура, труби</span></a>
-        <a href="solutions.html"><strong>Клімат</strong><span>Кондиціонери та вентиляція</span></a>
-        <a href="services.html"><strong>Монтаж і сервіс</strong><span>Від підбору до запуску</span></a>
-        <a href="brands.html" aria-current="page"><strong>Бренди</strong><span>Виробники в каталозі</span></a>
-      </div>
-    </nav>
   </header>
 
   <main id="main">
@@ -94,7 +94,7 @@
         <div class="directory-toolbar">
           <div>
             <h2 id="all-brands-title">Усі бренди</h2>
-            <p>33 виробники в підтвердженому каталозі.</p>
+            <p>Каталог виробників. Наявні товари й категорії показуються на сторінці кожного бренду.</p>
           </div>
           <form class="brand-search" data-brand-search role="search">
             <label for="brand-search">Знайти бренд</label>
@@ -117,7 +117,7 @@
       <p>Обладнання для тепла, води та клімату з людською інженерною підтримкою.</p>
     </div>
     <div class="container footer__grid">
-      <nav aria-label="Каталог у підвалі"><h2>Каталог</h2><a href="catalog.html?category=heating">Опалення</a><a href="catalog.html?category=water">Водопостачання</a><a href="catalog.html">Сантехніка</a><a href="solutions.html">Клімат</a></nav>
+      <nav aria-label="Каталог у підвалі"><h2>Каталог</h2><a href="/catalog/heating">Опалення</a><a href="/catalog/water-supply">Водопостачання</a><a href="/catalog/plumbing">Сантехніка</a><a href="/catalog/climate">Клімат</a></nav>
       <nav aria-label="Послуги у підвалі"><h2>Послуги</h2><a href="solutions.html">Готові рішення</a><a href="services.html">Монтаж</a><a href="warranty.html">Сервіс</a><a href="delivery.html">Доставка</a></nav>
       <nav aria-label="Компанія у підвалі"><h2>Компанія</h2><a href="brands.html" aria-current="page">Бренди</a><a href="partnership.html">Для партнерів</a><a href="contact.html">Контакти</a><a href="warranty.html">Гарантія</a></nav>
       <div class="footer__contacts"><h2>Зв'язок</h2><a href="tel:+380501234567">+38 (050) 123 45 67</a><a href="mailto:info@sofievka.ua">info@sofievka.ua</a><p>Доставка Новою поштою<br>Оплата карткою або при отриманні</p></div>
