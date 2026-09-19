@@ -9,8 +9,6 @@
     ? WATER.products
     : BASE_PRODUCTS.filter(product => product.category === "water");
   const PAGES = {
-    catalog: renderCatalog,
-    product: renderProduct,
     brand: renderBrandExtended,
     solutions: renderSolutions,
     services: renderServices,
@@ -116,29 +114,11 @@
   function toggleFavorite(id) { const value = favorites(); const next = value.includes(id) ? value.filter(item => item !== id) : [...value, id]; saveFavorites(next); toast(next.includes(id) ? "Додано в обране" : "Видалено з обраного"); return next.includes(id); }
   function toast(message) { const el = document.querySelector("[data-page-toast]"); if (!el) return; el.textContent = message; el.classList.add("is-visible"); clearTimeout(window.pageToast); window.pageToast = setTimeout(() => el.classList.remove("is-visible"), 2400); }
 
-  function header() {
-    return `<a class="skip-link" href="#main">Перейти до основного вмісту</a>
-      <div class="utility-bar"><div class="container utility-bar__inner"><ul><li>Доставка по Україні</li><li><a href="/delivery.html">Оплата і доставка</a></li><li><a href="/partnership.html">Для професіоналів</a></li></ul><div class="utility-bar__contact"><span>Пн-Пт 9:00-18:00</span><a href="tel:+380501234567">+38 (050) 123 45 67</a></div></div></div>
-      <header class="site-header" data-page-header><div class="container site-header__inner">
-        <a class="brand" href="/index.html" aria-label="Софіївка, головна"><img src="/assets/logo-sofievka-transparent.png" width="1942" height="809" alt="Софіївка"></a>
-        <button class="catalog-button" type="button" data-page-menu aria-expanded="false" aria-controls="page-catalog-menu"><span class="catalog-button__mark" aria-hidden="true"><i></i><i></i><i></i></span>Каталог</button>
-        <form class="search" action="/catalog.html" role="search"><label class="sr-only" for="page-search">Пошук товарів</label><input id="page-search" name="q" type="search" placeholder="Назва, бренд або код товару"><button type="submit">Знайти</button></form>
-        <div class="header-actions"><a class="header-action" href="/account.html" aria-label="Профіль"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.5-4 3-6 7-6s6.5 2 7 6"/></svg><span class="header-action__label">Профіль</span></a><a class="header-action" href="/favorites.html" data-favorites aria-label="Обране"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.5a5.5 5.5 0 0 0-.2-7.9Z"/></svg><span class="header-action__label">Обране</span><span class="header-action__count" data-fav-count>0</span></a><a class="header-action" href="/cart.html" data-cart aria-label="Кошик"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 7H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg><span class="header-action__label">Кошик</span><span class="header-action__count" data-cart-count>0</span></a></div>
-        <nav class="catalog-menu" id="page-catalog-menu" hidden aria-label="Каталог товарів"><div class="container catalog-menu__grid"><a href="/catalog.html?category=heating"><strong>Опалення</strong><span>Котли, радіатори, тепла підлога</span></a><a href="/catalog.html?category=water"><strong>Водопостачання</strong><span>Насоси, баки, фільтри</span></a><a href="/catalog.html"><strong>Сантехніка</strong><span>Труби, арматура та змішувачі</span></a><a href="/solutions.html"><strong>Клімат</strong><span>Кондиціонування та вентиляція</span></a><a href="/services.html"><strong>Монтаж і сервіс</strong><span>Від підбору до запуску</span></a><a href="/brands.html"><strong>Бренди</strong><span>Усі виробники</span></a></div></nav>
-      </div></header>`;
-  }
-
-  function footer() {
-    return `<footer class="footer"><div class="container footer__top"><a class="brand brand--footer" href="/index.html"><img src="/assets/logo-sofievka-transparent.png" width="1942" height="809" alt="Софіївка"></a><p>Обладнання для тепла, води та клімату з людською інженерною підтримкою.</p></div><div class="container footer__grid"><nav aria-label="Каталог у підвалі"><h2>Каталог</h2><a href="/catalog.html?category=heating">Опалення</a><a href="/catalog.html?category=water">Водопостачання</a><a href="/catalog.html">Сантехніка</a><a href="/solutions.html">Готові рішення</a></nav><nav aria-label="Сервіс у підвалі"><h2>Сервіс</h2><a href="/services.html">Монтаж і сервіс</a><a href="/delivery.html">Доставка й оплата</a><a href="/warranty.html">Гарантія</a><a href="/returns.html">Обмін і повернення</a></nav><nav aria-label="Компанія у підвалі"><h2>Компанія</h2><a href="/about.html">Про компанію</a><a href="/brands.html">Бренди</a><a href="/partnership.html">Партнерам</a><a href="/contact.html">Контакти</a></nav><div class="footer__contacts"><h2>Зв'язок</h2><a href="tel:+380501234567">+38 (050) 123 45 67</a><a href="mailto:info@sofievka.ua">info@sofievka.ua</a><p><a href="/faq.html">FAQ</a> · <a href="/blog.html">Поради</a> · <a href="/portfolio.html">Об'єкти</a></p></div></div><div class="container footer__bottom"><span>© 2026 Торговий дім «Софіївка»</span><span><a href="/privacy.html">Конфіденційність</a> · <a href="/terms.html">Умови</a></span></div></footer>`;
-  }
 
   function crumbs(current) { return `<nav class="page-breadcrumbs" aria-label="Хлібні крихти"><a href="/index.html">Головна</a><span>/</span><span aria-current="page">${current}</span></nav>`; }
   function hero(kicker, title, lead, light = false) { return `<section class="page-hero${light ? " page-hero--light" : ""}"><div class="container">${crumbs(title)}<div class="page-hero__grid"><div><p class="page-kicker">${kicker}</p><h1>${title}</h1></div><p class="page-hero__lead">${lead}</p></div></div></section>`; }
   function productCard(product) { return extendedProductCard(product); }
 
-  function renderCatalog() { return renderCatalogExtended(); }
-
-  function renderProduct() { return renderProductExtended(); }
 
   function renderSolutions() { return hero("Готові комплектації", "Рішення для системи в цілому", "Обладнання, автоматика, арматура та монтажні матеріали розглядаються разом — до оформлення замовлення.") + `<section class="page-section"><div class="container"><div class="solution-grid"><article class="solution-card"><div class="solution-card__media"><img src="/assets/images/solution-boiler-room.webp" alt="Комплект обладнання котельні"></div><div class="solution-card__body"><h2>Опалення приватного будинку</h2><p>Котел, циркуляція, розподіл, автоматика й безпека.</p><a class="text-link" href="/contact.html">Запросити комплектацію →</a></div></article><article class="solution-card"><div class="solution-card__media"><img src="/assets/images/hero-water.webp" alt="Обладнання системи водопостачання"></div><div class="solution-card__body"><h2>Водопостачання</h2><p>Джерело, насос, автоматика, бак, фільтрація та споживачі.</p><a class="text-link" href="/contact.html">Запросити комплектацію →</a></div></article><article class="solution-card"><div class="solution-card__media"><img src="/assets/images/hero-climate.webp" alt="Обладнання кліматичної системи"></div><div class="solution-card__body"><h2>Клімат</h2><p>Обладнання, розподіл повітря, зони та керування.</p><a class="text-link" href="/contact.html">Запросити комплектацію →</a></div></article></div></div></section><section class="page-section page-section--white"><div class="container"><div class="page-heading"><h2>Як формується рішення</h2><p>Без квізів і автоматичних обіцянок: вихідні дані перевіряє спеціаліст, а результат фіксується у специфікації.</p></div><div class="process-list"><article><span>01</span><h3>Задача</h3><p>Площа, джерело, режими роботи та обмеження.</p></article><article><span>02</span><h3>Розрахунок</h3><p>Робочі параметри й технічна сумісність.</p></article><article><span>03</span><h3>Специфікація</h3><p>Основне обладнання та потрібні для монтажу позиції.</p></article><article><span>04</span><h3>Реалізація</h3><p>Доставка, монтаж, запуск і сервіс.</p></article></div></div></section>`; }
 
@@ -305,18 +285,6 @@
     return `<section class="water-catalog-hero"><div class="container"><nav class="page-breadcrumbs" aria-label="Хлібні крихти"><a href="/catalog/water-treatment">Каталог</a><span>→</span><a href="/water-supply.html">Водопостачання</a><span>→</span><span aria-current="page">Очищення води</span></nav><p class="page-kicker">Очищення води</p><h1>Обладнання для очищення води</h1><p>Оберіть тип системи або задачу очищення. Бренд, ціна та підтверджені параметри допоможуть звузити вибір.</p></div></section><section class="page-section page-section--compact"><div class="container"><div class="water-category-grid">${categoryTiles.map(group => `<article><span>${String(group.count).padStart(2, "0")}</span><h2>${escapeHtml(group.name)}</h2><nav aria-label="${escapeHtml(group.name)}">${group.children.map(category => `<a href="${waterCategoryUrl(category.slug)}">${escapeHtml(category.name)} <small>${WATER.report.distribution[category.slug] || 0}</small></a>`).join("")}</nav></article>`).join("")}</div><a class="horeca-collection" href="/catalog/water-treatment?scope=business"><span>Добірка</span><strong>Рішення для бізнесу / HoReCa</strong><small>Товари залишаються у своїх основних категоріях</small></a></div></section><section class="page-section catalog-section"><div class="container"><div class="catalog-panel-head"><div><p class="page-kicker">Каталог товарів</p><h2 data-catalog-title>Усе обладнання</h2></div><button class="button button--secondary mobile-filter-button" type="button" data-filter-toggle aria-expanded="false">Фільтри</button></div><div class="active-filters" data-active-filters></div><div class="catalog-layout"><aside class="catalog-filter" data-filter aria-label="Фільтри каталогу"><div class="catalog-filter__head"><h2>Фільтри</h2><button type="button" data-filter-close aria-label="Закрити фільтри">Закрити</button></div><div class="filter-group"><strong>Бренд</strong>${brands.map(brand => `<label><input type="checkbox" value="${escapeHtml(brand.toLocaleLowerCase("en"))}" data-filter-key="brand"> ${escapeHtml(brand)}</label>`).join("")}</div><div class="filter-group"><strong>Ціна, грн</strong><div class="price-filter"><input type="number" min="0" inputmode="numeric" placeholder="від" aria-label="Мінімальна ціна" data-price-min><input type="number" min="0" inputmode="numeric" placeholder="до" aria-label="Максимальна ціна" data-price-max></div></div><div class="filter-group"><strong>Наявність</strong><label><input type="checkbox" value="in_stock" data-filter-key="availability"> В наявності</label></div><div class="filter-group"><strong>Для об’єкта</strong><label><input type="checkbox" value="apartment" data-filter-key="scope"> Квартира</label><label><input type="checkbox" value="house" data-filter-key="scope"> Будинок</label><label><input type="checkbox" value="business" data-filter-key="scope"> Бізнес / HoReCa</label></div><div class="filter-group"><strong>Джерело води</strong><label><input type="checkbox" value="mains" data-filter-key="waterSource"> Водогін</label><label><input type="checkbox" value="borehole" data-filter-key="waterSource"> Свердловина</label></div><div class="filter-group"><strong>Призначення очищення</strong><label><input type="checkbox" value="mechanical" data-filter-key="purpose"> Механічне</label><label><input type="checkbox" value="softening" data-filter-key="purpose"> Пом’якшення</label><label><input type="checkbox" value="iron-removal" data-filter-key="purpose"> Знезалізнення</label><label><input type="checkbox" value="chlorine-odor" data-filter-key="purpose"> Хлор і запахи</label><label><input type="checkbox" value="complex" data-filter-key="purpose"> Комплексне</label></div><div class="filter-group context-filter" data-context="reverse-osmosis"><strong>Зворотний осмос</strong><label><input type="checkbox" value="yes" data-filter-key="pump"> З помпою</label><label><input type="checkbox" value="yes" data-filter-key="mineralizer"> З мінералізатором</label><label><input type="checkbox" value="direct" data-filter-key="flowType"> Прямоточний</label><label><input type="checkbox" value="tank" data-filter-key="flowType"> З накопичувальним баком</label></div><button class="button button--secondary filter-clear-all" type="button" data-filter-clear>Очистити все</button></aside><div class="catalog-results"><div class="catalog-toolbar"><p>Знайдено: <strong data-result-count>${PRODUCTS.length}</strong></p><select data-catalog-sort aria-label="Сортування"><option value="popular">За замовчуванням</option><option value="price-asc">Спочатку дешевші</option><option value="price-desc">Спочатку дорожчі</option><option value="name">За назвою</option></select></div><div class="catalog-products is-loading" data-catalog-products>${skeletons}</div><div class="catalog-more"><button class="button button--secondary" type="button" data-load-more>Показати ще</button></div></div></div></div></section><section class="page-section water-help"><div class="container"><div><p class="page-kicker">Потрібна допомога</p><h2>Підберемо систему за аналізом води й умовами монтажу</h2><p>Для свердловини або комплексного очищення надішліть аналіз води, бажану витрату та фото місця встановлення.</p><a class="button button--primary" href="/contact.html">Отримати консультацію</a></div><div class="water-guide"><h3>Коротко про технології</h3><p><b>Механічне очищення</b> затримує пісок, мул та іржу. <b>Пом’якшення</b> знижує жорсткість. <b>Зворотний осмос</b> готує питну воду.</p><a href="/faq.html">Поширені запитання →</a></div></div></section>`;
   }
 
-  function renderProductExtended() {
-    const id = new URLSearchParams(location.search).get("id") || PRODUCTS[0]?.id;
-    const product = productById(id);
-    if (!product) return hero("Каталог", "Товар не знайдено", "Перевірте посилання або поверніться до повного каталогу.", true) + `<section class="page-section"><div class="container empty-state"><a class="button button--primary" href="/catalog.html">До каталогу</a></div></section>`;
-    document.title = `${product.title} | ТД «Софіївка»`; setCanonical(`/product?id=${encodeURIComponent(product.id)}`);
-    const features = detailEntries(product, 6);
-    const allFeatures = detailEntries(product);
-    const related = PRODUCTS.filter(item => item.id !== product.id && item.primaryCategory === product.primaryCategory).slice(0, 4);
-    let viewed = []; try { viewed = (JSON.parse(localStorage.getItem("sofievka-viewed")) || []).filter(item => item !== product.id).map(productById).filter(Boolean).slice(0, 4); } catch {}
-    const advantages = features.slice(0, 3);
-    return `<section class="pdp"><div class="container">${productCrumbs(product)}<div class="pdp__top"><div class="pdp-gallery"><div class="pdp__media" data-gallery-main><img src="${escapeHtml(product.image)}" width="1000" height="1000" alt="${escapeHtml(product.title)}"><button type="button" data-gallery-zoom aria-label="Збільшити фото">Збільшити</button></div><button class="pdp-thumb is-active" type="button" aria-label="Показати основне фото"><img src="${escapeHtml(product.image)}" alt="Мініатюра: ${escapeHtml(product.title)}"></button></div><div class="pdp-summary"><a class="pdp__brand" href="/brands/${escapeHtml(product.brand.toLocaleLowerCase("en"))}">${escapeHtml(product.brand)}</a><h1>${escapeHtml(product.title)}</h1><span class="pdp__code">Код товару: ${escapeHtml(product.sku)}</span>${features.length ? `<dl class="pdp__specs">${features.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl>` : ""}<div class="buy-box"><span class="buy-box__status">${escapeHtml(product.availabilityLabel)}</span><strong class="buy-box__price">${money(product.price)}</strong><div class="buy-box__quantity"><label for="product-qty">Кількість</label><input id="product-qty" data-product-qty type="number" value="1" min="1" max="99"></div><div class="buy-box__actions"><button class="button button--primary" type="button" data-add="${escapeHtml(product.id)}">Додати до кошика</button><button class="icon-button${favorites().includes(product.id) ? " is-active" : ""}" type="button" data-favorite="${escapeHtml(product.id)}" aria-label="Додати в обране"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.5a5.5 5.5 0 0 0-.2-7.9Z"/></svg></button></div><a class="button button--secondary buy-box__consult" href="/contact.html?product=${encodeURIComponent(product.sku)}">Отримати консультацію</a><p>Перед оплатою менеджер підтвердить ціну, наявність і комплектність.</p></div></div></div></div></section>${advantages.length ? `<section class="page-section pdp-benefits"><div class="container"><div class="pdp-benefit-grid">${advantages.map(([label, value]) => `<article><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></article>`).join("")}</div></div></section>` : ""}<section class="page-section page-section--white"><div class="container pdp-content"><article class="prose"><section><h2>Опис</h2><p>${escapeHtml(product.fullDescription || product.description)}</p></section>${allFeatures.length ? `<section><h2>Технічні характеристики</h2><table class="spec-table"><tbody>${allFeatures.map(([label, value]) => `<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(value)}</td></tr>`).join("")}${allFeatures.some(([label]) => /категорія/i.test(label)) ? "" : `<tr><th>Основна категорія</th><td>${escapeHtml(product.primaryCategoryName)}</td></tr>`}<tr><th>Код товару</th><td>${escapeHtml(product.sku)}</td></tr></tbody></table></section>` : ""}<section><h2>Доставка й оплата</h2><p>Спосіб отримання та доступний варіант оплати менеджер погодить після перевірки замовлення.</p><p><a href="/delivery.html">Умови доставки</a> · <a href="/payment.html">Способи оплати</a> · <a href="/warranty.html">Гарантія</a></p></section><section><h2>Запитання про товар</h2><p>Назвіть код ${escapeHtml(product.sku)} і опишіть умови використання — спеціаліст перевірить застосування та сумісність.</p><a class="button button--secondary" href="/contact.html?product=${encodeURIComponent(product.sku)}">Поставити запитання</a></section></article><aside class="pdp-aside"><h2>Перед встановленням</h2><p>${product.category === "water" ? "Для систем очищення будинку потрібні аналіз води, пікова витрата та дані про місце підключення." : "Перед монтажем звірте приєднувальні розміри, робочі параметри, живлення та сумісність із системою."}</p><a href="/installation.html">Монтаж і запуск →</a></aside></div></section>${related.length ? `<section class="page-section"><div class="container"><div class="page-heading"><h2>Аналогічні товари</h2><p>Інші моделі з категорії «${escapeHtml(product.primaryCategoryName)}».</p></div><div class="catalog-products">${related.map(extendedProductCard).join("")}</div></div></section>` : ""}${viewed.length ? `<section class="page-section page-section--white"><div class="container"><div class="page-heading"><h2>Раніше переглянуті</h2></div><div class="catalog-products">${viewed.map(extendedProductCard).join("")}</div></div></section>` : ""}<div class="mobile-buy-bar"><strong>${money(product.price)}</strong><button class="button button--primary" type="button" data-add="${escapeHtml(product.id)}">До кошика</button></div>`;
-  }
 
   function pdpIcon(label = "") {
     const value = label.toLocaleLowerCase("uk");
@@ -476,183 +444,6 @@
     return escaped;
   }
 
-  const pdpPlainText = value => String(value || "")
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\r\n?/g, "\n")
-    .replace(/[^\S\n]+/g, " ")
-    .replace(/ *\n */g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-
-  function pdpExcerpt(value, limit = 220) {
-    const text = pdpPlainText(value);
-    if (text.length <= limit) return text;
-    const clipped = text.slice(0, limit + 1).replace(/\s+\S*$/, "").trim();
-    return `${clipped || text.slice(0, limit).trim()}…`;
-  }
-
-  function createPdpViewModel(product) {
-    const descriptionSections = customerDescriptionSections(product)
-      .map(section => ({
-        title: pdpPlainText(section.title),
-        paragraphs: (section.paragraphs || []).map(pdpPlainText).filter(Boolean)
-      }))
-      .filter(section => section.paragraphs.length);
-    const fallbackDescription = pdpPlainText(product.fullDescription || product.description || "");
-    const description = descriptionSections.flatMap(section => section.paragraphs).join("\n\n") || fallbackDescription;
-    const summarySource = pdpPlainText(product.shortDescription || product.description || "");
-    const purchase = window.sofievkaPdp?.purchase?.(product) || {
-      status: product.availability || "unknown",
-      statusLabel: product.availabilityLabel || "Наявність уточнюйте",
-      amount: Number(product.price) || null,
-      oldAmount: null,
-      purchasable: product.availability === "in_stock" && Number(product.price) > 0
-    };
-    const compatibilityValue = product.normalizedAttributes?.compatibility;
-    return Object.freeze({
-      product,
-      images: galleryImages(product),
-      keyFacts: (window.sofievkaPdp?.keySpecs?.(product, 6) || []).map(item => [item.label, item.value]),
-      groups: (window.sofievkaPdp?.specificationGroups?.(product) || []).map(group => ({ ...group, items: group.items.map(item => [item.label, item.value]) })),
-      documents: window.sofievkaPdp?.documents?.(product) || [],
-      accessories: window.sofievkaPdp?.accessoryProducts?.(product, 4) || [],
-      compatibleProducts: window.sofievkaPdp?.compatibleProducts?.(product, 4) || [],
-      similarProducts: window.sofievkaPdp?.relatedProducts?.(product, 4) || [],
-      purchase,
-      model: window.sofievkaPdp?.model?.(product) || product.sku,
-      series: CATALOG?.attributeSchema?.seriesLabels?.[product.seriesId] || "",
-      description,
-      descriptionSections,
-      summary: summarySource && summarySource !== description ? pdpExcerpt(summarySource) : "",
-      compatibility: compatibilityValue ? CATALOG.valueLabel(CATALOG.attributeDefinitions.compatibility, compatibilityValue) : "",
-      installationRelevant: window.sofievkaPdp?.installationRelevant?.(product) ?? true,
-      cartQuantity: Number(cart()[product.id] || 0),
-      favoriteActive: favorites().includes(product.id),
-      compareActive: compareSelection().includes(product.id)
-    });
-  }
-
-  function renderPdpPrice(view) {
-    const { purchase } = view;
-    return purchase.amount
-      ? `<div class="pdp-price">${purchase.oldAmount ? `<del>${money(purchase.oldAmount)}</del>` : ""}<strong>${money(purchase.amount)}</strong></div>`
-      : `<strong class="pdp-price pdp-price--request">Ціну уточнюйте</strong>`;
-  }
-
-  function renderPdpPrimaryAction(view, modifier = "") {
-    const { product, purchase, cartQuantity } = view;
-    if (purchase.purchasable) {
-      const label = cartQuantity ? `У кошику · ${cartQuantity}` : "Купити";
-      return `<button class="button button--primary pdp-buy${modifier ? ` ${modifier}` : ""}${cartQuantity ? " is-in-cart" : ""}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${escapeHtml(cartQuantity ? `У кошику ${cartQuantity} шт. Додати ще` : `Додати ${product.title} до кошика`)}">${pdpIcon("Кошик")}<span data-buy-label>${label}</span></button>`;
-    }
-    const label = purchase.amount ? "Уточнити наявність" : "Уточнити ціну";
-    return `<a class="button button--primary pdp-buy pdp-buy--consult${modifier ? ` ${modifier}` : ""}" href="/contact.html?product=${encodeURIComponent(product.sku || product.id)}">${pdpIcon("Консультація")}<span>${label}</span></a>`;
-  }
-
-  function renderPdpIdentity(view) {
-    const { product, model, series, summary } = view;
-    return `<header class="pdp-heading">
-      ${series ? `<div class="pdp-heading__top"><span class="pdp__series">Серія ${escapeHtml(series)}</span></div>` : ""}
-      <h1>${escapeHtml(product.title)}</h1>
-      <dl class="pdp-identifiers">${model !== product.sku ? `<div><dt>Модель</dt><dd>${escapeHtml(model)}</dd></div>` : ""}<div><dt>Артикул</dt><dd>${escapeHtml(product.sku || product.id)}<button class="pdp-copy-code" type="button" data-copy-sku="${escapeHtml(product.sku || product.id)}" aria-label="Копіювати артикул ${escapeHtml(product.sku || product.id)}">${pdpIcon("Документ")}</button></dd></div></dl>
-      ${summary ? `<p class="pdp-summary">${escapeHtml(summary)}</p>` : ""}
-    </header>`;
-  }
-
-  function renderPdpGallery(view) {
-    const { product, images } = view;
-    const mainImage = images[0] || "";
-    const thumbs = images.length > 1 ? `<div class="pdp-thumbs" aria-label="Галерея товару">${images.map((src, index) => `<button class="pdp-thumb${index === 0 ? " is-active" : ""}" type="button" data-gallery-thumb data-gallery-index="${index}" data-gallery-src="${escapeHtml(src)}" data-gallery-alt="${escapeHtml(product.title)}${index ? `, фото ${index + 1}` : ""}" aria-label="Показати фото ${index + 1}" aria-pressed="${index === 0}"><img src="${escapeHtml(src)}" width="144" height="108" loading="${index ? "lazy" : "eager"}" alt=""></button>`).join("")}</div>` : "";
-    return `<div class="pdp-gallery${images.length > 1 ? "" : " pdp-gallery--single"}" data-product-gallery tabindex="-1">
-      ${thumbs}
-      <div class="pdp__media${mainImage ? "" : " is-fallback"}" data-gallery-main>
-        ${mainImage ? `<img data-gallery-main-image src="${escapeHtml(mainImage)}" width="1000" height="1000" fetchpriority="high" decoding="async" onerror="this.hidden=true;this.parentElement.classList.add('is-fallback')" alt="${escapeHtml(product.title)}">` : ""}
-        ${mainImage ? `<button class="pdp-gallery__image-hit" type="button" data-gallery-open aria-label="Відкрити фото товару у повному розмірі"></button>` : ""}
-        <span class="pdp-image-fallback" aria-hidden="true">${pdpIcon("Габарити")}<b>Фото готується</b></span>
-        ${images.length > 1 ? `<span class="pdp-gallery__counter" data-gallery-counter>1 / ${images.length}</span><button class="pdp-gallery__arrow pdp-gallery__arrow--prev" type="button" data-gallery-prev aria-label="Попереднє фото">←</button><button class="pdp-gallery__arrow pdp-gallery__arrow--next" type="button" data-gallery-next aria-label="Наступне фото">→</button>` : ""}
-        ${mainImage ? `<button class="pdp-gallery__zoom" type="button" data-gallery-zoom aria-label="Відкрити збільшене фото">${pdpIcon("Збільшити")}<span>Збільшити</span></button>` : ""}
-      </div>
-    </div>`;
-  }
-
-  function renderPdpPurchase(view) {
-    const { product, purchase, favoriteActive, compareActive } = view;
-    const quantity = purchase.purchasable ? `<div class="pdp-quantity" aria-label="Кількість товару"><button type="button" data-pdp-qty-change="-1" aria-label="Зменшити кількість">−</button><input type="number" min="1" max="99" step="1" value="1" inputmode="numeric" data-product-qty aria-label="Кількість"><button type="button" data-pdp-qty-change="1" aria-label="Збільшити кількість">+</button></div><span class="pdp-unit">шт.</span>` : "";
-    return `<div class="pdp-purchase" data-pdp-purchase>
-      <div class="pdp-purchase__line"><span class="buy-box__status buy-box__status--${escapeHtml(purchase.status)}"><i aria-hidden="true"></i>${escapeHtml(purchase.statusLabel)}</span>${renderPdpPrice(view)}</div>
-      <div class="pdp-buy-row${purchase.purchasable ? "" : " pdp-buy-row--single"}">${quantity}${renderPdpPrimaryAction(view)}</div>
-      <a class="button button--outline-dark pdp-advice" href="/contact.html?product=${encodeURIComponent(product.sku || product.id)}">${pdpIcon("Консультація")}<span>Отримати консультацію</span></a>
-      <div class="pdp-secondary-actions"><button class="pdp-favorite${favoriteActive ? " is-active" : ""}" type="button" data-favorite="${escapeHtml(product.id)}" aria-label="${favoriteActive ? "Видалити з обраного" : "Додати в обране"}" aria-pressed="${favoriteActive}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.5a5.5 5.5 0 0 0-.2-7.9Z"/></svg><span>${favoriteActive ? "В обраному" : "В обране"}</span></button><button class="pdp-compare${compareActive ? " is-active" : ""}" type="button" data-compare="${escapeHtml(product.id)}" aria-label="${compareActive ? "Видалити з порівняння" : "Додати до порівняння"}" aria-pressed="${compareActive}">${pdpIcon("Порівняти")}<span>${compareActive ? "У порівнянні" : "Порівняти"}</span></button></div>
-      <p class="pdp-service-note">Ціну, наявність і комплектність менеджер підтвердить перед оплатою.</p>
-    </div>`;
-  }
-
-  function renderPdpTrust(view) {
-    const { product, installationRelevant } = view;
-    const items = [
-      ["/assets/icons/icon-delivery.svg", "Доставка", "за тарифами перевізника", "/delivery.html"],
-      ["/assets/icons/icon-warranty.svg", "Гарантія", product.warranty || "від виробника", "/warranty.html"],
-      ...(installationRelevant ? [["/assets/icons/icon-installation.svg", "Монтаж і сервіс", "професійний запуск", "/installation.html"]] : [])
-    ];
-    return `<ul class="pdp-trust" id="purchase-info" aria-label="Доставка, гарантія та сервіс">${items.map(([icon, title, text, href]) => `<li><a href="${href}"><img src="${icon}" width="24" height="24" alt=""><span><strong>${escapeHtml(title)}</strong><small>${escapeHtml(text)}</small></span></a></li>`).join("")}</ul>`;
-  }
-
-  function renderPdpKeySpecifications(view) {
-    if (!view.keyFacts.length) return "";
-    return `<aside class="pdp-key-specs" aria-labelledby="key-specs-title"><h3 id="key-specs-title">Ключові характеристики</h3><dl>${view.keyFacts.map(([label, value]) => `<div><dt>${escapeHtml(label.replace(/, .+$/, ""))}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl></aside>`;
-  }
-
-  function renderPdpOverview(view) {
-    if (!view.description && !view.keyFacts.length) return "";
-    const title = view.description ? "Опис товару" : "Ключові характеристики";
-    const structuredDescription = view.descriptionSections.length
-      ? view.descriptionSections.map(section => `<section>${section.title ? `<h3>${escapeHtml(section.title)}</h3>` : ""}${section.paragraphs.map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join("")}</section>`).join("")
-      : view.description.split(/\n{2,}/).filter(Boolean).map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join("");
-    return `<section class="pdp-detail-section pdp-overview" id="overview" aria-labelledby="overview-title"><div class="container"><details class="pdp-module" data-pdp-module open><summary><span>${title}</span><b aria-hidden="true"></b></summary><div class="pdp-module__body"><div class="pdp-section__head"><h2 id="overview-title">${title}</h2></div><div class="pdp-overview__grid${view.description && view.keyFacts.length ? "" : " is-single"}">${view.description ? `<div class="pdp-description-copy">${structuredDescription}</div>` : ""}${renderPdpKeySpecifications(view)}</div></div></details></div></section>`;
-  }
-
-  function renderPdpSpecifications(view) {
-    if (!view.groups.length) return "";
-    const items = view.groups.flatMap(group => group.items);
-    return `<section class="pdp-detail-section pdp-specifications" id="specifications" aria-labelledby="specifications-title"><div class="container"><details class="pdp-module" data-pdp-module open><summary><span>Характеристики</span><b aria-hidden="true"></b></summary><div class="pdp-module__body"><div class="pdp-section__head"><h2 id="specifications-title">Характеристики</h2></div><dl class="pdp-spec-table">${items.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl></div></details></div></section>`;
-  }
-
-  function renderPdpCompatibility(view) {
-    if (!view.compatibility) return "";
-    return `<section class="pdp-detail-section pdp-compatibility" id="compatibility" aria-labelledby="compatibility-title"><div class="container"><details class="pdp-module" data-pdp-module open><summary><span>Сумісність</span><b aria-hidden="true"></b></summary><div class="pdp-module__body"><div class="pdp-compatibility__row"><div>${pdpIcon("Сумісність")}<h2 id="compatibility-title">Сумісність</h2></div><p>${escapeHtml(view.compatibility)}</p><a href="/contact.html?product=${encodeURIComponent(view.product.sku || view.product.id)}">Перевірити для вашої системи →</a></div></div></details></div></section>`;
-  }
-
-  function renderPdpDocuments(view) {
-    if (!view.documents.length) return "";
-    return `<section class="pdp-detail-section pdp-documents" id="documents" aria-labelledby="documents-title"><div class="container"><details class="pdp-module" data-pdp-module open><summary><span>Документи</span><b aria-hidden="true"></b></summary><div class="pdp-module__body"><div class="pdp-section__head"><h2 id="documents-title">Документи</h2></div><div class="pdp-document-list">${view.documents.map(doc => `<a href="${escapeHtml(doc.url)}" target="_blank" rel="noreferrer"><span class="pdp-document-list__icon">${pdpIcon("Документ")}</span><span><small>${escapeHtml([doc.type, doc.language, doc.audience, doc.size].filter(Boolean).join(" · "))}</small><strong>${escapeHtml(doc.title)}</strong></span><b>Відкрити ↗</b></a>`).join("")}</div></div></details></div></section>`;
-  }
-
-  function renderPdpProductRail({ id, title, products }) {
-    if (!products.length) return "";
-    return `<section class="pdp-related-section" id="${id}" aria-labelledby="${id}-title"><div class="container"><div class="pdp-section__head"><h2 id="${id}-title">${escapeHtml(title)}</h2></div><div class="catalog-products pdp-related-products">${products.map(extendedProductCard).join("")}</div></div></section>`;
-  }
-
-  function renderPdpMobileBuybar(view) {
-    return `<div class="pdp-mobile-buybar" data-pdp-mobile-buybar aria-label="Швидка покупка"><div><span>${escapeHtml(view.purchase.statusLabel)}</span><strong>${view.purchase.amount ? money(view.purchase.amount) : "Ціну уточнюйте"}</strong></div>${renderPdpPrimaryAction(view, "pdp-buy--sticky")}</div>`;
-  }
-
-  window.sofievkaPdpComponents = Object.freeze({
-    createViewModel: createPdpViewModel,
-    gallery: renderPdpGallery,
-    identity: renderPdpIdentity,
-    price: renderPdpPrice,
-    primaryAction: renderPdpPrimaryAction,
-    purchase: renderPdpPurchase,
-    keySpecifications: renderPdpKeySpecifications,
-    trust: renderPdpTrust,
-    overview: renderPdpOverview,
-    specifications: renderPdpSpecifications,
-    compatibility: renderPdpCompatibility,
-    documents: renderPdpDocuments,
-    productRail: renderPdpProductRail,
-    mobileBuybar: renderPdpMobileBuybar
-  });
-
   function renderProductMaster() {
     const id = new URLSearchParams(location.search).get("id");
     const product = productById(id);
@@ -662,42 +453,63 @@
     }
     document.title = `${product.title} | ТД «Софіївка»`;
     setCanonical(`/product?id=${encodeURIComponent(product.id)}`);
-    const view = createPdpViewModel(product);
-    const navItems = [
-      ...((view.description || view.keyFacts.length) ? [["overview", view.description ? "Опис товару" : "Ключові характеристики"]] : []),
-      ...(view.groups.length ? [["specifications", "Характеристики"]] : []),
-      ...(view.compatibility ? [["compatibility", "Сумісність"]] : []),
-      ...(view.documents.length ? [["documents", "Документи"]] : []),
-      ...(view.compatibleProducts.length ? [["compatible-products", "Сумісні товари"]] : []),
-      ...(view.accessories.length ? [["accessories", "Аксесуари"]] : []),
-      ...(view.similarProducts.length ? [["similar", "Схожі товари"]] : [])
-    ];
-    const mainImage = view.images[0] || "";
+    const keyFacts = selectKeyFacts(product);
+    const groups = groupTechnicalDetails(product);
+    const images = galleryImages(product);
+    const related = window.sofievkaPdp?.relatedProducts(product, 4) || [];
+    const purchase = window.sofievkaPdp?.purchase(product) || { status: product.availability, statusLabel: product.availabilityLabel, amount: Number(product.price) || null, oldAmount: null, purchasable: product.availability === "in_stock" && Number(product.price) > 0 };
+    const documents = window.sofievkaPdp?.documents(product) || [];
+    const model = window.sofievkaPdp?.model(product) || product.sku;
+    const brand = window.sofievkaPdp?.brand(product);
+    const series = CATALOG?.attributeSchema?.seriesLabels?.[product.seriesId] || "";
+    const descriptionSections = customerDescriptionSections(product);
+    const compatibility = product.normalizedAttributes?.compatibility ? CATALOG.valueLabel(CATALOG.attributeDefinitions.compatibility, product.normalizedAttributes.compatibility) : "";
+    const installationRelevant = window.sofievkaPdp?.installationRelevant(product) ?? true;
+    const cartQuantity = Number(cart()[product.id] || 0);
+    const favoriteActive = favorites().includes(product.id);
+    const compareActive = compareSelection().includes(product.id);
+    const navItems = [...(descriptionSections.length ? [["description", "Опис"]] : []), ...(groups.length ? [["specifications", "Характеристики"]] : []), ...(compatibility ? [["compatibility", "Сумісність"]] : []), ...(documents.length ? [["documents", "Документація"]] : []), ["purchase-info", "Доставка та гарантія"], ...(related.length ? [["similar", "Схожі товари"]] : [])];
+    const mainImage = images[0] || "";
+    const priceMarkup = purchase.amount ? `<div class="pdp-price">${purchase.oldAmount ? `<del>${money(purchase.oldAmount)}</del>` : ""}<strong>${money(purchase.amount)}</strong></div>` : `<strong class="pdp-price pdp-price--request">Ціну уточнюйте</strong>`;
+    const primaryAction = purchase.purchasable
+      ? `<button class="button pdp-buy${cartQuantity ? " is-in-cart" : ""}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${escapeHtml(cartQuantity ? `У кошику ${cartQuantity} шт. Додати ще` : `Додати ${product.title} до кошика`)}">${cartQuantity ? `У кошику · ${cartQuantity}` : "До кошика"}</button>`
+      : `<a class="button pdp-buy pdp-buy--consult" href="/contact.html?product=${encodeURIComponent(product.sku || product.id)}">Уточнити</a>`;
     return `<article class="pdp-master">
-      <section class="pdp pdp-hero"><div class="container">${productCrumbs(product)}<div class="pdp__top">${renderPdpIdentity(view)}${renderPdpGallery(view)}${renderPdpPurchase(view)}${renderPdpTrust(view)}</div></div></section>
-      ${navItems.length ? `<nav class="pdp-anchor-nav" aria-label="Навігація сторінкою"><div class="container">${navItems.map(([anchor, label], index) => `<a href="#${anchor}"${index === 0 ? ' class="is-active" aria-current="location"' : ""}>${label}</a>`).join("")}</div></nav>` : ""}
-      <div class="pdp-detail-stack">${renderPdpOverview(view)}${renderPdpSpecifications(view)}${renderPdpCompatibility(view)}${renderPdpDocuments(view)}</div>
-      ${renderPdpProductRail({ id: "compatible-products", title: "Сумісні товари", products: view.compatibleProducts })}
-      ${renderPdpProductRail({ id: "accessories", title: "Аксесуари", products: view.accessories })}
-      ${renderPdpProductRail({ id: "similar", title: "Схожі товари", products: view.similarProducts })}
-      ${renderPdpMobileBuybar(view)}
+      <section class="pdp pdp-hero"><div class="container">${productCrumbs(product)}
+        <div class="pdp__top">
+          <header class="pdp-heading">
+            <div class="pdp-meta"><a class="pdp__brand" href="${brandUrl(product)}">${escapeHtml(product.brand)}</a>${series ? `<span class="pdp__series">Серія ${escapeHtml(series)}</span>` : ""}</div>
+            <h1>${escapeHtml(product.title)}</h1>
+            <dl class="pdp-identifiers"><div><dt>${model === product.sku ? "Модель / артикул" : "Модель"}</dt><dd>${escapeHtml(model)}</dd></div>${model !== product.sku ? `<div><dt>Артикул</dt><dd>${escapeHtml(product.sku)}</dd></div>` : ""}</dl>
+          </header>
+          <div class="pdp-gallery" data-product-gallery>
+            <div class="pdp__media${mainImage ? "" : " is-fallback"}" data-gallery-main>${mainImage ? `<img data-gallery-main-image src="${escapeHtml(mainImage)}" width="1000" height="1000" fetchpriority="high" decoding="async" onerror="this.hidden=true;this.parentElement.classList.add('is-fallback')" alt="${escapeHtml(product.title)}">` : ""}<span class="pdp-image-fallback" aria-hidden="true">${pdpIcon("Габарити")}<b>Фото готується</b></span>${mainImage ? `<button type="button" data-gallery-zoom aria-label="Відкрити збільшене фото">${pdpIcon("Розмір")}<span>Збільшити</span></button>` : ""}</div>
+            ${images.length > 1 ? `<div class="pdp-thumbs" aria-label="Галерея товару">${images.map((src, index) => `<button class="pdp-thumb${index === 0 ? " is-active" : ""}" type="button" data-gallery-thumb data-gallery-src="${escapeHtml(src)}" data-gallery-alt="${escapeHtml(product.title)}${index ? `, фото ${index + 1}` : ""}" aria-label="Показати фото ${index + 1}" aria-pressed="${index === 0}"><img src="${escapeHtml(src)}" width="144" height="108" loading="${index ? "lazy" : "eager"}" alt=""></button>`).join("")}</div>` : ""}
+          </div>
+          <dl class="pdp-keyfacts" aria-label="Ключові характеристики">${keyFacts.map(([label, value]) => `<div>${pdpIcon(label)}<span><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></span></div>`).join("")}</dl>
+          <div class="pdp-purchase">
+            <div class="pdp-purchase__line"><span class="buy-box__status buy-box__status--${escapeHtml(purchase.status)}"><i aria-hidden="true"></i>${escapeHtml(purchase.statusLabel)}</span>${priceMarkup}</div>
+            <div class="pdp-purchase__actions">${primaryAction}<a class="button pdp-advice" href="/contact.html?product=${encodeURIComponent(product.sku)}">Отримати консультацію</a></div>
+            <div class="pdp-secondary-actions"><button class="pdp-favorite${favoriteActive ? " is-active" : ""}" type="button" data-favorite="${escapeHtml(product.id)}" aria-label="${favoriteActive ? "Видалити з обраного" : "Додати в обране"}" aria-pressed="${favoriteActive}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.5a5.5 5.5 0 0 0-.2-7.9Z"/></svg><span>${favoriteActive ? "В обраному" : "В обране"}</span></button><button class="pdp-compare${compareActive ? " is-active" : ""}" type="button" data-compare="${escapeHtml(product.id)}" aria-label="${compareActive ? "Видалити з порівняння" : "Додати до порівняння"}" aria-pressed="${compareActive}">${pdpIcon("Підключення")}<span>${compareActive ? "У порівнянні" : "Порівняти"}</span></button></div>
+            <p class="pdp-service-note">Ціну, наявність і комплектність менеджер підтвердить перед оплатою.</p>
+          </div>
+        </div>
+      </div></section>
+      <nav class="pdp-anchor-nav" aria-label="Навігація сторінкою"><div class="container">${navItems.map(([anchor, label]) => `<a href="#${anchor}">${label}</a>`).join("")}</div></nav>
+      ${descriptionSections.length ? `<section class="pdp-section pdp-description" id="description" aria-labelledby="description-title"><div class="container pdp-description__grid"><div><div class="pdp-section__head"><div><span>Призначення та застосування</span><h2 id="description-title">Опис товару</h2></div></div><div class="pdp-description-blocks">${descriptionSections.map(section => `<section class="pdp-description-block"><h3>${escapeHtml(section.title)}</h3>${section.paragraphs.map(paragraph => `<p>${emphasizeDescriptionParagraph(paragraph, section.title, product)}</p>`).join("")}</section>`).join("")}</div></div>${brand?.description ? `<aside class="pdp-brand-note"><span>Про бренд</span><h3>${escapeHtml(brand.name)}</h3><p>${escapeHtml(brand.description)}</p><a href="${brandUrl(product)}">Усі товари бренду →</a></aside>` : ""}</div></section>` : ""}
+      ${groups.length ? `<section class="pdp-section pdp-specifications" id="specifications" aria-labelledby="specifications-title"><div class="container">
+        <div class="pdp-section__head"><div><span>Технічні дані</span><h2 id="specifications-title">Повні характеристики</h2></div><p>Усі параметри моделі з офіційної технічної таблиці.</p></div>
+        <details class="pdp-spec-details"><summary><span>Показати всі характеристики</span><b>${groups.reduce((sum, group) => sum + group.items.length, 0)} параметрів</b></summary><div class="pdp-spec-groups">${groups.map(group => `<section class="pdp-spec-group"><header>${pdpIcon(group.icon)}<h3>${escapeHtml(group.title)}</h3></header><dl>${group.items.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl></section>`).join("")}</div></details>
+      </div></section>` : ""}
+      ${compatibility ? `<section class="pdp-section pdp-compatibility" id="compatibility"><div class="container"><div>${pdpIcon("Сумісність")}<span>Сумісність</span><h2>Підходить для</h2></div><p>${escapeHtml(compatibility)}</p><a href="/contact.html?product=${encodeURIComponent(product.sku)}">Перевірити сумісність →</a></div></section>` : ""}
+      ${documents.length ? `<section class="pdp-section pdp-documents" id="documents"><div class="container"><div class="pdp-section__head"><div><span>Файли виробника</span><h2>Документація</h2></div></div><div class="pdp-document-list">${documents.map(doc => `<a href="${escapeHtml(doc.url)}" target="_blank" rel="noreferrer"><span>${escapeHtml(doc.type)}</span><strong>${escapeHtml(doc.title)}</strong><b>Відкрити ↗</b></a>`).join("")}</div></div></section>` : ""}
+      <section class="pdp-section pdp-purchase-info" id="purchase-info"><div class="container"><div class="pdp-section__head"><div><span>Умови покупки</span><h2>Доставка, оплата та гарантія</h2></div></div><div class="pdp-info-links"><a href="/delivery.html"><span>Доставка</span><strong>Доставка по Україні та самовивіз</strong><b>Умови доставки →</b></a><a href="/payment.html"><span>Оплата</span><strong>Доступний спосіб погоджує менеджер</strong><b>Способи оплати →</b></a><a href="/warranty.html"><span>Гарантія</span><strong>${product.warranty ? escapeHtml(product.warranty) : "Умови залежать від товару й виробника"}</strong><b>Умови гарантії →</b></a></div></div></section>
+      <section class="pdp-consult"><div class="container"><div><span>Інженерна консультація</span><h2>Перевіримо модель до замовлення</h2><p>Назвіть артикул ${escapeHtml(product.sku)} та умови використання. Фахівець допоможе перевірити сумісність і комплектацію.${installationRelevant ? " За потреби обговоримо монтаж і запуск." : ""}</p>${installationRelevant ? `<a class="pdp-install-link" href="/installation.html">Монтаж і запуск обладнання →</a>` : ""}</div><a class="button" href="/contact.html?product=${encodeURIComponent(product.sku)}">Отримати консультацію</a></div></section>
+      ${related.length ? `<section class="pdp-section pdp-similar" id="similar" aria-labelledby="similar-title"><div class="container"><div class="pdp-section__head"><div><span>Та сама категорія</span><h2 id="similar-title">Схожі товари</h2></div><p>Підібрано за категорією, серією, брендом і спільними технічними параметрами.</p></div><div class="catalog-products pdp-related-products">${related.map(extendedProductCard).join("")}</div></div></section>` : ""}
       ${mainImage ? `<dialog class="pdp-lightbox" data-gallery-dialog aria-label="Збільшене фото товару"><button type="button" data-gallery-close aria-label="Закрити збільшене фото">×</button><img data-gallery-dialog-image src="${escapeHtml(mainImage)}" alt="${escapeHtml(product.title)}, збільшене фото"></dialog>` : ""}
     </article>`;
   }
 
-  function categoryContent() { return {
-    heating: { kicker: "Опалення", title: "Тепло як цілісна система", lead: "Котел, циркуляція, прилади опалення, автоматика та безпека мають працювати разом.", image: "/assets/images/hero-heating.webp", points: [["Джерело тепла", "Газові й електричні котли, бойлери та автоматика."], ["Розподіл", "Насоси, колектори, арматура й балансування."], ["Віддача тепла", "Радіатори, тепла підлога та регулювання по зонах."]] },
-    water: { kicker: "Водопостачання", title: "Стабільна вода від джерела до крана", lead: "Насос, автоматика, накопичення й очищення підбираються за витратою, тиском і якістю води.", image: "/assets/images/hero-water.webp", points: [["Подача", "Свердловинні, поверхневі та циркуляційні насоси."], ["Стабілізація", "Гідроакумулятори, автоматика й захист від сухого ходу."], ["Якість води", "Механічне очищення, пом'якшення та питна вода."]] },
-    climate: { kicker: "Клімат", title: "Комфорт без випадкової потужності", lead: "Охолодження, обігрів і вентиляція починаються з теплоприпливів, планування та місця монтажу.", image: "/assets/images/hero-climate.webp", points: [["Кондиціонування", "Спліт-системи для кімнат і комерційних приміщень."], ["Вентиляція", "Локальна витяжка й організований повітрообмін."], ["Монтаж", "Траси, дренаж, електроживлення та доступ до сервісу."]] },
-    plumbing: { kicker: "Сантехніка", title: "Компоненти, що сходяться в одну систему", lead: "Труби, фітинги, запірна арматура й точки споживання підбираються за матеріалом, діаметром і режимом роботи.", image: "/assets/images/showroom.webp", points: [["Трубопроводи", "Системні труби й фітинги для води та опалення."], ["Арматура", "Крани, клапани, редуктори й групи безпеки."], ["Монтажні деталі", "Кріплення, ущільнення та інструмент для конкретної системи."]] }
-  }; }
-
-  function renderCategoryExtended(category) {
-    const content = categoryContent()[category];
-    const categoryProducts = category === "water" ? WATER_PRODUCTS : category === "heating" ? TERMOJET_PRODUCTS : [];
-    const productSection = categoryProducts.length ? `<section class="page-section page-section--white"><div class="container"><div class="page-heading"><h2>${category === "water" ? "Обладнання для очищення води" : "Обладнання Termojet для систем опалення"}</h2><p>${category === "water" ? "Питні системи, очищення для будинку, картриджі та матеріали." : "Насосні групи, колектори, клапани, автоматика та комплектуючі."}</p></div><div class="catalog-products">${categoryProducts.slice(0, 8).map(extendedProductCard).join("")}</div><a class="button button--secondary category-catalog-link" href="${category === "water" ? "/catalog/water-treatment" : "/brands/termojet"}">Переглянути всі ${categoryProducts.length} товарів</a></div></section>` : "";
-    return `<section class="category-hero"><img src="${content.image}" alt="" aria-hidden="true"><div class="category-hero__shade"></div><div class="container category-hero__content">${crumbs(content.kicker)}<p class="page-kicker">${content.kicker}</p><h1>${content.title}</h1><p>${content.lead}</p><a class="button button--primary" href="${category === "water" ? "/catalog.html" : "/contact.html"}">${category === "water" ? "Дивитися товари" : "Передати задачу"}</a></div></section><section class="page-section"><div class="container"><div class="category-point-grid">${content.points.map(([title, text], index) => `<article><span>0${index + 1}</span><h2>${title}</h2><p>${text}</p></article>`).join("")}</div></div></section>${productSection}<section class="page-section"><div class="container consultation-band"><div><p class="page-kicker">Потрібна комплектація</p><h2>Зберемо систему за вихідними даними</h2><p>Надішліть план, специфікацію або фото наявного обладнання.</p></div><a class="button button--primary" href="/contact.html">Передати задачу</a></div></section>`;
-  }
 
   function renderSearchExtended() {
     const query = (new URLSearchParams(location.search).get("q") || "").trim();
@@ -923,23 +735,17 @@
       const galleryMain = document.querySelector("[data-gallery-main]");
       const galleryImage = document.querySelector("[data-gallery-main-image]");
       const galleryThumbs = [...document.querySelectorAll("[data-gallery-thumb]")];
-      const galleryCounter = document.querySelector("[data-gallery-counter]");
       const galleryDialog = document.querySelector("[data-gallery-dialog]");
       const dialogImage = document.querySelector("[data-gallery-dialog-image]");
-      document.querySelectorAll("[data-gallery-zoom], [data-gallery-open]").forEach(control => control.addEventListener("click", () => galleryDialog?.showModal()));
+      document.querySelector("[data-gallery-zoom]")?.addEventListener("click", () => galleryDialog?.showModal());
       document.querySelector("[data-gallery-close]")?.addEventListener("click", () => galleryDialog?.close());
       galleryDialog?.addEventListener("click", event => { if (event.target === galleryDialog) galleryDialog.close(); });
-      const selectGalleryImage = index => {
+      galleryThumbs.forEach(thumb => thumb.addEventListener("click", () => {
         if (!galleryImage) return;
-        const normalizedIndex = (index + galleryThumbs.length) % galleryThumbs.length;
-        const thumb = galleryThumbs[normalizedIndex];
-        if (!thumb) return;
         galleryMain?.classList.remove("is-fallback");
         galleryThumbs.forEach(item => { item.classList.remove("is-active"); item.setAttribute("aria-pressed", "false"); });
         thumb.classList.add("is-active");
         thumb.setAttribute("aria-pressed", "true");
-        thumb.scrollIntoView({ block: "nearest", inline: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-        if (galleryCounter) galleryCounter.textContent = `${normalizedIndex + 1} / ${galleryThumbs.length}`;
         galleryImage.style.opacity = "0";
         requestAnimationFrame(() => {
           galleryImage.src = thumb.dataset.gallerySrc;
@@ -950,73 +756,7 @@
           galleryImage.addEventListener("error", () => { galleryImage.hidden = true; galleryMain?.classList.add("is-fallback"); }, { once: true });
           if (galleryImage.complete) galleryImage.style.opacity = "1";
         });
-      };
-      galleryThumbs.forEach((thumb, index) => thumb.addEventListener("click", () => selectGalleryImage(index)));
-      document.querySelector("[data-gallery-prev]")?.addEventListener("click", () => selectGalleryImage(Math.max(0, galleryThumbs.findIndex(item => item.classList.contains("is-active"))) - 1));
-      document.querySelector("[data-gallery-next]")?.addEventListener("click", () => selectGalleryImage(Math.max(0, galleryThumbs.findIndex(item => item.classList.contains("is-active"))) + 1));
-
-      const quantityInput = document.querySelector("[data-product-qty]");
-      const normalizeQuantity = value => Math.min(99, Math.max(1, Math.round(Number(value) || 1)));
-      document.querySelectorAll("[data-pdp-qty-change]").forEach(button => button.addEventListener("click", () => {
-        if (!quantityInput) return;
-        quantityInput.value = normalizeQuantity(Number(quantityInput.value) + Number(button.dataset.pdpQtyChange));
       }));
-      quantityInput?.addEventListener("change", () => { quantityInput.value = normalizeQuantity(quantityInput.value); });
-
-      document.querySelector("[data-copy-sku]")?.addEventListener("click", async event => {
-        const value = event.currentTarget.dataset.copySku || "";
-        try {
-          if (!navigator.clipboard?.writeText) throw new Error("Clipboard API unavailable");
-          await navigator.clipboard.writeText(value);
-        } catch {
-          const field = document.createElement("textarea");
-          field.value = value;
-          field.setAttribute("readonly", "");
-          field.style.position = "fixed";
-          field.style.opacity = "0";
-          document.body.append(field);
-          field.select();
-          document.execCommand("copy");
-          field.remove();
-        }
-        toast("Артикул скопійовано");
-      });
-
-      const modules = [...document.querySelectorAll("[data-pdp-module]")];
-      const mobileModules = window.matchMedia ? window.matchMedia("(max-width: 620px)") : { matches: false, addEventListener() {} };
-      const setModuleMode = () => modules.forEach((module, index) => { module.open = mobileModules.matches ? index === 0 : true; });
-      setModuleMode();
-      mobileModules.addEventListener?.("change", setModuleMode);
-
-      const navLinks = [...document.querySelectorAll(".pdp-anchor-nav a[href^='#']")];
-      navLinks.forEach(link => link.addEventListener("click", () => {
-        const target = document.querySelector(link.hash);
-        const module = target?.querySelector("[data-pdp-module]");
-        if (module) module.open = true;
-      }));
-      if ("IntersectionObserver" in window && navLinks.length) {
-        const sections = navLinks.map(link => document.querySelector(link.hash)).filter(Boolean);
-        const sectionObserver = new IntersectionObserver(entries => {
-          const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-          if (!visible) return;
-          navLinks.forEach(link => {
-            const active = link.hash === `#${visible.target.id}`;
-            link.classList.toggle("is-active", active);
-            if (active) link.setAttribute("aria-current", "location"); else link.removeAttribute("aria-current");
-          });
-        }, { rootMargin: "-18% 0px -68%", threshold: [0, .1, .35] });
-        sections.forEach(section => sectionObserver.observe(section));
-      }
-
-      const purchase = document.querySelector("[data-pdp-purchase]");
-      const mobileBuybar = document.querySelector("[data-pdp-mobile-buybar]");
-      if (purchase && mobileBuybar && "IntersectionObserver" in window) {
-        let purchaseVisible = true;
-        const syncMobileBuybar = () => mobileBuybar.classList.toggle("is-visible", mobileModules.matches && !purchaseVisible && window.scrollY > 80);
-        new IntersectionObserver(([entry]) => { purchaseVisible = entry.isIntersecting; syncMobileBuybar(); }, { threshold: .08 }).observe(purchase);
-        addEventListener("scroll", syncMobileBuybar, { passive: true });
-        mobileModules.addEventListener?.("change", syncMobileBuybar);
-      }
     }
   }
 

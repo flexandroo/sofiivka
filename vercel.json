@@ -38,7 +38,6 @@
     { "source": "/brands/:slug", "destination": "/brand.html" },
     { "source": "/about", "destination": "/about.html" },
     { "source": "/account", "destination": "/account.html" },
-    { "source": "/all-pages", "destination": "/all-pages.html" },
     { "source": "/blog", "destination": "/blog.html" },
     { "source": "/brand", "destination": "/brand.html" },
     { "source": "/brands", "destination": "/brands.html" },

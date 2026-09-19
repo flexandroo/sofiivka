@@ -30,4 +30,4 @@
 
 Немає підтвердженого придатного локального логотипа: Altep, Aquasystem, BIODOM, DEVI, General Fittings, Krafter, Kronas, MYCOND, Protherm, RUVI, Сталар, Tatramet, TECH, TEKK, Tenko, Termojet, а також сервісні Westen і SWAG.
 
-Кандидати `stalar.jpg` і `tenko.png` збережені для ручної перевірки, але не підключені: перший має великий суцільний фон, другий — непридатні пропорції/роздільність. Старі `atlantic.jpg` і `vaillant.svg` лишилися в assets, але не входять до підтверджених списків цього блока.
+Непідтверджені кандидати Stalar, Tenko, Atlantic і Vaillant не входять до активного списку брендів та не зберігаються серед production-ресурсів.

@@ -9,6 +9,7 @@
 ## Як працювати з різних комп’ютерів
 
 ```powershell
+git lfs install
 git clone https://github.com/flexandroo/sofiivka.git
 cd sofiivka
 git switch -c feature/коротка-назва
@@ -38,7 +39,9 @@ git pull --ff-only
 - `index.html`, `homepage.css`, `script.js` — головна сторінка.
 - `page-shell.js`, `pages.css`, `styles.css` — спільна оболонка й дизайн-система внутрішніх сторінок.
 - `catalog-data.js`, `products-data.js`, `termojet-products-data.js`, `water-catalog-data.js` — каталог і товарні дані.
-- `catalog/`, `products/`, `brands/` — статичні URL-сторінки для каталогу, товарів і брендів.
+- `catalog/` — модулі таксономії, нормалізації, пошуку та PDP.
+- `assets/products/` — фото й PDF товарів; великі файли відстежуються через Git LFS.
+- `tests/` — перевірки каталогу, посилань, ресурсів і legacy-маршрутів.
 - `vercel.json` — redirects, rewrites і HTTP headers для Vercel.
 
 ## Локальний перегляд
@@ -49,4 +52,11 @@ git pull --ff-only
 npx vercel dev
 ```
 
-Локальні `.vercel`, `.env*`, `tmp`, `.agents` і `.codex` не комітяться. Не зберігайте токени чи секрети в репозиторії.
+Локальні `.vercel`, `.env*`, `tmp`, `artifacts`, `backups`, `reports`, `.agents` і `.codex` не комітяться. Не зберігайте токени чи секрети в репозиторії.
+
+## Перевірки перед push
+
+```powershell
+node tests/catalog-qa.js
+node tests/static-assets-qa.js
+```

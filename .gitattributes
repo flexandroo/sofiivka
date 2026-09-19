@@ -18,3 +18,7 @@
 *.png binary
 *.ttf binary
 *.webp binary
+
+# Large product media is stored through Git LFS.
+assets/products/**/*.pdf filter=lfs diff=lfs merge=lfs -text
+assets/products/**/*.webp filter=lfs diff=lfs merge=lfs -text
