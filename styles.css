@@ -2246,8 +2246,9 @@ ul {
 
 .footer {
   padding-top: 56px;
-  background: var(--graphite-deep);
-  color: #fff;
+  border-top: 1px solid var(--divider);
+  background: var(--surface);
+  color: var(--text);
 }
 
 .footer__top {
@@ -2264,12 +2265,13 @@ ul {
 }
 
 .brand--footer img {
+  filter: brightness(0) saturate(100%);
   object-position: left center;
 }
 
 .footer__top p {
   max-width: 580px;
-  color: #aaa8a2;
+  color: var(--text-secondary);
   text-align: right;
 }
 
@@ -2294,7 +2296,7 @@ ul {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #fff;
+  color: var(--text);
   font: inherit;
   font-size: 13px;
   font-weight: 700;
@@ -2315,18 +2317,20 @@ ul {
 
 .footer h2 {
   margin-bottom: 8px;
-  color: #fff;
+  color: var(--text);
   font-size: 13px;
 }
 
 .footer__grid a,
 .footer__grid p {
-  color: #aaa8a2;
+  color: var(--text-secondary);
   font-size: 13px;
 }
 
-.footer__grid a:hover {
-  color: var(--yellow);
+.footer a:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .footer__contacts p {
@@ -2339,8 +2343,8 @@ ul {
   align-items: center;
   justify-content: space-between;
   min-height: 72px;
-  border-top: 1px solid rgba(255, 255, 255, .16);
-  color: #77756f;
+  border-top: 1px solid var(--divider);
+  color: var(--text-subtle);
   font-size: 12px;
 }
 
@@ -3023,7 +3027,7 @@ ul {
 
   .footer__section {
     width: 100%;
-    border-bottom: 1px solid rgba(255, 255, 255, .14);
+    border-bottom: 1px solid var(--divider);
   }
 
   .footer__toggle {
@@ -3037,7 +3041,7 @@ ul {
 
   .footer__toggle b {
     display: block;
-    color: #aaa8a2;
+    color: var(--text-secondary);
     font-size: 20px;
     font-weight: 400;
   }
