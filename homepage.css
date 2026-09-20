@@ -513,7 +513,7 @@
   min-height: 0;
   overflow: hidden;
   border: 1px solid var(--home-border);
-  background: #f5f1eb;
+  background: #fff;
 }
 
 .storefront-promo__copy {
@@ -573,7 +573,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(90deg, rgba(245, 243, 238, .97), rgba(245, 243, 238, .74) 54%, rgba(245, 243, 238, 0) 78%);
+  background: linear-gradient(90deg, rgba(255, 255, 255, .97), rgba(255, 255, 255, .74) 54%, rgba(255, 255, 255, 0) 78%);
 }
 
 .storefront-promo__action {
@@ -849,7 +849,7 @@
   align-items: flex-start;
   min-width: 0;
   padding: clamp(28px, 4vw, 52px);
-  background: #f1eee5;
+  background: #fff;
 }
 
 .home-contact__form-head h3,
@@ -976,7 +976,7 @@
 .home-contact__map {
   min-height: 300px;
   overflow: hidden;
-  background: #e3e0d7;
+  background: #fff;
 }
 
 .home-contact__map iframe {

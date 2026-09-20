@@ -54,7 +54,7 @@
   --text: #202020;
   --text-secondary: #686762;
   --text-subtle: #77756f;
-  --divider: #dddad2;
+  --divider: #dedede;
   --success: #18794e;
   --danger: #b42318;
   --info: #275d8c;
@@ -732,7 +732,7 @@ ul {
   position: relative;
   min-height: 100%;
   overflow: hidden;
-  background: #938b7d;
+  background: var(--graphite);
 }
 
 .hero-slide__media > img:not(.hero-slide__overlay) {
@@ -828,7 +828,8 @@ ul {
   width: 36px;
   height: 4px;
   border-radius: 4px;
-  background: #b8b5ae;
+  background: var(--graphite);
+  opacity: .35;
   transition: background .2s var(--ease), width .2s var(--ease);
 }
 
@@ -839,6 +840,7 @@ ul {
 .hero__dots button.is-active::before {
   width: 52px;
   background: var(--yellow);
+  opacity: 1;
 }
 
 .trust-strip {
@@ -948,7 +950,7 @@ ul {
 .category-card--pumps > img {
   object-fit: contain;
   padding: 28px;
-  background: #f8f7f3;
+  background: var(--surface);
 }
 
 .category-card:hover > img {
@@ -1066,7 +1068,7 @@ ul {
   aspect-ratio: 4 / 3;
   overflow: hidden;
   border-radius: 4px;
-  background: #efeee9;
+  background: var(--surface);
 }
 
 .product-card__image img {
@@ -1173,7 +1175,7 @@ ul {
 }
 
 .product-card__status--pending {
-  background: #f3f1ea;
+  background: var(--surface);
   color: #605d55;
 }
 
@@ -1329,10 +1331,11 @@ ul {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #dedbd2;
+  background: var(--graphite);
+  color: #fff;
 }
 
-.product-card__buy--consult:hover { background: #d1cec5; }
+.product-card__buy--consult:hover { background: var(--graphite-deep); }
 
 .product-card__favorite {
   width: 38px;
@@ -1398,7 +1401,8 @@ ul {
   aspect-ratio: .68;
   overflow: hidden;
   border-radius: var(--radius-card);
-  background: #eceae4;
+  border: 1px solid var(--divider);
+  background: var(--surface);
 }
 
 .section-intro {
@@ -1474,7 +1478,7 @@ ul {
   grid-row: 1;
   min-height: 300px;
   overflow: hidden;
-  background: #d6d1c8;
+  background: var(--surface);
 }
 
 .system-card__media img {
@@ -1634,7 +1638,8 @@ ul {
 }
 
 .brand-wall .brand-logo-cell:hover {
-  background: #faf9f5;
+  box-shadow: inset 0 0 0 1px var(--divider);
+  background: var(--surface);
 }
 
 .brand-logo-cell {
@@ -1649,7 +1654,7 @@ ul {
 
 .brand-logo-cell:hover {
   border-color: #c8c3b8;
-  background: #fffdf5;
+  background: var(--surface);
 }
 
 .brand-media {
@@ -2179,7 +2184,7 @@ ul {
   display: grid;
   grid-template-columns: 1.08fr .92fr;
   min-height: 590px;
-  background: #f1eee5;
+  background: var(--surface);
   color: var(--text);
 }
 
@@ -2259,6 +2264,13 @@ ul {
   padding-bottom: 46px;
 }
 
+.footer__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 16px;
+}
+
 .brand--footer {
   width: 170px;
   height: 48px;
@@ -2273,6 +2285,42 @@ ul {
   max-width: 580px;
   color: var(--text-secondary);
   text-align: right;
+}
+
+.footer__socials {
+  display: flex;
+  gap: 8px;
+}
+
+.footer__social {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid var(--graphite);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--graphite);
+}
+
+.footer__social svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.footer__social path:first-child {
+  fill: currentColor;
+  stroke: none;
+}
+
+.footer__social-play {
+  fill: var(--surface);
+  stroke: none;
 }
 
 .footer__grid {
@@ -3017,6 +3065,10 @@ ul {
 
   .footer__top p {
     text-align: left;
+  }
+
+  .footer__meta {
+    align-items: flex-start;
   }
 
   .footer__grid {
