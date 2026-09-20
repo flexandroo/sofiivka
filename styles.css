@@ -2256,12 +2256,15 @@ ul {
   justify-content: space-between;
   gap: 36px;
   padding-bottom: 46px;
-  border-bottom: 1px solid rgba(255, 255, 255, .16);
 }
 
 .brand--footer {
   width: 170px;
   height: 48px;
+}
+
+.brand--footer img {
+  object-position: left center;
 }
 
 .footer__top p {
@@ -2272,8 +2275,8 @@ ul {
 
 .footer__grid {
   display: grid;
-  grid-template-columns: repeat(3, .75fr) 1.25fr;
-  gap: 48px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(32px, 4vw, 56px);
   padding-block: 54px;
 }
 
