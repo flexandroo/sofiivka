@@ -107,6 +107,10 @@ assert.equal(wiloProducts.length, 1020, "Wilo domestic catalog must retain 1020 
 assert.equal(new Set(wiloProducts.map(product => product.seriesId)).size, 56, "Wilo domestic catalog must retain 56 active series");
 assert.ok(wiloProducts.every(product => product.manufacturerUrl?.startsWith("https://wilo.com/ua/uk/")), "every Wilo SKU must retain its official manufacturer URL");
 assert.ok(wiloProducts.every(product => product.images.length >= 1 && product.images.every(image => image.startsWith("/assets/products/wilo/"))), "Wilo product images must be local");
+assert.equal(wiloProducts.filter(product => product.imageSources?.[0]?.type === "product").length, 1014, "Wilo SKU-specific primary image coverage changed");
+assert.ok(wiloProducts.every(product => product.imageSources?.length === product.images.length), "Wilo gallery sources must map one-to-one to local images");
+assert.ok(wiloProducts.every(product => product.imageSources.every(image => /^https:\/\/cms\.media\.wilo\.com\/dcipicpfinder\/.+_5\.(?:png|jpe?g|webp)$/i.test(image.source))), "Wilo galleries must use the highest official image variant");
+assert.ok(wiloProducts.filter(product => product.images.length > 1).length >= 898, "Wilo multi-image gallery coverage changed");
 assert.ok(wiloProducts.every(product => product.documents.length >= 1 && product.documents.every(document => /^https:\/\/cms\.media\.wilo\.com\//.test(document.url))), "Wilo documents must use official media URLs");
 assert.ok(wiloProducts.every(product => Array.isArray(product.sourceUrls) && product.sourceUrls.length >= 4 && product.dateVerified === "2026-09-21"), "Wilo source provenance is incomplete");
 assert.ok(wiloProducts.every(product => product.manufacturerCode && product.seo?.title && product.seo?.description && product.technicalDetails.length >= 20), "Wilo commerce metadata is incomplete");

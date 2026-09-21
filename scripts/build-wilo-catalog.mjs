@@ -239,26 +239,51 @@ async function mapLimit(items, limit, worker) {
   return result;
 }
 
-async function localizeImage(sourceUrl, seriesSlug) {
-  if (!sourceUrl) return { local: "", source: "" };
-  const hash = crypto.createHash("sha1").update(sourceUrl).digest("hex").slice(0, 10);
-  const fileName = `${slugify(seriesSlug)}-${hash}.webp`;
-  const target = path.join(MEDIA_DIR, fileName);
-  try { await fs.access(target); return { local: `/assets/products/wilo/series/${fileName}`, source: sourceUrl }; } catch {}
-  const response = await fetch(sourceUrl);
-  if (!response.ok) throw new Error(`Image ${response.status}: ${sourceUrl}`);
-  const input = Buffer.from(await response.arrayBuffer());
-  await fs.mkdir(MEDIA_DIR, { recursive: true });
-  await sharp(input).resize({ width: 960, height: 960, fit: "inside", withoutEnlargement: true }).webp({ quality: 84 }).toFile(target);
-  return { local: `/assets/products/wilo/series/${fileName}`, source: sourceUrl };
+const localizedImages = new Map();
+
+function highestResolutionImageUrl(sourceUrl) {
+  return sourceUrl.replace(/_\d+(\.(?:png|jpe?g|webp))$/i, "_5$1");
 }
 
-function seriesImage(detail) {
+function mediaFileStem(sourceUrl) {
+  const fileName = new URL(sourceUrl).pathname.split("/").pop() || "wilo-image";
+  return slugify(fileName.replace(/_\d+\.(?:png|jpe?g|webp)$/i, "")) || "wilo-image";
+}
+
+async function localizeImage(sourceUrl) {
+  if (!sourceUrl) return { local: "", source: "" };
+  const preferredUrl = highestResolutionImageUrl(sourceUrl);
+  if (localizedImages.has(preferredUrl)) return localizedImages.get(preferredUrl);
+  const task = (async () => {
+    const hash = crypto.createHash("sha1").update(preferredUrl).digest("hex").slice(0, 10);
+    const fileName = `${mediaFileStem(preferredUrl)}-${hash}.webp`;
+    const target = path.join(MEDIA_DIR, fileName);
+    const local = `/assets/products/wilo/series/${fileName}`;
+    try { await fs.access(target); return { local, source: preferredUrl, original: sourceUrl }; } catch {}
+    let response = await fetch(preferredUrl);
+    let resolvedSource = preferredUrl;
+    if (!response.ok && preferredUrl !== sourceUrl) {
+      response = await fetch(sourceUrl);
+      resolvedSource = sourceUrl;
+    }
+    if (!response.ok) throw new Error(`Image ${response.status}: ${sourceUrl}`);
+    const input = Buffer.from(await response.arrayBuffer());
+    await fs.mkdir(MEDIA_DIR, { recursive: true });
+    await sharp(input)
+      .resize({ width: 1280, height: 1280, fit: "inside", withoutEnlargement: true })
+      .webp({ quality: 90, alphaQuality: 95, effort: 6 })
+      .toFile(target);
+    return { local, source: resolvedSource, original: sourceUrl };
+  })();
+  localizedImages.set(preferredUrl, task);
+  return task;
+}
+
+function seriesImageSources(detail) {
   const media = mediaEntries(detail);
-  return media.find(item => /graphic_data_product_photo_beauty/i.test(item.cod))?.url
-    || media.find(item => /graphic_data_product_photo_select/i.test(item.cod))?.url
-    || media.find(item => /\.(?:png|jpe?g|webp)$/i.test(item.url))?.url
-    || "";
+  const preferred = media.filter(item => /graphic_data_(?:product_photo_beauty|picture_with_bubbles|product_in_application_picture)/i.test(item.cod));
+  const fallback = media.filter(item => /graphic_data_product_photo_select/i.test(item.cod));
+  return [...new Set((preferred.length ? preferred : fallback).map(item => item.url).filter(Boolean))];
 }
 
 function makeDescription(model, classification, applications) {
@@ -274,8 +299,10 @@ async function main() {
     const list = await fetchJson(`${API}/list?conf=${node.nodeName}&cursor=0&limit=2000&rcco=ua&lcda=uk`, path.join(CACHE_DIR, `list-${node.nodeName}.json`));
     const detail = await fetchJson(`${API}/detail?conf=${node.nodeName}&rcco=ua&lcda=uk`, path.join(CACHE_DIR, `series-${node.nodeName}.json`));
     const listImage = (node.values || []).find(value => /https?:\/\/[^\s]+\.(?:png|jpe?g|webp)(?:$|\?)/i.test(value.desc || ""))?.desc || "";
-    const image = await localizeImage(seriesImage(detail.result) || listImage, node.meta?.slug || node.desc);
-    return { node, list: list.result, detail: detail.result, image };
+    const sourceImages = seriesImageSources(detail.result);
+    if (!sourceImages.length && listImage) sourceImages.push(listImage);
+    const images = await Promise.all(sourceImages.map(localizeImage));
+    return { node, list: list.result, detail: detail.result, images };
   });
   const jobs = seriesRecords.flatMap(series => (series.list.nodes || []).map(product => ({ series, product })));
   const products = (await mapLimit(jobs, 18, async ({ series, product }) => {
@@ -286,16 +313,31 @@ async function main() {
     const detail = response.result;
     const specs = technicalDetails(detail);
     const docs = selectDocuments(detail);
-    const dimensionSource = mediaEntries(detail).find(item => /dimdrawing|dimension/i.test(item.cod))?.url || "";
-    const dimensionImage = dimensionSource ? await localizeImage(dimensionSource, `${series.node.meta.slug}-${product.cod}-dimensions`) : { local: "", source: "" };
+    const media = mediaEntries(detail);
+    const productSources = [...new Set(media.filter(item => /graphic_data_product_photo_select/i.test(item.cod)).map(item => item.url).filter(Boolean))];
+    const dimensionSources = [...new Set(media.filter(item => /graphic_data_(?:dimdrawing|dimension)/i.test(item.cod)).map(item => item.url).filter(Boolean))];
+    const wiringSources = [...new Set(media.filter(item => /graphic_data_wiring/i.test(item.cod)).map(item => item.url).filter(Boolean))];
+    const [productImages, dimensionImages, wiringImages] = await Promise.all([
+      Promise.all(productSources.map(localizeImage)),
+      Promise.all(dimensionSources.map(localizeImage)),
+      Promise.all(wiringSources.map(localizeImage))
+    ]);
     const manufacturerUrl = `${CATALOG}/${series.node.meta.slug}/${product.meta.slug}`;
     const seriesUrl = `${CATALOG}/${series.node.meta.slug}`;
     const title = `Насос Wilo ${clean(product.desc)}`;
     const description = makeDescription(clean(product.desc), classification, applications);
     const documents = [docs.manual, docs.datasheet, docs.certificate].filter(Boolean).map(item => ({ type: "PDF", title: item.title || item.subcategory || "Документ Wilo", language: item.language === "uk" ? "Українська" : "", url: item.url }));
     const ean = specs.find(([label]) => /EAN/i.test(label))?.[1] || "";
-    const sources = [...new Set([manufacturerUrl, seriesUrl, series.image.source, dimensionImage.source, ...documents.map(item => item.url)].filter(Boolean))];
-    const gallery = [series.image.local, dimensionImage.local].filter(Boolean);
+    const imageAssets = [
+      ...productImages.map(item => ({ ...item, type: "product" })),
+      ...series.images.map(item => ({ ...item, type: "series" })),
+      ...dimensionImages.map(item => ({ ...item, type: "dimensions" })),
+      ...wiringImages.map(item => ({ ...item, type: "wiring" }))
+    ].filter((item, index, items) => item.local && items.findIndex(candidate => candidate.local === item.local) === index);
+    const primaryImage = productImages[0] || series.images[0] || { local: "", source: "" };
+    const dimensionImage = dimensionImages[0] || { local: "", source: "" };
+    const gallery = imageAssets.map(item => item.local);
+    const sources = [...new Set([manufacturerUrl, seriesUrl, ...imageAssets.flatMap(item => [item.source, item.original]), ...documents.map(item => item.url)].filter(Boolean))];
     return {
       id: String(product.cod), sku: String(product.cod), manufacturerCode: String(product.cod), manufacturer_code: String(product.cod),
       ean, EAN: ean, brand: "Wilo", category: classification.category, sourceCategoryId: classification.sourceCategoryId,
@@ -309,9 +351,10 @@ async function main() {
       ],
       keyFeatures: keyFeatures(specs, classification), key_features: keyFeatures(specs, classification), applications, compatibility: "",
       technicalDetails: specs, features: normalizedFeatures(detail, classification), attributes: [],
-      image: series.image.local, mainImage: series.image.local, main_image: series.image.local,
+      image: primaryImage.local, mainImage: primaryImage.local, main_image: primaryImage.local,
       images: gallery, galleryImages: gallery, gallery_images: gallery,
-      dimensionDiagram: dimensionImage.local, dimension_diagram: dimensionImage.local, imageSourceUrl: series.image.source, image_source_url: series.image.source,
+      dimensionDiagram: dimensionImage.local, dimension_diagram: dimensionImage.local, imageSourceUrl: primaryImage.source, image_source_url: primaryImage.source,
+      imageSources: imageAssets, image_sources: imageAssets,
       documents, manualPdf: docs.manual?.url || "", manual_pdf: docs.manual?.url || "",
       datasheetPdf: docs.datasheet?.url || "", datasheet_pdf: docs.datasheet?.url || "",
       certificatePdf: docs.certificate?.url || "", certificate_pdf: docs.certificate?.url || "",
@@ -329,6 +372,15 @@ async function main() {
   const seriesLabels = Object.fromEntries([...new Map(products.map(product => [product.seriesId, product.series])).entries()]);
   const output = `(function(){"use strict";const PRODUCTS=${JSON.stringify(products)};window.sofievkaWiloSeriesLabels=Object.freeze(${JSON.stringify(seriesLabels)});window.sofievkaWiloProducts=Object.freeze(PRODUCTS.map(product=>Object.freeze(product)));})();\n`;
   await fs.writeFile(OUT_FILE, output);
+  const safeMediaRoot = path.resolve(ROOT, "assets", "products", "wilo");
+  const resolvedMediaDir = path.resolve(MEDIA_DIR);
+  if (!resolvedMediaDir.startsWith(`${safeMediaRoot}${path.sep}`)) throw new Error(`Unsafe media cleanup path: ${resolvedMediaDir}`);
+  const referencedMedia = new Set(products.flatMap(product => product.images).map(image => path.basename(image)));
+  for (const entry of await fs.readdir(MEDIA_DIR, { withFileTypes: true })) {
+    if (entry.isFile() && entry.name.endsWith(".webp") && !referencedMedia.has(entry.name)) {
+      await fs.unlink(path.join(MEDIA_DIR, entry.name));
+    }
+  }
   const report = {
     verifiedOn: VERIFIED_ON,
     officialSegment: "Одно- та двоквартирні будинки",
