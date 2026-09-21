@@ -47,11 +47,16 @@
       "termojet-dodatkove": freezeMapping({ categoryId: "heating-components", tags: ["additional"], mappingStatus: "review" })
     }),
     wilo: Object.freeze({
-      "wilo-circulation": freezeMapping({ categoryId: "circulation-pumps", seriesId: "wilo-yonos-pico1-0" }),
-      "wilo-dhw-circulation": freezeMapping({ categoryId: "circulation-pumps", seriesId: "wilo-star-z-nova" }),
-      "wilo-system-circulation": freezeMapping({ categoryId: "circulation-pumps", seriesId: "wilo-stratos-maxo" }),
-      "wilo-multistage": freezeMapping({ categoryId: "multistage-pumps", seriesId: "wilo-himulti-3" }),
-      "wilo-drainage": freezeMapping({ categoryId: "drainage-pumps", seriesId: "wilo-drain-tm-32" })
+      "wilo-circulation": freezeMapping({ categoryId: "circulation-pumps" }),
+      "wilo-dhw-circulation": freezeMapping({ categoryId: "circulation-pumps" }),
+      "wilo-system-circulation": freezeMapping({ categoryId: "circulation-pumps" }),
+      "wilo-multistage": freezeMapping({ categoryId: "multistage-pumps" }),
+      "wilo-drainage": freezeMapping({ categoryId: "drainage-pumps" }),
+      "wilo-borehole": freezeMapping({ categoryId: "borehole-pumps" }),
+      "wilo-surface": freezeMapping({ categoryId: "surface-pumps" }),
+      "wilo-pressure": freezeMapping({ categoryId: "pressure-boosting" }),
+      "wilo-sewage": freezeMapping({ categoryId: "sewage-pumps" }),
+      "wilo-lifting": freezeMapping({ categoryId: "sewage-lifting-units" })
     })
   });
 

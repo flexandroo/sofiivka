@@ -178,6 +178,11 @@
     },
     { id: "multistage-pumps", slug: "multistage-pumps", parentId: "water-pumps", level: 3, title: "Багатоступеневі насоси", shortTitle: "Багатоступеневі", description: "Горизонтальні багатоступеневі насоси для водопостачання та поливу.", order: 321, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "powerKw", "selfPriming", "connection", "pressureBar", "voltage"], seo: { title: "Багатоступеневі насоси | ТД «Софіївка»", description: "Багатоступеневі насоси для приватного водопостачання, поливу та використання дощової води." } },
     { id: "drainage-pumps", slug: "drainage-pumps", parentId: "water-pumps", level: 3, title: "Дренажні насоси", shortTitle: "Дренажні", description: "Занурювальні насоси для відведення стічної та забрудненої води без фекалій.", order: 322, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "powerKw", "freePassageMm", "maxImmersionDepthM", "floatSwitch", "connection", "protectionClass"], seo: { title: "Дренажні насоси | ТД «Софіївка»", description: "Дренажні занурювальні насоси для відведення стічної та забрудненої води." } },
+    { id: "borehole-pumps", slug: "borehole-pumps", parentId: "water-pumps", level: 3, title: "Свердловинні насоси", shortTitle: "Свердловинні", description: "Занурювальні насоси та комплектні системи для подачі води зі свердловин і колодязів.", order: 323, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "headM", "flowM3h", "powerKw", "connection", "voltage", "protectionClass"], seo: { title: "Свердловинні насоси | ТД «Софіївка»", description: "Свердловинні насоси Wilo для приватного водопостачання, поливу та зрошення." } },
+    { id: "surface-pumps", slug: "surface-pumps", parentId: "water-pumps", level: 3, title: "Поверхневі насоси", shortTitle: "Поверхневі", description: "Поверхневі насоси для приватного водопостачання, поливу та використання дощової води.", order: 324, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "headM", "flowM3h", "powerKw", "selfPriming", "connection", "pressureBar", "voltage"], seo: { title: "Поверхневі насоси | ТД «Софіївка»", description: "Поверхневі насоси Wilo для будинку, поливу й автоматичної подачі води." } },
+    { id: "pressure-boosting", slug: "pressure-boosting", parentId: "water-pumps", level: 3, title: "Підвищення тиску", shortTitle: "Підвищення тиску", description: "Насоси та комплектні установки для стабілізації тиску в приватних системах водопостачання.", order: 325, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "headM", "flowM3h", "powerKw", "connection", "pressureBar", "voltage", "control"], seo: { title: "Насоси підвищення тиску | ТД «Софіївка»", description: "Насоси й установки Wilo для підвищення тиску у водопостачанні будинку." } },
+    { id: "sewage-pumps", slug: "sewage-pumps", parentId: "water-pumps", level: 3, title: "Каналізаційні насоси", shortTitle: "Каналізаційні", description: "Занурювальні насоси для перекачування забруднених і стічних вод.", order: 326, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "headM", "flowM3h", "powerKw", "freePassageMm", "maxImmersionDepthM", "connection", "protectionClass"], seo: { title: "Каналізаційні насоси | ТД «Софіївка»", description: "Каналізаційні насоси Wilo для відведення стічних і забруднених вод." } },
+    { id: "sewage-lifting-units", slug: "sewage-lifting-units", parentId: "water-pumps", level: 3, title: "Каналізаційні установки", shortTitle: "Каналізаційні установки", description: "Готові напірні установки для відведення стічних вод із санітарних вузлів і будівель.", order: 327, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "headM", "flowM3h", "powerKw", "volumeL", "connection", "voltage", "control"], seo: { title: "Каналізаційні установки | ТД «Софіївка»", description: "Установки Wilo для напірного відведення стічних вод у приватних будинках." } },
     { id: "drinking-system-cartridges", slug: "drinking-system-cartridges", parentId: "water-treatment", level: 3, title: "Картриджі питних систем", shortTitle: "Картриджі питних систем", description: "Змінні елементи для питних систем очищення води.", order: 311, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "type", "format"], legacyGroup: "replacement-elements", legacyGroupTitle: "Змінні елементи", seo: {} },
     { id: "mainline-cartridges", slug: "mainline-cartridges", parentId: "water-treatment", level: 3, title: "Картриджі магістральних фільтрів", shortTitle: "Магістральні картриджі", description: "Картриджі для магістрального очищення води.", order: 312, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "purpose", "format", "waterType"], legacyGroup: "replacement-elements", legacyGroupTitle: "Змінні елементи", seo: {} },
     { id: "mainline-filters-housings", slug: "mainline-filters-housings", parentId: "water-treatment", level: 3, title: "Корпуси магістральних фільтрів", shortTitle: "Магістральні фільтри", description: "Корпуси та готові магістральні фільтри.", order: 313, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "purpose", "connection", "format", "waterType"], legacyGroup: "whole-house-treatment", legacyGroupTitle: "Очищення води для будинку", seo: {} },
@@ -324,7 +329,12 @@
     "chlorine-odor-removal": Object.freeze(["purpose", "flowM3h", "waterSource", "installation", "scope"]),
     "flow-filters": Object.freeze(["type", "purpose", "installation", "filtrationMicron"]),
     "multistage-pumps": Object.freeze(["powerKw", "selfPriming", "connection", "pressureBar", "voltage", "protectionClass"]),
-    "drainage-pumps": Object.freeze(["powerKw", "freePassageMm", "maxImmersionDepthM", "floatSwitch", "connection", "protectionClass"])
+    "drainage-pumps": Object.freeze(["powerKw", "freePassageMm", "maxImmersionDepthM", "floatSwitch", "connection", "protectionClass"]),
+    "borehole-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "connection", "voltage", "protectionClass"]),
+    "surface-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "selfPriming", "connection", "pressureBar"]),
+    "pressure-boosting": Object.freeze(["headM", "flowM3h", "powerKw", "pressureBar", "connection", "control"]),
+    "sewage-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "freePassageMm", "connection", "protectionClass"]),
+    "sewage-lifting-units": Object.freeze(["headM", "flowM3h", "powerKw", "volumeL", "connection", "control"])
   });
 
   const cardFallbackPriority = Object.freeze([
@@ -352,7 +362,12 @@
     "chlorine-odor-removal": Object.freeze(["flowM3h", "purpose", "waterSource", "installation", "scope"]),
     "flow-filters": Object.freeze(["type", "purpose", "installation", "filtrationMicron", "flowM3h"]),
     "multistage-pumps": Object.freeze(["powerKw", "pressureBar", "selfPriming", "connection", "voltage", "protectionClass"]),
-    "drainage-pumps": Object.freeze(["powerKw", "freePassageMm", "maxImmersionDepthM", "cableLengthM", "floatSwitch", "connection"])
+    "drainage-pumps": Object.freeze(["powerKw", "freePassageMm", "maxImmersionDepthM", "cableLengthM", "floatSwitch", "connection"]),
+    "borehole-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "connection", "voltage", "protectionClass"]),
+    "surface-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "selfPriming", "connection", "pressureBar"]),
+    "pressure-boosting": Object.freeze(["headM", "flowM3h", "powerKw", "pressureBar", "connection", "control"]),
+    "sewage-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "freePassageMm", "maxImmersionDepthM", "connection"]),
+    "sewage-lifting-units": Object.freeze(["headM", "flowM3h", "powerKw", "volumeL", "connection", "control"])
   });
 
   const pdpFallbackPriority = Object.freeze([
@@ -394,7 +409,8 @@
     "wilo-star-z-nova": "Star-Z NOVA",
     "wilo-himulti-3": "HiMulti 3",
     "wilo-drain-tm-32": "Drain TM/TMW/TMR 32",
-    "wilo-stratos-maxo": "Stratos MAXO"
+    "wilo-stratos-maxo": "Stratos MAXO",
+    ...(window.sofievkaWiloSeriesLabels || {})
   });
 
   window.sofievkaAttributeSchema = Object.freeze({ definitions, valueLabels, cardPriorityByCategory, cardFallbackPriority, pdpPriorityByCategory, pdpFallbackPriority, cardAttributeLabels, seriesLabels });
@@ -449,11 +465,16 @@
       "termojet-dodatkove": freezeMapping({ categoryId: "heating-components", tags: ["additional"], mappingStatus: "review" })
     }),
     wilo: Object.freeze({
-      "wilo-circulation": freezeMapping({ categoryId: "circulation-pumps", seriesId: "wilo-yonos-pico1-0" }),
-      "wilo-dhw-circulation": freezeMapping({ categoryId: "circulation-pumps", seriesId: "wilo-star-z-nova" }),
-      "wilo-system-circulation": freezeMapping({ categoryId: "circulation-pumps", seriesId: "wilo-stratos-maxo" }),
-      "wilo-multistage": freezeMapping({ categoryId: "multistage-pumps", seriesId: "wilo-himulti-3" }),
-      "wilo-drainage": freezeMapping({ categoryId: "drainage-pumps", seriesId: "wilo-drain-tm-32" })
+      "wilo-circulation": freezeMapping({ categoryId: "circulation-pumps" }),
+      "wilo-dhw-circulation": freezeMapping({ categoryId: "circulation-pumps" }),
+      "wilo-system-circulation": freezeMapping({ categoryId: "circulation-pumps" }),
+      "wilo-multistage": freezeMapping({ categoryId: "multistage-pumps" }),
+      "wilo-drainage": freezeMapping({ categoryId: "drainage-pumps" }),
+      "wilo-borehole": freezeMapping({ categoryId: "borehole-pumps" }),
+      "wilo-surface": freezeMapping({ categoryId: "surface-pumps" }),
+      "wilo-pressure": freezeMapping({ categoryId: "pressure-boosting" }),
+      "wilo-sewage": freezeMapping({ categoryId: "sewage-pumps" }),
+      "wilo-lifting": freezeMapping({ categoryId: "sewage-lifting-units" })
     })
   });
 
@@ -825,7 +846,7 @@
       sku: product.sku,
       slug: slugify(product.slug || product.link?.split("/").filter(Boolean).pop() || product.id),
       model: product.model || product.title,
-      seriesId: mapping.seriesId,
+      seriesId: mapping.seriesId || product.seriesId || null,
       brandId,
       primaryCategoryId: category.id,
       secondaryCategoryIds: Object.freeze(Array.isArray(product.secondaryCategoryIds) ? [...product.secondaryCategoryIds] : []),

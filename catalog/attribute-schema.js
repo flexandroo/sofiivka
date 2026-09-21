@@ -98,7 +98,12 @@
     "chlorine-odor-removal": Object.freeze(["purpose", "flowM3h", "waterSource", "installation", "scope"]),
     "flow-filters": Object.freeze(["type", "purpose", "installation", "filtrationMicron"]),
     "multistage-pumps": Object.freeze(["powerKw", "selfPriming", "connection", "pressureBar", "voltage", "protectionClass"]),
-    "drainage-pumps": Object.freeze(["powerKw", "freePassageMm", "maxImmersionDepthM", "floatSwitch", "connection", "protectionClass"])
+    "drainage-pumps": Object.freeze(["powerKw", "freePassageMm", "maxImmersionDepthM", "floatSwitch", "connection", "protectionClass"]),
+    "borehole-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "connection", "voltage", "protectionClass"]),
+    "surface-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "selfPriming", "connection", "pressureBar"]),
+    "pressure-boosting": Object.freeze(["headM", "flowM3h", "powerKw", "pressureBar", "connection", "control"]),
+    "sewage-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "freePassageMm", "connection", "protectionClass"]),
+    "sewage-lifting-units": Object.freeze(["headM", "flowM3h", "powerKw", "volumeL", "connection", "control"])
   });
 
   const cardFallbackPriority = Object.freeze([
@@ -126,7 +131,12 @@
     "chlorine-odor-removal": Object.freeze(["flowM3h", "purpose", "waterSource", "installation", "scope"]),
     "flow-filters": Object.freeze(["type", "purpose", "installation", "filtrationMicron", "flowM3h"]),
     "multistage-pumps": Object.freeze(["powerKw", "pressureBar", "selfPriming", "connection", "voltage", "protectionClass"]),
-    "drainage-pumps": Object.freeze(["powerKw", "freePassageMm", "maxImmersionDepthM", "cableLengthM", "floatSwitch", "connection"])
+    "drainage-pumps": Object.freeze(["powerKw", "freePassageMm", "maxImmersionDepthM", "cableLengthM", "floatSwitch", "connection"]),
+    "borehole-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "connection", "voltage", "protectionClass"]),
+    "surface-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "selfPriming", "connection", "pressureBar"]),
+    "pressure-boosting": Object.freeze(["headM", "flowM3h", "powerKw", "pressureBar", "connection", "control"]),
+    "sewage-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "freePassageMm", "maxImmersionDepthM", "connection"]),
+    "sewage-lifting-units": Object.freeze(["headM", "flowM3h", "powerKw", "volumeL", "connection", "control"])
   });
 
   const pdpFallbackPriority = Object.freeze([
@@ -168,7 +178,8 @@
     "wilo-star-z-nova": "Star-Z NOVA",
     "wilo-himulti-3": "HiMulti 3",
     "wilo-drain-tm-32": "Drain TM/TMW/TMR 32",
-    "wilo-stratos-maxo": "Stratos MAXO"
+    "wilo-stratos-maxo": "Stratos MAXO",
+    ...(window.sofievkaWiloSeriesLabels || {})
   });
 
   window.sofievkaAttributeSchema = Object.freeze({ definitions, valueLabels, cardPriorityByCategory, cardFallbackPriority, pdpPriorityByCategory, pdpFallbackPriority, cardAttributeLabels, seriesLabels });

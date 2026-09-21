@@ -63,17 +63,17 @@ routeCheck(routing.resolveLocation("/catalog", "?category=water", "catalog").red
 routeCheck(routing.resolveLocation("/catalog/water-treatment", "", "catalog").redirectTo === "/catalog/water-supply/water-treatment", "legacy water root must canonicalize");
 routeCheck(routing.resolveLocation("/catalog/water-treatment/reverse-osmosis", "", "catalog").redirectTo === "/catalog/water-supply/water-treatment/reverse-osmosis", "legacy water category must canonicalize");
 
-assert.equal(routingAssertions, 85, "taxonomy/route regression suite must retain 85 checks");
+assert.equal(routingAssertions, 100, "taxonomy/route regression suite must retain 100 checks");
 
-assert.equal(products.length, 543, "catalog must contain 543 products");
+assert.equal(products.length, 1539, "catalog must contain 1539 products");
 assert.equal(state.sofievkaNormalizationReport.waterSourceCount, 176, "water product count changed");
 assert.equal(state.sofievkaNormalizationReport.heatingSourceCount, 343, "Termojet product count changed");
-assert.equal(state.sofievkaNormalizationReport.wiloSourceCount, 24, "Wilo product count changed");
+assert.equal(state.sofievkaNormalizationReport.wiloSourceCount, 1020, "Wilo product count changed");
 assert.equal(state.sofievkaNormalizationReport.normalizationErrors.length, 0, "catalog validation errors found");
 assert.equal(new Set(products.map(product => product.id)).size, products.length, "product IDs must be unique");
 
 const productIdHash = crypto.createHash("sha256").update(products.map(product => product.id).sort().join("\n")).digest("hex");
-assert.equal(productIdHash, "c5bc99b7591918f2cb2b0e8cec9c6ca6caf3e41eb57e9b12f691958ad517b695", "product IDs changed");
+assert.equal(productIdHash, "082592111e163c48f9030a69b4a7157dbab25b1332032dfc517a64a9d2e5df2c", "product IDs changed");
 
 assert.ok(catalog.brands.every(brand => catalog.brandUrl(brand.id) === `/brands/${brand.slug}`), "brand URLs must be canonical");
 
@@ -103,19 +103,21 @@ const auditedSaleProduct = products.find(product => product.id === "termojet-new
 assert.ok(auditedSaleProduct && auditedSaleProduct.type !== "Акція", "sale collection must not replace the equipment type");
 
 const wiloProducts = products.filter(product => product.brandId === "wilo");
-assert.equal(wiloProducts.length, 24, "Wilo pilot must retain 24 SKU");
+assert.equal(wiloProducts.length, 1020, "Wilo domestic catalog must retain 1020 SKU");
+assert.equal(new Set(wiloProducts.map(product => product.seriesId)).size, 56, "Wilo domestic catalog must retain 56 active series");
 assert.ok(wiloProducts.every(product => product.manufacturerUrl?.startsWith("https://wilo.com/ua/uk/")), "every Wilo SKU must retain its official manufacturer URL");
-assert.ok(wiloProducts.every(product => product.images.length === 2 && product.images.every(image => image.startsWith("/assets/products/wilo/"))), "Wilo product images must be local");
-assert.ok(wiloProducts.every(product => product.documents.length >= 1 && product.documents.every(document => document.url.startsWith("/assets/products/wilo/documents/"))), "Wilo documents must be local");
+assert.ok(wiloProducts.every(product => product.images.length >= 1 && product.images.every(image => image.startsWith("/assets/products/wilo/"))), "Wilo product images must be local");
+assert.ok(wiloProducts.every(product => product.documents.length >= 1 && product.documents.every(document => /^https:\/\/cms\.media\.wilo\.com\//.test(document.url))), "Wilo documents must use official media URLs");
 assert.ok(wiloProducts.every(product => Array.isArray(product.sourceUrls) && product.sourceUrls.length >= 4 && product.dateVerified === "2026-09-21"), "Wilo source provenance is incomplete");
-assert.ok(wiloProducts.every(product => product.ean && product.manufacturerCode && product.seo?.title && product.seo?.description), "Wilo commerce metadata is incomplete");
+assert.ok(wiloProducts.every(product => product.manufacturerCode && product.seo?.title && product.seo?.description && product.technicalDetails.length >= 20), "Wilo commerce metadata is incomplete");
+assert.equal(wiloProducts.filter(product => product.ean).length, 1019, "confirmed Wilo EAN coverage changed");
 
 const reviewMappings = products.filter(product => product.source?.mappingStatus === "review").length;
 const unmappedAttributeProducts = products.filter(product => product.unmappedAttributes?.length).length;
 const brandsWithProducts = new Set(products.map(product => product.brandId));
 const brandsWithoutProducts = catalog.brands.filter(brand => !brandsWithProducts.has(brand.id)).length;
 assert.equal(reviewMappings, 29, "review mapping debt changed unexpectedly");
-assert.equal(unmappedAttributeProducts, 434, "unmapped attribute debt changed unexpectedly");
+assert.equal(unmappedAttributeProducts, 1430, "unmapped attribute debt changed unexpectedly");
 
 const shellSource = fs.readFileSync(path.join(projectRoot, "page-shell.js"), "utf8");
 const uiSource = fs.readFileSync(path.join(projectRoot, "catalog-ui.js"), "utf8");

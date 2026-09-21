@@ -306,7 +306,7 @@
       sku: product.sku,
       slug: slugify(product.slug || product.link?.split("/").filter(Boolean).pop() || product.id),
       model: product.model || product.title,
-      seriesId: mapping.seriesId,
+      seriesId: mapping.seriesId || product.seriesId || null,
       brandId,
       primaryCategoryId: category.id,
       secondaryCategoryIds: Object.freeze(Array.isArray(product.secondaryCategoryIds) ? [...product.secondaryCategoryIds] : []),
