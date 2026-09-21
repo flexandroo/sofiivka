@@ -12,7 +12,7 @@
 - FOCUS: https://www.focus-creation.com/ (asset з офіційного сайту)
 - Giacomini: https://www.giacomini.com/ (asset з офіційного сайту)
 - Gorenje: https://commons.wikimedia.org/wiki/File:Gorenje_logo_2024.svg
-- Grundfos: https://commons.wikimedia.org/wiki/File:Логотип_Grundfos.jpg
+- Grundfos: https://product-selection.grundfos.com/etc.clientlibs/settings/wcm/design/aembase/head/resources/img/grundfos/logo.svg (офіційний asset Grundfos Product Center; локальна синя підкладка додана для контрасту білого логотипа)
 - LAFAT: https://lafatgroup.com/ (asset з офіційного сайту)
 - Mario: https://mario.ua/ (asset з офіційного сайту)
 - REHAU: https://commons.wikimedia.org/wiki/File:REHAU_Logo_sRGB_01.svg

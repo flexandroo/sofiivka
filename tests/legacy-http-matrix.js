@@ -17,6 +17,7 @@ for (const file of [
   "water-catalog-data.js",
   "termojet-products-data.js",
   "wilo-products-data.js",
+  "grundfos-products-data.js",
   "catalog-data.js"
 ]) {
   vm.runInContext(fs.readFileSync(path.join(projectRoot, file), "utf8"), context, { filename: file });

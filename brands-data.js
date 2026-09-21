@@ -107,7 +107,7 @@ window.sofievkaBrands = Object.freeze([
   {
     slug: "grundfos",
     name: "Grundfos",
-    logo: "assets/brands/grundfos.jpg",
+    logo: "assets/brands/grundfos.svg",
     description: "Насосне обладнання для опалення, циркуляції, водопостачання та підвищення тиску.",
     type: "catalog",
     featured: true,

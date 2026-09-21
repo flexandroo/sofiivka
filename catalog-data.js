@@ -410,7 +410,8 @@
     "wilo-himulti-3": "HiMulti 3",
     "wilo-drain-tm-32": "Drain TM/TMW/TMR 32",
     "wilo-stratos-maxo": "Stratos MAXO",
-    ...(window.sofievkaWiloSeriesLabels || {})
+    ...(window.sofievkaWiloSeriesLabels || {}),
+    ...(window.sofievkaGrundfosSeriesLabels || {})
   });
 
   window.sofievkaAttributeSchema = Object.freeze({ definitions, valueLabels, cardPriorityByCategory, cardFallbackPriority, pdpPriorityByCategory, pdpFallbackPriority, cardAttributeLabels, seriesLabels });
@@ -433,7 +434,8 @@
   const suppliers = Object.freeze({
     ecosoft: Object.freeze({ id: "ecosoft", brandId: "ecosoft", sourceName: "Каталог товарів" }),
     termojet: Object.freeze({ id: "termojet", brandId: "termojet", sourceName: "Termojet XML catalog", imageOrigin: "https://termojet.com.ua" }),
-    wilo: Object.freeze({ id: "wilo", brandId: "wilo", sourceName: "Офіційний каталог Wilo Україна" })
+    wilo: Object.freeze({ id: "wilo", brandId: "wilo", sourceName: "Офіційний каталог Wilo Україна" }),
+    grundfos: Object.freeze({ id: "grundfos", brandId: "grundfos", sourceName: "Офіційний каталог Grundfos Україна" })
   });
 
   const categoryMappings = Object.freeze({
@@ -475,6 +477,15 @@
       "wilo-pressure": freezeMapping({ categoryId: "pressure-boosting" }),
       "wilo-sewage": freezeMapping({ categoryId: "sewage-pumps" }),
       "wilo-lifting": freezeMapping({ categoryId: "sewage-lifting-units" })
+    }),
+    grundfos: Object.freeze({
+      "grundfos-circulation": freezeMapping({ categoryId: "circulation-pumps" }),
+      "grundfos-dhw-circulation": freezeMapping({ categoryId: "circulation-pumps" }),
+      "grundfos-surface": freezeMapping({ categoryId: "surface-pumps" }),
+      "grundfos-pressure": freezeMapping({ categoryId: "pressure-boosting" }),
+      "grundfos-drainage": freezeMapping({ categoryId: "drainage-pumps" }),
+      "grundfos-sewage": freezeMapping({ categoryId: "sewage-pumps" }),
+      "grundfos-lifting": freezeMapping({ categoryId: "sewage-lifting-units" })
     })
   });
 
@@ -508,6 +519,7 @@
   }
 
   function supplierFor(product) {
+    if (String(product.brand || "").toLocaleLowerCase("en") === "grundfos") return "grundfos";
     if (String(product.brand || "").toLocaleLowerCase("en") === "wilo") return "wilo";
     if (String(product.brand || "").toLocaleLowerCase("en") === "ecosoft" || product.category === "water") return "ecosoft";
     if (String(product.brand || "").toLocaleLowerCase("en") === "termojet" || product.category === "heating") return "termojet";
@@ -907,16 +919,18 @@
     : (Array.isArray(window.sofievkaProducts) ? window.sofievkaProducts : []);
   const rawHeatingProducts = Array.isArray(window.sofievkaTermojetProducts) ? window.sofievkaTermojetProducts : [];
   const rawWiloProducts = Array.isArray(window.sofievkaWiloProducts) ? window.sofievkaWiloProducts : [];
-  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts]);
+  const rawGrundfosProducts = Array.isArray(window.sofievkaGrundfosProducts) ? window.sofievkaGrundfosProducts : [];
+  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts]);
 
   window.sofievkaProductNormalizer = Object.freeze({ slugify, normalizeProduct, normalizeAll });
   window.sofievkaNormalizedProducts = result.products;
   window.sofievkaNormalizationReport = Object.freeze({
-    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length,
+    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length,
     normalizedCount: result.products.length,
     waterSourceCount: rawWaterProducts.length,
     heatingSourceCount: rawHeatingProducts.length,
     wiloSourceCount: rawWiloProducts.length,
+    grundfosSourceCount: rawGrundfosProducts.length,
     duplicateInputIds: result.duplicateInputIds,
     adjustedSlugs: result.adjustedSlugs,
     normalizationErrors: Object.freeze(result.products.filter(product => product.normalizationError).map(product => Object.freeze({ id: product.id, error: product.normalizationError })))
