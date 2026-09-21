@@ -211,7 +211,9 @@ window.sofievkaBrands = Object.freeze([
   {
     slug: "tech",
     name: "TECH",
-    description: "Контролери, термостати й комплектуючі для автоматизації котелень та опалювальних контурів.",
+    aliases: ["TECH Controllers", "TECH Sterowniki", "Sinum"],
+    logo: "assets/brands/tech.webp",
+    description: "Контролери, кімнатні термостати, зональне керування, система автоматизації Sinum, датчики та комплектуючі.",
     type: "catalog",
     featured: false
   },

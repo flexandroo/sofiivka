@@ -132,7 +132,7 @@
       order: 140,
       status: "active",
       visibility: "catalog",
-      allowedFacetIds: ["productType", "type", "voltage", "control", "temperature"],
+      allowedFacetIds: ["productType", "type", "control", "communication", "zones", "installation", "voltage", "protectionClass", "temperature"],
       seo: { title: "Автоматика й термостати | ТД «Софіївка»", description: "Автоматика, контролери та термостати для систем опалення." }
     },
     {
@@ -160,7 +160,7 @@
       order: 160,
       status: "active",
       visibility: "catalog",
-      allowedFacetIds: ["productType", "type", "connection", "material", "pressureBar"],
+      allowedFacetIds: ["productType", "type", "compatibility", "communication", "installation", "voltage", "protectionClass", "connection", "material", "pressureBar"],
       seo: { title: "Комплектуючі для опалення | ТД «Софіївка»", description: "Комплектуючі та модульні рішення для систем опалення." }
     },
     {
@@ -315,6 +315,8 @@
     material: define("material", { label: "Матеріал", rank: 19, aliases: [/^матеріал корпусу$/i, /^матеріал$/i, /^материал$/i] }),
     voltage: define("voltage", { label: "Живлення", rank: 20, aliases: [/^напруга$/i, /^живлення$/i, /^привід\s*\/\s*напруга$/i, /^напряжение$/i] }),
     control: define("control", { label: "Тип керування", rank: 21, aliases: [/^керування$/i, /^управління$/i, /^управление$/i, /^тип керування$/i] }),
+    communication: define("communication", { label: "Спосіб зв’язку", rank: 21.1, aliases: [/^комунікація$/i, /^спосіб зв[’'`]язку$/i, /^тип зв[’'`]язку$/i, /^зв[’'`]язок$/i] }),
+    zones: define("zones", { label: "Кількість зон", type: "number", rank: 21.2, aliases: [/^кількість зон$/i, /^зони$/i, /^кількість приміщень$/i] }),
     temperature: define("temperature", { label: "Температурний діапазон", rank: 22, aliases: [/^діапазон температур$/i, /^температура рідини$/i, /^макс\.?\s*температура$/i, /^максимальна температура$/i, /^температура$/i] }),
     eei: define("eei", { label: "Індекс енергоефективності EEI", rank: 22.1, aliases: [/^індекс енергетичної ефективності(?: \(eei\))?$/i, /^eei$/i] }),
     selfPriming: define("selfPriming", { label: "Самовсмоктування", rank: 22.2, aliases: [/^самовсмоктувальне виконання$/i] }),
@@ -352,9 +354,9 @@
     "circulation-pumps": Object.freeze(["headM", "flowM3h", "mountingLengthMm", "connection", "diameter", "powerKw"]),
     "underfloor-heating": Object.freeze(["diameter", "connection", "material", "pressureBar", "temperature", "outlets"]),
     "distribution-hydraulics": Object.freeze(["flowM3h", "heatOutputKw", "outlets", "connection", "diameter", "pressureBar", "mountingLengthMm"]),
-    automation: Object.freeze(["control", "voltage", "protectionClass", "compatibility", "temperature", "outlets"]),
+    automation: Object.freeze(["productType", "control", "communication", "zones", "installation", "voltage"]),
     valves: Object.freeze(["diameter", "connection", "kvs", "pressureBar", "control", "material", "temperature"]),
-    "heating-components": Object.freeze(["connection", "diameter", "diameterMm", "mountingLengthMm", "compatibility", "material", "pressureBar"]),
+    "heating-components": Object.freeze(["productType", "compatibility", "communication", "installation", "voltage", "protectionClass"]),
     "reverse-osmosis": Object.freeze(["capacityLh", "pump", "mineralizer", "flowType", "installation", "technology"]),
     "drinking-system-cartridges": Object.freeze(["purpose", "type", "filtrationMicron", "compatibility", "mineralizer"]),
     "mainline-cartridges": Object.freeze(["purpose", "type", "filtrationMicron", "format", "compatibility"]),
@@ -383,7 +385,7 @@
   const cardFallbackPriority = Object.freeze([
     "purpose", "type", "technology", "capacityLh", "flowM3h", "headM", "kvs", "powerKw", "heatOutputKw",
     "connection", "diameter", "diameterMm", "mountingLengthMm", "pressureBar", "filtrationMicron", "material",
-    "control", "voltage", "protectionClass", "compatibility", "waterSource", "installation", "format", "pump",
+    "control", "communication", "zones", "voltage", "protectionClass", "compatibility", "waterSource", "installation", "format", "pump",
     "mineralizer", "flowType", "scope", "volumeL", "weightKg", "capacityKgh", "rotationRpm", "widthMm", "heightMm", "depthMm", "dimensions", "eei", "selfPriming", "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "productType"
   ]);
 
@@ -391,9 +393,9 @@
     "circulation-pumps": Object.freeze(["headM", "flowM3h", "mountingLengthMm", "connection", "powerKw", "control"]),
     "underfloor-heating": Object.freeze(["diameter", "connection", "outlets", "material", "pressureBar", "temperature"]),
     "distribution-hydraulics": Object.freeze(["flowM3h", "heatOutputKw", "outlets", "connection", "diameter", "pressureBar"]),
-    automation: Object.freeze(["control", "voltage", "protectionClass", "compatibility", "temperature", "outlets"]),
+    automation: Object.freeze(["productType", "control", "communication", "zones", "installation", "voltage", "protectionClass", "temperature"]),
     valves: Object.freeze(["diameter", "kvs", "pressureBar", "connection", "material", "control"]),
-    "heating-components": Object.freeze(["connection", "diameter", "pressureBar", "temperature", "material", "compatibility"]),
+    "heating-components": Object.freeze(["productType", "compatibility", "communication", "installation", "voltage", "protectionClass"]),
     "reverse-osmosis": Object.freeze(["capacityLh", "pump", "mineralizer", "flowType", "installation", "technology"]),
     "drinking-system-cartridges": Object.freeze(["type", "purpose", "compatibility", "filtrationMicron", "mineralizer"]),
     "mainline-cartridges": Object.freeze(["filtrationMicron", "format", "type", "purpose", "compatibility"]),
@@ -442,6 +444,8 @@
     outlets: "Кількість виходів",
     voltage: "Живлення",
     control: "Керування",
+    communication: "Зв’язок",
+    zones: "Кількість зон",
     temperature: "Температура",
     eei: "EEI",
     selfPriming: "Самовсмоктування",
@@ -463,7 +467,8 @@
     "wilo-stratos-maxo": "Stratos MAXO",
     ...(window.sofievkaWiloSeriesLabels || {}),
     ...(window.sofievkaGrundfosSeriesLabels || {}),
-    ...(window.sofievkaTekkhausSeriesLabels || {})
+    ...(window.sofievkaTekkhausSeriesLabels || {}),
+    ...(window.sofievkaTechSeriesLabels || {})
   });
 
   window.sofievkaAttributeSchema = Object.freeze({ definitions, valueLabels, cardPriorityByCategory, cardFallbackPriority, pdpPriorityByCategory, pdpFallbackPriority, cardAttributeLabels, seriesLabels });
@@ -488,7 +493,8 @@
     termojet: Object.freeze({ id: "termojet", brandId: "termojet", sourceName: "Termojet XML catalog", imageOrigin: "https://termojet.com.ua" }),
     wilo: Object.freeze({ id: "wilo", brandId: "wilo", sourceName: "Офіційний каталог Wilo Україна" }),
     grundfos: Object.freeze({ id: "grundfos", brandId: "grundfos", sourceName: "Офіційний каталог Grundfos Україна" }),
-    tekkhaus: Object.freeze({ id: "tekkhaus", brandId: "tekk", sourceName: "Офіційний магазин TEKK HAUS" })
+    tekkhaus: Object.freeze({ id: "tekkhaus", brandId: "tekk", sourceName: "Офіційний магазин TEKK HAUS" }),
+    tech: Object.freeze({ id: "tech", brandId: "tech", sourceName: "Офіційний каталог TECH Controllers Україна" })
   });
 
   const categoryMappings = Object.freeze({
@@ -558,6 +564,11 @@
       "tekkhaus-automation": freezeMapping({ categoryId: "pump-automation" }),
       "tekkhaus-accessories": freezeMapping({ categoryId: "pump-accessories" }),
       "tekkhaus-feed-grinders": freezeMapping({ categoryId: "feed-grinders" })
+    }),
+    tech: Object.freeze({
+      "tech-automation": freezeMapping({ categoryId: "automation" }),
+      "tech-sinum": freezeMapping({ categoryId: "automation", collectionIds: ["sinum"], tags: ["sinum"] }),
+      "tech-accessories": freezeMapping({ categoryId: "heating-components" })
     })
   });
 
@@ -591,6 +602,7 @@
   }
 
   function supplierFor(product) {
+    if (String(product.brand || "").toLocaleLowerCase("en") === "tech") return "tech";
     if (String(product.brand || "").toLocaleLowerCase("en").replace(/[^a-z]/g, "") === "tekkhaus") return "tekkhaus";
     if (String(product.brand || "").toLocaleLowerCase("en") === "grundfos") return "grundfos";
     if (String(product.brand || "").toLocaleLowerCase("en") === "wilo") return "wilo";
@@ -994,18 +1006,20 @@
   const rawWiloProducts = Array.isArray(window.sofievkaWiloProducts) ? window.sofievkaWiloProducts : [];
   const rawGrundfosProducts = Array.isArray(window.sofievkaGrundfosProducts) ? window.sofievkaGrundfosProducts : [];
   const rawTekkhausProducts = Array.isArray(window.sofievkaTekkhausProducts) ? window.sofievkaTekkhausProducts : [];
-  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts]);
+  const rawTechProducts = Array.isArray(window.sofievkaTechProducts) ? window.sofievkaTechProducts : [];
+  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts, ...rawTechProducts]);
 
   window.sofievkaProductNormalizer = Object.freeze({ slugify, normalizeProduct, normalizeAll });
   window.sofievkaNormalizedProducts = result.products;
   window.sofievkaNormalizationReport = Object.freeze({
-    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length + rawTekkhausProducts.length,
+    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length + rawTekkhausProducts.length + rawTechProducts.length,
     normalizedCount: result.products.length,
     waterSourceCount: rawWaterProducts.length,
     heatingSourceCount: rawHeatingProducts.length,
     wiloSourceCount: rawWiloProducts.length,
     grundfosSourceCount: rawGrundfosProducts.length,
     tekkhausSourceCount: rawTekkhausProducts.length,
+    techSourceCount: rawTechProducts.length,
     duplicateInputIds: result.duplicateInputIds,
     adjustedSlugs: result.adjustedSlugs,
     normalizationErrors: Object.freeze(result.products.filter(product => product.normalizationError).map(product => Object.freeze({ id: product.id, error: product.normalizationError })))
@@ -1488,7 +1502,7 @@
     "compatibility", "kvs", "mountingLengthMm", "pressureBar", "heatOutputKw", "outlets", "voltage",
     "control", "protectionClass", "temperature", "capacityLh", "format", "eei", "selfPriming",
     "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "volumeL", "material", "installation",
-    "capacityKgh", "rotationRpm"
+    "capacityKgh", "rotationRpm", "communication", "zones"
   ]);
 
   const CATEGORY_ALIASES = Object.freeze({
@@ -1528,6 +1542,9 @@
     ["колектор", "колектори", "коллектор", "коллекторы"],
     ["клапан", "клапани", "клапаны"],
     ["керування", "управління", "управление"],
+    ["термостат", "терморегулятор", "регулятор температури"],
+    ["бездротовий", "бездротове", "wireless"],
+    ["дротовий", "дротове", "wired"],
     ["циркуляційний", "циркуляційні", "циркуляционный", "циркуляционные"],
     ["зворотний", "зворотній", "обратный"],
     ["матеріал", "матеріали", "материал", "материалы"],

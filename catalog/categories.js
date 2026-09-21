@@ -130,7 +130,7 @@
       order: 140,
       status: "active",
       visibility: "catalog",
-      allowedFacetIds: ["productType", "type", "voltage", "control", "temperature"],
+      allowedFacetIds: ["productType", "type", "control", "communication", "zones", "installation", "voltage", "protectionClass", "temperature"],
       seo: { title: "Автоматика й термостати | ТД «Софіївка»", description: "Автоматика, контролери та термостати для систем опалення." }
     },
     {
@@ -158,7 +158,7 @@
       order: 160,
       status: "active",
       visibility: "catalog",
-      allowedFacetIds: ["productType", "type", "connection", "material", "pressureBar"],
+      allowedFacetIds: ["productType", "type", "compatibility", "communication", "installation", "voltage", "protectionClass", "connection", "material", "pressureBar"],
       seo: { title: "Комплектуючі для опалення | ТД «Софіївка»", description: "Комплектуючі та модульні рішення для систем опалення." }
     },
     {

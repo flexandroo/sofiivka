@@ -19,6 +19,7 @@ for (const file of [
   "wilo-products-data.js",
   "grundfos-products-data.js",
   "tekkhaus-products-data.js",
+  "tech-products-data.js",
   "catalog-data.js"
 ]) {
   vm.runInContext(fs.readFileSync(path.join(projectRoot, file), "utf8"), context, { filename: file });
@@ -67,17 +68,18 @@ routeCheck(routing.resolveLocation("/catalog/water-treatment/reverse-osmosis", "
 
 assert.equal(routingAssertions, 124, "taxonomy/route regression suite must retain 124 checks");
 
-assert.equal(products.length, 1964, "catalog must contain 1964 products");
+assert.equal(products.length, 2221, "catalog must contain 2221 products");
 assert.equal(state.sofievkaNormalizationReport.waterSourceCount, 176, "water product count changed");
 assert.equal(state.sofievkaNormalizationReport.heatingSourceCount, 343, "Termojet product count changed");
 assert.equal(state.sofievkaNormalizationReport.wiloSourceCount, 1020, "Wilo product count changed");
 assert.equal(state.sofievkaNormalizationReport.grundfosSourceCount, 313, "Grundfos domestic range count changed");
 assert.equal(state.sofievkaNormalizationReport.tekkhausSourceCount, 112, "TEKK HAUS range count changed");
+assert.equal(state.sofievkaNormalizationReport.techSourceCount, 257, "TECH Controllers range count changed");
 assert.equal(state.sofievkaNormalizationReport.normalizationErrors.length, 0, "catalog validation errors found");
 assert.equal(new Set(products.map(product => product.id)).size, products.length, "product IDs must be unique");
 
 const productIdHash = crypto.createHash("sha256").update(products.map(product => product.id).sort().join("\n")).digest("hex");
-assert.equal(productIdHash, "11bab1a123f7e5a57a8a84b41094d88d4e36c2e4fecc5e435a5b94956d257562", "product IDs changed");
+assert.equal(productIdHash, "7ca014993c6304ba55089152f4e3757ace0ca8756b5d0a78d708cd27e1e9e729", "product IDs changed");
 
 assert.ok(catalog.brands.every(brand => catalog.brandUrl(brand.id) === `/brands/${brand.slug}`), "brand URLs must be canonical");
 
@@ -169,12 +171,34 @@ assert.equal(search.search("кормоподрібнювач TEKK HAUS").totalPr
 assert.equal(tekkhausProducts.find(product => product.id === "tekkhaus-1000116")?.normalizedAttributes.flowM3h, 10, "TEKK HAUS pool flow must convert from 10 000 l/h to 10 m³/h");
 assert.equal(tekkhausProducts.find(product => product.id === "tekkhaus-1000040")?.normalizedAttributes.powerKw, 0.078, "TEKK HAUS motor power must convert from W to kW");
 
+const techProducts = products.filter(product => product.brandId === "tech");
+assert.equal(techProducts.length, 257, "TECH Controllers catalog must retain all 257 unique official models");
+assert.equal(new Set(techProducts.map(product => product.seriesId)).size, 54, "TECH Controllers catalog must retain 54 official series and product groups");
+assert.ok(techProducts.every(product => product.manufacturerUrl?.startsWith("https://tech-controllers.com/ua/p/")), "every TECH model must retain its official manufacturer URL");
+assert.equal(techProducts.filter(product => product.images.length >= 1).length, 252, "confirmed TECH image coverage changed");
+assert.equal(techProducts.reduce((total, product) => total + product.images.length, 0), 1580, "TECH gallery image coverage changed");
+assert.equal(new Set(techProducts.flatMap(product => product.images)).size, 1521, "TECH unique image coverage changed");
+assert.equal(techProducts.filter(product => product.images.length > 1).length, 235, "TECH multi-image gallery coverage changed");
+assert.ok(techProducts.every(product => product.images.every(image => image.startsWith("/assets/products/tech/"))), "TECH product images must be local");
+assert.ok(techProducts.every(product => product.imageSources.length === product.images.length), "TECH gallery sources must map one-to-one to local images");
+assert.ok(techProducts.every(product => product.imageSources.every(image => /^https:\/\/tech-controllers\.com\/.*!uploads\//.test(image.source))), "TECH images must retain official source URLs");
+assert.equal(techProducts.filter(product => product.documents.length >= 1).length, 182, "confirmed TECH document coverage changed");
+assert.ok(techProducts.every(product => product.documents.every(document => /^https:\/\/tech-controllers\.com\//.test(document.url))), "TECH documents must use official manufacturer URLs");
+assert.ok(techProducts.every(product => Array.isArray(product.sourceUrls) && product.sourceUrls.length >= 3 && product.dateVerified === "2026-09-21"), "TECH source provenance is incomplete");
+assert.ok(techProducts.every(product => product.manufacturerCode && product.seo?.title && product.seo?.description && product.technicalDetails.length >= 4), "TECH commerce metadata is incomplete");
+assert.ok(techProducts.every(product => product.keyFeatures.length >= 3 && product.shortDescription.length <= 240 && !/…$/.test(product.shortDescription)), "TECH key features or short descriptions are incomplete");
+assert.ok(techProducts.every(product => product.descriptionSections.length === 5 && product.fullDescription.length >= 500), "TECH descriptions must be complete and structured");
+assert.equal(techProducts.filter(product => product.ean).length, 0, "TECH EAN values must remain empty when the official source does not confirm them");
+assert.equal(search.search("L-5s").products[0]?.id, "tech-l-5s", "exact TECH model search must rank the product first");
+assert.ok(search.search("TECH Sinum").totalProducts >= 100, "TECH Sinum search failed");
+assert.ok(search.search("кімнатний термостат TECH").totalProducts >= 20, "TECH room thermostat search failed");
+
 const reviewMappings = products.filter(product => product.source?.mappingStatus === "review").length;
 const unmappedAttributeProducts = products.filter(product => product.unmappedAttributes?.length).length;
 const brandsWithProducts = new Set(products.map(product => product.brandId));
 const brandsWithoutProducts = catalog.brands.filter(brand => !brandsWithProducts.has(brand.id)).length;
 assert.equal(reviewMappings, 29, "review mapping debt changed unexpectedly");
-assert.equal(unmappedAttributeProducts, 1845, "unmapped attribute debt changed unexpectedly");
+assert.equal(unmappedAttributeProducts, 2102, "unmapped attribute debt changed unexpectedly");
 
 const shellSource = fs.readFileSync(path.join(projectRoot, "page-shell.js"), "utf8");
 const uiSource = fs.readFileSync(path.join(projectRoot, "catalog-ui.js"), "utf8");

@@ -49,6 +49,8 @@
     material: define("material", { label: "Матеріал", rank: 19, aliases: [/^матеріал корпусу$/i, /^матеріал$/i, /^материал$/i] }),
     voltage: define("voltage", { label: "Живлення", rank: 20, aliases: [/^напруга$/i, /^живлення$/i, /^привід\s*\/\s*напруга$/i, /^напряжение$/i] }),
     control: define("control", { label: "Тип керування", rank: 21, aliases: [/^керування$/i, /^управління$/i, /^управление$/i, /^тип керування$/i] }),
+    communication: define("communication", { label: "Спосіб зв’язку", rank: 21.1, aliases: [/^комунікація$/i, /^спосіб зв[’'`]язку$/i, /^тип зв[’'`]язку$/i, /^зв[’'`]язок$/i] }),
+    zones: define("zones", { label: "Кількість зон", type: "number", rank: 21.2, aliases: [/^кількість зон$/i, /^зони$/i, /^кількість приміщень$/i] }),
     temperature: define("temperature", { label: "Температурний діапазон", rank: 22, aliases: [/^діапазон температур$/i, /^температура рідини$/i, /^макс\.?\s*температура$/i, /^максимальна температура$/i, /^температура$/i] }),
     eei: define("eei", { label: "Індекс енергоефективності EEI", rank: 22.1, aliases: [/^індекс енергетичної ефективності(?: \(eei\))?$/i, /^eei$/i] }),
     selfPriming: define("selfPriming", { label: "Самовсмоктування", rank: 22.2, aliases: [/^самовсмоктувальне виконання$/i] }),
@@ -86,9 +88,9 @@
     "circulation-pumps": Object.freeze(["headM", "flowM3h", "mountingLengthMm", "connection", "diameter", "powerKw"]),
     "underfloor-heating": Object.freeze(["diameter", "connection", "material", "pressureBar", "temperature", "outlets"]),
     "distribution-hydraulics": Object.freeze(["flowM3h", "heatOutputKw", "outlets", "connection", "diameter", "pressureBar", "mountingLengthMm"]),
-    automation: Object.freeze(["control", "voltage", "protectionClass", "compatibility", "temperature", "outlets"]),
+    automation: Object.freeze(["productType", "control", "communication", "zones", "installation", "voltage"]),
     valves: Object.freeze(["diameter", "connection", "kvs", "pressureBar", "control", "material", "temperature"]),
-    "heating-components": Object.freeze(["connection", "diameter", "diameterMm", "mountingLengthMm", "compatibility", "material", "pressureBar"]),
+    "heating-components": Object.freeze(["productType", "compatibility", "communication", "installation", "voltage", "protectionClass"]),
     "reverse-osmosis": Object.freeze(["capacityLh", "pump", "mineralizer", "flowType", "installation", "technology"]),
     "drinking-system-cartridges": Object.freeze(["purpose", "type", "filtrationMicron", "compatibility", "mineralizer"]),
     "mainline-cartridges": Object.freeze(["purpose", "type", "filtrationMicron", "format", "compatibility"]),
@@ -117,7 +119,7 @@
   const cardFallbackPriority = Object.freeze([
     "purpose", "type", "technology", "capacityLh", "flowM3h", "headM", "kvs", "powerKw", "heatOutputKw",
     "connection", "diameter", "diameterMm", "mountingLengthMm", "pressureBar", "filtrationMicron", "material",
-    "control", "voltage", "protectionClass", "compatibility", "waterSource", "installation", "format", "pump",
+    "control", "communication", "zones", "voltage", "protectionClass", "compatibility", "waterSource", "installation", "format", "pump",
     "mineralizer", "flowType", "scope", "volumeL", "weightKg", "capacityKgh", "rotationRpm", "widthMm", "heightMm", "depthMm", "dimensions", "eei", "selfPriming", "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "productType"
   ]);
 
@@ -125,9 +127,9 @@
     "circulation-pumps": Object.freeze(["headM", "flowM3h", "mountingLengthMm", "connection", "powerKw", "control"]),
     "underfloor-heating": Object.freeze(["diameter", "connection", "outlets", "material", "pressureBar", "temperature"]),
     "distribution-hydraulics": Object.freeze(["flowM3h", "heatOutputKw", "outlets", "connection", "diameter", "pressureBar"]),
-    automation: Object.freeze(["control", "voltage", "protectionClass", "compatibility", "temperature", "outlets"]),
+    automation: Object.freeze(["productType", "control", "communication", "zones", "installation", "voltage", "protectionClass", "temperature"]),
     valves: Object.freeze(["diameter", "kvs", "pressureBar", "connection", "material", "control"]),
-    "heating-components": Object.freeze(["connection", "diameter", "pressureBar", "temperature", "material", "compatibility"]),
+    "heating-components": Object.freeze(["productType", "compatibility", "communication", "installation", "voltage", "protectionClass"]),
     "reverse-osmosis": Object.freeze(["capacityLh", "pump", "mineralizer", "flowType", "installation", "technology"]),
     "drinking-system-cartridges": Object.freeze(["type", "purpose", "compatibility", "filtrationMicron", "mineralizer"]),
     "mainline-cartridges": Object.freeze(["filtrationMicron", "format", "type", "purpose", "compatibility"]),
@@ -176,6 +178,8 @@
     outlets: "Кількість виходів",
     voltage: "Живлення",
     control: "Керування",
+    communication: "Зв’язок",
+    zones: "Кількість зон",
     temperature: "Температура",
     eei: "EEI",
     selfPriming: "Самовсмоктування",
@@ -197,7 +201,8 @@
     "wilo-stratos-maxo": "Stratos MAXO",
     ...(window.sofievkaWiloSeriesLabels || {}),
     ...(window.sofievkaGrundfosSeriesLabels || {}),
-    ...(window.sofievkaTekkhausSeriesLabels || {})
+    ...(window.sofievkaTekkhausSeriesLabels || {}),
+    ...(window.sofievkaTechSeriesLabels || {})
   });
 
   window.sofievkaAttributeSchema = Object.freeze({ definitions, valueLabels, cardPriorityByCategory, cardFallbackPriority, pdpPriorityByCategory, pdpFallbackPriority, cardAttributeLabels, seriesLabels });

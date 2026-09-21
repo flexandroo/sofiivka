@@ -9,7 +9,7 @@
     "compatibility", "kvs", "mountingLengthMm", "pressureBar", "heatOutputKw", "outlets", "voltage",
     "control", "protectionClass", "temperature", "capacityLh", "format", "eei", "selfPriming",
     "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "volumeL", "material", "installation",
-    "capacityKgh", "rotationRpm"
+    "capacityKgh", "rotationRpm", "communication", "zones"
   ]);
 
   const CATEGORY_ALIASES = Object.freeze({
@@ -49,6 +49,9 @@
     ["колектор", "колектори", "коллектор", "коллекторы"],
     ["клапан", "клапани", "клапаны"],
     ["керування", "управління", "управление"],
+    ["термостат", "терморегулятор", "регулятор температури"],
+    ["бездротовий", "бездротове", "wireless"],
+    ["дротовий", "дротове", "wired"],
     ["циркуляційний", "циркуляційні", "циркуляционный", "циркуляционные"],
     ["зворотний", "зворотній", "обратный"],
     ["матеріал", "матеріали", "материал", "материалы"],

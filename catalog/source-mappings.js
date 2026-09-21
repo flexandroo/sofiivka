@@ -17,7 +17,8 @@
     termojet: Object.freeze({ id: "termojet", brandId: "termojet", sourceName: "Termojet XML catalog", imageOrigin: "https://termojet.com.ua" }),
     wilo: Object.freeze({ id: "wilo", brandId: "wilo", sourceName: "Офіційний каталог Wilo Україна" }),
     grundfos: Object.freeze({ id: "grundfos", brandId: "grundfos", sourceName: "Офіційний каталог Grundfos Україна" }),
-    tekkhaus: Object.freeze({ id: "tekkhaus", brandId: "tekk", sourceName: "Офіційний магазин TEKK HAUS" })
+    tekkhaus: Object.freeze({ id: "tekkhaus", brandId: "tekk", sourceName: "Офіційний магазин TEKK HAUS" }),
+    tech: Object.freeze({ id: "tech", brandId: "tech", sourceName: "Офіційний каталог TECH Controllers Україна" })
   });
 
   const categoryMappings = Object.freeze({
@@ -87,6 +88,11 @@
       "tekkhaus-automation": freezeMapping({ categoryId: "pump-automation" }),
       "tekkhaus-accessories": freezeMapping({ categoryId: "pump-accessories" }),
       "tekkhaus-feed-grinders": freezeMapping({ categoryId: "feed-grinders" })
+    }),
+    tech: Object.freeze({
+      "tech-automation": freezeMapping({ categoryId: "automation" }),
+      "tech-sinum": freezeMapping({ categoryId: "automation", collectionIds: ["sinum"], tags: ["sinum"] }),
+      "tech-accessories": freezeMapping({ categoryId: "heating-components" })
     })
   });
 
@@ -120,6 +126,7 @@
   }
 
   function supplierFor(product) {
+    if (String(product.brand || "").toLocaleLowerCase("en") === "tech") return "tech";
     if (String(product.brand || "").toLocaleLowerCase("en").replace(/[^a-z]/g, "") === "tekkhaus") return "tekkhaus";
     if (String(product.brand || "").toLocaleLowerCase("en") === "grundfos") return "grundfos";
     if (String(product.brand || "").toLocaleLowerCase("en") === "wilo") return "wilo";
