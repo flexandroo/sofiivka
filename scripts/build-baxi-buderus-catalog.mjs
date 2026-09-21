@@ -157,7 +157,7 @@ function editorialDescription(record, details, applications, keyFeatures) {
   const parameters = details.filter(([label]) => !/^(?:Тип обладнання|Модель|Серія|Категорія виробника)$/i.test(label)).slice(0, 12);
   const parameterText = parameters.length
     ? `Для цієї моделі підтверджено такі дані: ${parameters.map(([label, value]) => `${label.toLocaleLowerCase("uk")}: ${value}`).join("; ")}.`
-    : "Числову таблицю параметрів для цієї продуктової сторінки виробник не опублікував у текстовому вигляді. У галереї збережено офіційний технічний матеріал, якщо він доступний.";
+    : "Числову таблицю параметрів для цієї продуктової сторінки виробник не опублікував у текстовому вигляді. Непідтверджені дані до картки не додавалися.";
   let selection = "Перед замовленням потрібно звірити теплове навантаження, схему системи, габарити, підключення, електроживлення та вимоги до монтажу з документацією виробника.";
   if (["automation", "boiler-accessories", "flue-systems"].includes(record.subcategory)) {
     selection = "Перед замовленням потрібно звірити сумісність із точною моделлю та виконанням основного обладнання. Сумісність вважається підтвердженою лише тоді, коли її прямо вказує виробник.";
@@ -204,6 +204,15 @@ function imageFileName(url) {
 function imageType(url) {
   if (/\/table(?:_|\/)|tables|schema|scheme|dimens|diagram|accessor/i.test(url)) return "dimensions";
   return "product";
+}
+
+function productImageUrls(record) {
+  return unique((record.gallery || []).filter(url => {
+    if (record.brand === "BAXI") {
+      return /\/assets\/uploads\/images\/image_boiler\/e-catalog\//i.test(url);
+    }
+    return !/(?:award|diplom|certificate|badge|medal)/i.test(url);
+  }));
 }
 
 async function downloadAndConvert(url, target) {
@@ -261,10 +270,10 @@ function compatibilityFor(record, details) {
 async function main() {
   const payload = JSON.parse(await fs.readFile(SOURCE_FILE, "utf8"));
   if (payload.failures?.length) throw new Error(`Source fetch contains ${payload.failures.length} failures`);
-  const imageUrls = unique(payload.products.flatMap(product => product.gallery || []));
+  const imageUrls = unique(payload.products.flatMap(productImageUrls));
   const imageResults = new Map();
   await mapLimit(imageUrls, 8, async url => {
-    const record = payload.products.find(product => (product.gallery || []).includes(url));
+    const record = payload.products.find(product => productImageUrls(product).includes(url));
     const brandFolder = slugify(record.brand);
     const fileName = imageFileName(url);
     const target = path.join(MEDIA_ROOT, brandFolder, fileName);
@@ -286,7 +295,7 @@ async function main() {
     const keyFeatures = keyFeaturesFor(record, details);
     const editorial = editorialDescription(record, details, applications, keyFeatures);
     const docs = selectDocuments(record);
-    const localImages = (record.gallery || []).flatMap(url => {
+    const localImages = productImageUrls(record).flatMap(url => {
       const result = imageResults.get(url);
       if (!result?.ok) return [];
       return [{
@@ -397,7 +406,7 @@ async function main() {
 
   const ids = products.map(product => product.id);
   if (new Set(ids).size !== ids.length) throw new Error("BAXI/Buderus product IDs are not unique");
-  products.sort((a, b) => a.brand.localeCompare(b.brand, "uk") || a.series.localeCompare(b.series, "uk") || a.model.localeCompare(b.model, "uk", { numeric: true }));
+  products.sort((a, b) => a.brand.localeCompare(b.brand, "uk") || Number(Boolean(b.image)) - Number(Boolean(a.image)) || a.series.localeCompare(b.series, "uk") || a.model.localeCompare(b.model, "uk", { numeric: true }));
   const seriesLabels = Object.fromEntries([...new Map(products.map(product => [product.seriesId, product.series])).entries()]);
   const output = `(function(){"use strict";const PRODUCTS=${JSON.stringify(products)};window.sofievkaBaxiBuderusSeriesLabels=Object.freeze(${JSON.stringify(seriesLabels)});window.sofievkaBaxiBuderusProducts=Object.freeze(PRODUCTS.map(product=>Object.freeze(product)));})();\n`;
   await fs.writeFile(OUT_FILE, output);

@@ -190,7 +190,10 @@ def baxi_page_record(source: str, requested_url: str, final_url: str) -> dict:
     headings = xpath_texts(main, ".//h2|.//h3|.//h4|.//strong")
     images: list[str] = []
     for value in main.xpath(".//img/@src | .//img/@data-src | .//a/@href"):
-        if not re.search(r"assets/uploads/images/image_boiler/.+\.(?:png|jpe?g|webp)(?:\?|$)", value, re.I):
+        # BAXI stores packshots in image_boiler/e-catalog. The other folders
+        # contain specification tables and accessory overview sheets, which
+        # must not be exposed as product gallery images.
+        if not re.search(r"assets/uploads/images/image_boiler/e-catalog/.+\.(?:png|jpe?g|webp)(?:\?|$)", value, re.I):
             continue
         images.append(baxi_asset_url(value, page_url))
     documents = []
