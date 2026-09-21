@@ -9,13 +9,13 @@
       level: 1,
       title: "Опалення",
       shortTitle: "Опалення",
-      description: "Насоси, колектори, автоматика та обладнання для систем опалення.",
-      menuDescription: "Насоси, тепла підлога, гідравліка, автоматика",
+      description: "Котли, насоси, колектори, автоматика та обладнання для систем опалення.",
+      menuDescription: "Котли, насоси, тепла підлога, гідравліка, автоматика",
       order: 10,
       status: "active",
       visibility: "catalog",
       allowedFacetIds: [],
-      seo: { title: "Опалення | ТД «Софіївка»", description: "Насоси, колектори, автоматика та обладнання для систем опалення." }
+      seo: { title: "Опалення | ТД «Софіївка»", description: "Котли, насоси, колектори, автоматика та обладнання для систем опалення." }
     },
     {
       id: "water-supply",
@@ -42,8 +42,8 @@
       description: "Трубні системи, фітинги, арматура та монтажні матеріали.",
       menuDescription: "Труби, фітинги, арматура та колектори",
       order: 30,
-      status: "future",
-      visibility: "navigation",
+      status: "active",
+      visibility: "catalog",
       allowedFacetIds: [],
       seo: { title: "Сантехніка | ТД «Софіївка»", description: "Трубні системи, фітинги, арматура та монтажні матеріали." }
     },
@@ -161,6 +161,13 @@
       allowedFacetIds: ["productType", "type", "compatibility", "communication", "installation", "voltage", "protectionClass", "connection", "material", "pressureBar"],
       seo: { title: "Комплектуючі для опалення | ТД «Софіївка»", description: "Комплектуючі та модульні рішення для систем опалення." }
     },
+    { id: "solid-fuel-boilers", slug: "solid-fuel-boilers", parentId: "heating", level: 2, title: "Твердопаливні котли", shortTitle: "Твердопаливні котли", description: "Котли з ручним завантаженням дров, вугілля, брикетів та іншого дозволеного виробником твердого палива.", order: 165, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "heatOutputKw", "fuel", "efficiencyPercent", "fireboxVolumeL", "waterVolumeL", "pressureBar", "maxWaterTemperatureC", "chimneyDiameterMm", "chimneyHeightM", "weightKg"], seo: { title: "Твердопаливні котли | ТД «Софіївка»", description: "Побутові та промислові твердопаливні котли Altep, FENIKS і FOCUS з офіційними характеристиками." } },
+    { id: "pellet-boilers", slug: "pellet-boilers", parentId: "heating", level: 2, title: "Пелетні котли", shortTitle: "Пелетні котли", description: "Автоматизовані котли й міні-котельні з подачею пелет та підтвердженими виробником режимами роботи.", order: 166, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "heatOutputKw", "fuel", "efficiencyPercent", "waterVolumeL", "pressureBar", "maxWaterTemperatureC", "chimneyDiameterMm", "consumptionPowerW", "weightKg"], seo: { title: "Пелетні котли | ТД «Софіївка»", description: "Пелетні котли Altep, FENIKS і FOCUS для житлових, комерційних та промислових котелень." } },
+    { id: "heat-accumulators", slug: "heat-accumulators", parentId: "heating", level: 2, title: "Теплоакумулятори", shortTitle: "Теплоакумулятори", description: "Буферні ємності для акумулювання тепла та стабілізації роботи водяної системи опалення.", order: 167, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "volumeL", "pressureBar", "connection", "material", "temperature", "widthMm", "heightMm", "weightKg"], seo: { title: "Теплоакумулятори | ТД «Софіївка»", description: "Теплоакумулятори Altep і FENIKS для котельних та водяних систем опалення." } },
+    { id: "pellet-burners", slug: "pellet-burners", parentId: "heating", level: 2, title: "Пелетні пальники", shortTitle: "Пелетні пальники", description: "Факельні та автоматизовані пелетні пальники для сумісного котельного обладнання.", order: 168, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "heatOutputKw", "fuel", "consumptionPowerW", "voltage", "compatibility", "weightKg"], seo: { title: "Пелетні пальники | ТД «Софіївка»", description: "Пелетні пальники Altep, FENIKS і FOCUS з офіційними характеристиками та документами." } },
+    { id: "boiler-accessories", slug: "boiler-accessories", parentId: "heating", level: 2, title: "Комплектуючі для котлів", shortTitle: "Комплектуючі для котлів", description: "Бункери, двері, колосники, шнеки, гідравлічні вузли, системи очищення та інші фірмові компоненти котельного обладнання.", order: 169, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "compatibility", "volumeL", "heatOutputKw", "connection", "material", "voltage", "consumptionPowerW", "weightKg"], seo: { title: "Комплектуючі для котлів | ТД «Софіївка»", description: "Фірмові комплектуючі Altep, FENIKS і FOCUS для монтажу, модернізації та сервісу котлів." } },
+    { id: "industrial-heating", slug: "industrial-heating", parentId: "heating", level: 2, title: "Промислове теплогенерувальне обладнання", shortTitle: "Промислове обладнання", description: "Теплогенератори та пелетні парогенератори для технологічних і промислових задач.", order: 170, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "heatOutputKw", "fuel", "capacityKgh", "efficiencyPercent", "consumptionPowerW", "pressureBar", "weightKg"], seo: { title: "Промислове теплогенерувальне обладнання | ТД «Софіївка»", description: "Теплогенератори та парогенератори Altep і FOCUS для промислових об’єктів." } },
+    { id: "humidification", slug: "humidification", parentId: "climate", level: 2, title: "Туманоутворення та зволоження", shortTitle: "Туманоутворення", description: "Системи та комплектуючі для туманоутворення, зволоження й охолодження повітря.", order: 410, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "purpose", "flowM3h", "pressureBar", "voltage", "powerKw", "connection"], seo: { title: "Системи туманоутворення | ТД «Софіївка»", description: "Системи туманоутворення FOCUS та комплектуючі для зволоження й охолодження повітря." } },
     {
       id: "water-treatment",
       slug: "water-treatment",

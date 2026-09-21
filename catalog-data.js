@@ -11,13 +11,13 @@
       level: 1,
       title: "Опалення",
       shortTitle: "Опалення",
-      description: "Насоси, колектори, автоматика та обладнання для систем опалення.",
-      menuDescription: "Насоси, тепла підлога, гідравліка, автоматика",
+      description: "Котли, насоси, колектори, автоматика та обладнання для систем опалення.",
+      menuDescription: "Котли, насоси, тепла підлога, гідравліка, автоматика",
       order: 10,
       status: "active",
       visibility: "catalog",
       allowedFacetIds: [],
-      seo: { title: "Опалення | ТД «Софіївка»", description: "Насоси, колектори, автоматика та обладнання для систем опалення." }
+      seo: { title: "Опалення | ТД «Софіївка»", description: "Котли, насоси, колектори, автоматика та обладнання для систем опалення." }
     },
     {
       id: "water-supply",
@@ -44,8 +44,8 @@
       description: "Трубні системи, фітинги, арматура та монтажні матеріали.",
       menuDescription: "Труби, фітинги, арматура та колектори",
       order: 30,
-      status: "future",
-      visibility: "navigation",
+      status: "active",
+      visibility: "catalog",
       allowedFacetIds: [],
       seo: { title: "Сантехніка | ТД «Софіївка»", description: "Трубні системи, фітинги, арматура та монтажні матеріали." }
     },
@@ -163,6 +163,13 @@
       allowedFacetIds: ["productType", "type", "compatibility", "communication", "installation", "voltage", "protectionClass", "connection", "material", "pressureBar"],
       seo: { title: "Комплектуючі для опалення | ТД «Софіївка»", description: "Комплектуючі та модульні рішення для систем опалення." }
     },
+    { id: "solid-fuel-boilers", slug: "solid-fuel-boilers", parentId: "heating", level: 2, title: "Твердопаливні котли", shortTitle: "Твердопаливні котли", description: "Котли з ручним завантаженням дров, вугілля, брикетів та іншого дозволеного виробником твердого палива.", order: 165, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "heatOutputKw", "fuel", "efficiencyPercent", "fireboxVolumeL", "waterVolumeL", "pressureBar", "maxWaterTemperatureC", "chimneyDiameterMm", "chimneyHeightM", "weightKg"], seo: { title: "Твердопаливні котли | ТД «Софіївка»", description: "Побутові та промислові твердопаливні котли Altep, FENIKS і FOCUS з офіційними характеристиками." } },
+    { id: "pellet-boilers", slug: "pellet-boilers", parentId: "heating", level: 2, title: "Пелетні котли", shortTitle: "Пелетні котли", description: "Автоматизовані котли й міні-котельні з подачею пелет та підтвердженими виробником режимами роботи.", order: 166, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "heatOutputKw", "fuel", "efficiencyPercent", "waterVolumeL", "pressureBar", "maxWaterTemperatureC", "chimneyDiameterMm", "consumptionPowerW", "weightKg"], seo: { title: "Пелетні котли | ТД «Софіївка»", description: "Пелетні котли Altep, FENIKS і FOCUS для житлових, комерційних та промислових котелень." } },
+    { id: "heat-accumulators", slug: "heat-accumulators", parentId: "heating", level: 2, title: "Теплоакумулятори", shortTitle: "Теплоакумулятори", description: "Буферні ємності для акумулювання тепла та стабілізації роботи водяної системи опалення.", order: 167, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "volumeL", "pressureBar", "connection", "material", "temperature", "widthMm", "heightMm", "weightKg"], seo: { title: "Теплоакумулятори | ТД «Софіївка»", description: "Теплоакумулятори Altep і FENIKS для котельних та водяних систем опалення." } },
+    { id: "pellet-burners", slug: "pellet-burners", parentId: "heating", level: 2, title: "Пелетні пальники", shortTitle: "Пелетні пальники", description: "Факельні та автоматизовані пелетні пальники для сумісного котельного обладнання.", order: 168, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "heatOutputKw", "fuel", "consumptionPowerW", "voltage", "compatibility", "weightKg"], seo: { title: "Пелетні пальники | ТД «Софіївка»", description: "Пелетні пальники Altep, FENIKS і FOCUS з офіційними характеристиками та документами." } },
+    { id: "boiler-accessories", slug: "boiler-accessories", parentId: "heating", level: 2, title: "Комплектуючі для котлів", shortTitle: "Комплектуючі для котлів", description: "Бункери, двері, колосники, шнеки, гідравлічні вузли, системи очищення та інші фірмові компоненти котельного обладнання.", order: 169, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "compatibility", "volumeL", "heatOutputKw", "connection", "material", "voltage", "consumptionPowerW", "weightKg"], seo: { title: "Комплектуючі для котлів | ТД «Софіївка»", description: "Фірмові комплектуючі Altep, FENIKS і FOCUS для монтажу, модернізації та сервісу котлів." } },
+    { id: "industrial-heating", slug: "industrial-heating", parentId: "heating", level: 2, title: "Промислове теплогенерувальне обладнання", shortTitle: "Промислове обладнання", description: "Теплогенератори та пелетні парогенератори для технологічних і промислових задач.", order: 170, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "heatOutputKw", "fuel", "capacityKgh", "efficiencyPercent", "consumptionPowerW", "pressureBar", "weightKg"], seo: { title: "Промислове теплогенерувальне обладнання | ТД «Софіївка»", description: "Теплогенератори та парогенератори Altep і FOCUS для промислових об’єктів." } },
+    { id: "humidification", slug: "humidification", parentId: "climate", level: 2, title: "Туманоутворення та зволоження", shortTitle: "Туманоутворення", description: "Системи та комплектуючі для туманоутворення, зволоження й охолодження повітря.", order: 410, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "purpose", "flowM3h", "pressureBar", "voltage", "powerKw", "connection"], seo: { title: "Системи туманоутворення | ТД «Софіївка»", description: "Системи туманоутворення FOCUS та комплектуючі для зволоження й охолодження повітря." } },
     {
       id: "water-treatment",
       slug: "water-treatment",
@@ -297,6 +304,14 @@
     headM: define("headM", { semanticId: "maxHeadM", label: "Максимальний напір, м", type: "number", unit: "м", rank: 9, aliases: [/^hmax$/i, /^макс\.?\s*напір$/i, /^максимальний напір$/i, /^висота підйому$/i] }),
     powerKw: define("powerKw", { label: "Потужність, кВт", type: "number", unit: "кВт", rank: 10, aliases: [/^потужність$/i, /^споживана потужність$/i, /^макс\.?\s*споживана потужність$/i, /^мощность$/i] }),
     heatOutputKw: define("heatOutputKw", { label: "Теплова потужність, кВт", type: "number", unit: "кВт", rank: 11, aliases: [/^теплова потужність$/i, /^потужність макс\./i, /^qmax:.*(?:20|10)/i] }),
+    fuel: define("fuel", { label: "Паливо", rank: 11.1, aliases: [/^паливо$/i, /^вид палива$/i, /^основне паливо$/i] }),
+    efficiencyPercent: define("efficiencyPercent", { label: "ККД, %", type: "number", unit: "%", rank: 11.2, aliases: [/^ккд/i, /^коефіцієнт корисної дії/i] }),
+    waterVolumeL: define("waterVolumeL", { label: "Водяна ємність, л", type: "number", unit: "л", rank: 11.3, aliases: [/^водяна ємність котла/i, /^об[’'`]?єм води/i] }),
+    fireboxVolumeL: define("fireboxVolumeL", { label: "Об’єм топки, л", type: "number", unit: "л", rank: 11.4, aliases: [/^об[’'`]?єм топки/i, /^топка:\s*об[’'`]?єм/i] }),
+    chimneyDiameterMm: define("chimneyDiameterMm", { label: "Діаметр димоходу, мм", type: "number", unit: "мм", rank: 11.5, aliases: [/^діаметр димоходу/i, /^приєднувальні розміри димоходу/i, /^рекомендовані параметри димоходу:\s*внутрішній діаметр/i] }),
+    chimneyHeightM: define("chimneyHeightM", { label: "Мінімальна висота димоходу, м", type: "number", unit: "м", rank: 11.6, aliases: [/^мінімальна висота димоходу/i, /^рекомендовані параметри димоходу:\s*висота/i] }),
+    consumptionPowerW: define("consumptionPowerW", { label: "Споживання електроенергії, Вт", type: "number", unit: "Вт", rank: 11.7, aliases: [/^споживання електроенергії/i, /^електрична потужність/i] }),
+    maxWaterTemperatureC: define("maxWaterTemperatureC", { label: "Максимальна температура води, °C", type: "number", unit: "°C", rank: 11.8, aliases: [/^максимальна температура води/i, /^макс\.? температура теплоносія/i] }),
     mountingLengthMm: define("mountingLengthMm", { semanticId: "installationLengthMm", label: "Монтажна довжина, мм", type: "number", unit: "мм", rank: 12, aliases: [/^довжина насоса$/i, /^монтажна довжина$/i, /^будівельна довжина$/i] }),
     diameterMm: define("diameterMm", { label: "Діаметр, мм", type: "number", unit: "мм", rank: 13, aliases: [/^d\s*\(?мм\)?$/i, /^d\s*\(?mm\)?$/i, /^діаметр,?\s*мм$/i, /^диаметр,?\s*мм$/i] }),
     widthMm: define("widthMm", { label: "Ширина, мм", type: "number", unit: "мм", rank: 14, filterable: false, aliases: [/^ширина(?:\s*\(мм\))?$/i, /^w\s*\(?mm\)?$/i] }),
@@ -379,7 +394,14 @@
     "pump-accessories": Object.freeze(["compatibility", "connection", "material", "pressureBar", "weightKg"]),
     "pump-services": Object.freeze(["productType", "compatibility"]),
     "pool-pumps-filtration": Object.freeze(["flowM3h", "headM", "powerKw", "connection", "voltage", "protectionClass", "filtrationMicron"]),
-    "feed-grinders": Object.freeze(["powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"])
+    "feed-grinders": Object.freeze(["powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"]),
+    "solid-fuel-boilers": Object.freeze(["heatOutputKw", "fuel", "efficiencyPercent", "fireboxVolumeL", "waterVolumeL", "chimneyDiameterMm"]),
+    "pellet-boilers": Object.freeze(["heatOutputKw", "fuel", "efficiencyPercent", "waterVolumeL", "chimneyDiameterMm", "consumptionPowerW"]),
+    "heat-accumulators": Object.freeze(["volumeL", "pressureBar", "connection", "heightMm", "widthMm", "weightKg"]),
+    "pellet-burners": Object.freeze(["heatOutputKw", "fuel", "consumptionPowerW", "voltage", "compatibility", "weightKg"]),
+    "boiler-accessories": Object.freeze(["productType", "compatibility", "volumeL", "heatOutputKw", "connection", "weightKg"]),
+    "industrial-heating": Object.freeze(["heatOutputKw", "capacityKgh", "fuel", "efficiencyPercent", "consumptionPowerW", "pressureBar"]),
+    humidification: Object.freeze(["productType", "purpose", "flowM3h", "pressureBar", "voltage", "powerKw"])
   });
 
   const cardFallbackPriority = Object.freeze([
@@ -418,7 +440,14 @@
     "pump-accessories": Object.freeze(["compatibility", "connection", "material", "pressureBar", "weightKg"]),
     "pump-services": Object.freeze(["productType", "compatibility"]),
     "pool-pumps-filtration": Object.freeze(["flowM3h", "headM", "powerKw", "connection", "voltage", "protectionClass", "filtrationMicron"]),
-    "feed-grinders": Object.freeze(["powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"])
+    "feed-grinders": Object.freeze(["powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"]),
+    "solid-fuel-boilers": Object.freeze(["heatOutputKw", "fuel", "efficiencyPercent", "fireboxVolumeL", "waterVolumeL", "pressureBar", "maxWaterTemperatureC", "chimneyDiameterMm", "chimneyHeightM", "weightKg"]),
+    "pellet-boilers": Object.freeze(["heatOutputKw", "fuel", "efficiencyPercent", "waterVolumeL", "pressureBar", "maxWaterTemperatureC", "chimneyDiameterMm", "consumptionPowerW", "weightKg"]),
+    "heat-accumulators": Object.freeze(["volumeL", "pressureBar", "connection", "material", "temperature", "heightMm", "widthMm", "weightKg"]),
+    "pellet-burners": Object.freeze(["heatOutputKw", "fuel", "consumptionPowerW", "voltage", "compatibility", "weightKg"]),
+    "boiler-accessories": Object.freeze(["productType", "compatibility", "volumeL", "heatOutputKw", "connection", "material", "consumptionPowerW", "weightKg"]),
+    "industrial-heating": Object.freeze(["heatOutputKw", "capacityKgh", "fuel", "efficiencyPercent", "consumptionPowerW", "pressureBar", "weightKg"]),
+    humidification: Object.freeze(["productType", "purpose", "flowM3h", "pressureBar", "voltage", "powerKw", "connection"])
   });
 
   const pdpFallbackPriority = Object.freeze([
@@ -434,6 +463,14 @@
     headM: "Макс. напір",
     powerKw: "Потужність",
     heatOutputKw: "Теплова потужність",
+    fuel: "Паливо",
+    efficiencyPercent: "ККД",
+    waterVolumeL: "Водяна ємність",
+    fireboxVolumeL: "Об’єм топки",
+    chimneyDiameterMm: "Діаметр димоходу",
+    chimneyHeightM: "Висота димоходу",
+    consumptionPowerW: "Споживання",
+    maxWaterTemperatureC: "Макс. температура води",
     mountingLengthMm: "Монтажна довжина",
     filtrationMicron: "Фільтрація",
     pressureBar: "Робочий тиск",
@@ -468,7 +505,8 @@
     ...(window.sofievkaWiloSeriesLabels || {}),
     ...(window.sofievkaGrundfosSeriesLabels || {}),
     ...(window.sofievkaTekkhausSeriesLabels || {}),
-    ...(window.sofievkaTechSeriesLabels || {})
+    ...(window.sofievkaTechSeriesLabels || {}),
+    ...(window.sofievkaHeatingBrandsSeriesLabels || {})
   });
 
   window.sofievkaAttributeSchema = Object.freeze({ definitions, valueLabels, cardPriorityByCategory, cardFallbackPriority, pdpPriorityByCategory, pdpFallbackPriority, cardAttributeLabels, seriesLabels });
@@ -494,7 +532,10 @@
     wilo: Object.freeze({ id: "wilo", brandId: "wilo", sourceName: "Офіційний каталог Wilo Україна" }),
     grundfos: Object.freeze({ id: "grundfos", brandId: "grundfos", sourceName: "Офіційний каталог Grundfos Україна" }),
     tekkhaus: Object.freeze({ id: "tekkhaus", brandId: "tekk", sourceName: "Офіційний магазин TEKK HAUS" }),
-    tech: Object.freeze({ id: "tech", brandId: "tech", sourceName: "Офіційний каталог TECH Controllers Україна" })
+    tech: Object.freeze({ id: "tech", brandId: "tech", sourceName: "Офіційний каталог TECH Controllers Україна" }),
+    altep: Object.freeze({ id: "altep", brandId: "altep", sourceName: "Офіційний каталог Altep" }),
+    feniks: Object.freeze({ id: "feniks", brandId: "feniks", sourceName: "Офіційний каталог FENIKS" }),
+    focus: Object.freeze({ id: "focus", brandId: "focus", sourceName: "Офіційний каталог FOCUS / FireBox" })
   });
 
   const categoryMappings = Object.freeze({
@@ -569,6 +610,31 @@
       "tech-automation": freezeMapping({ categoryId: "automation" }),
       "tech-sinum": freezeMapping({ categoryId: "automation", collectionIds: ["sinum"], tags: ["sinum"] }),
       "tech-accessories": freezeMapping({ categoryId: "heating-components" })
+    }),
+    altep: Object.freeze({
+      "altep-solid-fuel-boilers": freezeMapping({ categoryId: "solid-fuel-boilers" }),
+      "altep-pellet-boilers": freezeMapping({ categoryId: "pellet-boilers" }),
+      "altep-heat-accumulators": freezeMapping({ categoryId: "heat-accumulators" }),
+      "altep-pellet-burners": freezeMapping({ categoryId: "pellet-burners" }),
+      "altep-boiler-accessories": freezeMapping({ categoryId: "boiler-accessories" }),
+      "altep-industrial-heating": freezeMapping({ categoryId: "industrial-heating" })
+    }),
+    feniks: Object.freeze({
+      "feniks-solid-fuel-boilers": freezeMapping({ categoryId: "solid-fuel-boilers" }),
+      "feniks-pellet-boilers": freezeMapping({ categoryId: "pellet-boilers" }),
+      "feniks-heat-accumulators": freezeMapping({ categoryId: "heat-accumulators" }),
+      "feniks-pellet-burners": freezeMapping({ categoryId: "pellet-burners" }),
+      "feniks-boiler-accessories": freezeMapping({ categoryId: "boiler-accessories" }),
+      "feniks-industrial-heating": freezeMapping({ categoryId: "industrial-heating" })
+    }),
+    focus: Object.freeze({
+      "focus-solid-fuel-boilers": freezeMapping({ categoryId: "solid-fuel-boilers" }),
+      "focus-pellet-boilers": freezeMapping({ categoryId: "pellet-boilers" }),
+      "focus-heat-accumulators": freezeMapping({ categoryId: "heat-accumulators" }),
+      "focus-pellet-burners": freezeMapping({ categoryId: "pellet-burners" }),
+      "focus-boiler-accessories": freezeMapping({ categoryId: "boiler-accessories" }),
+      "focus-industrial-heating": freezeMapping({ categoryId: "industrial-heating" }),
+      "focus-humidification": freezeMapping({ categoryId: "humidification" })
     })
   });
 
@@ -602,6 +668,9 @@
   }
 
   function supplierFor(product) {
+    if (String(product.brand || "").toLocaleLowerCase("en") === "focus") return "focus";
+    if (String(product.brand || "").toLocaleLowerCase("en") === "feniks") return "feniks";
+    if (String(product.brand || "").toLocaleLowerCase("en") === "altep") return "altep";
     if (String(product.brand || "").toLocaleLowerCase("en") === "tech") return "tech";
     if (String(product.brand || "").toLocaleLowerCase("en").replace(/[^a-z]/g, "") === "tekkhaus") return "tekkhaus";
     if (String(product.brand || "").toLocaleLowerCase("en") === "grundfos") return "grundfos";
@@ -1007,12 +1076,13 @@
   const rawGrundfosProducts = Array.isArray(window.sofievkaGrundfosProducts) ? window.sofievkaGrundfosProducts : [];
   const rawTekkhausProducts = Array.isArray(window.sofievkaTekkhausProducts) ? window.sofievkaTekkhausProducts : [];
   const rawTechProducts = Array.isArray(window.sofievkaTechProducts) ? window.sofievkaTechProducts : [];
-  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts, ...rawTechProducts]);
+  const rawHeatingBrandsProducts = Array.isArray(window.sofievkaHeatingBrandsProducts) ? window.sofievkaHeatingBrandsProducts : [];
+  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts, ...rawTechProducts, ...rawHeatingBrandsProducts]);
 
   window.sofievkaProductNormalizer = Object.freeze({ slugify, normalizeProduct, normalizeAll });
   window.sofievkaNormalizedProducts = result.products;
   window.sofievkaNormalizationReport = Object.freeze({
-    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length + rawTekkhausProducts.length + rawTechProducts.length,
+    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length + rawTekkhausProducts.length + rawTechProducts.length + rawHeatingBrandsProducts.length,
     normalizedCount: result.products.length,
     waterSourceCount: rawWaterProducts.length,
     heatingSourceCount: rawHeatingProducts.length,
@@ -1020,6 +1090,7 @@
     grundfosSourceCount: rawGrundfosProducts.length,
     tekkhausSourceCount: rawTekkhausProducts.length,
     techSourceCount: rawTechProducts.length,
+    heatingBrandsSourceCount: rawHeatingBrandsProducts.length,
     duplicateInputIds: result.duplicateInputIds,
     adjustedSlugs: result.adjustedSlugs,
     normalizationErrors: Object.freeze(result.products.filter(product => product.normalizationError).map(product => Object.freeze({ id: product.id, error: product.normalizationError })))

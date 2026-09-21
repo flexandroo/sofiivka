@@ -18,7 +18,10 @@
     wilo: Object.freeze({ id: "wilo", brandId: "wilo", sourceName: "Офіційний каталог Wilo Україна" }),
     grundfos: Object.freeze({ id: "grundfos", brandId: "grundfos", sourceName: "Офіційний каталог Grundfos Україна" }),
     tekkhaus: Object.freeze({ id: "tekkhaus", brandId: "tekk", sourceName: "Офіційний магазин TEKK HAUS" }),
-    tech: Object.freeze({ id: "tech", brandId: "tech", sourceName: "Офіційний каталог TECH Controllers Україна" })
+    tech: Object.freeze({ id: "tech", brandId: "tech", sourceName: "Офіційний каталог TECH Controllers Україна" }),
+    altep: Object.freeze({ id: "altep", brandId: "altep", sourceName: "Офіційний каталог Altep" }),
+    feniks: Object.freeze({ id: "feniks", brandId: "feniks", sourceName: "Офіційний каталог FENIKS" }),
+    focus: Object.freeze({ id: "focus", brandId: "focus", sourceName: "Офіційний каталог FOCUS / FireBox" })
   });
 
   const categoryMappings = Object.freeze({
@@ -93,6 +96,31 @@
       "tech-automation": freezeMapping({ categoryId: "automation" }),
       "tech-sinum": freezeMapping({ categoryId: "automation", collectionIds: ["sinum"], tags: ["sinum"] }),
       "tech-accessories": freezeMapping({ categoryId: "heating-components" })
+    }),
+    altep: Object.freeze({
+      "altep-solid-fuel-boilers": freezeMapping({ categoryId: "solid-fuel-boilers" }),
+      "altep-pellet-boilers": freezeMapping({ categoryId: "pellet-boilers" }),
+      "altep-heat-accumulators": freezeMapping({ categoryId: "heat-accumulators" }),
+      "altep-pellet-burners": freezeMapping({ categoryId: "pellet-burners" }),
+      "altep-boiler-accessories": freezeMapping({ categoryId: "boiler-accessories" }),
+      "altep-industrial-heating": freezeMapping({ categoryId: "industrial-heating" })
+    }),
+    feniks: Object.freeze({
+      "feniks-solid-fuel-boilers": freezeMapping({ categoryId: "solid-fuel-boilers" }),
+      "feniks-pellet-boilers": freezeMapping({ categoryId: "pellet-boilers" }),
+      "feniks-heat-accumulators": freezeMapping({ categoryId: "heat-accumulators" }),
+      "feniks-pellet-burners": freezeMapping({ categoryId: "pellet-burners" }),
+      "feniks-boiler-accessories": freezeMapping({ categoryId: "boiler-accessories" }),
+      "feniks-industrial-heating": freezeMapping({ categoryId: "industrial-heating" })
+    }),
+    focus: Object.freeze({
+      "focus-solid-fuel-boilers": freezeMapping({ categoryId: "solid-fuel-boilers" }),
+      "focus-pellet-boilers": freezeMapping({ categoryId: "pellet-boilers" }),
+      "focus-heat-accumulators": freezeMapping({ categoryId: "heat-accumulators" }),
+      "focus-pellet-burners": freezeMapping({ categoryId: "pellet-burners" }),
+      "focus-boiler-accessories": freezeMapping({ categoryId: "boiler-accessories" }),
+      "focus-industrial-heating": freezeMapping({ categoryId: "industrial-heating" }),
+      "focus-humidification": freezeMapping({ categoryId: "humidification" })
     })
   });
 
@@ -126,6 +154,9 @@
   }
 
   function supplierFor(product) {
+    if (String(product.brand || "").toLocaleLowerCase("en") === "focus") return "focus";
+    if (String(product.brand || "").toLocaleLowerCase("en") === "feniks") return "feniks";
+    if (String(product.brand || "").toLocaleLowerCase("en") === "altep") return "altep";
     if (String(product.brand || "").toLocaleLowerCase("en") === "tech") return "tech";
     if (String(product.brand || "").toLocaleLowerCase("en").replace(/[^a-z]/g, "") === "tekkhaus") return "tekkhaus";
     if (String(product.brand || "").toLocaleLowerCase("en") === "grundfos") return "grundfos";

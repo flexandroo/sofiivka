@@ -20,6 +20,7 @@ for (const file of [
   "grundfos-products-data.js",
   "tekkhaus-products-data.js",
   "tech-products-data.js",
+  "heating-brands-products-data.js",
   "catalog-data.js"
 ]) {
   vm.runInContext(fs.readFileSync(path.join(projectRoot, file), "utf8"), context, { filename: file });
@@ -66,20 +67,21 @@ routeCheck(routing.resolveLocation("/catalog", "?category=water", "catalog").red
 routeCheck(routing.resolveLocation("/catalog/water-treatment", "", "catalog").redirectTo === "/catalog/water-supply/water-treatment", "legacy water root must canonicalize");
 routeCheck(routing.resolveLocation("/catalog/water-treatment/reverse-osmosis", "", "catalog").redirectTo === "/catalog/water-supply/water-treatment/reverse-osmosis", "legacy water category must canonicalize");
 
-assert.equal(routingAssertions, 124, "taxonomy/route regression suite must retain 124 checks");
+assert.equal(routingAssertions, 145, "taxonomy/route regression suite must retain 145 checks");
 
-assert.equal(products.length, 2221, "catalog must contain 2221 products");
+assert.equal(products.length, 3085, "catalog must contain 3085 products");
 assert.equal(state.sofievkaNormalizationReport.waterSourceCount, 176, "water product count changed");
 assert.equal(state.sofievkaNormalizationReport.heatingSourceCount, 343, "Termojet product count changed");
 assert.equal(state.sofievkaNormalizationReport.wiloSourceCount, 1020, "Wilo product count changed");
 assert.equal(state.sofievkaNormalizationReport.grundfosSourceCount, 313, "Grundfos domestic range count changed");
 assert.equal(state.sofievkaNormalizationReport.tekkhausSourceCount, 112, "TEKK HAUS range count changed");
 assert.equal(state.sofievkaNormalizationReport.techSourceCount, 257, "TECH Controllers range count changed");
+assert.equal(state.sofievkaNormalizationReport.heatingBrandsSourceCount, 864, "Altep, FENIKS and FOCUS range count changed");
 assert.equal(state.sofievkaNormalizationReport.normalizationErrors.length, 0, "catalog validation errors found");
 assert.equal(new Set(products.map(product => product.id)).size, products.length, "product IDs must be unique");
 
 const productIdHash = crypto.createHash("sha256").update(products.map(product => product.id).sort().join("\n")).digest("hex");
-assert.equal(productIdHash, "7ca014993c6304ba55089152f4e3757ace0ca8756b5d0a78d708cd27e1e9e729", "product IDs changed");
+assert.equal(productIdHash, "6ab68ea720a2789ec10e6180612c71298fed8ec18c94cfa8e350c975a6445ec9", "product IDs changed");
 
 assert.ok(catalog.brands.every(brand => catalog.brandUrl(brand.id) === `/brands/${brand.slug}`), "brand URLs must be canonical");
 
@@ -193,12 +195,87 @@ assert.equal(search.search("L-5s").products[0]?.id, "tech-l-5s", "exact TECH mod
 assert.ok(search.search("TECH Sinum").totalProducts >= 100, "TECH Sinum search failed");
 assert.ok(search.search("кімнатний термостат TECH").totalProducts >= 20, "TECH room thermostat search failed");
 
+const officialHeatingBrands = {
+  altep: {
+    label: "Altep",
+    count: 194,
+    series: 32,
+    domain: /^https:\/\/altep\.ua\//,
+    imageRoot: "/assets/products/altep/",
+    images: 194,
+    imageReferences: 1646,
+    uniqueImages: 250,
+    multiImageProducts: 189,
+    documents: 18,
+    manufacturerCodes: 0,
+    minimumDescriptionLength: 1000
+  },
+  feniks: {
+    label: "FENIKS",
+    count: 328,
+    series: 27,
+    domain: /^https:\/\/feniks\.ua\//,
+    imageRoot: "/assets/products/feniks/",
+    images: 328,
+    imageReferences: 1274,
+    uniqueImages: 1258,
+    multiImageProducts: 324,
+    documents: 328,
+    manufacturerCodes: 328,
+    minimumDescriptionLength: 760
+  },
+  focus: {
+    label: "FOCUS",
+    count: 342,
+    series: 30,
+    domain: /^https:\/\/(?:www\.)?firebox\.com\.ua\//,
+    imageRoot: "/assets/products/focus/",
+    images: 341,
+    imageReferences: 1586,
+    uniqueImages: 430,
+    multiImageProducts: 235,
+    documents: 176,
+    manufacturerCodes: 326,
+    minimumDescriptionLength: 620
+  }
+};
+
+for (const [brandId, expectation] of Object.entries(officialHeatingBrands)) {
+  const brandProducts = products.filter(product => product.brandId === brandId);
+  const label = expectation.label;
+  assert.equal(brandProducts.length, expectation.count, `${label} catalog product count changed`);
+  assert.equal(new Set(brandProducts.map(product => product.seriesId)).size, expectation.series, `${label} series count changed`);
+  assert.ok(brandProducts.every(product => expectation.domain.test(product.manufacturerUrl)), `${label} manufacturer URLs must stay on the official domain`);
+  assert.equal(brandProducts.filter(product => product.images.length >= 1).length, expectation.images, `${label} confirmed image coverage changed`);
+  assert.equal(brandProducts.reduce((total, product) => total + product.images.length, 0), expectation.imageReferences, `${label} gallery image coverage changed`);
+  assert.equal(new Set(brandProducts.flatMap(product => product.images)).size, expectation.uniqueImages, `${label} unique image coverage changed`);
+  assert.equal(brandProducts.filter(product => product.images.length > 1).length, expectation.multiImageProducts, `${label} multi-image gallery coverage changed`);
+  assert.ok(brandProducts.every(product => product.images.every(image => image.startsWith(expectation.imageRoot))), `${label} product images must be local`);
+  assert.ok(brandProducts.every(product => product.imageSources.length === product.images.length), `${label} gallery sources must map one-to-one to local images`);
+  assert.ok(brandProducts.every(product => product.imageSources.every(image => expectation.domain.test(image.source))), `${label} image sources must stay on the official domain`);
+  assert.equal(brandProducts.filter(product => product.documents.length >= 1).length, expectation.documents, `${label} confirmed document coverage changed`);
+  assert.ok(brandProducts.every(product => product.documents.every(document => expectation.domain.test(document.url))), `${label} documents must use official URLs`);
+  assert.ok(brandProducts.every(product => Array.isArray(product.sourceUrls) && product.sourceUrls.length >= 2 && product.sourceUrls.every(url => expectation.domain.test(url)) && product.dateVerified === "2026-09-21"), `${label} source provenance is incomplete`);
+  assert.equal(brandProducts.filter(product => product.manufacturerCode).length, expectation.manufacturerCodes, `${label} confirmed manufacturer-code coverage changed`);
+  assert.equal(brandProducts.filter(product => product.ean).length, 0, `${label} EAN values must remain empty when official sources do not publish them`);
+  assert.ok(brandProducts.every(product => product.seo?.title && product.seo?.description), `${label} SEO metadata is incomplete`);
+  assert.ok(brandProducts.every(product => product.keyFeatures.length >= 5 && product.keyFeatures.length <= 8), `${label} products must retain 5–8 confirmed key features`);
+  assert.ok(brandProducts.every(product => product.shortDescription.length <= 280 && !/…$|\.\.\.$/.test(product.shortDescription)), `${label} short descriptions must be complete sentences without UI truncation`);
+  assert.ok(brandProducts.every(product => product.descriptionSections.length === 5 && product.fullDescription.length >= expectation.minimumDescriptionLength), `${label} descriptions must remain complete and structured`);
+}
+
+const focusProducts = products.filter(product => product.brandId === "focus");
+assert.equal(focusProducts.filter(product => product.images.length === 0).map(product => product.id).join("\n"), "focus-spiral-shneka-bunkera-po-zaprosu", "FOCUS missing-image exception changed");
+assert.ok(search.search("Altep Classic Plus").totalProducts >= 6, "Altep series search failed");
+assert.ok(search.search("FENIKS Серія C 12 кВт").totalProducts >= 4, "FENIKS model search failed");
+assert.ok(search.search("FOCUS пелетний котел 120 кВт").totalProducts >= 8, "FOCUS boiler search failed");
+
 const reviewMappings = products.filter(product => product.source?.mappingStatus === "review").length;
 const unmappedAttributeProducts = products.filter(product => product.unmappedAttributes?.length).length;
 const brandsWithProducts = new Set(products.map(product => product.brandId));
 const brandsWithoutProducts = catalog.brands.filter(brand => !brandsWithProducts.has(brand.id)).length;
 assert.equal(reviewMappings, 29, "review mapping debt changed unexpectedly");
-assert.equal(unmappedAttributeProducts, 2102, "unmapped attribute debt changed unexpectedly");
+assert.equal(unmappedAttributeProducts, 2966, "unmapped attribute debt changed unexpectedly");
 
 const shellSource = fs.readFileSync(path.join(projectRoot, "page-shell.js"), "utf8");
 const uiSource = fs.readFileSync(path.join(projectRoot, "catalog-ui.js"), "utf8");
@@ -224,5 +301,5 @@ console.log(JSON.stringify({
   unmappedAttributeProducts,
   brandsWithoutProducts,
   productIdHash,
-  searchCases: 13
+  searchCases: 16
 }, null, 2));

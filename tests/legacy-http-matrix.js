@@ -54,7 +54,7 @@ for (const category of taxonomy.childrenOf("water-treatment")) {
   add(`/catalog/water-treatment/${category.slug}`, routing.getCategoryPath(category.id));
 }
 
-assert.equal(matrix.length, 57, "legacy URL matrix must retain 57 cases");
+assert.equal(matrix.length, 64, "legacy URL matrix must retain 64 cases");
 
 (async () => {
   const results = [];

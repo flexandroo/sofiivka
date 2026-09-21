@@ -31,6 +31,14 @@
     headM: define("headM", { semanticId: "maxHeadM", label: "Максимальний напір, м", type: "number", unit: "м", rank: 9, aliases: [/^hmax$/i, /^макс\.?\s*напір$/i, /^максимальний напір$/i, /^висота підйому$/i] }),
     powerKw: define("powerKw", { label: "Потужність, кВт", type: "number", unit: "кВт", rank: 10, aliases: [/^потужність$/i, /^споживана потужність$/i, /^макс\.?\s*споживана потужність$/i, /^мощность$/i] }),
     heatOutputKw: define("heatOutputKw", { label: "Теплова потужність, кВт", type: "number", unit: "кВт", rank: 11, aliases: [/^теплова потужність$/i, /^потужність макс\./i, /^qmax:.*(?:20|10)/i] }),
+    fuel: define("fuel", { label: "Паливо", rank: 11.1, aliases: [/^паливо$/i, /^вид палива$/i, /^основне паливо$/i] }),
+    efficiencyPercent: define("efficiencyPercent", { label: "ККД, %", type: "number", unit: "%", rank: 11.2, aliases: [/^ккд/i, /^коефіцієнт корисної дії/i] }),
+    waterVolumeL: define("waterVolumeL", { label: "Водяна ємність, л", type: "number", unit: "л", rank: 11.3, aliases: [/^водяна ємність котла/i, /^об[’'`]?єм води/i] }),
+    fireboxVolumeL: define("fireboxVolumeL", { label: "Об’єм топки, л", type: "number", unit: "л", rank: 11.4, aliases: [/^об[’'`]?єм топки/i, /^топка:\s*об[’'`]?єм/i] }),
+    chimneyDiameterMm: define("chimneyDiameterMm", { label: "Діаметр димоходу, мм", type: "number", unit: "мм", rank: 11.5, aliases: [/^діаметр димоходу/i, /^приєднувальні розміри димоходу/i, /^рекомендовані параметри димоходу:\s*внутрішній діаметр/i] }),
+    chimneyHeightM: define("chimneyHeightM", { label: "Мінімальна висота димоходу, м", type: "number", unit: "м", rank: 11.6, aliases: [/^мінімальна висота димоходу/i, /^рекомендовані параметри димоходу:\s*висота/i] }),
+    consumptionPowerW: define("consumptionPowerW", { label: "Споживання електроенергії, Вт", type: "number", unit: "Вт", rank: 11.7, aliases: [/^споживання електроенергії/i, /^електрична потужність/i] }),
+    maxWaterTemperatureC: define("maxWaterTemperatureC", { label: "Максимальна температура води, °C", type: "number", unit: "°C", rank: 11.8, aliases: [/^максимальна температура води/i, /^макс\.? температура теплоносія/i] }),
     mountingLengthMm: define("mountingLengthMm", { semanticId: "installationLengthMm", label: "Монтажна довжина, мм", type: "number", unit: "мм", rank: 12, aliases: [/^довжина насоса$/i, /^монтажна довжина$/i, /^будівельна довжина$/i] }),
     diameterMm: define("diameterMm", { label: "Діаметр, мм", type: "number", unit: "мм", rank: 13, aliases: [/^d\s*\(?мм\)?$/i, /^d\s*\(?mm\)?$/i, /^діаметр,?\s*мм$/i, /^диаметр,?\s*мм$/i] }),
     widthMm: define("widthMm", { label: "Ширина, мм", type: "number", unit: "мм", rank: 14, filterable: false, aliases: [/^ширина(?:\s*\(мм\))?$/i, /^w\s*\(?mm\)?$/i] }),
@@ -113,7 +121,14 @@
     "pump-accessories": Object.freeze(["compatibility", "connection", "material", "pressureBar", "weightKg"]),
     "pump-services": Object.freeze(["productType", "compatibility"]),
     "pool-pumps-filtration": Object.freeze(["flowM3h", "headM", "powerKw", "connection", "voltage", "protectionClass", "filtrationMicron"]),
-    "feed-grinders": Object.freeze(["powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"])
+    "feed-grinders": Object.freeze(["powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"]),
+    "solid-fuel-boilers": Object.freeze(["heatOutputKw", "fuel", "efficiencyPercent", "fireboxVolumeL", "waterVolumeL", "chimneyDiameterMm"]),
+    "pellet-boilers": Object.freeze(["heatOutputKw", "fuel", "efficiencyPercent", "waterVolumeL", "chimneyDiameterMm", "consumptionPowerW"]),
+    "heat-accumulators": Object.freeze(["volumeL", "pressureBar", "connection", "heightMm", "widthMm", "weightKg"]),
+    "pellet-burners": Object.freeze(["heatOutputKw", "fuel", "consumptionPowerW", "voltage", "compatibility", "weightKg"]),
+    "boiler-accessories": Object.freeze(["productType", "compatibility", "volumeL", "heatOutputKw", "connection", "weightKg"]),
+    "industrial-heating": Object.freeze(["heatOutputKw", "capacityKgh", "fuel", "efficiencyPercent", "consumptionPowerW", "pressureBar"]),
+    humidification: Object.freeze(["productType", "purpose", "flowM3h", "pressureBar", "voltage", "powerKw"])
   });
 
   const cardFallbackPriority = Object.freeze([
@@ -152,7 +167,14 @@
     "pump-accessories": Object.freeze(["compatibility", "connection", "material", "pressureBar", "weightKg"]),
     "pump-services": Object.freeze(["productType", "compatibility"]),
     "pool-pumps-filtration": Object.freeze(["flowM3h", "headM", "powerKw", "connection", "voltage", "protectionClass", "filtrationMicron"]),
-    "feed-grinders": Object.freeze(["powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"])
+    "feed-grinders": Object.freeze(["powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"]),
+    "solid-fuel-boilers": Object.freeze(["heatOutputKw", "fuel", "efficiencyPercent", "fireboxVolumeL", "waterVolumeL", "pressureBar", "maxWaterTemperatureC", "chimneyDiameterMm", "chimneyHeightM", "weightKg"]),
+    "pellet-boilers": Object.freeze(["heatOutputKw", "fuel", "efficiencyPercent", "waterVolumeL", "pressureBar", "maxWaterTemperatureC", "chimneyDiameterMm", "consumptionPowerW", "weightKg"]),
+    "heat-accumulators": Object.freeze(["volumeL", "pressureBar", "connection", "material", "temperature", "heightMm", "widthMm", "weightKg"]),
+    "pellet-burners": Object.freeze(["heatOutputKw", "fuel", "consumptionPowerW", "voltage", "compatibility", "weightKg"]),
+    "boiler-accessories": Object.freeze(["productType", "compatibility", "volumeL", "heatOutputKw", "connection", "material", "consumptionPowerW", "weightKg"]),
+    "industrial-heating": Object.freeze(["heatOutputKw", "capacityKgh", "fuel", "efficiencyPercent", "consumptionPowerW", "pressureBar", "weightKg"]),
+    humidification: Object.freeze(["productType", "purpose", "flowM3h", "pressureBar", "voltage", "powerKw", "connection"])
   });
 
   const pdpFallbackPriority = Object.freeze([
@@ -168,6 +190,14 @@
     headM: "Макс. напір",
     powerKw: "Потужність",
     heatOutputKw: "Теплова потужність",
+    fuel: "Паливо",
+    efficiencyPercent: "ККД",
+    waterVolumeL: "Водяна ємність",
+    fireboxVolumeL: "Об’єм топки",
+    chimneyDiameterMm: "Діаметр димоходу",
+    chimneyHeightM: "Висота димоходу",
+    consumptionPowerW: "Споживання",
+    maxWaterTemperatureC: "Макс. температура води",
     mountingLengthMm: "Монтажна довжина",
     filtrationMicron: "Фільтрація",
     pressureBar: "Робочий тиск",
@@ -202,7 +232,8 @@
     ...(window.sofievkaWiloSeriesLabels || {}),
     ...(window.sofievkaGrundfosSeriesLabels || {}),
     ...(window.sofievkaTekkhausSeriesLabels || {}),
-    ...(window.sofievkaTechSeriesLabels || {})
+    ...(window.sofievkaTechSeriesLabels || {}),
+    ...(window.sofievkaHeatingBrandsSeriesLabels || {})
   });
 
   window.sofievkaAttributeSchema = Object.freeze({ definitions, valueLabels, cardPriorityByCategory, cardFallbackPriority, pdpPriorityByCategory, pdpFallbackPriority, cardAttributeLabels, seriesLabels });

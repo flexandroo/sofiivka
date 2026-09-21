@@ -2,6 +2,7 @@ window.sofievkaBrands = Object.freeze([
   {
     slug: "altep",
     name: "Altep",
+    logo: "assets/brands/altep.webp",
     description: "Твердопаливні та пелетні котли для побутових, комерційних і промислових систем опалення.",
     type: "catalog",
     featured: false
