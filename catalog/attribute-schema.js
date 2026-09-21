@@ -35,7 +35,7 @@
     heightMm: define("heightMm", { label: "Висота, мм", type: "number", unit: "мм", rank: 15, filterable: false, aliases: [/^висота(?:\s*\(мм\))?$/i, /^h\s*\(?mm\)?$/i, /^h\s*\(?мм\)?$/i] }),
     depthMm: define("depthMm", { label: "Глибина, мм", type: "number", unit: "мм", rank: 16, filterable: false, aliases: [/^глибина(?:\s*\(мм\))?$/i, /^глубина(?:\s*\(мм\))?$/i] }),
     dimensions: define("dimensions", { label: "Габарити", rank: 16.5, filterable: false, aliases: [/^розмір(?:и)?$/i, /^габарит(?:и|ні розміри)?$/i] }),
-    volumeL: define("volumeL", { label: "Об’єм, л", type: "number", unit: "л", rank: 17, aliases: [/^об[’'`]?єм(?: бойлера)?$/i, /^объем$/i, /^місткість$/i] }),
+    volumeL: define("volumeL", { label: "Об’єм, л", type: "number", unit: "л", rank: 17, aliases: [/^об[’'`]?єм(?: бойлера| бака)?$/i, /^объем$/i, /^місткість$/i] }),
     weightKg: define("weightKg", { label: "Вага, кг", type: "number", unit: "кг", rank: 18, filterable: false, aliases: [/^вага(?:\s*\(кг\))?$/i, /^маса(?:\s*\(кг\))?$/i, /^weight$/i] }),
     filtrationMicron: define("filtrationMicron", { label: "Тонкість фільтрації, мкм", type: "number", unit: "мкм", rank: 19, aliases: [/^тонкість фільтрації$/i] }),
     pressureBar: define("pressureBar", { label: "Робочий тиск, бар", type: "number", unit: "бар", rank: 15, aliases: [/^робочий тиск$/i, /^макс\.?\s*тиск$/i, /^максимальний робочий тиск$/i, /^тиск максимальний$/i, /^давление$/i] }),
@@ -103,7 +103,11 @@
     "surface-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "selfPriming", "connection", "pressureBar"]),
     "pressure-boosting": Object.freeze(["headM", "flowM3h", "powerKw", "pressureBar", "connection", "control"]),
     "sewage-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "freePassageMm", "connection", "protectionClass"]),
-    "sewage-lifting-units": Object.freeze(["headM", "flowM3h", "powerKw", "volumeL", "connection", "control"])
+    "sewage-lifting-units": Object.freeze(["headM", "flowM3h", "powerKw", "volumeL", "connection", "control"]),
+    "pressure-tanks": Object.freeze(["volumeL", "pressureBar", "connection", "material", "installation", "temperature"]),
+    "pump-automation": Object.freeze(["pressureBar", "connection", "voltage", "protectionClass", "control", "temperature"]),
+    "pump-accessories": Object.freeze(["compatibility", "connection", "material", "pressureBar", "weightKg"]),
+    "pump-services": Object.freeze(["productType", "compatibility"])
   });
 
   const cardFallbackPriority = Object.freeze([
@@ -136,7 +140,11 @@
     "surface-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "selfPriming", "connection", "pressureBar"]),
     "pressure-boosting": Object.freeze(["headM", "flowM3h", "powerKw", "pressureBar", "connection", "control"]),
     "sewage-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "freePassageMm", "maxImmersionDepthM", "connection"]),
-    "sewage-lifting-units": Object.freeze(["headM", "flowM3h", "powerKw", "volumeL", "connection", "control"])
+    "sewage-lifting-units": Object.freeze(["headM", "flowM3h", "powerKw", "volumeL", "connection", "control"]),
+    "pressure-tanks": Object.freeze(["volumeL", "pressureBar", "connection", "material", "installation", "temperature"]),
+    "pump-automation": Object.freeze(["pressureBar", "connection", "voltage", "protectionClass", "control", "temperature"]),
+    "pump-accessories": Object.freeze(["compatibility", "connection", "material", "pressureBar", "weightKg"]),
+    "pump-services": Object.freeze(["productType", "compatibility"])
   });
 
   const pdpFallbackPriority = Object.freeze([
@@ -179,7 +187,8 @@
     "wilo-himulti-3": "HiMulti 3",
     "wilo-drain-tm-32": "Drain TM/TMW/TMR 32",
     "wilo-stratos-maxo": "Stratos MAXO",
-    ...(window.sofievkaWiloSeriesLabels || {})
+    ...(window.sofievkaWiloSeriesLabels || {}),
+    ...(window.sofievkaGrundfosSeriesLabels || {})
   });
 
   window.sofievkaAttributeSchema = Object.freeze({ definitions, valueLabels, cardPriorityByCategory, cardFallbackPriority, pdpPriorityByCategory, pdpFallbackPriority, cardAttributeLabels, seriesLabels });

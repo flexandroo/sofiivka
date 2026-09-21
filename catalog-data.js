@@ -176,6 +176,20 @@
       allowedFacetIds: ["productType", "headM", "flowM3h", "powerKw", "connection", "pressureBar", "voltage"],
       seo: { title: "Насоси для водопостачання | ТД «Софіївка»", description: "Багатоступеневі та дренажні насоси для систем водопостачання." }
     },
+    {
+      id: "water-supply-components",
+      slug: "water-supply-components",
+      parentId: "water-supply",
+      level: 2,
+      title: "Баки, автоматика та комплектуючі",
+      shortTitle: "Баки та автоматика",
+      description: "Мембранні баки, контролери, монтажні комплекти та сервісні позиції для систем водопостачання.",
+      order: 230,
+      status: "active",
+      visibility: "catalog",
+      allowedFacetIds: ["productType", "volumeL", "pressureBar", "connection", "voltage", "control", "compatibility", "material", "installation"],
+      seo: { title: "Баки й автоматика для водопостачання | ТД «Софіївка»", description: "Мембранні баки, автоматика та фірмові комплектуючі для насосних систем." }
+    },
     { id: "multistage-pumps", slug: "multistage-pumps", parentId: "water-pumps", level: 3, title: "Багатоступеневі насоси", shortTitle: "Багатоступеневі", description: "Горизонтальні багатоступеневі насоси для водопостачання та поливу.", order: 321, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "powerKw", "selfPriming", "connection", "pressureBar", "voltage"], seo: { title: "Багатоступеневі насоси | ТД «Софіївка»", description: "Багатоступеневі насоси для приватного водопостачання, поливу та використання дощової води." } },
     { id: "drainage-pumps", slug: "drainage-pumps", parentId: "water-pumps", level: 3, title: "Дренажні насоси", shortTitle: "Дренажні", description: "Занурювальні насоси для відведення стічної та забрудненої води без фекалій.", order: 322, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "powerKw", "freePassageMm", "maxImmersionDepthM", "floatSwitch", "connection", "protectionClass"], seo: { title: "Дренажні насоси | ТД «Софіївка»", description: "Дренажні занурювальні насоси для відведення стічної та забрудненої води." } },
     { id: "borehole-pumps", slug: "borehole-pumps", parentId: "water-pumps", level: 3, title: "Свердловинні насоси", shortTitle: "Свердловинні", description: "Занурювальні насоси та комплектні системи для подачі води зі свердловин і колодязів.", order: 323, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "headM", "flowM3h", "powerKw", "connection", "voltage", "protectionClass"], seo: { title: "Свердловинні насоси | ТД «Софіївка»", description: "Свердловинні насоси Wilo для приватного водопостачання, поливу та зрошення." } },
@@ -183,6 +197,10 @@
     { id: "pressure-boosting", slug: "pressure-boosting", parentId: "water-pumps", level: 3, title: "Підвищення тиску", shortTitle: "Підвищення тиску", description: "Насоси та комплектні установки для стабілізації тиску в приватних системах водопостачання.", order: 325, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "headM", "flowM3h", "powerKw", "connection", "pressureBar", "voltage", "control"], seo: { title: "Насоси підвищення тиску | ТД «Софіївка»", description: "Насоси й установки Wilo для підвищення тиску у водопостачанні будинку." } },
     { id: "sewage-pumps", slug: "sewage-pumps", parentId: "water-pumps", level: 3, title: "Каналізаційні насоси", shortTitle: "Каналізаційні", description: "Занурювальні насоси для перекачування забруднених і стічних вод.", order: 326, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "headM", "flowM3h", "powerKw", "freePassageMm", "maxImmersionDepthM", "connection", "protectionClass"], seo: { title: "Каналізаційні насоси | ТД «Софіївка»", description: "Каналізаційні насоси Wilo для відведення стічних і забруднених вод." } },
     { id: "sewage-lifting-units", slug: "sewage-lifting-units", parentId: "water-pumps", level: 3, title: "Каналізаційні установки", shortTitle: "Каналізаційні установки", description: "Готові напірні установки для відведення стічних вод із санітарних вузлів і будівель.", order: 327, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "headM", "flowM3h", "powerKw", "volumeL", "connection", "voltage", "control"], seo: { title: "Каналізаційні установки | ТД «Софіївка»", description: "Установки Wilo для напірного відведення стічних вод у приватних будинках." } },
+    { id: "pressure-tanks", slug: "pressure-tanks", parentId: "water-supply-components", level: 3, title: "Мембранні баки", shortTitle: "Мембранні баки", description: "Напірні мембранні баки для запасу води, стабілізації тиску та зменшення кількості пусків насоса.", order: 331, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "volumeL", "pressureBar", "connection", "material", "installation", "temperature"], seo: { title: "Мембранні баки | ТД «Софіївка»", description: "Мембранні напірні баки Grundfos для побутового водопостачання." } },
+    { id: "pump-automation", slug: "pump-automation", parentId: "water-supply-components", level: 3, title: "Автоматика насосів", shortTitle: "Автоматика насосів", description: "Контролери для автоматичного запуску, зупинки та захисту насосів водопостачання.", order: 332, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "pressureBar", "connection", "voltage", "protectionClass", "control", "temperature"], seo: { title: "Автоматика насосів | ТД «Софіївка»", description: "Контролери Grundfos для автоматичного керування побутовими насосами." } },
+    { id: "pump-accessories", slug: "pump-accessories", parentId: "water-supply-components", level: 3, title: "Комплектуючі для насосів", shortTitle: "Комплектуючі", description: "Офіційні клапани, колектори, монтажні комплекти та електричні компоненти Grundfos.", order: 333, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "compatibility", "connection", "material", "pressureBar", "weightKg"], seo: { title: "Комплектуючі для насосів | ТД «Софіївка»", description: "Фірмові комплектуючі Grundfos для насосів і насосних установок." } },
+    { id: "pump-services", slug: "pump-services", parentId: "water-supply-components", level: 3, title: "Сервісні позиції", shortTitle: "Сервіс", description: "Офіційні сервісні позиції, наведені у прайсі побутового обладнання виробника.", order: 334, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "compatibility"], seo: { title: "Сервіс насосних систем | ТД «Софіївка»", description: "Офіційні сервісні позиції Grundfos для насосних установок." } },
     { id: "drinking-system-cartridges", slug: "drinking-system-cartridges", parentId: "water-treatment", level: 3, title: "Картриджі питних систем", shortTitle: "Картриджі питних систем", description: "Змінні елементи для питних систем очищення води.", order: 311, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "type", "format"], legacyGroup: "replacement-elements", legacyGroupTitle: "Змінні елементи", seo: {} },
     { id: "mainline-cartridges", slug: "mainline-cartridges", parentId: "water-treatment", level: 3, title: "Картриджі магістральних фільтрів", shortTitle: "Магістральні картриджі", description: "Картриджі для магістрального очищення води.", order: 312, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "purpose", "format", "waterType"], legacyGroup: "replacement-elements", legacyGroupTitle: "Змінні елементи", seo: {} },
     { id: "mainline-filters-housings", slug: "mainline-filters-housings", parentId: "water-treatment", level: 3, title: "Корпуси магістральних фільтрів", shortTitle: "Магістральні фільтри", description: "Корпуси та готові магістральні фільтри.", order: 313, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "purpose", "connection", "format", "waterType"], legacyGroup: "whole-house-treatment", legacyGroupTitle: "Очищення води для будинку", seo: {} },
@@ -266,7 +284,7 @@
     heightMm: define("heightMm", { label: "Висота, мм", type: "number", unit: "мм", rank: 15, filterable: false, aliases: [/^висота(?:\s*\(мм\))?$/i, /^h\s*\(?mm\)?$/i, /^h\s*\(?мм\)?$/i] }),
     depthMm: define("depthMm", { label: "Глибина, мм", type: "number", unit: "мм", rank: 16, filterable: false, aliases: [/^глибина(?:\s*\(мм\))?$/i, /^глубина(?:\s*\(мм\))?$/i] }),
     dimensions: define("dimensions", { label: "Габарити", rank: 16.5, filterable: false, aliases: [/^розмір(?:и)?$/i, /^габарит(?:и|ні розміри)?$/i] }),
-    volumeL: define("volumeL", { label: "Об’єм, л", type: "number", unit: "л", rank: 17, aliases: [/^об[’'`]?єм(?: бойлера)?$/i, /^объем$/i, /^місткість$/i] }),
+    volumeL: define("volumeL", { label: "Об’єм, л", type: "number", unit: "л", rank: 17, aliases: [/^об[’'`]?єм(?: бойлера| бака)?$/i, /^объем$/i, /^місткість$/i] }),
     weightKg: define("weightKg", { label: "Вага, кг", type: "number", unit: "кг", rank: 18, filterable: false, aliases: [/^вага(?:\s*\(кг\))?$/i, /^маса(?:\s*\(кг\))?$/i, /^weight$/i] }),
     filtrationMicron: define("filtrationMicron", { label: "Тонкість фільтрації, мкм", type: "number", unit: "мкм", rank: 19, aliases: [/^тонкість фільтрації$/i] }),
     pressureBar: define("pressureBar", { label: "Робочий тиск, бар", type: "number", unit: "бар", rank: 15, aliases: [/^робочий тиск$/i, /^макс\.?\s*тиск$/i, /^максимальний робочий тиск$/i, /^тиск максимальний$/i, /^давление$/i] }),
@@ -334,7 +352,11 @@
     "surface-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "selfPriming", "connection", "pressureBar"]),
     "pressure-boosting": Object.freeze(["headM", "flowM3h", "powerKw", "pressureBar", "connection", "control"]),
     "sewage-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "freePassageMm", "connection", "protectionClass"]),
-    "sewage-lifting-units": Object.freeze(["headM", "flowM3h", "powerKw", "volumeL", "connection", "control"])
+    "sewage-lifting-units": Object.freeze(["headM", "flowM3h", "powerKw", "volumeL", "connection", "control"]),
+    "pressure-tanks": Object.freeze(["volumeL", "pressureBar", "connection", "material", "installation", "temperature"]),
+    "pump-automation": Object.freeze(["pressureBar", "connection", "voltage", "protectionClass", "control", "temperature"]),
+    "pump-accessories": Object.freeze(["compatibility", "connection", "material", "pressureBar", "weightKg"]),
+    "pump-services": Object.freeze(["productType", "compatibility"])
   });
 
   const cardFallbackPriority = Object.freeze([
@@ -367,7 +389,11 @@
     "surface-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "selfPriming", "connection", "pressureBar"]),
     "pressure-boosting": Object.freeze(["headM", "flowM3h", "powerKw", "pressureBar", "connection", "control"]),
     "sewage-pumps": Object.freeze(["headM", "flowM3h", "powerKw", "freePassageMm", "maxImmersionDepthM", "connection"]),
-    "sewage-lifting-units": Object.freeze(["headM", "flowM3h", "powerKw", "volumeL", "connection", "control"])
+    "sewage-lifting-units": Object.freeze(["headM", "flowM3h", "powerKw", "volumeL", "connection", "control"]),
+    "pressure-tanks": Object.freeze(["volumeL", "pressureBar", "connection", "material", "installation", "temperature"]),
+    "pump-automation": Object.freeze(["pressureBar", "connection", "voltage", "protectionClass", "control", "temperature"]),
+    "pump-accessories": Object.freeze(["compatibility", "connection", "material", "pressureBar", "weightKg"]),
+    "pump-services": Object.freeze(["productType", "compatibility"])
   });
 
   const pdpFallbackPriority = Object.freeze([
@@ -485,7 +511,13 @@
       "grundfos-pressure": freezeMapping({ categoryId: "pressure-boosting" }),
       "grundfos-drainage": freezeMapping({ categoryId: "drainage-pumps" }),
       "grundfos-sewage": freezeMapping({ categoryId: "sewage-pumps" }),
-      "grundfos-lifting": freezeMapping({ categoryId: "sewage-lifting-units" })
+      "grundfos-lifting": freezeMapping({ categoryId: "sewage-lifting-units" }),
+      "grundfos-pressure-tanks": freezeMapping({ categoryId: "pressure-tanks" }),
+      "grundfos-pump-automation": freezeMapping({ categoryId: "pump-automation" }),
+      "grundfos-pump-accessories": freezeMapping({ categoryId: "pump-accessories" }),
+      "grundfos-pump-services": freezeMapping({ categoryId: "pump-services" }),
+      "grundfos-heating-automation": freezeMapping({ categoryId: "automation" }),
+      "grundfos-heating-components": freezeMapping({ categoryId: "heating-components" })
     })
   });
 
@@ -1412,7 +1444,7 @@
     "diameter", "diameterMm", "connection", "powerKw", "headM", "flowM3h", "filtrationMicron",
     "compatibility", "kvs", "mountingLengthMm", "pressureBar", "heatOutputKw", "outlets", "voltage",
     "control", "protectionClass", "temperature", "capacityLh", "format", "eei", "selfPriming",
-    "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch"
+    "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "volumeL", "material", "installation"
   ]);
 
   const CATEGORY_ALIASES = Object.freeze({
@@ -1435,7 +1467,12 @@
     "water-softening": ["пом'якшення", "пом’якшення", "умягчение", "пом'якшувач"],
     "chlorine-odor-removal": ["видалення хлору", "хлор і запах", "удаление хлора"],
     "mechanical-treatment": ["механічне очищення", "механическая очистка"],
-    "flow-filters": ["проточний фільтр", "проточні фільтри", "проточный фильтр"]
+    "flow-filters": ["проточний фільтр", "проточні фільтри", "проточный фильтр"],
+    "water-supply-components": ["комплектуючі для водопостачання", "баки та автоматика", "аксесуари насосів"],
+    "pressure-tanks": ["мембранний бак", "гідроакумулятор", "напірний бак", "расширительный бак"],
+    "pump-automation": ["автоматика насоса", "контролер насоса", "реле тиску", "pressure manager"],
+    "pump-accessories": ["комплектуючі насоса", "аксесуари насоса", "монтажний комплект"],
+    "pump-services": ["сервіс насосів", "пусконалагодження", "введення в експлуатацію"]
   });
 
   const WORD_GROUPS = Object.freeze([

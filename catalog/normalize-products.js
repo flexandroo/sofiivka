@@ -367,16 +367,18 @@
     : (Array.isArray(window.sofievkaProducts) ? window.sofievkaProducts : []);
   const rawHeatingProducts = Array.isArray(window.sofievkaTermojetProducts) ? window.sofievkaTermojetProducts : [];
   const rawWiloProducts = Array.isArray(window.sofievkaWiloProducts) ? window.sofievkaWiloProducts : [];
-  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts]);
+  const rawGrundfosProducts = Array.isArray(window.sofievkaGrundfosProducts) ? window.sofievkaGrundfosProducts : [];
+  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts]);
 
   window.sofievkaProductNormalizer = Object.freeze({ slugify, normalizeProduct, normalizeAll });
   window.sofievkaNormalizedProducts = result.products;
   window.sofievkaNormalizationReport = Object.freeze({
-    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length,
+    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length,
     normalizedCount: result.products.length,
     waterSourceCount: rawWaterProducts.length,
     heatingSourceCount: rawHeatingProducts.length,
     wiloSourceCount: rawWiloProducts.length,
+    grundfosSourceCount: rawGrundfosProducts.length,
     duplicateInputIds: result.duplicateInputIds,
     adjustedSlugs: result.adjustedSlugs,
     normalizationErrors: Object.freeze(result.products.filter(product => product.normalizationError).map(product => Object.freeze({ id: product.id, error: product.normalizationError })))

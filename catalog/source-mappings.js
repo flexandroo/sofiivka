@@ -15,7 +15,8 @@
   const suppliers = Object.freeze({
     ecosoft: Object.freeze({ id: "ecosoft", brandId: "ecosoft", sourceName: "Каталог товарів" }),
     termojet: Object.freeze({ id: "termojet", brandId: "termojet", sourceName: "Termojet XML catalog", imageOrigin: "https://termojet.com.ua" }),
-    wilo: Object.freeze({ id: "wilo", brandId: "wilo", sourceName: "Офіційний каталог Wilo Україна" })
+    wilo: Object.freeze({ id: "wilo", brandId: "wilo", sourceName: "Офіційний каталог Wilo Україна" }),
+    grundfos: Object.freeze({ id: "grundfos", brandId: "grundfos", sourceName: "Офіційний каталог Grundfos Україна" })
   });
 
   const categoryMappings = Object.freeze({
@@ -57,6 +58,21 @@
       "wilo-pressure": freezeMapping({ categoryId: "pressure-boosting" }),
       "wilo-sewage": freezeMapping({ categoryId: "sewage-pumps" }),
       "wilo-lifting": freezeMapping({ categoryId: "sewage-lifting-units" })
+    }),
+    grundfos: Object.freeze({
+      "grundfos-circulation": freezeMapping({ categoryId: "circulation-pumps" }),
+      "grundfos-dhw-circulation": freezeMapping({ categoryId: "circulation-pumps" }),
+      "grundfos-surface": freezeMapping({ categoryId: "surface-pumps" }),
+      "grundfos-pressure": freezeMapping({ categoryId: "pressure-boosting" }),
+      "grundfos-drainage": freezeMapping({ categoryId: "drainage-pumps" }),
+      "grundfos-sewage": freezeMapping({ categoryId: "sewage-pumps" }),
+      "grundfos-lifting": freezeMapping({ categoryId: "sewage-lifting-units" }),
+      "grundfos-pressure-tanks": freezeMapping({ categoryId: "pressure-tanks" }),
+      "grundfos-pump-automation": freezeMapping({ categoryId: "pump-automation" }),
+      "grundfos-pump-accessories": freezeMapping({ categoryId: "pump-accessories" }),
+      "grundfos-pump-services": freezeMapping({ categoryId: "pump-services" }),
+      "grundfos-heating-automation": freezeMapping({ categoryId: "automation" }),
+      "grundfos-heating-components": freezeMapping({ categoryId: "heating-components" })
     })
   });
 
@@ -90,6 +106,7 @@
   }
 
   function supplierFor(product) {
+    if (String(product.brand || "").toLocaleLowerCase("en") === "grundfos") return "grundfos";
     if (String(product.brand || "").toLocaleLowerCase("en") === "wilo") return "wilo";
     if (String(product.brand || "").toLocaleLowerCase("en") === "ecosoft" || product.category === "water") return "ecosoft";
     if (String(product.brand || "").toLocaleLowerCase("en") === "termojet" || product.category === "heating") return "termojet";

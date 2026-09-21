@@ -8,7 +8,7 @@
     "diameter", "diameterMm", "connection", "powerKw", "headM", "flowM3h", "filtrationMicron",
     "compatibility", "kvs", "mountingLengthMm", "pressureBar", "heatOutputKw", "outlets", "voltage",
     "control", "protectionClass", "temperature", "capacityLh", "format", "eei", "selfPriming",
-    "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch"
+    "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "volumeL", "material", "installation"
   ]);
 
   const CATEGORY_ALIASES = Object.freeze({
@@ -31,7 +31,12 @@
     "water-softening": ["пом'якшення", "пом’якшення", "умягчение", "пом'якшувач"],
     "chlorine-odor-removal": ["видалення хлору", "хлор і запах", "удаление хлора"],
     "mechanical-treatment": ["механічне очищення", "механическая очистка"],
-    "flow-filters": ["проточний фільтр", "проточні фільтри", "проточный фильтр"]
+    "flow-filters": ["проточний фільтр", "проточні фільтри", "проточный фильтр"],
+    "water-supply-components": ["комплектуючі для водопостачання", "баки та автоматика", "аксесуари насосів"],
+    "pressure-tanks": ["мембранний бак", "гідроакумулятор", "напірний бак", "расширительный бак"],
+    "pump-automation": ["автоматика насоса", "контролер насоса", "реле тиску", "pressure manager"],
+    "pump-accessories": ["комплектуючі насоса", "аксесуари насоса", "монтажний комплект"],
+    "pump-services": ["сервіс насосів", "пусконалагодження", "введення в експлуатацію"]
   });
 
   const WORD_GROUPS = Object.freeze([

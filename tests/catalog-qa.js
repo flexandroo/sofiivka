@@ -64,18 +64,18 @@ routeCheck(routing.resolveLocation("/catalog", "?category=water", "catalog").red
 routeCheck(routing.resolveLocation("/catalog/water-treatment", "", "catalog").redirectTo === "/catalog/water-supply/water-treatment", "legacy water root must canonicalize");
 routeCheck(routing.resolveLocation("/catalog/water-treatment/reverse-osmosis", "", "catalog").redirectTo === "/catalog/water-supply/water-treatment/reverse-osmosis", "legacy water category must canonicalize");
 
-assert.equal(routingAssertions, 100, "taxonomy/route regression suite must retain 100 checks");
+assert.equal(routingAssertions, 115, "taxonomy/route regression suite must retain 115 checks");
 
-assert.equal(products.length, 1728, "catalog must contain 1728 products");
+assert.equal(products.length, 1852, "catalog must contain 1852 products");
 assert.equal(state.sofievkaNormalizationReport.waterSourceCount, 176, "water product count changed");
 assert.equal(state.sofievkaNormalizationReport.heatingSourceCount, 343, "Termojet product count changed");
 assert.equal(state.sofievkaNormalizationReport.wiloSourceCount, 1020, "Wilo product count changed");
-assert.equal(state.sofievkaNormalizationReport.grundfosSourceCount, 189, "Grundfos product count changed");
+assert.equal(state.sofievkaNormalizationReport.grundfosSourceCount, 313, "Grundfos domestic range count changed");
 assert.equal(state.sofievkaNormalizationReport.normalizationErrors.length, 0, "catalog validation errors found");
 assert.equal(new Set(products.map(product => product.id)).size, products.length, "product IDs must be unique");
 
 const productIdHash = crypto.createHash("sha256").update(products.map(product => product.id).sort().join("\n")).digest("hex");
-assert.equal(productIdHash, "43d9fd9d5c9356caf30e34206af274afb0c01cd9a56893d2935cf994c4c05d55", "product IDs changed");
+assert.equal(productIdHash, "adb7c65186c4d1f1884fe9c7eae7f6d90b80d860062ccc731f256a30d80f93e3", "product IDs changed");
 
 assert.ok(catalog.brands.every(brand => catalog.brandUrl(brand.id) === `/brands/${brand.slug}`), "brand URLs must be canonical");
 
@@ -123,26 +123,30 @@ assert.ok(wiloProducts.every(product => product.descriptionSourceUrl && product.
 assert.ok(wiloProducts.every(product => !product.fullDescription.includes("Конкретне виконання слід підбирати")), "legacy generic Wilo descriptions remain");
 
 const grundfosProducts = products.filter(product => product.brandId === "grundfos");
-assert.equal(grundfosProducts.length, 189, "Grundfos domestic catalog must retain 189 pump SKU");
-assert.equal(new Set(grundfosProducts.map(product => product.seriesId)).size, 25, "Grundfos domestic catalog must retain 25 series and subseries");
+assert.equal(grundfosProducts.length, 313, "Grundfos domestic catalog must retain all 313 official positions");
+assert.equal(new Set(grundfosProducts.map(product => product.seriesId)).size, 42, "Grundfos domestic catalog must retain 42 series and product groups");
 assert.ok(grundfosProducts.every(product => product.manufacturerUrl?.startsWith("https://product-selection.grundfos.com/ua/products/")), "every Grundfos SKU must retain its official manufacturer URL");
 assert.ok(grundfosProducts.every(product => product.images.length >= 1 && product.images.every(image => image.startsWith("/assets/products/grundfos/"))), "Grundfos images must be local");
 assert.ok(grundfosProducts.every(product => product.imageSources?.[0]?.source?.startsWith("https://api.grundfos.com/gpi/imaging/product")), "Grundfos product image provenance is incomplete");
 assert.ok(grundfosProducts.every(product => product.dimensionDiagram?.startsWith("/assets/products/grundfos/")), "Grundfos dimension diagrams must be local");
-assert.ok(grundfosProducts.every(product => product.documents.length >= 1 && product.documents.every(document => /^https:\/\/api\.grundfos\.com\/literature\//.test(document.url))), "Grundfos documents must use official literature URLs");
+assert.equal(grundfosProducts.filter(product => product.documents.length >= 1).length, 295, "confirmed Grundfos document coverage changed");
+assert.ok(grundfosProducts.every(product => product.documents.every(document => /^https:\/\/api\.grundfos\.com\/literature\//.test(document.url))), "Grundfos documents must use official literature URLs");
 assert.ok(grundfosProducts.every(product => Array.isArray(product.sourceUrls) && product.sourceUrls.length >= 6 && product.dateVerified === "2026-09-21"), "Grundfos source provenance is incomplete");
-assert.ok(grundfosProducts.every(product => product.ean && product.manufacturerCode && product.seo?.title && product.technicalDetails.length >= 20), "Grundfos commerce metadata is incomplete");
+assert.equal(grundfosProducts.filter(product => product.ean).length, 312, "confirmed Grundfos EAN coverage changed");
+assert.ok(grundfosProducts.every(product => product.manufacturerCode && product.seo?.title && product.technicalDetails.length >= 4), "Grundfos commerce metadata is incomplete");
 assert.ok(grundfosProducts.every(product => product.shortDescription.length <= 220 && !/…$/.test(product.shortDescription)), "Grundfos short descriptions must be complete sentences without UI truncation");
 assert.ok(grundfosProducts.every(product => product.fullDescription.length >= 600 && product.descriptionSections.length >= 5), "Grundfos descriptions must retain technical depth");
 assert.ok(search.search("93013252").products[0]?.id === "grundfos-93013252", "exact Grundfos article search must rank the product first");
 assert.ok(search.search("Grundfos ALPHA3").totalProducts >= 11, "Grundfos series search failed");
+assert.equal(search.search("мембранний бак Grundfos").totalProducts, 87, "Grundfos pressure tank search failed");
+assert.ok(search.search("Grundfos PM 1").totalProducts >= 3, "Grundfos pressure manager search failed");
 
 const reviewMappings = products.filter(product => product.source?.mappingStatus === "review").length;
 const unmappedAttributeProducts = products.filter(product => product.unmappedAttributes?.length).length;
 const brandsWithProducts = new Set(products.map(product => product.brandId));
 const brandsWithoutProducts = catalog.brands.filter(brand => !brandsWithProducts.has(brand.id)).length;
 assert.equal(reviewMappings, 29, "review mapping debt changed unexpectedly");
-assert.equal(unmappedAttributeProducts, 1619, "unmapped attribute debt changed unexpectedly");
+assert.equal(unmappedAttributeProducts, 1743, "unmapped attribute debt changed unexpectedly");
 
 const shellSource = fs.readFileSync(path.join(projectRoot, "page-shell.js"), "utf8");
 const uiSource = fs.readFileSync(path.join(projectRoot, "catalog-ui.js"), "utf8");
