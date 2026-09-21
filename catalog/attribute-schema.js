@@ -25,6 +25,8 @@
     installation: define("installation", { label: "Монтаж", rank: 6, aliases: [/^монтаж$/i, /^встановлення$/i, /^спосіб встановлення$/i] }),
     capacityLh: define("capacityLh", { label: "Продуктивність, л/год", type: "number", unit: "л/год", rank: 7, aliases: [/^продуктивність(?:,?\s*л\/год)?$/i] }),
     flowM3h: define("flowM3h", { label: "Продуктивність, м³/год", type: "number", unit: "м³/год", rank: 8, aliases: [/^qmax$/i, /^gmax$/i, /^макс\.?\s*продуктивність$/i, /^максимальна витрата$/i, /^витрата$/i, /^пропускна здатність(?:\s*\(м[³3]\/год\))?$/i, /^швидкість потоку(?:\s*\(м[³3]\/год\))?$/i, /^номінальна витрата$/i] }),
+    capacityKgh: define("capacityKgh", { label: "Продуктивність, кг/год", type: "number", unit: "кг/год", rank: 8.1, aliases: [/^продуктивність(?:,?\s*кг\/год)?$/i, /^продуктивність.*кг\/год$/i] }),
+    rotationRpm: define("rotationRpm", { label: "Частота обертання, об/хв", type: "number", unit: "об/хв", rank: 8.2, aliases: [/^частота обертання$/i, /^оберти двигуна$/i] }),
     kvs: define("kvs", { label: "Kvs, м³/год", type: "number", unit: "м³/год", rank: 9, aliases: [/^kvs(?:\s*\(.+\))?$/i, /^kv$/i] }),
     headM: define("headM", { semanticId: "maxHeadM", label: "Максимальний напір, м", type: "number", unit: "м", rank: 9, aliases: [/^hmax$/i, /^макс\.?\s*напір$/i, /^максимальний напір$/i, /^висота підйому$/i] }),
     powerKw: define("powerKw", { label: "Потужність, кВт", type: "number", unit: "кВт", rank: 10, aliases: [/^потужність$/i, /^споживана потужність$/i, /^макс\.?\s*споживана потужність$/i, /^мощность$/i] }),
@@ -107,14 +109,16 @@
     "pressure-tanks": Object.freeze(["volumeL", "pressureBar", "connection", "material", "installation", "temperature"]),
     "pump-automation": Object.freeze(["pressureBar", "connection", "voltage", "protectionClass", "control", "temperature"]),
     "pump-accessories": Object.freeze(["compatibility", "connection", "material", "pressureBar", "weightKg"]),
-    "pump-services": Object.freeze(["productType", "compatibility"])
+    "pump-services": Object.freeze(["productType", "compatibility"]),
+    "pool-pumps-filtration": Object.freeze(["flowM3h", "headM", "powerKw", "connection", "voltage", "protectionClass", "filtrationMicron"]),
+    "feed-grinders": Object.freeze(["powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"])
   });
 
   const cardFallbackPriority = Object.freeze([
     "purpose", "type", "technology", "capacityLh", "flowM3h", "headM", "kvs", "powerKw", "heatOutputKw",
     "connection", "diameter", "diameterMm", "mountingLengthMm", "pressureBar", "filtrationMicron", "material",
     "control", "voltage", "protectionClass", "compatibility", "waterSource", "installation", "format", "pump",
-    "mineralizer", "flowType", "scope", "volumeL", "weightKg", "widthMm", "heightMm", "depthMm", "dimensions", "eei", "selfPriming", "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "productType"
+    "mineralizer", "flowType", "scope", "volumeL", "weightKg", "capacityKgh", "rotationRpm", "widthMm", "heightMm", "depthMm", "dimensions", "eei", "selfPriming", "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "productType"
   ]);
 
   const pdpPriorityByCategory = Object.freeze({
@@ -144,7 +148,9 @@
     "pressure-tanks": Object.freeze(["volumeL", "pressureBar", "connection", "material", "installation", "temperature"]),
     "pump-automation": Object.freeze(["pressureBar", "connection", "voltage", "protectionClass", "control", "temperature"]),
     "pump-accessories": Object.freeze(["compatibility", "connection", "material", "pressureBar", "weightKg"]),
-    "pump-services": Object.freeze(["productType", "compatibility"])
+    "pump-services": Object.freeze(["productType", "compatibility"]),
+    "pool-pumps-filtration": Object.freeze(["flowM3h", "headM", "powerKw", "connection", "voltage", "protectionClass", "filtrationMicron"]),
+    "feed-grinders": Object.freeze(["powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"])
   });
 
   const pdpFallbackPriority = Object.freeze([
@@ -154,6 +160,8 @@
 
   const cardAttributeLabels = Object.freeze({
     capacityLh: "Продуктивність",
+    capacityKgh: "Продуктивність",
+    rotationRpm: "Оберти",
     flowM3h: "Подача",
     headM: "Макс. напір",
     powerKw: "Потужність",
@@ -188,7 +196,8 @@
     "wilo-drain-tm-32": "Drain TM/TMW/TMR 32",
     "wilo-stratos-maxo": "Stratos MAXO",
     ...(window.sofievkaWiloSeriesLabels || {}),
-    ...(window.sofievkaGrundfosSeriesLabels || {})
+    ...(window.sofievkaGrundfosSeriesLabels || {}),
+    ...(window.sofievkaTekkhausSeriesLabels || {})
   });
 
   window.sofievkaAttributeSchema = Object.freeze({ definitions, valueLabels, cardPriorityByCategory, cardFallbackPriority, pdpPriorityByCategory, pdpFallbackPriority, cardAttributeLabels, seriesLabels });

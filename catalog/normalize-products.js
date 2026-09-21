@@ -248,7 +248,7 @@
       records.push(Object.freeze({ id, label: definition.label, value, unit: definition.unit || "", provenance, rule, sourceLabel, sourceValue, unitStatus }));
     });
 
-    const ignoredLabels = [/^категорія$/i, /^бренд$/i, /^стан$/i, /^наявність$/i, /^артикул/i];
+    const ignoredLabels = [/^категорія$/i, /^категорія виробника$/i, /^офіційна назва$/i, /^бренд$/i, /^стан$/i, /^наявність$/i, /^артикул/i];
     const unmapped = entries.filter(entry => !usedEntries.has(entry) && !ignoredLabels.some(pattern => pattern.test(entry.label))).map(entry => Object.freeze({ label: entry.label, value: entry.value, provenance: entry.origin === "supplier" ? "source-confirmed" : entry.origin }));
     return { normalized: Object.freeze(normalized), records: Object.freeze(records), unmapped: Object.freeze(unmapped) };
   }
@@ -368,17 +368,19 @@
   const rawHeatingProducts = Array.isArray(window.sofievkaTermojetProducts) ? window.sofievkaTermojetProducts : [];
   const rawWiloProducts = Array.isArray(window.sofievkaWiloProducts) ? window.sofievkaWiloProducts : [];
   const rawGrundfosProducts = Array.isArray(window.sofievkaGrundfosProducts) ? window.sofievkaGrundfosProducts : [];
-  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts]);
+  const rawTekkhausProducts = Array.isArray(window.sofievkaTekkhausProducts) ? window.sofievkaTekkhausProducts : [];
+  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts]);
 
   window.sofievkaProductNormalizer = Object.freeze({ slugify, normalizeProduct, normalizeAll });
   window.sofievkaNormalizedProducts = result.products;
   window.sofievkaNormalizationReport = Object.freeze({
-    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length,
+    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length + rawTekkhausProducts.length,
     normalizedCount: result.products.length,
     waterSourceCount: rawWaterProducts.length,
     heatingSourceCount: rawHeatingProducts.length,
     wiloSourceCount: rawWiloProducts.length,
     grundfosSourceCount: rawGrundfosProducts.length,
+    tekkhausSourceCount: rawTekkhausProducts.length,
     duplicateInputIds: result.duplicateInputIds,
     adjustedSlugs: result.adjustedSlugs,
     normalizationErrors: Object.freeze(result.products.filter(product => product.normalizationError).map(product => Object.freeze({ id: product.id, error: product.normalizationError })))

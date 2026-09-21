@@ -18,6 +18,7 @@ for (const file of [
   "termojet-products-data.js",
   "wilo-products-data.js",
   "grundfos-products-data.js",
+  "tekkhaus-products-data.js",
   "catalog-data.js"
 ]) {
   vm.runInContext(fs.readFileSync(path.join(projectRoot, file), "utf8"), context, { filename: file });
@@ -52,7 +53,7 @@ for (const category of taxonomy.childrenOf("water-treatment")) {
   add(`/catalog/water-treatment/${category.slug}`, routing.getCategoryPath(category.id));
 }
 
-assert.equal(matrix.length, 54, "legacy URL matrix must retain 54 cases");
+assert.equal(matrix.length, 57, "legacy URL matrix must retain 57 cases");
 
 (async () => {
   const results = [];

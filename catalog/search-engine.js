@@ -8,7 +8,8 @@
     "diameter", "diameterMm", "connection", "powerKw", "headM", "flowM3h", "filtrationMicron",
     "compatibility", "kvs", "mountingLengthMm", "pressureBar", "heatOutputKw", "outlets", "voltage",
     "control", "protectionClass", "temperature", "capacityLh", "format", "eei", "selfPriming",
-    "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "volumeL", "material", "installation"
+    "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "volumeL", "material", "installation",
+    "capacityKgh", "rotationRpm"
   ]);
 
   const CATEGORY_ALIASES = Object.freeze({
@@ -36,7 +37,9 @@
     "pressure-tanks": ["мембранний бак", "гідроакумулятор", "напірний бак", "расширительный бак"],
     "pump-automation": ["автоматика насоса", "контролер насоса", "реле тиску", "pressure manager"],
     "pump-accessories": ["комплектуючі насоса", "аксесуари насоса", "монтажний комплект"],
-    "pump-services": ["сервіс насосів", "пусконалагодження", "введення в експлуатацію"]
+    "pump-services": ["сервіс насосів", "пусконалагодження", "введення в експлуатацію"],
+    "pool-pumps-filtration": ["насос для басейну", "фільтр для басейну", "фільтрувальна станція", "оборудование для бассейна"],
+    "feed-grinders": ["кормоподрібнювач", "зерноподрібнювач", "корморізка", "кормоизмельчитель"]
   });
 
   const WORD_GROUPS = Object.freeze([

@@ -217,8 +217,10 @@ window.sofievkaBrands = Object.freeze([
   },
   {
     slug: "tekk",
-    name: "TEKK",
-    description: "Насосні станції та насосне обладнання для водопостачання й інженерних систем.",
+    name: "TEKK HAUS",
+    aliases: ["Tekkhaus", "Tekk Haus"],
+    logo: "assets/brands/tekkhaus.webp",
+    description: "Побутові насоси, насосні станції, автоматика, комплектуючі, обладнання для басейнів і господарства.",
     type: "catalog",
     featured: false
   },

@@ -18,6 +18,7 @@ for (const file of [
   "termojet-products-data.js",
   "wilo-products-data.js",
   "grundfos-products-data.js",
+  "tekkhaus-products-data.js",
   "catalog-data.js"
 ]) {
   vm.runInContext(fs.readFileSync(path.join(projectRoot, file), "utf8"), context, { filename: file });
@@ -64,18 +65,19 @@ routeCheck(routing.resolveLocation("/catalog", "?category=water", "catalog").red
 routeCheck(routing.resolveLocation("/catalog/water-treatment", "", "catalog").redirectTo === "/catalog/water-supply/water-treatment", "legacy water root must canonicalize");
 routeCheck(routing.resolveLocation("/catalog/water-treatment/reverse-osmosis", "", "catalog").redirectTo === "/catalog/water-supply/water-treatment/reverse-osmosis", "legacy water category must canonicalize");
 
-assert.equal(routingAssertions, 115, "taxonomy/route regression suite must retain 115 checks");
+assert.equal(routingAssertions, 124, "taxonomy/route regression suite must retain 124 checks");
 
-assert.equal(products.length, 1852, "catalog must contain 1852 products");
+assert.equal(products.length, 1964, "catalog must contain 1964 products");
 assert.equal(state.sofievkaNormalizationReport.waterSourceCount, 176, "water product count changed");
 assert.equal(state.sofievkaNormalizationReport.heatingSourceCount, 343, "Termojet product count changed");
 assert.equal(state.sofievkaNormalizationReport.wiloSourceCount, 1020, "Wilo product count changed");
 assert.equal(state.sofievkaNormalizationReport.grundfosSourceCount, 313, "Grundfos domestic range count changed");
+assert.equal(state.sofievkaNormalizationReport.tekkhausSourceCount, 112, "TEKK HAUS range count changed");
 assert.equal(state.sofievkaNormalizationReport.normalizationErrors.length, 0, "catalog validation errors found");
 assert.equal(new Set(products.map(product => product.id)).size, products.length, "product IDs must be unique");
 
 const productIdHash = crypto.createHash("sha256").update(products.map(product => product.id).sort().join("\n")).digest("hex");
-assert.equal(productIdHash, "adb7c65186c4d1f1884fe9c7eae7f6d90b80d860062ccc731f256a30d80f93e3", "product IDs changed");
+assert.equal(productIdHash, "11bab1a123f7e5a57a8a84b41094d88d4e36c2e4fecc5e435a5b94956d257562", "product IDs changed");
 
 assert.ok(catalog.brands.every(brand => catalog.brandUrl(brand.id) === `/brands/${brand.slug}`), "brand URLs must be canonical");
 
@@ -141,12 +143,38 @@ assert.ok(search.search("Grundfos ALPHA3").totalProducts >= 11, "Grundfos series
 assert.equal(search.search("мембранний бак Grundfos").totalProducts, 87, "Grundfos pressure tank search failed");
 assert.ok(search.search("Grundfos PM 1").totalProducts >= 3, "Grundfos pressure manager search failed");
 
+const tekkhausProducts = products.filter(product => product.brandId === "tekk");
+assert.equal(tekkhausProducts.length, 112, "TEKK HAUS catalog must retain all 112 confirmed brand SKU");
+assert.equal(new Set(tekkhausProducts.map(product => product.seriesId)).size, 36, "TEKK HAUS catalog must retain 36 series and product groups");
+assert.ok(tekkhausProducts.every(product => product.manufacturerUrl?.startsWith("https://shop.tekk.haus/shop/")), "every TEKK HAUS SKU must retain its official manufacturer URL");
+assert.ok(tekkhausProducts.every(product => product.images.length >= 1 && product.images.every(image => image.startsWith("/assets/products/tekkhaus/"))), "TEKK HAUS images must be local");
+assert.equal(tekkhausProducts.reduce((total, product) => total + product.images.length, 0), 708, "TEKK HAUS gallery image coverage changed");
+assert.equal(new Set(tekkhausProducts.flatMap(product => product.images)).size, 373, "TEKK HAUS unique image coverage changed");
+assert.equal(tekkhausProducts.filter(product => product.images.length > 1).length, 102, "TEKK HAUS multi-image gallery coverage changed");
+assert.ok(tekkhausProducts.every(product => product.imageSources.length === product.images.length), "TEKK HAUS gallery sources must map one-to-one to local images");
+assert.ok(tekkhausProducts.every(product => product.imageSources.every(image => /^https:\/\/shop\.tekk\.haus\/wp-content\/uploads\//.test(image.source))), "TEKK HAUS images must retain official source URLs");
+assert.equal(tekkhausProducts.filter(product => product.documents.length >= 1).length, 85, "confirmed TEKK HAUS document coverage changed");
+assert.ok(tekkhausProducts.every(product => product.documents.every(document => /^https:\/\/shop\.tekk\.haus\/wp-content\/uploads\//.test(document.url))), "TEKK HAUS documents must use official URLs");
+assert.ok(tekkhausProducts.every(product => Array.isArray(product.sourceUrls) && product.sourceUrls.length >= 4 && product.dateVerified === "2026-09-21"), "TEKK HAUS source provenance is incomplete");
+assert.ok(tekkhausProducts.every(product => product.manufacturerCode && product.seo?.title && product.seo?.description && product.technicalDetails.length >= 3), "TEKK HAUS commerce metadata is incomplete");
+assert.ok(tekkhausProducts.every(product => product.keyFeatures.length >= 5 && product.shortDescription.length <= 220 && !/…$/.test(product.shortDescription)), "TEKK HAUS key features or short descriptions are incomplete");
+assert.ok(tekkhausProducts.every(product => product.fullDescription.length >= 590 && product.descriptionSections.length >= 5), "TEKK HAUS descriptions must retain technical depth");
+assert.ok(tekkhausProducts.every(product => !/gardia/i.test(JSON.stringify(product))), "GARDIA products must not leak into the TEKK HAUS catalog");
+assert.equal(tekkhausProducts.filter(product => product.availability === "in_stock").length, 111, "TEKK HAUS in-stock status coverage changed");
+assert.equal(tekkhausProducts.filter(product => product.availability === "out_of_stock").length, 1, "TEKK HAUS out-of-stock status coverage changed");
+assert.equal(tekkhausProducts.filter(product => product.ean).length, 0, "TEKK HAUS EAN values must remain empty when the official source does not confirm them");
+assert.equal(search.search("1000116").products[0]?.id, "tekkhaus-1000116", "exact TEKK HAUS article search must rank the product first");
+assert.ok(search.search("TEKK HAUS ECS").totalProducts >= 4, "TEKK HAUS series search failed");
+assert.equal(search.search("кормоподрібнювач TEKK HAUS").totalProducts, 3, "TEKK HAUS feed grinder search failed");
+assert.equal(tekkhausProducts.find(product => product.id === "tekkhaus-1000116")?.normalizedAttributes.flowM3h, 10, "TEKK HAUS pool flow must convert from 10 000 l/h to 10 m³/h");
+assert.equal(tekkhausProducts.find(product => product.id === "tekkhaus-1000040")?.normalizedAttributes.powerKw, 0.078, "TEKK HAUS motor power must convert from W to kW");
+
 const reviewMappings = products.filter(product => product.source?.mappingStatus === "review").length;
 const unmappedAttributeProducts = products.filter(product => product.unmappedAttributes?.length).length;
 const brandsWithProducts = new Set(products.map(product => product.brandId));
 const brandsWithoutProducts = catalog.brands.filter(brand => !brandsWithProducts.has(brand.id)).length;
 assert.equal(reviewMappings, 29, "review mapping debt changed unexpectedly");
-assert.equal(unmappedAttributeProducts, 1743, "unmapped attribute debt changed unexpectedly");
+assert.equal(unmappedAttributeProducts, 1845, "unmapped attribute debt changed unexpectedly");
 
 const shellSource = fs.readFileSync(path.join(projectRoot, "page-shell.js"), "utf8");
 const uiSource = fs.readFileSync(path.join(projectRoot, "catalog-ui.js"), "utf8");
@@ -172,5 +200,5 @@ console.log(JSON.stringify({
   unmappedAttributeProducts,
   brandsWithoutProducts,
   productIdHash,
-  searchCases: 10
+  searchCases: 13
 }, null, 2));

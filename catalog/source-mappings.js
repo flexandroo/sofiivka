@@ -16,7 +16,8 @@
     ecosoft: Object.freeze({ id: "ecosoft", brandId: "ecosoft", sourceName: "Каталог товарів" }),
     termojet: Object.freeze({ id: "termojet", brandId: "termojet", sourceName: "Termojet XML catalog", imageOrigin: "https://termojet.com.ua" }),
     wilo: Object.freeze({ id: "wilo", brandId: "wilo", sourceName: "Офіційний каталог Wilo Україна" }),
-    grundfos: Object.freeze({ id: "grundfos", brandId: "grundfos", sourceName: "Офіційний каталог Grundfos Україна" })
+    grundfos: Object.freeze({ id: "grundfos", brandId: "grundfos", sourceName: "Офіційний каталог Grundfos Україна" }),
+    tekkhaus: Object.freeze({ id: "tekkhaus", brandId: "tekk", sourceName: "Офіційний магазин TEKK HAUS" })
   });
 
   const categoryMappings = Object.freeze({
@@ -73,6 +74,19 @@
       "grundfos-pump-services": freezeMapping({ categoryId: "pump-services" }),
       "grundfos-heating-automation": freezeMapping({ categoryId: "automation" }),
       "grundfos-heating-components": freezeMapping({ categoryId: "heating-components" })
+    }),
+    tekkhaus: Object.freeze({
+      "tekkhaus-circulation": freezeMapping({ categoryId: "circulation-pumps" }),
+      "tekkhaus-surface": freezeMapping({ categoryId: "surface-pumps" }),
+      "tekkhaus-pressure": freezeMapping({ categoryId: "pressure-boosting" }),
+      "tekkhaus-borehole": freezeMapping({ categoryId: "borehole-pumps" }),
+      "tekkhaus-drainage": freezeMapping({ categoryId: "drainage-pumps" }),
+      "tekkhaus-sewage": freezeMapping({ categoryId: "sewage-pumps" }),
+      "tekkhaus-pool": freezeMapping({ categoryId: "pool-pumps-filtration" }),
+      "tekkhaus-pressure-tanks": freezeMapping({ categoryId: "pressure-tanks" }),
+      "tekkhaus-automation": freezeMapping({ categoryId: "pump-automation" }),
+      "tekkhaus-accessories": freezeMapping({ categoryId: "pump-accessories" }),
+      "tekkhaus-feed-grinders": freezeMapping({ categoryId: "feed-grinders" })
     })
   });
 
@@ -106,6 +120,7 @@
   }
 
   function supplierFor(product) {
+    if (String(product.brand || "").toLocaleLowerCase("en").replace(/[^a-z]/g, "") === "tekkhaus") return "tekkhaus";
     if (String(product.brand || "").toLocaleLowerCase("en") === "grundfos") return "grundfos";
     if (String(product.brand || "").toLocaleLowerCase("en") === "wilo") return "wilo";
     if (String(product.brand || "").toLocaleLowerCase("en") === "ecosoft" || product.category === "water") return "ecosoft";
