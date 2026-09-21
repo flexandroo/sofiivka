@@ -27,6 +27,15 @@ function clean(value = "") {
     .replace(/<[^>]+>/g, "")
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&apos;|&#39;/gi, "'")
+    .replace(/&laquo;/gi, "«")
+    .replace(/&raquo;/gi, "»")
+    .replace(/&sup2;/gi, "²")
+    .replace(/&sup3;/gi, "³")
+    .replace(/&ndash;|&mdash;/gi, "–")
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(Number.parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, decimal) => String.fromCodePoint(Number.parseInt(decimal, 10)))
     .replace(/&le;/gi, "≤")
     .replace(/&ge;/gi, "≥")
     .replace(/\s+/g, " ")
@@ -286,9 +295,125 @@ function seriesImageSources(detail) {
   return [...new Set((preferred.length ? preferred : fallback).map(item => item.url).filter(Boolean))];
 }
 
-function makeDescription(model, classification, applications) {
-  const purpose = applications.join(", ");
-  return `${classification.type} Wilo ${model} для систем, де потрібні ${purpose}. Конкретне виконання слід підбирати за робочою точкою, під’єднанням, електроживленням і умовами монтажу.`;
+function richTextItems(value = "") {
+  const text = String(value)
+    .replace(/<li[^>]*>/gi, "\n")
+    .replace(/<\/(?:li|p|div|tr|h[1-6])>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ");
+  return [...new Set(text.split(/\n+/).map(clean).map(item => item.replace(/[.;:,]+$/g, "").trim()).filter(Boolean))];
+}
+
+function seriesProperty(detail, code) {
+  const property = allProps(detail).find(item => item.cod === code || item.nodeName === code);
+  return property?.values?.map(value => value.desc).filter(Boolean).join("\n") || "";
+}
+
+function lowerFirst(value = "") {
+  const text = clean(value);
+  return text ? `${text.charAt(0).toLocaleLowerCase("uk-UA")}${text.slice(1)}` : "";
+}
+
+function withoutPurposePrefix(value = "") {
+  return clean(value).replace(/^для\s+/i, "").replace(/[.]+$/g, "");
+}
+
+function listSentence(items, limit = 6) {
+  return [...new Set(items.map(clean).filter(Boolean))]
+    .slice(0, limit)
+    .map(item => /^[А-ЯІЇЄҐ]/u.test(item) ? lowerFirst(item) : item)
+    .join("; ");
+}
+
+function officialSeriesCopy(detail) {
+  return {
+    design: clean(seriesProperty(detail, "desc_1_design_SFE")),
+    applications: richTextItems(seriesProperty(detail, "desc_2_application_SFE")),
+    equipment: richTextItems(seriesProperty(detail, "desc_3_equipment_function_SFE")),
+    delivery: richTextItems(seriesProperty(detail, "desc_4_delivery_state_SFE")),
+    advantages: richTextItems(seriesProperty(detail, "desc_7_advantages_SFE")),
+    materials: richTextItems(seriesProperty(detail, "desc_8_material_SFE")),
+    construction: richTextItems(seriesProperty(detail, "desc_9_construction_SFE"))
+  };
+}
+
+function makeShortDescription(model, seriesName, classification, officialApplications, fallbackApplications) {
+  const purposes = (officialApplications.length ? officialApplications : fallbackApplications)
+    .map(withoutPurposePrefix)
+    .filter(Boolean);
+  const base = `Wilo ${model} — ${lowerFirst(classification.type)} серії ${seriesName}`;
+  const candidates = [
+    purposes.length ? `${base} для ${purposes[0]}.` : "",
+    fallbackApplications.length ? `${base} для ${fallbackApplications.slice(0, 2).join(" та ")}.` : "",
+    `${base}.`
+  ].filter(Boolean);
+  return candidates.find(candidate => candidate.length <= 220) || `${classification.type} Wilo ${model}.`;
+}
+
+function makeDescription(model, seriesName, classification, fallbackApplications, details, seriesDetail) {
+  const official = officialSeriesCopy(seriesDetail);
+  const exactFeatures = keyFeatures(details, classification);
+  const applications = official.applications.length
+    ? official.applications.map(withoutPurposePrefix).filter(Boolean)
+    : fallbackApplications;
+  const sections = [];
+
+  const intro = official.design
+    ? `Модель Wilo ${model} належить до серії ${seriesName}. За конструкцією це ${lowerFirst(official.design).replace(/[.]+$/g, "")}.`
+    : `Wilo ${model} — ${lowerFirst(classification.type)} серії ${seriesName}.`;
+  sections.push({ title: "Опис", paragraphs: [intro] });
+
+  if (applications.length) {
+    sections.push({
+      title: "Застосування",
+      paragraphs: [`Виробник передбачає використання обладнання для таких завдань: ${listSentence(applications)}.`]
+    });
+  }
+
+  const constructionFacts = official.equipment.length ? official.equipment : official.construction;
+  if (constructionFacts.length) {
+    sections.push({
+      title: "Конструкція та функції",
+      paragraphs: [`У виконанні серії передбачено: ${listSentence(constructionFacts)}.`]
+    });
+  }
+
+  if (official.materials.length) {
+    sections.push({
+      title: "Матеріали",
+      paragraphs: [`Матеріали основних деталей, заявлені Wilo: ${listSentence(official.materials)}.`]
+    });
+  }
+
+  if (exactFeatures.length) {
+    sections.push({
+      title: "Параметри конкретного виконання",
+      paragraphs: [`Для моделі ${model} офіційно підтверджено: ${listSentence(exactFeatures, 8)}.`]
+    });
+  }
+
+  if (official.advantages.length) {
+    sections.push({
+      title: "Особливості серії",
+      paragraphs: [`Серед особливостей цієї серії Wilo зазначає: ${listSentence(official.advantages)}.`]
+    });
+  }
+
+  if (official.delivery.length) {
+    sections.push({
+      title: "Комплект постачання",
+      paragraphs: [`Типовий комплект серії включає: ${listSentence(official.delivery)}.`]
+    });
+  }
+
+  const fullDescription = sections.flatMap(section => section.paragraphs).join("\n\n");
+  return {
+    applications,
+    sections,
+    shortDescription: makeShortDescription(model, seriesName, classification, official.applications, fallbackApplications),
+    fullDescription
+  };
 }
 
 async function main() {
@@ -301,14 +426,14 @@ async function main() {
     const listImage = (node.values || []).find(value => /https?:\/\/[^\s]+\.(?:png|jpe?g|webp)(?:$|\?)/i.test(value.desc || ""))?.desc || "";
     const sourceImages = seriesImageSources(detail.result);
     if (!sourceImages.length && listImage) sourceImages.push(listImage);
-    const images = await Promise.all(sourceImages.map(localizeImage));
+    const images = list.result?.nodes?.length ? await Promise.all(sourceImages.map(localizeImage)) : [];
     return { node, list: list.result, detail: detail.result, images };
   });
   const jobs = seriesRecords.flatMap(series => (series.list.nodes || []).map(product => ({ series, product })));
   const products = (await mapLimit(jobs, 18, async ({ series, product }) => {
     const seriesName = clean(series.node.desc);
     const classification = classify(seriesName);
-    const applications = applicationList(classification);
+    const fallbackApplications = applicationList(classification);
     const response = await fetchJson(`${API}/detail?conf=${series.node.nodeName}&nodeName=${product.nodeName}&rcco=ua&lcda=uk`, path.join(CACHE_DIR, "products", `${product.cod}.json`));
     const detail = response.result;
     const specs = technicalDetails(detail);
@@ -325,7 +450,7 @@ async function main() {
     const manufacturerUrl = `${CATALOG}/${series.node.meta.slug}/${product.meta.slug}`;
     const seriesUrl = `${CATALOG}/${series.node.meta.slug}`;
     const title = `Насос Wilo ${clean(product.desc)}`;
-    const description = makeDescription(clean(product.desc), classification, applications);
+    const editorial = makeDescription(clean(product.desc), seriesName, classification, fallbackApplications, specs, series.detail);
     const documents = [docs.manual, docs.datasheet, docs.certificate].filter(Boolean).map(item => ({ type: "PDF", title: item.title || item.subcategory || "Документ Wilo", language: item.language === "uk" ? "Українська" : "", url: item.url }));
     const ean = specs.find(([label]) => /EAN/i.test(label))?.[1] || "";
     const imageAssets = [
@@ -343,13 +468,10 @@ async function main() {
       ean, EAN: ean, brand: "Wilo", category: classification.category, sourceCategoryId: classification.sourceCategoryId,
       typeSlug: classification.sourceCategoryId, type: classification.type, subcategory: classification.type,
       series: seriesName, seriesId: `wilo-${slugify(seriesName)}`, model: clean(product.desc), title,
-      productName: title, product_name: title, shortDescription: description, short_description: description,
-      fullDescription: description, full_description: description, description,
-      descriptionSections: [
-        { title: "Для яких систем", paragraphs: [`Підходить для: ${applications.join(", ")}.`] },
-        { title: "Підбір", paragraphs: ["Перед замовленням звірте робочу точку, приєднання, електроживлення та монтажні обмеження з проєктом системи."] }
-      ],
-      keyFeatures: keyFeatures(specs, classification), key_features: keyFeatures(specs, classification), applications, compatibility: "",
+      productName: title, product_name: title, shortDescription: editorial.shortDescription, short_description: editorial.shortDescription,
+      fullDescription: editorial.fullDescription, full_description: editorial.fullDescription, description: editorial.fullDescription,
+      descriptionSections: editorial.sections,
+      keyFeatures: keyFeatures(specs, classification), key_features: keyFeatures(specs, classification), applications: editorial.applications, compatibility: "",
       technicalDetails: specs, features: normalizedFeatures(detail, classification), attributes: [],
       image: primaryImage.local, mainImage: primaryImage.local, main_image: primaryImage.local,
       images: gallery, galleryImages: gallery, gallery_images: gallery,
@@ -358,7 +480,7 @@ async function main() {
       documents, manualPdf: docs.manual?.url || "", manual_pdf: docs.manual?.url || "",
       datasheetPdf: docs.datasheet?.url || "", datasheet_pdf: docs.datasheet?.url || "",
       certificatePdf: docs.certificate?.url || "", certificate_pdf: docs.certificate?.url || "",
-      manufacturerUrl, manufacturer_url: manufacturerUrl, sourceUrls: sources, source_urls: sources,
+      manufacturerUrl, manufacturer_url: manufacturerUrl, descriptionSourceUrl: seriesUrl, description_source_url: seriesUrl, sourceUrls: sources, source_urls: sources,
       dateVerified: VERIFIED_ON, date_verified: VERIFIED_ON,
       seo: { title: `${title} — характеристики | ТД «Софіївка»`, description: `${classification.type} Wilo ${clean(product.desc)}: офіційно підтверджені технічні характеристики та документи.` },
       seoTitle: `${title} — характеристики | ТД «Софіївка»`, seo_title: `${title} — характеристики | ТД «Софіївка»`,

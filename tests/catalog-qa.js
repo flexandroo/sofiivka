@@ -115,6 +115,10 @@ assert.ok(wiloProducts.every(product => product.documents.length >= 1 && product
 assert.ok(wiloProducts.every(product => Array.isArray(product.sourceUrls) && product.sourceUrls.length >= 4 && product.dateVerified === "2026-09-21"), "Wilo source provenance is incomplete");
 assert.ok(wiloProducts.every(product => product.manufacturerCode && product.seo?.title && product.seo?.description && product.technicalDetails.length >= 20), "Wilo commerce metadata is incomplete");
 assert.equal(wiloProducts.filter(product => product.ean).length, 1019, "confirmed Wilo EAN coverage changed");
+assert.ok(wiloProducts.every(product => product.shortDescription.length <= 220 && !/…$/.test(product.shortDescription)), "Wilo short descriptions must be complete sentences without UI truncation");
+assert.ok(wiloProducts.every(product => product.fullDescription.length >= 900 && product.descriptionSections.length >= 6), "Wilo full descriptions must retain official technical depth");
+assert.ok(wiloProducts.every(product => product.descriptionSourceUrl && product.sourceUrls.includes(product.descriptionSourceUrl)), "Wilo description provenance is incomplete");
+assert.ok(wiloProducts.every(product => !product.fullDescription.includes("Конкретне виконання слід підбирати")), "legacy generic Wilo descriptions remain");
 
 const reviewMappings = products.filter(product => product.source?.mappingStatus === "review").length;
 const unmappedAttributeProducts = products.filter(product => product.unmappedAttributes?.length).length;
