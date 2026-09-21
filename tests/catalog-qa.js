@@ -125,6 +125,7 @@ assert.equal(unmappedAttributeProducts, 1430, "unmapped attribute debt changed u
 
 const shellSource = fs.readFileSync(path.join(projectRoot, "page-shell.js"), "utf8");
 const uiSource = fs.readFileSync(path.join(projectRoot, "catalog-ui.js"), "utf8");
+const pagesCss = fs.readFileSync(path.join(projectRoot, "pages.css"), "utf8");
 assert.ok(shellSource.includes('return `/product?id=${encodeURIComponent(product.id)}`;'), "product links must remain shareable and deterministic");
 assert.ok(!/function header\s*\(/.test(shellSource), "dead legacy header renderer remains");
 assert.ok(!/renderProductExtended|renderCategoryExtended/.test(shellSource), "dead PDP/category renderer remains");
@@ -133,6 +134,9 @@ assert.equal((uiSource.match(/function renderProductCard\s*\(/g) || []).length, 
 assert.ok(shellSource.includes('localStorage.getItem("sofievka-cart")'), "cart storage key changed");
 assert.ok(shellSource.includes('localStorage.getItem("sofievka-favorites")'), "favorites storage key changed");
 assert.ok(shellSource.includes('localStorage.getItem("sofievka-compare")'), "compare storage key changed");
+assert.match(pagesCss, /\.pdp__media\s*>\s*img\s*\{[^}]*object-fit:\s*contain/si, "PDP gallery image must fit inside its frame");
+assert.match(pagesCss, /\.pdp__media\s*>\s*img\s*\{[^}]*min-width:\s*0[^}]*min-height:\s*0/si, "PDP gallery image must be allowed to shrink within the grid cell");
+assert.doesNotMatch(pagesCss, /\.pdp__media(?:\s*>)?\s*img\s*\{[^}]*transform:\s*scale/si, "PDP gallery image must not be scaled beyond its frame");
 
 console.log(JSON.stringify({
   status: "ok",
