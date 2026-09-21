@@ -16,6 +16,7 @@ for (const file of [
   "products-data.js",
   "water-catalog-data.js",
   "termojet-products-data.js",
+  "wilo-products-data.js",
   "catalog-data.js"
 ]) {
   vm.runInContext(fs.readFileSync(path.join(projectRoot, file), "utf8"), context, { filename: file });
@@ -62,16 +63,17 @@ routeCheck(routing.resolveLocation("/catalog", "?category=water", "catalog").red
 routeCheck(routing.resolveLocation("/catalog/water-treatment", "", "catalog").redirectTo === "/catalog/water-supply/water-treatment", "legacy water root must canonicalize");
 routeCheck(routing.resolveLocation("/catalog/water-treatment/reverse-osmosis", "", "catalog").redirectTo === "/catalog/water-supply/water-treatment/reverse-osmosis", "legacy water category must canonicalize");
 
-assert.equal(routingAssertions, 76, "taxonomy/route regression suite must retain 76 checks");
+assert.equal(routingAssertions, 85, "taxonomy/route regression suite must retain 85 checks");
 
-assert.equal(products.length, 519, "catalog must contain 519 products");
+assert.equal(products.length, 543, "catalog must contain 543 products");
 assert.equal(state.sofievkaNormalizationReport.waterSourceCount, 176, "water product count changed");
 assert.equal(state.sofievkaNormalizationReport.heatingSourceCount, 343, "Termojet product count changed");
+assert.equal(state.sofievkaNormalizationReport.wiloSourceCount, 24, "Wilo product count changed");
 assert.equal(state.sofievkaNormalizationReport.normalizationErrors.length, 0, "catalog validation errors found");
 assert.equal(new Set(products.map(product => product.id)).size, products.length, "product IDs must be unique");
 
 const productIdHash = crypto.createHash("sha256").update(products.map(product => product.id).sort().join("\n")).digest("hex");
-assert.equal(productIdHash, "48f7e7e60940ac12c2be5923cb2fe6c93cb382337b3593dfb4c9780baf7757d3", "product IDs changed");
+assert.equal(productIdHash, "c5bc99b7591918f2cb2b0e8cec9c6ca6caf3e41eb57e9b12f691958ad517b695", "product IDs changed");
 
 assert.ok(catalog.brands.every(brand => catalog.brandUrl(brand.id) === `/brands/${brand.slug}`), "brand URLs must be canonical");
 
@@ -80,15 +82,40 @@ assert.equal(search.search(exactSku).products[0]?.id, exactSku, "exact SKU searc
 for (const query of ["Termojet", "Ecosoft", "зворотний осмос", "Termojet насос"]) {
   assert.ok(search.search(query).totalProducts > 0, `search returned no products for: ${query}`);
 }
+assert.equal(search.search("4248082").products[0]?.id, "4248082", "exact Wilo article search must rank the product first");
+assert.ok(search.search("Wilo Stratos MAXO").totalProducts >= 4, "Wilo series search failed");
 const termojetModel = products.find(product => product.brand === "Termojet")?.model;
 assert.ok(termojetModel && search.search(termojetModel).totalProducts > 0, "exact model search failed");
+
+const auditedPump = products.find(product => product.id === "termojet-wp_20506");
+assert.ok(auditedPump, "audited Termojet pump is missing");
+assert.ok(!/системах системах|виборо$|мінеральнихолій|характеристиками,близькими|ізмагнітним/iu.test(JSON.stringify(auditedPump)), "audited pump still contains damaged copy");
+
+const auditedFilter = products.find(product => product.id === "MO650MECOSTD");
+assert.ok(auditedFilter, "audited Ecosoft filter is missing");
+assert.ok(!auditedFilter.sourceAttributes.some(attribute => /\*+$/.test(attribute.label) || /\*+$/.test(attribute.value)), "supplier footnote markers leak into product specifications");
+
+const auditedDimensions = products.find(product => product.id === "termojet-wp_20369");
+assert.equal(auditedDimensions.normalizedAttributes.dimensions, "390*250*455мм", "product dimensions must remain in the dimensions field");
+assert.notEqual(auditedDimensions.normalizedAttributes.connection, "390*250*455мм", "product dimensions must not be exposed as a connection facet");
+
+const auditedSaleProduct = products.find(product => product.id === "termojet-new_41020110");
+assert.ok(auditedSaleProduct && auditedSaleProduct.type !== "Акція", "sale collection must not replace the equipment type");
+
+const wiloProducts = products.filter(product => product.brandId === "wilo");
+assert.equal(wiloProducts.length, 24, "Wilo pilot must retain 24 SKU");
+assert.ok(wiloProducts.every(product => product.manufacturerUrl?.startsWith("https://wilo.com/ua/uk/")), "every Wilo SKU must retain its official manufacturer URL");
+assert.ok(wiloProducts.every(product => product.images.length === 2 && product.images.every(image => image.startsWith("/assets/products/wilo/"))), "Wilo product images must be local");
+assert.ok(wiloProducts.every(product => product.documents.length >= 1 && product.documents.every(document => document.url.startsWith("/assets/products/wilo/documents/"))), "Wilo documents must be local");
+assert.ok(wiloProducts.every(product => Array.isArray(product.sourceUrls) && product.sourceUrls.length >= 4 && product.dateVerified === "2026-09-21"), "Wilo source provenance is incomplete");
+assert.ok(wiloProducts.every(product => product.ean && product.manufacturerCode && product.seo?.title && product.seo?.description), "Wilo commerce metadata is incomplete");
 
 const reviewMappings = products.filter(product => product.source?.mappingStatus === "review").length;
 const unmappedAttributeProducts = products.filter(product => product.unmappedAttributes?.length).length;
 const brandsWithProducts = new Set(products.map(product => product.brandId));
 const brandsWithoutProducts = catalog.brands.filter(brand => !brandsWithProducts.has(brand.id)).length;
 assert.equal(reviewMappings, 29, "review mapping debt changed unexpectedly");
-assert.equal(unmappedAttributeProducts, 410, "unmapped attribute debt changed unexpectedly");
+assert.equal(unmappedAttributeProducts, 434, "unmapped attribute debt changed unexpectedly");
 
 const shellSource = fs.readFileSync(path.join(projectRoot, "page-shell.js"), "utf8");
 const uiSource = fs.readFileSync(path.join(projectRoot, "catalog-ui.js"), "utf8");
@@ -110,5 +137,5 @@ console.log(JSON.stringify({
   unmappedAttributeProducts,
   brandsWithoutProducts,
   productIdHash,
-  searchCases: 6
+  searchCases: 8
 }, null, 2));

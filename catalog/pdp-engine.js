@@ -10,9 +10,9 @@
   const brands = catalog.brands || [];
   const groupDefinitions = Object.freeze([
     Object.freeze({ id: "main", title: "Основні параметри", keys: Object.freeze(["productType", "purpose", "type", "technology", "waterSource", "installation", "flowType", "scope", "pump", "mineralizer"]) }),
-    Object.freeze({ id: "performance", title: "Робочі параметри", keys: Object.freeze(["capacityLh", "flowM3h", "headM", "kvs", "powerKw", "heatOutputKw", "pressureBar", "temperature", "filtrationMicron"]) }),
-    Object.freeze({ id: "connection", title: "Підключення та сумісність", keys: Object.freeze(["diameter", "diameterMm", "connection", "mountingLengthMm", "outlets", "compatibility", "control", "voltage", "protectionClass", "material"]) }),
-    Object.freeze({ id: "dimensions", title: "Габарити та формат", keys: Object.freeze(["widthMm", "heightMm", "depthMm", "volumeL", "weightKg", "format"]) })
+    Object.freeze({ id: "performance", title: "Робочі параметри", keys: Object.freeze(["capacityLh", "flowM3h", "headM", "kvs", "powerKw", "heatOutputKw", "pressureBar", "temperature", "filtrationMicron", "eei", "maxImmersionDepthM", "freePassageMm"]) }),
+    Object.freeze({ id: "connection", title: "Підключення та сумісність", keys: Object.freeze(["diameter", "diameterMm", "connection", "mountingLengthMm", "outlets", "compatibility", "control", "voltage", "protectionClass", "material", "selfPriming", "cableLengthM", "floatSwitch"]) }),
+    Object.freeze({ id: "dimensions", title: "Габарити та формат", keys: Object.freeze(["widthMm", "heightMm", "depthMm", "dimensions", "volumeL", "weightKg", "format"]) })
   ]);
 
   const hasValue = value => value !== undefined && value !== null && value !== "";

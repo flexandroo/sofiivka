@@ -75,7 +75,7 @@
       order: 110,
       status: "active",
       visibility: "catalog",
-      allowedFacetIds: ["productType", "type", "headM", "flowM3h", "mountingLengthMm", "powerKw", "connection", "control", "voltage"],
+      allowedFacetIds: ["productType", "type", "headM", "flowM3h", "mountingLengthMm", "powerKw", "connection", "pressureBar", "voltage", "protectionClass", "temperature", "eei", "control"],
       seo: { title: "Циркуляційні насоси | ТД «Софіївка»", description: "Циркуляційні насоси для систем опалення та інженерних контурів." }
     },
     {
@@ -162,6 +162,22 @@
       allowedFacetIds: ["productType", "purpose", "waterSource", "technology", "installation", "capacityLh", "waterType", "format", "pump", "mineralizer", "flowType", "scope"],
       seo: { title: "Водоочищення | ТД «Софіївка»", description: "Системи водоочищення, питні фільтри, картриджі та фільтрувальні матеріали." }
     },
+    {
+      id: "water-pumps",
+      slug: "water-pumps",
+      parentId: "water-supply",
+      level: 2,
+      title: "Насоси для водопостачання",
+      shortTitle: "Насоси",
+      description: "Насоси для подачі води, дренажу та інженерних систем водопостачання.",
+      order: 220,
+      status: "active",
+      visibility: "catalog",
+      allowedFacetIds: ["productType", "headM", "flowM3h", "powerKw", "connection", "pressureBar", "voltage"],
+      seo: { title: "Насоси для водопостачання | ТД «Софіївка»", description: "Багатоступеневі та дренажні насоси для систем водопостачання." }
+    },
+    { id: "multistage-pumps", slug: "multistage-pumps", parentId: "water-pumps", level: 3, title: "Багатоступеневі насоси", shortTitle: "Багатоступеневі", description: "Горизонтальні багатоступеневі насоси для водопостачання та поливу.", order: 321, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "powerKw", "selfPriming", "connection", "pressureBar", "voltage"], seo: { title: "Багатоступеневі насоси | ТД «Софіївка»", description: "Багатоступеневі насоси для приватного водопостачання, поливу та використання дощової води." } },
+    { id: "drainage-pumps", slug: "drainage-pumps", parentId: "water-pumps", level: 3, title: "Дренажні насоси", shortTitle: "Дренажні", description: "Занурювальні насоси для відведення стічної та забрудненої води без фекалій.", order: 322, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "powerKw", "freePassageMm", "maxImmersionDepthM", "floatSwitch", "connection", "protectionClass"], seo: { title: "Дренажні насоси | ТД «Софіївка»", description: "Дренажні занурювальні насоси для відведення стічної та забрудненої води." } },
     { id: "drinking-system-cartridges", slug: "drinking-system-cartridges", parentId: "water-treatment", level: 3, title: "Картриджі питних систем", shortTitle: "Картриджі питних систем", description: "Змінні елементи для питних систем очищення води.", order: 311, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "type", "format"], legacyGroup: "replacement-elements", legacyGroupTitle: "Змінні елементи", seo: {} },
     { id: "mainline-cartridges", slug: "mainline-cartridges", parentId: "water-treatment", level: 3, title: "Картриджі магістральних фільтрів", shortTitle: "Магістральні картриджі", description: "Картриджі для магістрального очищення води.", order: 312, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "purpose", "format", "waterType"], legacyGroup: "replacement-elements", legacyGroupTitle: "Змінні елементи", seo: {} },
     { id: "mainline-filters-housings", slug: "mainline-filters-housings", parentId: "water-treatment", level: 3, title: "Корпуси магістральних фільтрів", shortTitle: "Магістральні фільтри", description: "Корпуси та готові магістральні фільтри.", order: 313, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "purpose", "connection", "format", "waterType"], legacyGroup: "whole-house-treatment", legacyGroupTitle: "Очищення води для будинку", seo: {} },
@@ -207,7 +223,6 @@
     descendantsOf
   });
 })();
-
 /* Source: catalog/attribute-schema.js */
 (function () {
   "use strict";
@@ -245,12 +260,13 @@
     widthMm: define("widthMm", { label: "Ширина, мм", type: "number", unit: "мм", rank: 14, filterable: false, aliases: [/^ширина(?:\s*\(мм\))?$/i, /^w\s*\(?mm\)?$/i] }),
     heightMm: define("heightMm", { label: "Висота, мм", type: "number", unit: "мм", rank: 15, filterable: false, aliases: [/^висота(?:\s*\(мм\))?$/i, /^h\s*\(?mm\)?$/i, /^h\s*\(?мм\)?$/i] }),
     depthMm: define("depthMm", { label: "Глибина, мм", type: "number", unit: "мм", rank: 16, filterable: false, aliases: [/^глибина(?:\s*\(мм\))?$/i, /^глубина(?:\s*\(мм\))?$/i] }),
+    dimensions: define("dimensions", { label: "Габарити", rank: 16.5, filterable: false, aliases: [/^розмір(?:и)?$/i, /^габарит(?:и|ні розміри)?$/i] }),
     volumeL: define("volumeL", { label: "Об’єм, л", type: "number", unit: "л", rank: 17, aliases: [/^об[’'`]?єм(?: бойлера)?$/i, /^объем$/i, /^місткість$/i] }),
     weightKg: define("weightKg", { label: "Вага, кг", type: "number", unit: "кг", rank: 18, filterable: false, aliases: [/^вага(?:\s*\(кг\))?$/i, /^маса(?:\s*\(кг\))?$/i, /^weight$/i] }),
     filtrationMicron: define("filtrationMicron", { label: "Тонкість фільтрації, мкм", type: "number", unit: "мкм", rank: 19, aliases: [/^тонкість фільтрації$/i] }),
     pressureBar: define("pressureBar", { label: "Робочий тиск, бар", type: "number", unit: "бар", rank: 15, aliases: [/^робочий тиск$/i, /^макс\.?\s*тиск$/i, /^максимальний робочий тиск$/i, /^тиск максимальний$/i, /^давление$/i] }),
     diameter: define("diameter", { label: "Діаметр / DN", rank: 16, aliases: [/^dn$/i, /^діаметр$/i, /^диаметр$/i] }),
-    connection: define("connection", { label: "Підключення", rank: 20, aliases: [/^підключення$/i, /^приєднання$/i, /^розмір$/i, /^підключення котла$/i, /^підключення системи$/i, /^підключення контура? опалення$/i, /^підключення до контуру опалення$/i, /^підключення до колектора$/i, /^підключення контурів$/i, /^різьба(?: підключення)?$/i, /^з'єднання$/i] }),
+    connection: define("connection", { label: "Підключення", rank: 20, aliases: [/^підключення$/i, /^приєднання$/i, /^підключення котла$/i, /^підключення системи$/i, /^підключення контура? опалення$/i, /^підключення до контуру опалення$/i, /^підключення до колектора$/i, /^підключення контурів$/i, /^різьба(?: підключення)?$/i, /^з'єднання$/i] }),
     compatibility: define("compatibility", { label: "Сумісність", rank: 21, filterable: false, aliases: [/^сумісність$/i] }),
     protectionClass: define("protectionClass", { label: "Клас захисту", rank: 22, aliases: [/^клас захисту$/i, /^ступінь захисту$/i, /^ip$/i] }),
     outlets: define("outlets", { label: "Кількість виходів", rank: 18, aliases: [/^кількість виходів$/i, /^виходи$/i, /^кількість контурів$/i] }),
@@ -258,6 +274,12 @@
     voltage: define("voltage", { label: "Живлення", rank: 20, aliases: [/^напруга$/i, /^живлення$/i, /^привід\s*\/\s*напруга$/i, /^напряжение$/i] }),
     control: define("control", { label: "Тип керування", rank: 21, aliases: [/^керування$/i, /^управління$/i, /^управление$/i, /^тип керування$/i] }),
     temperature: define("temperature", { label: "Температурний діапазон", rank: 22, aliases: [/^діапазон температур$/i, /^температура рідини$/i, /^макс\.?\s*температура$/i, /^максимальна температура$/i, /^температура$/i] }),
+    eei: define("eei", { label: "Індекс енергоефективності EEI", rank: 22.1, aliases: [/^індекс енергетичної ефективності(?: \(eei\))?$/i, /^eei$/i] }),
+    selfPriming: define("selfPriming", { label: "Самовсмоктування", rank: 22.2, aliases: [/^самовсмоктувальне виконання$/i] }),
+    maxImmersionDepthM: define("maxImmersionDepthM", { label: "Максимальна глибина занурення, м", type: "number", unit: "м", rank: 22.3, aliases: [/^максимальна глибина занурення$/i] }),
+    freePassageMm: define("freePassageMm", { label: "Вільний прохід, мм", type: "number", unit: "мм", rank: 22.4, aliases: [/^вільний сферичний прохід$/i, /^вільний прохід$/i] }),
+    cableLengthM: define("cableLengthM", { label: "Довжина кабелю, м", type: "number", unit: "м", rank: 22.5, aliases: [/^довжина кабелю$/i] }),
+    floatSwitch: define("floatSwitch", { label: "Поплавковий вимикач", rank: 22.6, aliases: [/^поплавковий вимикач$/i] }),
     waterType: define("waterType", { label: "Тип води", rank: 23, aliases: [/^вода$/i, /^тип води$/i] }),
     format: define("format", { label: "Формат / типорозмір", rank: 24, aliases: [/^формат$/i, /^типорозмір$/i] }),
     pump: define("pump", { label: "Помпа", rank: 25, aliases: [/^помпа$/i, /^насос підвищення тиску$/i] }),
@@ -300,14 +322,16 @@
     "water-softening": Object.freeze(["purpose", "flowM3h", "waterSource", "installation", "scope"]),
     "mechanical-treatment": Object.freeze(["purpose", "flowM3h", "waterSource", "installation", "scope"]),
     "chlorine-odor-removal": Object.freeze(["purpose", "flowM3h", "waterSource", "installation", "scope"]),
-    "flow-filters": Object.freeze(["type", "purpose", "installation", "filtrationMicron"])
+    "flow-filters": Object.freeze(["type", "purpose", "installation", "filtrationMicron"]),
+    "multistage-pumps": Object.freeze(["powerKw", "selfPriming", "connection", "pressureBar", "voltage", "protectionClass"]),
+    "drainage-pumps": Object.freeze(["powerKw", "freePassageMm", "maxImmersionDepthM", "floatSwitch", "connection", "protectionClass"])
   });
 
   const cardFallbackPriority = Object.freeze([
     "purpose", "type", "technology", "capacityLh", "flowM3h", "headM", "kvs", "powerKw", "heatOutputKw",
     "connection", "diameter", "diameterMm", "mountingLengthMm", "pressureBar", "filtrationMicron", "material",
     "control", "voltage", "protectionClass", "compatibility", "waterSource", "installation", "format", "pump",
-    "mineralizer", "flowType", "scope", "volumeL", "weightKg", "widthMm", "heightMm", "depthMm", "productType"
+    "mineralizer", "flowType", "scope", "volumeL", "weightKg", "widthMm", "heightMm", "depthMm", "dimensions", "eei", "selfPriming", "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "productType"
   ]);
 
   const pdpPriorityByCategory = Object.freeze({
@@ -326,12 +350,14 @@
     "water-softening": Object.freeze(["flowM3h", "purpose", "waterSource", "installation", "scope"]),
     "mechanical-treatment": Object.freeze(["flowM3h", "purpose", "waterSource", "installation", "scope"]),
     "chlorine-odor-removal": Object.freeze(["flowM3h", "purpose", "waterSource", "installation", "scope"]),
-    "flow-filters": Object.freeze(["type", "purpose", "installation", "filtrationMicron", "flowM3h"])
+    "flow-filters": Object.freeze(["type", "purpose", "installation", "filtrationMicron", "flowM3h"]),
+    "multistage-pumps": Object.freeze(["powerKw", "pressureBar", "selfPriming", "connection", "voltage", "protectionClass"]),
+    "drainage-pumps": Object.freeze(["powerKw", "freePassageMm", "maxImmersionDepthM", "cableLengthM", "floatSwitch", "connection"])
   });
 
   const pdpFallbackPriority = Object.freeze([
     ...cardFallbackPriority,
-    "outlets", "widthMm", "heightMm", "depthMm", "volumeL", "weightKg"
+    "outlets", "widthMm", "heightMm", "depthMm", "dimensions", "volumeL", "weightKg"
   ]);
 
   const cardAttributeLabels = Object.freeze({
@@ -351,18 +377,28 @@
     voltage: "Живлення",
     control: "Керування",
     temperature: "Температура",
+    eei: "EEI",
+    selfPriming: "Самовсмоктування",
+    maxImmersionDepthM: "Глибина занурення",
+    freePassageMm: "Вільний прохід",
+    cableLengthM: "Довжина кабелю",
+    floatSwitch: "Поплавок",
     waterSource: "Джерело води",
     productType: "Тип обладнання"
   });
 
   const seriesLabels = Object.freeze({
     "termojet-mega": "Mega",
-    "termojet-box": "Box"
+    "termojet-box": "Box",
+    "wilo-yonos-pico1-0": "Yonos PICO1.0",
+    "wilo-star-z-nova": "Star-Z NOVA",
+    "wilo-himulti-3": "HiMulti 3",
+    "wilo-drain-tm-32": "Drain TM/TMW/TMR 32",
+    "wilo-stratos-maxo": "Stratos MAXO"
   });
 
   window.sofievkaAttributeSchema = Object.freeze({ definitions, valueLabels, cardPriorityByCategory, cardFallbackPriority, pdpPriorityByCategory, pdpFallbackPriority, cardAttributeLabels, seriesLabels });
 })();
-
 /* Source: catalog/source-mappings.js */
 (function () {
   "use strict";
@@ -380,7 +416,8 @@
 
   const suppliers = Object.freeze({
     ecosoft: Object.freeze({ id: "ecosoft", brandId: "ecosoft", sourceName: "Каталог товарів" }),
-    termojet: Object.freeze({ id: "termojet", brandId: "termojet", sourceName: "Termojet XML catalog", imageOrigin: "https://termojet.com.ua" })
+    termojet: Object.freeze({ id: "termojet", brandId: "termojet", sourceName: "Termojet XML catalog", imageOrigin: "https://termojet.com.ua" }),
+    wilo: Object.freeze({ id: "wilo", brandId: "wilo", sourceName: "Офіційний каталог Wilo Україна" })
   });
 
   const categoryMappings = Object.freeze({
@@ -410,6 +447,13 @@
       "termojet-termojet-box": freezeMapping({ categoryId: "heating-components", seriesId: "termojet-box" }),
       "termojet-rozprodazh": freezeMapping({ categoryId: "heating-components", collectionIds: ["sale"], tags: ["sale"], mappingStatus: "review" }),
       "termojet-dodatkove": freezeMapping({ categoryId: "heating-components", tags: ["additional"], mappingStatus: "review" })
+    }),
+    wilo: Object.freeze({
+      "wilo-circulation": freezeMapping({ categoryId: "circulation-pumps", seriesId: "wilo-yonos-pico1-0" }),
+      "wilo-dhw-circulation": freezeMapping({ categoryId: "circulation-pumps", seriesId: "wilo-star-z-nova" }),
+      "wilo-system-circulation": freezeMapping({ categoryId: "circulation-pumps", seriesId: "wilo-stratos-maxo" }),
+      "wilo-multistage": freezeMapping({ categoryId: "multistage-pumps", seriesId: "wilo-himulti-3" }),
+      "wilo-drainage": freezeMapping({ categoryId: "drainage-pumps", seriesId: "wilo-drain-tm-32" })
     })
   });
 
@@ -443,6 +487,7 @@
   }
 
   function supplierFor(product) {
+    if (String(product.brand || "").toLocaleLowerCase("en") === "wilo") return "wilo";
     if (String(product.brand || "").toLocaleLowerCase("en") === "ecosoft" || product.category === "water") return "ecosoft";
     if (String(product.brand || "").toLocaleLowerCase("en") === "termojet" || product.category === "heating") return "termojet";
     return "";
@@ -471,7 +516,6 @@
     resolve
   });
 })();
-
 /* Source: catalog/normalize-products.js */
 (function () {
   "use strict";
@@ -509,6 +553,32 @@
     ROBUST3000MAX: [["Продуктивність", "150–160 л/год"], ["Застосування", "Ресторани й обладнання HoReCa"], ["Режим роботи", "До 20 год/добу"]],
     ROBUST4000: [["Продуктивність", "150–180 л/год"], ["Застосування", "Професійні посудомийні машини"], ["Формат", "Прямоточний"]]
   });
+
+  const editorialCorrections = Object.freeze({
+    "termojet-wp_20506": "Високоефективний циркуляційний насос SPE12 для рециркуляції води в системах гарячого водопостачання. Компактний корпус і тиха робота підходять для побутового використання.",
+    "termojet-wp_20502": "Високоефективний циркуляційний насос SPE12 з таймером і термостатом для рециркуляції води в системах гарячого водопостачання. Компактний корпус і тиха робота підходять для побутового використання."
+  });
+
+  function cleanSupplierText(value) {
+    return String(value || "")
+      .replace(/\*+$/g, "")
+      .replace(/мінеральнихолій/giu, "мінеральних олій")
+      .replace(/характеристиками,близькими/giu, "характеристиками, близькими")
+      .replace(/ізмагнітним/giu, "із магнітним")
+      .trim();
+  }
+
+  function applyEditorialCorrections(product, category) {
+    const correctedDescription = editorialCorrections[product.id] || cleanSupplierText(product.description);
+    const correctedType = /^акція$/iu.test(String(product.type || "")) ? category.title : product.type || category.title;
+    return {
+      ...product,
+      type: correctedType,
+      description: correctedDescription,
+      shortDescription: editorialCorrections[product.id] || cleanSupplierText(product.shortDescription || correctedDescription),
+      fullDescription: editorialCorrections[product.id] || cleanSupplierText(product.fullDescription || correctedDescription)
+    };
+  }
 
   function pushFact(facts, origins, label, value, provenance = "derived", rule = "title-description") {
     if (!value || facts.some(([existingLabel]) => existingLabel === label)) return;
@@ -604,8 +674,8 @@
 
   function sourceAttributeEntries(product) {
     return (Array.isArray(product.attributes) ? product.attributes : []).map(attribute => Array.isArray(attribute)
-      ? { label: String(attribute[0] || "").trim(), value: String(attribute[1] || "").trim(), origin: "supplier" }
-      : { label: String(attribute?.label || "").trim(), value: String(attribute?.value || "").trim(), origin: "supplier" }).filter(item => item.label && item.value);
+      ? { label: cleanSupplierText(attribute[0]).replace(/\*+(?=:|$)/g, ""), value: cleanSupplierText(attribute[1]), origin: "supplier" }
+      : { label: cleanSupplierText(attribute?.label).replace(/\*+(?=:|$)/g, ""), value: cleanSupplierText(attribute?.value), origin: "supplier" }).filter(item => item.label && item.value);
   }
 
   function detailEntries(product) {
@@ -625,6 +695,7 @@
   }
 
   function parseNumber(value, label, definition) {
+    if (typeof value === "number" && Number.isFinite(value)) return { value: Number(value.toFixed(4)), unitStatus: "normalized-feature" };
     const normalized = String(value || "").replace(/,/g, ".").replace(/\s+/g, " ");
     if (/\d+(?:\.\d+)?\s*[-–]\s*\d+(?:\.\d+)?/.test(normalized)) return { value: null, unitStatus: "range-preserved" };
     const match = normalized.match(/-?\d+(?:\.\d+)?/);
@@ -730,30 +801,13 @@
     };
   }
 
-  const descriptionOverrides = Object.freeze({
-    "pump-grandlift-150-370dw": `Termojet GRANDLIFT 150-370DW — промислова двонасосна каналізаційна станція для об’єктів, де відведення стоків має працювати безперервно. Два насоси потужністю 3,7 кВт кожен, герметичний бак об’ємом 150 л, максимальний напір 26,5 м і продуктивність до 71 м³/год дають змогу обслуговувати готелі, ресторани, торгові центри, великі заміські комплекси та виробничі об’єкти.
-
-Стоки надходять у поліетиленовий бак через входи DN150 або DN100. У штатному режимі занурювальні насоси з ріжучими механізмами запускаються почергово, тому напрацювання розподіляється рівномірно. За пікового навантаження обидва насоси можуть працювати одночасно. Якщо один агрегат зупиниться, другий продовжить водовідведення. Блок керування з дисплеєм керує чергуванням насосів, зберігає статистику роботи та сигналізує про несправності.
-
-Станція розрахована на об’єкти з великою кількістю санвузлів або значним обсягом кухонних, побутових і виробничих стоків. Її застосовують у підвалах і цокольних поверхах, на комерційних об’єктах та в системах, де стоки необхідно підіймати на висоту понад 20 м.
-
-Ріжучі механізми пропускають включення розміром до 60 мм. Вихід DN80 комплектується зворотним клапаном, вентиляційне підключення має розмір DN40. Насоси захищені за класом IP68, а герметичний корпус запобігає поширенню запахів. Двонасосна схема забезпечує резервування та зменшує навантаження на кожен агрегат, подовжуючи ресурс обладнання.`
-  });
-
   function normalizeProduct(rawProduct) {
     const supplier = sourceMappings.supplierFor(rawProduct);
     const mapping = sourceMappings.resolve(rawProduct, supplier);
     const category = taxonomy.byId[mapping.categoryId];
     if (!supplier || !category) return Object.freeze({ ...rawProduct, normalizationError: !supplier ? "unknown-supplier" : "unmapped-category" });
-    const baseProduct = supplier === "ecosoft" ? enrichEcosoft(rawProduct, mapping) : rawProduct;
-    const correctedDescription = descriptionOverrides[baseProduct.slug];
-    const product = correctedDescription ? {
-      ...baseProduct,
-      description: correctedDescription,
-      shortDescription: correctedDescription,
-      fullDescription: correctedDescription,
-      officialSourceUrl: baseProduct.sourceUrl || baseProduct.link
-    } : baseProduct;
+    const enrichedProduct = supplier === "ecosoft" ? enrichEcosoft(rawProduct, mapping) : rawProduct;
+    const product = applyEditorialCorrections(enrichedProduct, category);
     const supplierConfig = sourceMappings.suppliers[supplier];
     const brandId = supplierConfig.brandId;
     const attributeResult = normalizeAttributes(product, supplier, category);
@@ -831,21 +885,22 @@
     ? window.sofievkaRawWaterProducts
     : (Array.isArray(window.sofievkaProducts) ? window.sofievkaProducts : []);
   const rawHeatingProducts = Array.isArray(window.sofievkaTermojetProducts) ? window.sofievkaTermojetProducts : [];
-  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts]);
+  const rawWiloProducts = Array.isArray(window.sofievkaWiloProducts) ? window.sofievkaWiloProducts : [];
+  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts]);
 
   window.sofievkaProductNormalizer = Object.freeze({ slugify, normalizeProduct, normalizeAll });
   window.sofievkaNormalizedProducts = result.products;
   window.sofievkaNormalizationReport = Object.freeze({
-    sourceCount: rawWaterProducts.length + rawHeatingProducts.length,
+    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length,
     normalizedCount: result.products.length,
     waterSourceCount: rawWaterProducts.length,
     heatingSourceCount: rawHeatingProducts.length,
+    wiloSourceCount: rawWiloProducts.length,
     duplicateInputIds: result.duplicateInputIds,
     adjustedSlugs: result.adjustedSlugs,
     normalizationErrors: Object.freeze(result.products.filter(product => product.normalizationError).map(product => Object.freeze({ id: product.id, error: product.normalizationError })))
   });
 })();
-
 /* Source: catalog/routing.js */
 (function () {
   "use strict";
@@ -1023,7 +1078,6 @@
     resolveLocation
   });
 })();
-
 /* Source: catalog/catalog-facade.js */
 (function () {
   "use strict";
@@ -1142,7 +1196,6 @@
     valueLabel
   });
 })();
-
 /* Source: catalog/pdp-engine.js */
 (function () {
   "use strict";
@@ -1156,9 +1209,9 @@
   const brands = catalog.brands || [];
   const groupDefinitions = Object.freeze([
     Object.freeze({ id: "main", title: "Основні параметри", keys: Object.freeze(["productType", "purpose", "type", "technology", "waterSource", "installation", "flowType", "scope", "pump", "mineralizer"]) }),
-    Object.freeze({ id: "performance", title: "Робочі параметри", keys: Object.freeze(["capacityLh", "flowM3h", "headM", "kvs", "powerKw", "heatOutputKw", "pressureBar", "temperature", "filtrationMicron"]) }),
-    Object.freeze({ id: "connection", title: "Підключення та сумісність", keys: Object.freeze(["diameter", "diameterMm", "connection", "mountingLengthMm", "outlets", "compatibility", "control", "voltage", "protectionClass", "material"]) }),
-    Object.freeze({ id: "dimensions", title: "Габарити та формат", keys: Object.freeze(["widthMm", "heightMm", "depthMm", "volumeL", "weightKg", "format"]) })
+    Object.freeze({ id: "performance", title: "Робочі параметри", keys: Object.freeze(["capacityLh", "flowM3h", "headM", "kvs", "powerKw", "heatOutputKw", "pressureBar", "temperature", "filtrationMicron", "eei", "maxImmersionDepthM", "freePassageMm"]) }),
+    Object.freeze({ id: "connection", title: "Підключення та сумісність", keys: Object.freeze(["diameter", "diameterMm", "connection", "mountingLengthMm", "outlets", "compatibility", "control", "voltage", "protectionClass", "material", "selfPriming", "cableLengthM", "floatSwitch"]) }),
+    Object.freeze({ id: "dimensions", title: "Габарити та формат", keys: Object.freeze(["widthMm", "heightMm", "depthMm", "dimensions", "volumeL", "weightKg", "format"]) })
   ]);
 
   const hasValue = value => value !== undefined && value !== null && value !== "";
@@ -1205,8 +1258,7 @@
     const value = product.normalizedAttributes?.[id];
     const definition = definitions[id];
     if (!definition || !hasValue(value)) return null;
-    const sourceRecord = (product.catalogAttributes || []).find(item => item.id === id && hasValue(item.sourceValue));
-    return Object.freeze({ id, label: definition.label, value: sourceRecord ? String(sourceRecord.sourceValue) : catalog.valueLabel(definition, value) });
+    return Object.freeze({ id, label: definition.label, value: catalog.valueLabel(definition, value) });
   };
 
   function keySpecs(product, limit = 5) {
@@ -1267,50 +1319,11 @@
   }
 
   function documents(product) {
-    const sources = [
-      ...(Array.isArray(product.documents) ? product.documents : []),
-      ...(Array.isArray(product.instructions) ? product.instructions.map(item => typeof item === "string" ? { url: item, type: "Інструкція" } : { type: "Інструкція", ...item }) : []),
-      ...(Array.isArray(product.downloads) ? product.downloads : [])
-    ];
-    const seen = new Set();
-    return Object.freeze(sources.filter(item => {
-      const url = typeof item === "string" ? item : item?.url;
-      if (!url || !/^https?:\/\/|^\//.test(url) || seen.has(url)) return false;
-      seen.add(url);
-      return true;
-    }).map(item => {
-      const source = typeof item === "string" ? { url: item } : item;
-      return Object.freeze({
-        type: source.type || source.format || "Документ",
-        title: source.title || source.name || "Документ виробника",
-        url: source.url,
-        size: source.size || source.fileSize || "",
-        language: source.language || "",
-        audience: source.audience || ""
-      });
-    }));
-  }
-
-  function referencedProducts(product, fields, limit = 4) {
-    const references = fields.flatMap(field => Array.isArray(product[field]) ? product[field] : []);
-    const result = [];
-    const seen = new Set([product.id]);
-    references.forEach(reference => {
-      const key = typeof reference === "string" ? reference : reference?.productId || reference?.id || reference?.sku || reference?.slug;
-      const match = products.find(item => item.id === key || item.sku === key || item.slug === key);
-      if (!match || seen.has(match.id)) return;
-      seen.add(match.id);
-      result.push(match);
-    });
-    return Object.freeze(result.slice(0, limit));
-  }
-
-  function accessoryProducts(product, limit = 4) {
-    return referencedProducts(product, ["accessoryIds", "accessories", "compatibleConsumables"], limit);
-  }
-
-  function compatibleProducts(product, limit = 4) {
-    return referencedProducts(product, ["compatibleProductIds", "compatibleProducts"], limit);
+    return Object.freeze((Array.isArray(product.documents) ? product.documents : []).filter(item => item?.url && /^https?:\/\/|^\//.test(item.url)).map(item => Object.freeze({
+      type: item.type || "document",
+      title: item.title || "Документ виробника",
+      url: item.url
+    })));
   }
 
   function model(product) {
@@ -1334,26 +1347,13 @@
   }
 
   function relatedProducts(product, limit = 4) {
-    const explicit = referencedProducts(product, ["similarProductIds", "similarProducts", "alternativeProductIds", "alternatives"], limit);
-    if (explicit.length) return explicit;
     const sourceAttributes = product.normalizedAttributes || {};
-    const titleStopTokens = new Set(["dlya", "with", "without"]);
-    const titleFamily = item => {
-      const brandTokens = new Set(catalog.slugify(item.brand || "").split("-").filter(Boolean));
-      return catalog.slugify(item.shortTitle || item.title || "").split("-")
-        .filter(token => token.length > 3 && !/^\d/.test(token) && !brandTokens.has(token) && !titleStopTokens.has(token))
-        .slice(0, 3);
-    };
-    const sourceFamily = titleFamily(product);
     return Object.freeze(products.filter(item => item.id !== product.id && item.primaryCategoryId === product.primaryCategoryId).map(item => {
       const shared = Object.keys(sourceAttributes).filter(id => hasValue(sourceAttributes[id]) && sourceAttributes[id] === item.normalizedAttributes?.[id]).length;
-      const familyOverlap = titleFamily(item).filter(token => sourceFamily.includes(token)).length;
-      const sameSeries = Boolean(item.seriesId && item.seriesId === product.seriesId);
-      const relevant = sameSeries || (shared >= 2 && familyOverlap >= 2);
-      const score = (sameSeries ? 40 : 0) + (item.brandId === product.brandId ? 12 : 0) + shared * 5 + familyOverlap * 8;
+      const score = (item.seriesId && item.seriesId === product.seriesId ? 40 : 0) + (item.brandId === product.brandId ? 12 : 0) + shared * 5;
       const priceDistance = Math.abs(Number(item.price || 0) - Number(product.price || 0));
-      return { item, relevant, score, priceDistance };
-    }).filter(entry => entry.relevant).sort((a, b) => b.score - a.score || a.priceDistance - b.priceDistance || a.item.id.localeCompare(b.item.id)).slice(0, limit).map(entry => entry.item));
+      return { item, score, priceDistance };
+    }).sort((a, b) => b.score - a.score || a.priceDistance - b.priceDistance || a.item.id.localeCompare(b.item.id)).slice(0, limit).map(entry => entry.item));
   }
 
   function brand(product) {
@@ -1364,9 +1364,8 @@
     return !new Set(["drinking-system-cartridges", "mainline-cartridges", "filter-media"]).has(product.primaryCategoryId);
   }
 
-  window.sofievkaPdp = Object.freeze({ keySpecs, specificationGroups, images, documents, accessoryProducts, compatibleProducts, model, purchase, relatedProducts, brand, installationRelevant });
+  window.sofievkaPdp = Object.freeze({ keySpecs, specificationGroups, images, documents, model, purchase, relatedProducts, brand, installationRelevant });
 })();
-
 /* Source: catalog/search-engine.js */
 (function () {
   "use strict";
@@ -1377,11 +1376,15 @@
   const SEARCHABLE_ATTRIBUTE_IDS = Object.freeze([
     "diameter", "diameterMm", "connection", "powerKw", "headM", "flowM3h", "filtrationMicron",
     "compatibility", "kvs", "mountingLengthMm", "pressureBar", "heatOutputKw", "outlets", "voltage",
-    "control", "protectionClass", "temperature", "capacityLh", "format"
+    "control", "protectionClass", "temperature", "capacityLh", "format", "eei", "selfPriming",
+    "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch"
   ]);
 
   const CATEGORY_ALIASES = Object.freeze({
     "circulation-pumps": ["циркуляційний насос", "циркуляційні насоси", "циркуляционный насос", "циркуляционные насосы"],
+    "water-pumps": ["насоси для водопостачання", "водяні насоси", "насосы водоснабжения"],
+    "multistage-pumps": ["багатоступеневий насос", "багатоступеневі насоси", "многоступенчатый насос"],
+    "drainage-pumps": ["дренажний насос", "дренажні насоси", "занурювальний насос", "дренажный насос"],
     "underfloor-heating": ["тепла підлога", "теплий пол", "теплый пол", "підігрів підлоги"],
     "distribution-hydraulics": ["гідравліка", "гидравлика", "колектор", "колектори", "коллектор", "насосна група"],
     automation: ["автоматика", "керування", "управління", "управление", "термостат", "контролер"],

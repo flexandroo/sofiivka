@@ -29,7 +29,8 @@ function pageFor(urlPath) {
   const legacyDirectoryIndex = clean.endsWith(".html") ? path.join(clean.slice(0, -5), "index.html") : "";
   if (legacyDirectoryIndex && fs.existsSync(path.join(projectRoot, legacyDirectoryIndex))) return legacyDirectoryIndex;
   if (urlPath === "/brands") return "brands.html";
-  if (urlPath === "/catalog") return "catalog.html";
+  if (urlPath === "/catalog" || urlPath.startsWith("/catalog/")) return "catalog.html";
+  if (urlPath.startsWith("/brands/")) return "brand.html";
   return clean.includes(".") ? clean : `${clean}.html`;
 }
 

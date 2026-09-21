@@ -14,7 +14,8 @@
 
   const suppliers = Object.freeze({
     ecosoft: Object.freeze({ id: "ecosoft", brandId: "ecosoft", sourceName: "Каталог товарів" }),
-    termojet: Object.freeze({ id: "termojet", brandId: "termojet", sourceName: "Termojet XML catalog", imageOrigin: "https://termojet.com.ua" })
+    termojet: Object.freeze({ id: "termojet", brandId: "termojet", sourceName: "Termojet XML catalog", imageOrigin: "https://termojet.com.ua" }),
+    wilo: Object.freeze({ id: "wilo", brandId: "wilo", sourceName: "Офіційний каталог Wilo Україна" })
   });
 
   const categoryMappings = Object.freeze({
@@ -44,6 +45,13 @@
       "termojet-termojet-box": freezeMapping({ categoryId: "heating-components", seriesId: "termojet-box" }),
       "termojet-rozprodazh": freezeMapping({ categoryId: "heating-components", collectionIds: ["sale"], tags: ["sale"], mappingStatus: "review" }),
       "termojet-dodatkove": freezeMapping({ categoryId: "heating-components", tags: ["additional"], mappingStatus: "review" })
+    }),
+    wilo: Object.freeze({
+      "wilo-circulation": freezeMapping({ categoryId: "circulation-pumps", seriesId: "wilo-yonos-pico1-0" }),
+      "wilo-dhw-circulation": freezeMapping({ categoryId: "circulation-pumps", seriesId: "wilo-star-z-nova" }),
+      "wilo-system-circulation": freezeMapping({ categoryId: "circulation-pumps", seriesId: "wilo-stratos-maxo" }),
+      "wilo-multistage": freezeMapping({ categoryId: "multistage-pumps", seriesId: "wilo-himulti-3" }),
+      "wilo-drainage": freezeMapping({ categoryId: "drainage-pumps", seriesId: "wilo-drain-tm-32" })
     })
   });
 
@@ -77,6 +85,7 @@
   }
 
   function supplierFor(product) {
+    if (String(product.brand || "").toLocaleLowerCase("en") === "wilo") return "wilo";
     if (String(product.brand || "").toLocaleLowerCase("en") === "ecosoft" || product.category === "water") return "ecosoft";
     if (String(product.brand || "").toLocaleLowerCase("en") === "termojet" || product.category === "heating") return "termojet";
     return "";

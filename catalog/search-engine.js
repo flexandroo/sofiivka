@@ -7,11 +7,15 @@
   const SEARCHABLE_ATTRIBUTE_IDS = Object.freeze([
     "diameter", "diameterMm", "connection", "powerKw", "headM", "flowM3h", "filtrationMicron",
     "compatibility", "kvs", "mountingLengthMm", "pressureBar", "heatOutputKw", "outlets", "voltage",
-    "control", "protectionClass", "temperature", "capacityLh", "format"
+    "control", "protectionClass", "temperature", "capacityLh", "format", "eei", "selfPriming",
+    "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch"
   ]);
 
   const CATEGORY_ALIASES = Object.freeze({
     "circulation-pumps": ["циркуляційний насос", "циркуляційні насоси", "циркуляционный насос", "циркуляционные насосы"],
+    "water-pumps": ["насоси для водопостачання", "водяні насоси", "насосы водоснабжения"],
+    "multistage-pumps": ["багатоступеневий насос", "багатоступеневі насоси", "многоступенчатый насос"],
+    "drainage-pumps": ["дренажний насос", "дренажні насоси", "занурювальний насос", "дренажный насос"],
     "underfloor-heating": ["тепла підлога", "теплий пол", "теплый пол", "підігрів підлоги"],
     "distribution-hydraulics": ["гідравліка", "гидравлика", "колектор", "колектори", "коллектор", "насосна група"],
     automation: ["автоматика", "керування", "управління", "управление", "термостат", "контролер"],

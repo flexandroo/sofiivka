@@ -73,7 +73,7 @@
       order: 110,
       status: "active",
       visibility: "catalog",
-      allowedFacetIds: ["productType", "type", "headM", "flowM3h", "mountingLengthMm", "powerKw", "connection", "control", "voltage"],
+      allowedFacetIds: ["productType", "type", "headM", "flowM3h", "mountingLengthMm", "powerKw", "connection", "pressureBar", "voltage", "protectionClass", "temperature", "eei", "control"],
       seo: { title: "Циркуляційні насоси | ТД «Софіївка»", description: "Циркуляційні насоси для систем опалення та інженерних контурів." }
     },
     {
@@ -160,6 +160,22 @@
       allowedFacetIds: ["productType", "purpose", "waterSource", "technology", "installation", "capacityLh", "waterType", "format", "pump", "mineralizer", "flowType", "scope"],
       seo: { title: "Водоочищення | ТД «Софіївка»", description: "Системи водоочищення, питні фільтри, картриджі та фільтрувальні матеріали." }
     },
+    {
+      id: "water-pumps",
+      slug: "water-pumps",
+      parentId: "water-supply",
+      level: 2,
+      title: "Насоси для водопостачання",
+      shortTitle: "Насоси",
+      description: "Насоси для подачі води, дренажу та інженерних систем водопостачання.",
+      order: 220,
+      status: "active",
+      visibility: "catalog",
+      allowedFacetIds: ["productType", "headM", "flowM3h", "powerKw", "connection", "pressureBar", "voltage"],
+      seo: { title: "Насоси для водопостачання | ТД «Софіївка»", description: "Багатоступеневі та дренажні насоси для систем водопостачання." }
+    },
+    { id: "multistage-pumps", slug: "multistage-pumps", parentId: "water-pumps", level: 3, title: "Багатоступеневі насоси", shortTitle: "Багатоступеневі", description: "Горизонтальні багатоступеневі насоси для водопостачання та поливу.", order: 321, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "powerKw", "selfPriming", "connection", "pressureBar", "voltage"], seo: { title: "Багатоступеневі насоси | ТД «Софіївка»", description: "Багатоступеневі насоси для приватного водопостачання, поливу та використання дощової води." } },
+    { id: "drainage-pumps", slug: "drainage-pumps", parentId: "water-pumps", level: 3, title: "Дренажні насоси", shortTitle: "Дренажні", description: "Занурювальні насоси для відведення стічної та забрудненої води без фекалій.", order: 322, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "powerKw", "freePassageMm", "maxImmersionDepthM", "floatSwitch", "connection", "protectionClass"], seo: { title: "Дренажні насоси | ТД «Софіївка»", description: "Дренажні занурювальні насоси для відведення стічної та забрудненої води." } },
     { id: "drinking-system-cartridges", slug: "drinking-system-cartridges", parentId: "water-treatment", level: 3, title: "Картриджі питних систем", shortTitle: "Картриджі питних систем", description: "Змінні елементи для питних систем очищення води.", order: 311, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "type", "format"], legacyGroup: "replacement-elements", legacyGroupTitle: "Змінні елементи", seo: {} },
     { id: "mainline-cartridges", slug: "mainline-cartridges", parentId: "water-treatment", level: 3, title: "Картриджі магістральних фільтрів", shortTitle: "Магістральні картриджі", description: "Картриджі для магістрального очищення води.", order: 312, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "purpose", "format", "waterType"], legacyGroup: "replacement-elements", legacyGroupTitle: "Змінні елементи", seo: {} },
     { id: "mainline-filters-housings", slug: "mainline-filters-housings", parentId: "water-treatment", level: 3, title: "Корпуси магістральних фільтрів", shortTitle: "Магістральні фільтри", description: "Корпуси та готові магістральні фільтри.", order: 313, status: "active", visibility: "catalog", allowedFacetIds: ["productType", "purpose", "connection", "format", "waterType"], legacyGroup: "whole-house-treatment", legacyGroupTitle: "Очищення води для будинку", seo: {} },

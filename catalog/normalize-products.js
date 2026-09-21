@@ -35,6 +35,32 @@
     ROBUST4000: [["Продуктивність", "150–180 л/год"], ["Застосування", "Професійні посудомийні машини"], ["Формат", "Прямоточний"]]
   });
 
+  const editorialCorrections = Object.freeze({
+    "termojet-wp_20506": "Високоефективний циркуляційний насос SPE12 для рециркуляції води в системах гарячого водопостачання. Компактний корпус і тиха робота підходять для побутового використання.",
+    "termojet-wp_20502": "Високоефективний циркуляційний насос SPE12 з таймером і термостатом для рециркуляції води в системах гарячого водопостачання. Компактний корпус і тиха робота підходять для побутового використання."
+  });
+
+  function cleanSupplierText(value) {
+    return String(value || "")
+      .replace(/\*+$/g, "")
+      .replace(/мінеральнихолій/giu, "мінеральних олій")
+      .replace(/характеристиками,близькими/giu, "характеристиками, близькими")
+      .replace(/ізмагнітним/giu, "із магнітним")
+      .trim();
+  }
+
+  function applyEditorialCorrections(product, category) {
+    const correctedDescription = editorialCorrections[product.id] || cleanSupplierText(product.description);
+    const correctedType = /^акція$/iu.test(String(product.type || "")) ? category.title : product.type || category.title;
+    return {
+      ...product,
+      type: correctedType,
+      description: correctedDescription,
+      shortDescription: editorialCorrections[product.id] || cleanSupplierText(product.shortDescription || correctedDescription),
+      fullDescription: editorialCorrections[product.id] || cleanSupplierText(product.fullDescription || correctedDescription)
+    };
+  }
+
   function pushFact(facts, origins, label, value, provenance = "derived", rule = "title-description") {
     if (!value || facts.some(([existingLabel]) => existingLabel === label)) return;
     facts.push([label, value]);
@@ -129,8 +155,8 @@
 
   function sourceAttributeEntries(product) {
     return (Array.isArray(product.attributes) ? product.attributes : []).map(attribute => Array.isArray(attribute)
-      ? { label: String(attribute[0] || "").trim(), value: String(attribute[1] || "").trim(), origin: "supplier" }
-      : { label: String(attribute?.label || "").trim(), value: String(attribute?.value || "").trim(), origin: "supplier" }).filter(item => item.label && item.value);
+      ? { label: cleanSupplierText(attribute[0]).replace(/\*+(?=:|$)/g, ""), value: cleanSupplierText(attribute[1]), origin: "supplier" }
+      : { label: cleanSupplierText(attribute?.label).replace(/\*+(?=:|$)/g, ""), value: cleanSupplierText(attribute?.value), origin: "supplier" }).filter(item => item.label && item.value);
   }
 
   function detailEntries(product) {
@@ -150,6 +176,7 @@
   }
 
   function parseNumber(value, label, definition) {
+    if (typeof value === "number" && Number.isFinite(value)) return { value: Number(value.toFixed(4)), unitStatus: "normalized-feature" };
     const normalized = String(value || "").replace(/,/g, ".").replace(/\s+/g, " ");
     if (/\d+(?:\.\d+)?\s*[-–]\s*\d+(?:\.\d+)?/.test(normalized)) return { value: null, unitStatus: "range-preserved" };
     const match = normalized.match(/-?\d+(?:\.\d+)?/);
@@ -260,7 +287,8 @@
     const mapping = sourceMappings.resolve(rawProduct, supplier);
     const category = taxonomy.byId[mapping.categoryId];
     if (!supplier || !category) return Object.freeze({ ...rawProduct, normalizationError: !supplier ? "unknown-supplier" : "unmapped-category" });
-    const product = supplier === "ecosoft" ? enrichEcosoft(rawProduct, mapping) : rawProduct;
+    const enrichedProduct = supplier === "ecosoft" ? enrichEcosoft(rawProduct, mapping) : rawProduct;
+    const product = applyEditorialCorrections(enrichedProduct, category);
     const supplierConfig = sourceMappings.suppliers[supplier];
     const brandId = supplierConfig.brandId;
     const attributeResult = normalizeAttributes(product, supplier, category);
@@ -338,15 +366,17 @@
     ? window.sofievkaRawWaterProducts
     : (Array.isArray(window.sofievkaProducts) ? window.sofievkaProducts : []);
   const rawHeatingProducts = Array.isArray(window.sofievkaTermojetProducts) ? window.sofievkaTermojetProducts : [];
-  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts]);
+  const rawWiloProducts = Array.isArray(window.sofievkaWiloProducts) ? window.sofievkaWiloProducts : [];
+  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts]);
 
   window.sofievkaProductNormalizer = Object.freeze({ slugify, normalizeProduct, normalizeAll });
   window.sofievkaNormalizedProducts = result.products;
   window.sofievkaNormalizationReport = Object.freeze({
-    sourceCount: rawWaterProducts.length + rawHeatingProducts.length,
+    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length,
     normalizedCount: result.products.length,
     waterSourceCount: rawWaterProducts.length,
     heatingSourceCount: rawHeatingProducts.length,
+    wiloSourceCount: rawWiloProducts.length,
     duplicateInputIds: result.duplicateInputIds,
     adjustedSlugs: result.adjustedSlugs,
     normalizationErrors: Object.freeze(result.products.filter(product => product.normalizationError).map(product => Object.freeze({ id: product.id, error: product.normalizationError })))

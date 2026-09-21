@@ -276,7 +276,7 @@
 
   function labelFor(key, value) {
     if (key === "brand") return catalog.brands.find(brand => brand.id === value)?.name || value;
-    if (key === "availability") return value === "in_stock" ? "В наявності" : value === "out_of_stock" ? "Немає в наявності" : value;
+    if (key === "availability") return value === "in_stock" ? "В наявності" : value === "out_of_stock" ? "Немає в наявності" : "Наявність уточнюйте";
     if (key === "subcategory" || key === "category") return catalog.categoryById[value]?.name || value;
     return catalog.valueLabel(catalog.attributeDefinitions[key], value);
   }

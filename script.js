@@ -43,42 +43,42 @@ function setupCatalogMenu() {
 const storefrontCategoryGroups = {
   heating: {
     title: "Опалення",
-    href: "catalog.html?category=heating",
+    href: "/catalog/heating",
     items: ["Радіатори", "Тепла підлога", "Циркуляційні насоси", "Колектори опалення", "Автоматика опалення"]
   },
   boilers: {
     title: "Котли та водонагрівачі",
-    href: "catalog.html?category=heating",
+    href: "/catalog/heating",
     items: ["Газові котли", "Електричні котли", "Твердопаливні котли", "Бойлери непрямого нагріву", "Електричні водонагрівачі"]
   },
   water: {
     title: "Водопостачання",
-    href: "catalog.html?category=water",
+    href: "/catalog/water-supply",
     items: ["Свердловинні насоси", "Поверхневі насоси", "Насосні станції", "Гідроакумулятори", "Автоматика для насосів"]
   },
   treatment: {
     title: "Водоочищення",
-    href: "catalog.html?category=water",
+    href: "/catalog/water-supply/water-treatment",
     items: ["Зворотний осмос", "Проточні фільтри", "Магістральні фільтри", "Картриджі", "Системи пом'якшення"]
   },
   plumbing: {
     title: "Сантехніка",
-    href: "plumbing.html",
+    href: "/catalog/plumbing",
     items: ["Змішувачі", "Інсталяції", "Санітарна кераміка", "Душові системи", "Сифони та трапи"]
   },
   climate: {
     title: "Клімат",
-    href: "climate.html",
+    href: "/catalog/climate",
     items: ["Кондиціонери", "Вентиляція", "Теплові насоси", "Конвектори", "Осушувачі повітря"]
   },
   pipes: {
     title: "Труби та арматура",
-    href: "catalog.html",
+    href: "/catalog/plumbing",
     items: ["Поліпропіленові труби", "Труби PEX", "Металопластикові труби", "Фітинги", "Запірна арматура"]
   },
   automation: {
     title: "Автоматика",
-    href: "catalog.html",
+    href: "/catalog/heating/automation",
     items: ["Термостати", "Реле тиску", "Датчики", "Контролери систем", "Сервоприводи"]
   }
 };
@@ -280,16 +280,17 @@ function setupHeroSlider() {
 
 const catalogProducts = [
   ...(Array.isArray(window.sofievkaProducts) ? window.sofievkaProducts : []),
-  ...(Array.isArray(window.sofievkaTermojetProducts) ? window.sofievkaTermojetProducts : [])
+  ...(Array.isArray(window.sofievkaTermojetProducts) ? window.sofievkaTermojetProducts : []),
+  ...(Array.isArray(window.sofievkaWiloProducts) ? window.sofievkaWiloProducts : [])
 ];
 
 const searchItems = [
-  { name: "Газові котли", meta: "Опалення", href: "catalog.html?category=heating" },
-  { name: "Циркуляційні насоси", meta: "Насоси", href: "catalog.html?category=water" },
-  { name: "Радіатори", meta: "Опалення", href: "catalog.html?category=heating" },
-  { name: "Водонагрівачі", meta: "Гаряча вода", href: "catalog.html?category=water" },
-  { name: "Кондиціонери", meta: "Клімат", href: "solutions.html" },
-  { name: "Труби та фітинги", meta: "Сантехніка", href: "catalog.html" },
+  { name: "Газові котли", meta: "Опалення", href: "/catalog/heating" },
+  { name: "Циркуляційні насоси", meta: "Насоси", href: "/catalog/heating/circulation-pumps" },
+  { name: "Радіатори", meta: "Опалення", href: "/catalog/heating" },
+  { name: "Водонагрівачі", meta: "Гаряча вода", href: "/catalog/heating" },
+  { name: "Кондиціонери", meta: "Клімат", href: "/catalog/climate" },
+  { name: "Труби та фітинги", meta: "Сантехніка", href: "/catalog/plumbing" },
   { name: "Монтаж і сервіс", meta: "Послуги", href: "services.html" },
   { name: "Бренди", meta: "Виробники", href: "brands.html" }
 ].concat(catalogProducts.map(product => ({
@@ -536,7 +537,6 @@ function setupProducts() {
 }
 
 function setupHeaderActions() {
-  document.querySelector("[data-profile]")?.addEventListener("click", () => { window.location.href = "account.html"; });
   document.querySelector("[data-favorites]")?.addEventListener("click", () => { window.location.href = "favorites.html"; });
   document.querySelector("[data-cart]")?.addEventListener("click", () => { window.location.href = "cart.html"; });
 }
