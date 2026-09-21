@@ -371,12 +371,13 @@
   const rawTekkhausProducts = Array.isArray(window.sofievkaTekkhausProducts) ? window.sofievkaTekkhausProducts : [];
   const rawTechProducts = Array.isArray(window.sofievkaTechProducts) ? window.sofievkaTechProducts : [];
   const rawHeatingBrandsProducts = Array.isArray(window.sofievkaHeatingBrandsProducts) ? window.sofievkaHeatingBrandsProducts : [];
-  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts, ...rawTechProducts, ...rawHeatingBrandsProducts]);
+  const rawBaxiBuderusProducts = Array.isArray(window.sofievkaBaxiBuderusProducts) ? window.sofievkaBaxiBuderusProducts : [];
+  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts, ...rawTechProducts, ...rawHeatingBrandsProducts, ...rawBaxiBuderusProducts]);
 
   window.sofievkaProductNormalizer = Object.freeze({ slugify, normalizeProduct, normalizeAll });
   window.sofievkaNormalizedProducts = result.products;
   window.sofievkaNormalizationReport = Object.freeze({
-    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length + rawTekkhausProducts.length + rawTechProducts.length + rawHeatingBrandsProducts.length,
+    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length + rawTekkhausProducts.length + rawTechProducts.length + rawHeatingBrandsProducts.length + rawBaxiBuderusProducts.length,
     normalizedCount: result.products.length,
     waterSourceCount: rawWaterProducts.length,
     heatingSourceCount: rawHeatingProducts.length,
@@ -385,6 +386,7 @@
     tekkhausSourceCount: rawTekkhausProducts.length,
     techSourceCount: rawTechProducts.length,
     heatingBrandsSourceCount: rawHeatingBrandsProducts.length,
+    baxiBuderusSourceCount: rawBaxiBuderusProducts.length,
     duplicateInputIds: result.duplicateInputIds,
     adjustedSlugs: result.adjustedSlugs,
     normalizationErrors: Object.freeze(result.products.filter(product => product.normalizationError).map(product => Object.freeze({ id: product.id, error: product.normalizationError })))

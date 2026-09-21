@@ -21,6 +21,7 @@ for (const file of [
   "tekkhaus-products-data.js",
   "tech-products-data.js",
   "heating-brands-products-data.js",
+  "baxi-buderus-products-data.js",
   "catalog-data.js"
 ]) {
   vm.runInContext(fs.readFileSync(path.join(projectRoot, file), "utf8"), context, { filename: file });
@@ -67,9 +68,9 @@ routeCheck(routing.resolveLocation("/catalog", "?category=water", "catalog").red
 routeCheck(routing.resolveLocation("/catalog/water-treatment", "", "catalog").redirectTo === "/catalog/water-supply/water-treatment", "legacy water root must canonicalize");
 routeCheck(routing.resolveLocation("/catalog/water-treatment/reverse-osmosis", "", "catalog").redirectTo === "/catalog/water-supply/water-treatment/reverse-osmosis", "legacy water category must canonicalize");
 
-assert.equal(routingAssertions, 145, "taxonomy/route regression suite must retain 145 checks");
+assert.equal(routingAssertions, 163, "taxonomy/route regression suite must retain 163 checks");
 
-assert.equal(products.length, 3085, "catalog must contain 3085 products");
+assert.equal(products.length, 3215, "catalog must contain 3215 products");
 assert.equal(state.sofievkaNormalizationReport.waterSourceCount, 176, "water product count changed");
 assert.equal(state.sofievkaNormalizationReport.heatingSourceCount, 343, "Termojet product count changed");
 assert.equal(state.sofievkaNormalizationReport.wiloSourceCount, 1020, "Wilo product count changed");
@@ -77,11 +78,12 @@ assert.equal(state.sofievkaNormalizationReport.grundfosSourceCount, 313, "Grundf
 assert.equal(state.sofievkaNormalizationReport.tekkhausSourceCount, 112, "TEKK HAUS range count changed");
 assert.equal(state.sofievkaNormalizationReport.techSourceCount, 257, "TECH Controllers range count changed");
 assert.equal(state.sofievkaNormalizationReport.heatingBrandsSourceCount, 864, "Altep, FENIKS and FOCUS range count changed");
+assert.equal(state.sofievkaNormalizationReport.baxiBuderusSourceCount, 130, "BAXI and domestic Buderus range count changed");
 assert.equal(state.sofievkaNormalizationReport.normalizationErrors.length, 0, "catalog validation errors found");
 assert.equal(new Set(products.map(product => product.id)).size, products.length, "product IDs must be unique");
 
 const productIdHash = crypto.createHash("sha256").update(products.map(product => product.id).sort().join("\n")).digest("hex");
-assert.equal(productIdHash, "6ab68ea720a2789ec10e6180612c71298fed8ec18c94cfa8e350c975a6445ec9", "product IDs changed");
+assert.equal(productIdHash, "215e59e333ecf48b89e0a75971c3a6743cb05fa9a9f85dced9f9cb4e65e85733", "product IDs changed");
 
 assert.ok(catalog.brands.every(brand => catalog.brandUrl(brand.id) === `/brands/${brand.slug}`), "brand URLs must be canonical");
 
@@ -270,12 +272,38 @@ assert.ok(search.search("Altep Classic Plus").totalProducts >= 6, "Altep series 
 assert.ok(search.search("FENIKS Серія C 12 кВт").totalProducts >= 4, "FENIKS model search failed");
 assert.ok(search.search("FOCUS пелетний котел 120 кВт").totalProducts >= 8, "FOCUS boiler search failed");
 
+const baxiProducts = products.filter(product => product.brandId === "baxi");
+assert.equal(baxiProducts.length, 93, "BAXI catalog must retain all 93 official positions");
+assert.equal(new Set(baxiProducts.map(product => product.seriesId)).size, 52, "BAXI catalog must retain 52 normalized series and product groups");
+assert.ok(baxiProducts.every(product => /^https:\/\/baxi\.ua\//.test(product.manufacturerUrl)), "BAXI manufacturer URLs must stay on the official domain");
+assert.ok(baxiProducts.every(product => product.images.length >= 1 && product.images.every(image => image.startsWith("/assets/products/baxi/"))), "BAXI images must be local");
+assert.equal(baxiProducts.reduce((total, product) => total + product.images.length, 0), 160, "BAXI gallery image coverage changed");
+assert.equal(baxiProducts.filter(product => product.documents.length >= 1).length, 34, "confirmed BAXI document coverage changed");
+assert.equal(baxiProducts.filter(product => product.availability === "discontinued").length, 29, "BAXI discontinued labeling changed");
+assert.ok(baxiProducts.every(product => product.sourceUrls.every(url => /^https:\/\/baxi\.ua\//.test(url))), "BAXI provenance must use official URLs only");
+assert.equal(baxiProducts.filter(product => product.manufacturerCode).length, 0, "BAXI manufacturer codes must remain empty when not officially published");
+assert.equal(baxiProducts.filter(product => product.ean).length, 0, "BAXI EAN values must remain empty when not officially published");
+assert.ok(search.search("BAXI DUO-TEC Compact E 24").totalProducts >= 1, "BAXI model search failed");
+
+const buderusProducts = products.filter(product => product.brandId === "buderus");
+assert.equal(buderusProducts.length, 37, "Buderus domestic catalog must retain all 37 official positions");
+assert.equal(new Set(buderusProducts.map(product => product.seriesId)).size, 37, "Buderus domestic catalog must retain 37 series");
+assert.ok(buderusProducts.every(product => product.domestic === true), "Buderus catalog must remain limited to domestic products");
+assert.ok(buderusProducts.every(product => /^https:\/\/www\.buderus\.com\/ua\/uk\/ocs\//.test(product.manufacturerUrl)), "Buderus manufacturer URLs must stay on the official Ukrainian product catalog");
+assert.ok(buderusProducts.every(product => product.images.length >= 1 && product.images.every(image => image.startsWith("/assets/products/buderus/"))), "Buderus images must be local");
+assert.equal(buderusProducts.reduce((total, product) => total + product.images.length, 0), 46, "Buderus gallery image coverage changed");
+assert.equal(buderusProducts.filter(product => product.documents.length >= 1).length, 16, "confirmed Buderus document coverage changed");
+assert.equal(buderusProducts.filter(product => product.manufacturerCode).length, 12, "confirmed Buderus article coverage changed");
+assert.equal(buderusProducts.filter(product => product.ean).length, 0, "Buderus EAN values must remain empty when not officially published");
+assert.equal(search.search("7736901204").products[0]?.id, "buderus-7736901204", "exact Buderus article search must rank the product first");
+assert.ok(search.search("Buderus Logalux").totalProducts >= 13, "Buderus tank search failed");
+
 const reviewMappings = products.filter(product => product.source?.mappingStatus === "review").length;
 const unmappedAttributeProducts = products.filter(product => product.unmappedAttributes?.length).length;
 const brandsWithProducts = new Set(products.map(product => product.brandId));
 const brandsWithoutProducts = catalog.brands.filter(brand => !brandsWithProducts.has(brand.id)).length;
 assert.equal(reviewMappings, 29, "review mapping debt changed unexpectedly");
-assert.equal(unmappedAttributeProducts, 2966, "unmapped attribute debt changed unexpectedly");
+assert.equal(unmappedAttributeProducts, 3096, "unmapped attribute debt changed unexpectedly");
 
 const shellSource = fs.readFileSync(path.join(projectRoot, "page-shell.js"), "utf8");
 const uiSource = fs.readFileSync(path.join(projectRoot, "catalog-ui.js"), "utf8");
@@ -301,5 +329,5 @@ console.log(JSON.stringify({
   unmappedAttributeProducts,
   brandsWithoutProducts,
   productIdHash,
-  searchCases: 16
+  searchCases: 20
 }, null, 2));

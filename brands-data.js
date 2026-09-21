@@ -16,7 +16,7 @@ window.sofievkaBrands = Object.freeze([
   },
   {
     slug: "baxi",
-    name: "Baxi",
+    name: "BAXI",
     logo: "assets/brands/baxi.svg",
     description: "Газові та конденсаційні котли, водонагрівальне обладнання й автоматика для систем опалення.",
     type: "catalog",

@@ -21,7 +21,9 @@
     tech: Object.freeze({ id: "tech", brandId: "tech", sourceName: "Офіційний каталог TECH Controllers Україна" }),
     altep: Object.freeze({ id: "altep", brandId: "altep", sourceName: "Офіційний каталог Altep" }),
     feniks: Object.freeze({ id: "feniks", brandId: "feniks", sourceName: "Офіційний каталог FENIKS" }),
-    focus: Object.freeze({ id: "focus", brandId: "focus", sourceName: "Офіційний каталог FOCUS / FireBox" })
+    focus: Object.freeze({ id: "focus", brandId: "focus", sourceName: "Офіційний каталог FOCUS / FireBox" }),
+    baxi: Object.freeze({ id: "baxi", brandId: "baxi", sourceName: "Офіційний каталог BAXI Україна" }),
+    buderus: Object.freeze({ id: "buderus", brandId: "buderus", sourceName: "Офіційний каталог Buderus Україна" })
   });
 
   const categoryMappings = Object.freeze({
@@ -121,6 +123,26 @@
       "focus-boiler-accessories": freezeMapping({ categoryId: "boiler-accessories" }),
       "focus-industrial-heating": freezeMapping({ categoryId: "industrial-heating" }),
       "focus-humidification": freezeMapping({ categoryId: "humidification" })
+    }),
+    baxi: Object.freeze({
+      "baxi-gas-boilers": freezeMapping({ categoryId: "gas-boilers" }),
+      "baxi-industrial-heating": freezeMapping({ categoryId: "industrial-heating" }),
+      "baxi-heat-pumps": freezeMapping({ categoryId: "heat-pumps" }),
+      "baxi-hot-water-tanks": freezeMapping({ categoryId: "hot-water-tanks" }),
+      "baxi-heat-accumulators": freezeMapping({ categoryId: "heat-accumulators" }),
+      "baxi-solar-thermal": freezeMapping({ categoryId: "solar-thermal" }),
+      "baxi-automation": freezeMapping({ categoryId: "automation" }),
+      "baxi-boiler-accessories": freezeMapping({ categoryId: "boiler-accessories" }),
+      "baxi-flue-systems": freezeMapping({ categoryId: "flue-systems" }),
+      "baxi-air-conditioners": freezeMapping({ categoryId: "air-conditioners" })
+    }),
+    buderus: Object.freeze({
+      "buderus-gas-boilers": freezeMapping({ categoryId: "gas-boilers" }),
+      "buderus-heat-pumps": freezeMapping({ categoryId: "heat-pumps" }),
+      "buderus-hot-water-tanks": freezeMapping({ categoryId: "hot-water-tanks" }),
+      "buderus-heat-accumulators": freezeMapping({ categoryId: "heat-accumulators" }),
+      "buderus-solar-thermal": freezeMapping({ categoryId: "solar-thermal" }),
+      "buderus-automation": freezeMapping({ categoryId: "automation" })
     })
   });
 
@@ -154,6 +176,8 @@
   }
 
   function supplierFor(product) {
+    if (String(product.brand || "").toLocaleLowerCase("en") === "buderus") return "buderus";
+    if (String(product.brand || "").toLocaleLowerCase("en") === "baxi") return "baxi";
     if (String(product.brand || "").toLocaleLowerCase("en") === "focus") return "focus";
     if (String(product.brand || "").toLocaleLowerCase("en") === "feniks") return "feniks";
     if (String(product.brand || "").toLocaleLowerCase("en") === "altep") return "altep";

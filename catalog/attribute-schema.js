@@ -30,7 +30,16 @@
     kvs: define("kvs", { label: "Kvs, м³/год", type: "number", unit: "м³/год", rank: 9, aliases: [/^kvs(?:\s*\(.+\))?$/i, /^kv$/i] }),
     headM: define("headM", { semanticId: "maxHeadM", label: "Максимальний напір, м", type: "number", unit: "м", rank: 9, aliases: [/^hmax$/i, /^макс\.?\s*напір$/i, /^максимальний напір$/i, /^висота підйому$/i] }),
     powerKw: define("powerKw", { label: "Потужність, кВт", type: "number", unit: "кВт", rank: 10, aliases: [/^потужність$/i, /^споживана потужність$/i, /^макс\.?\s*споживана потужність$/i, /^мощность$/i] }),
-    heatOutputKw: define("heatOutputKw", { label: "Теплова потужність, кВт", type: "number", unit: "кВт", rank: 11, aliases: [/^теплова потужність$/i, /^потужність макс\./i, /^qmax:.*(?:20|10)/i] }),
+    heatOutputKw: define("heatOutputKw", { label: "Теплова потужність, кВт", type: "number", unit: "кВт", rank: 11, aliases: [/^теплова потужність$/i, /^номінальна теплова потужність$/i, /^максимальна номінальна теплопродуктивність/i, /^макс\. номінальне теплове навантаження/i, /^потужність опалення$/i, /^потужність макс\./i, /^qmax:.*(?:20|10)/i] }),
+    coolingCapacityKw: define("coolingCapacityKw", { label: "Потужність охолодження, кВт", type: "number", unit: "кВт", rank: 11.05, aliases: [/^потужність охолодження$/i, /^холодопродуктивність$/i, /^номінальна потужність.*охолодження/i] }),
+    dhwFlowLMin: define("dhwFlowLMin", { label: "Продуктивність ГВП, л/хв", type: "number", unit: "л/хв", rank: 11.06, aliases: [/^продуктивність гвп/i, /^витрата гарячої води/i, /^кількість гарячої води/i] }),
+    energyClass: define("energyClass", { label: "Клас енергоефективності", rank: 11.07, aliases: [/^клас енергоспоживання$/i, /^клас енергоефективності$/i, /^енергетичний клас$/i] }),
+    refrigerant: define("refrigerant", { label: "Холодоагент", rank: 11.08, aliases: [/^холодоагент$/i, /^тип холодоагенту$/i] }),
+    cop: define("cop", { label: "COP", type: "number", rank: 11.09, aliases: [/^cop(?:\s|$)/i, /^коефіцієнт перетворення cop/i] }),
+    scop: define("scop", { label: "SCOP", type: "number", rank: 11.10, aliases: [/^scop(?:\s|$)/i, /^сезонний коефіцієнт.*scop/i] }),
+    seer: define("seer", { label: "SEER", type: "number", rank: 11.11, aliases: [/^seer(?:\s|$)/i, /^сезонний коефіцієнт.*seer/i] }),
+    soundLevelDb: define("soundLevelDb", { label: "Рівень шуму, дБ", type: "number", unit: "дБ", rank: 11.12, aliases: [/^рівень (?:звуку|шуму)/i, /^звукова потужність/i, /^рівень звукової потужності/i] }),
+    collectorAreaM2: define("collectorAreaM2", { label: "Площа колектора, м²", type: "number", unit: "м²", rank: 11.13, aliases: [/^площа колектора$/i, /^загальна площа$/i, /^площа абсорбера$/i] }),
     fuel: define("fuel", { label: "Паливо", rank: 11.1, aliases: [/^паливо$/i, /^вид палива$/i, /^основне паливо$/i] }),
     efficiencyPercent: define("efficiencyPercent", { label: "ККД, %", type: "number", unit: "%", rank: 11.2, aliases: [/^ккд/i, /^коефіцієнт корисної дії/i] }),
     waterVolumeL: define("waterVolumeL", { label: "Водяна ємність, л", type: "number", unit: "л", rank: 11.3, aliases: [/^водяна ємність котла/i, /^об[’'`]?єм води/i] }),
@@ -123,6 +132,12 @@
     "pool-pumps-filtration": Object.freeze(["flowM3h", "headM", "powerKw", "connection", "voltage", "protectionClass", "filtrationMicron"]),
     "feed-grinders": Object.freeze(["powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"]),
     "solid-fuel-boilers": Object.freeze(["heatOutputKw", "fuel", "efficiencyPercent", "fireboxVolumeL", "waterVolumeL", "chimneyDiameterMm"]),
+    "gas-boilers": Object.freeze(["heatOutputKw", "type", "dhwFlowLMin", "efficiencyPercent", "installation", "energyClass"]),
+    "heat-pumps": Object.freeze(["heatOutputKw", "coolingCapacityKw", "refrigerant", "cop", "scop", "energyClass"]),
+    "hot-water-tanks": Object.freeze(["volumeL", "heatOutputKw", "pressureBar", "maxWaterTemperatureC", "connection", "material"]),
+    "solar-thermal": Object.freeze(["collectorAreaM2", "installation", "pressureBar", "maxWaterTemperatureC", "dimensions", "weightKg"]),
+    "flue-systems": Object.freeze(["compatibility", "diameter", "connection", "material", "installation"]),
+    "air-conditioners": Object.freeze(["coolingCapacityKw", "heatOutputKw", "refrigerant", "seer", "scop", "soundLevelDb"]),
     "pellet-boilers": Object.freeze(["heatOutputKw", "fuel", "efficiencyPercent", "waterVolumeL", "chimneyDiameterMm", "consumptionPowerW"]),
     "heat-accumulators": Object.freeze(["volumeL", "pressureBar", "connection", "heightMm", "widthMm", "weightKg"]),
     "pellet-burners": Object.freeze(["heatOutputKw", "fuel", "consumptionPowerW", "voltage", "compatibility", "weightKg"]),
@@ -135,7 +150,7 @@
     "purpose", "type", "technology", "capacityLh", "flowM3h", "headM", "kvs", "powerKw", "heatOutputKw",
     "connection", "diameter", "diameterMm", "mountingLengthMm", "pressureBar", "filtrationMicron", "material",
     "control", "communication", "zones", "voltage", "protectionClass", "compatibility", "waterSource", "installation", "format", "pump",
-    "mineralizer", "flowType", "scope", "volumeL", "weightKg", "capacityKgh", "rotationRpm", "widthMm", "heightMm", "depthMm", "dimensions", "eei", "selfPriming", "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "productType"
+    "mineralizer", "flowType", "scope", "volumeL", "weightKg", "capacityKgh", "rotationRpm", "widthMm", "heightMm", "depthMm", "dimensions", "eei", "selfPriming", "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "coolingCapacityKw", "dhwFlowLMin", "energyClass", "refrigerant", "cop", "scop", "seer", "soundLevelDb", "collectorAreaM2", "productType"
   ]);
 
   const pdpPriorityByCategory = Object.freeze({
@@ -169,6 +184,12 @@
     "pool-pumps-filtration": Object.freeze(["flowM3h", "headM", "powerKw", "connection", "voltage", "protectionClass", "filtrationMicron"]),
     "feed-grinders": Object.freeze(["powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"]),
     "solid-fuel-boilers": Object.freeze(["heatOutputKw", "fuel", "efficiencyPercent", "fireboxVolumeL", "waterVolumeL", "pressureBar", "maxWaterTemperatureC", "chimneyDiameterMm", "chimneyHeightM", "weightKg"]),
+    "gas-boilers": Object.freeze(["heatOutputKw", "type", "dhwFlowLMin", "efficiencyPercent", "installation", "energyClass", "dimensions", "weightKg", "voltage", "protectionClass"]),
+    "heat-pumps": Object.freeze(["heatOutputKw", "coolingCapacityKw", "refrigerant", "cop", "scop", "energyClass", "voltage", "soundLevelDb", "maxWaterTemperatureC", "dimensions", "weightKg"]),
+    "hot-water-tanks": Object.freeze(["volumeL", "heatOutputKw", "pressureBar", "maxWaterTemperatureC", "connection", "material", "installation", "dimensions", "weightKg", "compatibility"]),
+    "solar-thermal": Object.freeze(["collectorAreaM2", "installation", "pressureBar", "maxWaterTemperatureC", "dimensions", "weightKg", "compatibility"]),
+    "flue-systems": Object.freeze(["compatibility", "diameter", "connection", "material", "installation", "dimensions"]),
+    "air-conditioners": Object.freeze(["coolingCapacityKw", "heatOutputKw", "refrigerant", "seer", "scop", "energyClass", "soundLevelDb", "voltage", "dimensions", "weightKg"]),
     "pellet-boilers": Object.freeze(["heatOutputKw", "fuel", "efficiencyPercent", "waterVolumeL", "pressureBar", "maxWaterTemperatureC", "chimneyDiameterMm", "consumptionPowerW", "weightKg"]),
     "heat-accumulators": Object.freeze(["volumeL", "pressureBar", "connection", "material", "temperature", "heightMm", "widthMm", "weightKg"]),
     "pellet-burners": Object.freeze(["heatOutputKw", "fuel", "consumptionPowerW", "voltage", "compatibility", "weightKg"]),
@@ -190,6 +211,15 @@
     headM: "Макс. напір",
     powerKw: "Потужність",
     heatOutputKw: "Теплова потужність",
+    coolingCapacityKw: "Охолодження",
+    dhwFlowLMin: "Продуктивність ГВП",
+    energyClass: "Клас енергоефективності",
+    refrigerant: "Холодоагент",
+    cop: "COP",
+    scop: "SCOP",
+    seer: "SEER",
+    soundLevelDb: "Рівень шуму",
+    collectorAreaM2: "Площа колектора",
     fuel: "Паливо",
     efficiencyPercent: "ККД",
     waterVolumeL: "Водяна ємність",
@@ -233,7 +263,8 @@
     ...(window.sofievkaGrundfosSeriesLabels || {}),
     ...(window.sofievkaTekkhausSeriesLabels || {}),
     ...(window.sofievkaTechSeriesLabels || {}),
-    ...(window.sofievkaHeatingBrandsSeriesLabels || {})
+    ...(window.sofievkaHeatingBrandsSeriesLabels || {}),
+    ...(window.sofievkaBaxiBuderusSeriesLabels || {})
   });
 
   window.sofievkaAttributeSchema = Object.freeze({ definitions, valueLabels, cardPriorityByCategory, cardFallbackPriority, pdpPriorityByCategory, pdpFallbackPriority, cardAttributeLabels, seriesLabels });
