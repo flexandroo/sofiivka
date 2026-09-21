@@ -143,7 +143,7 @@
       : (ctx.currentCategory?.description || ctx.section.description);
     document.title = title;
     ensureMeta("description", description);
-    ensureMeta("robots", ctx.notFound || hasFilters ? "noindex,follow" : "index,follow");
+    ensureMeta("robots", ctx.notFound || ctx.currentCategory?.status !== "active" || hasFilters ? "noindex,follow" : "index,follow");
     let canonical = document.head.querySelector('link[rel="canonical"]');
     if (!canonical) { canonical = document.createElement("link"); canonical.rel = "canonical"; document.head.append(canonical); }
     canonical.href = `https://sofievka.vercel.app${canonicalPath(ctx)}`;
@@ -170,7 +170,7 @@
 
   function scopeProducts(ctx) {
     let products = ctx.isBrand
-      ? catalog.products.filter(product => product.brandId === ctx.brand?.id)
+      ? (catalog.catalogProducts || catalog.products).filter(product => product.brandId === ctx.brand?.id)
       : (ctx.notFound ? [] : (ctx.currentCategory ? catalog.productsForCategory(ctx.currentCategory.id) : catalog.productsForSection("all")));
     return products;
   }
@@ -212,6 +212,7 @@
     applyMetadata(ctx, false);
     if (ctx.notFound || (ctx.isBrand && !ctx.brand)) return introMarkup(ctx, 0);
     if (ctx.currentCategory?.status === "future") return `${introMarkup(ctx, 0)}<section class="catalog-workspace catalog-workspace--state"><div class="container"><div class="catalog-state"><p class="page-kicker">Асортимент готується</p><h2>Розділ готується до наповнення</h2><p>Тут з’являться товари після перевірки категорій, характеристик і доступності.</p><a class="button button--secondary" href="/catalog">Перейти до каталогу</a></div></div></section>`;
+    if (ctx.currentCategory?.visibility === "service") return `${introMarkup(ctx, 0)}<section class="catalog-workspace catalog-workspace--state"><div class="container"><div class="catalog-state"><p class="page-kicker">Сервісна послуга</p><h2>Пусконалагодження не є товаром каталогу</h2><p>Умови, виїзд і вартість погоджуються сервісним центром після перевірки обладнання та об’єкта.</p><a class="button button--primary" href="/service-center.html">Звернутися до сервісного центру</a></div></div></section>`;
     const skeletons = Array.from({ length: 6 }, () => `<div class="product-skeleton" aria-hidden="true"><i></i><b></b><span></span><span></span></div>`).join("");
     return `${introMarkup(ctx, total)}<section class="catalog-workspace"><div class="container">${selectorMarkup(ctx)}${subcategoryMarkup(ctx)}<div class="catalog-mobile-tools"><button class="button button--secondary mobile-filter-button" type="button" data-filter-toggle aria-expanded="false">Фільтри</button><span data-mobile-result-count>${countLabel(total)}</span></div><div class="catalog-layout"><div class="catalog-filter-backdrop" data-filter-backdrop hidden></div><aside class="catalog-filter" data-filter aria-label="Фільтри каталогу"><div class="catalog-filter__head"><div><span>Параметри вибору</span><h2>Фільтри</h2></div><button type="button" data-filter-close aria-label="Закрити фільтри">Закрити</button></div><div data-facet-root></div><div class="catalog-filter__footer"><button class="button button--primary" type="button" data-filter-apply>Показати <span data-drawer-count>${total}</span> товарів</button></div></aside><div class="catalog-results"><div class="catalog-toolbar"><div><p><strong data-result-count>${total}</strong> <span data-result-label>${countLabel(total).replace(/^\d+\s+/, "")}</span></p><div class="active-filters" data-active-filters></div></div><label>Сортування<select data-catalog-sort><option value="default">За замовчуванням</option><option value="price-asc">За ціною ↑</option><option value="price-desc">За ціною ↓</option></select></label></div><div class="catalog-products is-loading" data-catalog-products>${skeletons}</div><div class="catalog-more"><button class="button button--secondary" type="button" data-load-more>Показати ще</button></div></div></div></div></section><section class="catalog-seo"><div class="container"><h2>${escapeHtml(ctx.currentCategory?.name || ctx.section.name)}: підбір за технічними параметрами</h2><p>${escapeHtml(ctx.currentCategory?.description || ctx.section.description)} Фільтри каталогу показують лише характеристики, наявні в поточному наборі товарів. Для остаточного підбору перевірте робочу точку, приєднання та умови монтажу.</p></div></section>`;
   }
@@ -448,7 +449,7 @@
     if (!toggle || !menu || toggle.dataset.catalogMenuBound === "true") return;
     toggle.dataset.catalogMenuBound = "true";
     toggle.setAttribute("aria-haspopup", "true");
-    const catalogRoute = /^\/catalog(?:\/|$)/.test(location.pathname) || ["heating", "water-supply", "plumbing", "climate"].includes(document.body.dataset.page);
+    const catalogRoute = /^\/catalog(?:\/|$)/.test(location.pathname) || ["heating", "water-supply", "water-treatment", "smart-home", "plumbing", "climate", "household-equipment"].includes(document.body.dataset.page);
     toggle.classList.toggle("is-active", catalogRoute);
     if (catalogRoute) toggle.setAttribute("aria-label", "Каталог, поточний розділ. Відкрити меню");
 
@@ -620,8 +621,8 @@
   }
 
   function homeCards() {
-    const imageBySection = { heating: "assets/images/solution-boiler-room.webp", "water-supply": "assets/images/hero-water.webp", plumbing: "assets/images/showroom.webp", climate: "assets/images/hero-climate.webp" };
-    const homeSections = ["heating", "water-supply", "plumbing", "climate"].map(id => catalog.sectionById[id]).filter(Boolean);
+    const imageBySection = { heating: "assets/images/solution-boiler-room.webp", "water-supply": "assets/images/hero-water.webp", "water-treatment": "assets/images/home-hero-ecosoft-water-v1.jpg", "smart-home": "assets/images/home-hero-termojet-automation-v1.jpg", climate: "assets/images/hero-climate.webp", "household-equipment": "assets/images/showroom.webp" };
+    const homeSections = catalog.activeSections;
     return homeSections.map(section => {
       const children = catalog.availableCategories(section.id).slice(0, 4);
       const productCount = catalog.productsForSection(section.id).length;

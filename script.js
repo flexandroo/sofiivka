@@ -16,6 +16,12 @@ function setupCatalogMenu() {
   const menu = document.querySelector("#catalog-menu");
   if (!toggle || !menu) return;
 
+  if (window.sofievkaCatalogUI?.megaMenu && window.sofievkaCatalogUI?.bindMenu) {
+    menu.innerHTML = window.sofievkaCatalogUI.megaMenu();
+    window.sofievkaCatalogUI.bindMenu({ toggle, menu });
+    return;
+  }
+
   const close = () => {
     menu.hidden = true;
     toggle.setAttribute("aria-expanded", "false");
@@ -40,48 +46,21 @@ function setupCatalogMenu() {
   });
 }
 
-const storefrontCategoryGroups = {
-  heating: {
-    title: "Опалення",
-    href: "/catalog/heating",
-    items: ["Радіатори", "Тепла підлога", "Циркуляційні насоси", "Колектори опалення", "Автоматика опалення"]
-  },
-  boilers: {
-    title: "Котли та водонагрівачі",
-    href: "/catalog/heating",
-    items: ["Газові котли", "Електричні котли", "Твердопаливні котли", "Бойлери непрямого нагріву", "Електричні водонагрівачі"]
-  },
-  water: {
-    title: "Водопостачання",
-    href: "/catalog/water-supply",
-    items: ["Свердловинні насоси", "Поверхневі насоси", "Насосні станції", "Гідроакумулятори", "Автоматика для насосів"]
-  },
-  treatment: {
-    title: "Водоочищення",
-    href: "/catalog/water-supply/water-treatment",
-    items: ["Зворотний осмос", "Проточні фільтри", "Магістральні фільтри", "Картриджі", "Системи пом'якшення"]
-  },
-  plumbing: {
-    title: "Сантехніка",
-    href: "/catalog/plumbing",
-    items: ["Змішувачі", "Інсталяції", "Санітарна кераміка", "Душові системи", "Сифони та трапи"]
-  },
-  climate: {
-    title: "Клімат",
-    href: "/catalog/climate",
-    items: ["Кондиціонери", "Вентиляція", "Теплові насоси", "Конвектори", "Осушувачі повітря"]
-  },
-  pipes: {
-    title: "Труби та арматура",
-    href: "/catalog/plumbing",
-    items: ["Поліпропіленові труби", "Труби PEX", "Металопластикові труби", "Фітинги", "Запірна арматура"]
-  },
-  automation: {
-    title: "Автоматика",
-    href: "/catalog/heating/automation",
-    items: ["Термостати", "Реле тиску", "Датчики", "Контролери систем", "Сервоприводи"]
-  }
-};
+function storefrontCategoryGroups() {
+  const catalog = window.sofievkaCatalog;
+  if (!catalog) return [];
+  return catalog.activeSections.map(section => ({
+    id: section.id,
+    title: section.title,
+    description: section.menuDescription || section.description,
+    href: catalog.getCategoryPath(section.id),
+    items: catalog.availableCategories(section.id).map(category => ({
+      title: category.title,
+      href: catalog.getCategoryPath(category.id),
+      count: catalog.productsForCategory(category.id).length
+    }))
+  }));
+}
 
 function setupStorefrontCategories() {
   const navigation = document.querySelector("[data-storefront-categories]");
@@ -90,8 +69,25 @@ function setupStorefrontCategories() {
   const list = panel?.querySelector("[data-storefront-subcategories-list]");
   const allLink = panel?.querySelector("[data-storefront-subcategories-all]");
   const closeButton = panel?.querySelector("[data-storefront-subcategories-close]");
-  const buttons = [...(navigation?.querySelectorAll("[data-storefront-category]") || [])];
-  if (!navigation || !panel || !title || !list || !allLink || !buttons.length) return;
+  if (!navigation || !panel || !title || !list || !allLink) return;
+  const groups = storefrontCategoryGroups();
+  if (!groups.length) return;
+  navigation.querySelectorAll("[data-storefront-category]").forEach(button => button.remove());
+  groups.forEach(group => {
+    const button = document.createElement("button");
+    button.className = "storefront-category";
+    button.type = "button";
+    button.dataset.storefrontCategory = group.id;
+    button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-controls", "storefront-subcategories");
+    const strong = document.createElement("strong");
+    strong.textContent = group.title;
+    const description = document.createElement("span");
+    description.textContent = group.description;
+    button.append(strong, description);
+    navigation.insertBefore(button, panel);
+  });
+  const buttons = [...navigation.querySelectorAll("[data-storefront-category]")];
 
   let activeButton = null;
 
@@ -106,7 +102,7 @@ function setupStorefrontCategories() {
   };
 
   const open = button => {
-    const group = storefrontCategoryGroups[button.dataset.storefrontCategory];
+    const group = groups.find(item => item.id === button.dataset.storefrontCategory);
     if (!group) return;
 
     buttons.forEach(item => {
@@ -118,8 +114,8 @@ function setupStorefrontCategories() {
     title.textContent = group.title;
     list.replaceChildren(...group.items.map(item => {
       const link = document.createElement("a");
-      link.href = `search.html?q=${encodeURIComponent(item)}`;
-      link.textContent = item;
+      link.href = item.href;
+      link.textContent = `${item.title} (${item.count})`;
       return link;
     }));
     allLink.href = group.href;
@@ -285,12 +281,11 @@ const catalogProducts = [
 ];
 
 const searchItems = [
-  { name: "Газові котли", meta: "Опалення", href: "/catalog/heating" },
+  { name: "Газові котли", meta: "Опалення", href: "/catalog/heating/heat-generation/gas-boilers" },
   { name: "Циркуляційні насоси", meta: "Насоси", href: "/catalog/heating/circulation-pumps" },
-  { name: "Радіатори", meta: "Опалення", href: "/catalog/heating" },
-  { name: "Водонагрівачі", meta: "Гаряча вода", href: "/catalog/heating" },
+  { name: "Водоочищення", meta: "Фільтри та системи", href: "/catalog/water-treatment" },
+  { name: "Розумний будинок", meta: "Автоматизація", href: "/catalog/smart-home" },
   { name: "Кондиціонери", meta: "Клімат", href: "/catalog/climate" },
-  { name: "Труби та фітинги", meta: "Сантехніка", href: "/catalog/plumbing" },
   { name: "Монтаж і сервіс", meta: "Послуги", href: "services.html" },
   { name: "Бренди", meta: "Виробники", href: "brands.html" }
 ].concat(catalogProducts.map(product => ({
@@ -301,6 +296,10 @@ const searchItems = [
 
 function setupSearch() {
   const form = document.querySelector("[data-search]");
+  if (form && window.sofievkaCatalogUI?.bindSearch) {
+    window.sofievkaCatalogUI.bindSearch(form);
+    return;
+  }
   const input = form?.querySelector("input");
   const results = form?.querySelector(".search-results");
   if (!form || !input || !results) return;

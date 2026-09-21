@@ -3,6 +3,7 @@
 
   const catalog = window.sofievkaCatalog;
   if (!catalog) throw new Error("Catalog search requires the centralized catalog facade.");
+  const searchableProducts = catalog.catalogProducts || catalog.products;
 
   const SEARCHABLE_ATTRIBUTE_IDS = Object.freeze([
     "diameter", "diameterMm", "connection", "powerKw", "headM", "flowM3h", "filtrationMicron",
@@ -20,7 +21,7 @@
     "underfloor-heating": ["тепла підлога", "теплий пол", "теплый пол", "підігрів підлоги"],
     "distribution-hydraulics": ["гідравліка", "гидравлика", "колектор", "колектори", "коллектор", "насосна група"],
     automation: ["автоматика", "керування", "управління", "управление", "термостат", "контролер"],
-    valves: ["арматура", "клапан", "клапани", "кран", "регулююча арматура"],
+    "heating-valves": ["арматура", "клапан", "клапани", "кран", "регулююча арматура"],
     "heating-components": ["комплектуючі", "комплектующие", "модульна система"],
     "water-treatment": ["водоочищення", "очищення води", "очистка воды", "фільтрація води"],
     "reverse-osmosis": ["осмос", "зворотний осмос", "зворотній осмос", "обратный осмос", "reverse osmosis"],
@@ -33,6 +34,10 @@
     "chlorine-odor-removal": ["видалення хлору", "хлор і запах", "удаление хлора"],
     "mechanical-treatment": ["механічне очищення", "механическая очистка"],
     "flow-filters": ["проточний фільтр", "проточні фільтри", "проточный фильтр"],
+    "uv-disinfection": ["uv лампа", "uv-c лампа", "уф лампа", "знезараження води", "ультрафіолетова лампа"],
+    "smart-home": ["розумний будинок", "умный дом", "sinum", "автоматизація будинку"],
+    "smart-lighting": ["розумне освітлення", "сенсорний вимикач", "димер", "диммер"],
+    "smart-sensors": ["датчик протікання", "датчик диму", "мультисенсор", "якість повітря"],
     "water-supply-components": ["комплектуючі для водопостачання", "баки та автоматика", "аксесуари насосів"],
     "pressure-tanks": ["мембранний бак", "гідроакумулятор", "напірний бак", "расширительный бак"],
     "pump-automation": ["автоматика насоса", "контролер насоса", "реле тиску", "pressure manager"],
@@ -134,7 +139,7 @@
     })
     .filter(item => item.count > 0));
 
-  const productCountByBrand = catalog.products.reduce((counts, product) => {
+  const productCountByBrand = searchableProducts.reduce((counts, product) => {
     counts[product.brandId] = (counts[product.brandId] || 0) + 1;
     return counts;
   }, {});
@@ -144,7 +149,7 @@
     return Object.freeze({ type: "brand", entity: brand, count: productCountByBrand[brand.slug] || 0, href: catalog.brandUrl(brand.slug), aliases: Object.freeze(aliases), ...text });
   }));
 
-  const productIndex = Object.freeze(catalog.products.map(product => {
+  const productIndex = Object.freeze(searchableProducts.map(product => {
     const category = catalog.categoryById[product.primaryCategoryId];
     const categoryChain = category ? [...catalog.getCategoryAncestors(category.id), category] : [];
     const categoryAliases = categoryChain.flatMap(item => CATEGORY_ALIASES[item.id] || []);
@@ -171,8 +176,8 @@
     });
   }));
 
-  const seriesIndex = Object.freeze([...new Set(catalog.products.map(product => product.seriesId).filter(Boolean))].map(seriesId => {
-    const products = catalog.products.filter(product => product.seriesId === seriesId);
+  const seriesIndex = Object.freeze([...new Set(searchableProducts.map(product => product.seriesId).filter(Boolean))].map(seriesId => {
+    const products = searchableProducts.filter(product => product.seriesId === seriesId);
     const brand = products[0]?.brand || "";
     const label = SERIES_LABELS[seriesId] || seriesId;
     const name = `${brand} ${label}`.trim();

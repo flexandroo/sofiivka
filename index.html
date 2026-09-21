@@ -8,17 +8,19 @@
   <title>Софіївка | Опалення, вода та клімат</title>
   <link rel="preload" href="assets/fonts/Manrope-700.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="assets/images/home-hero-termojet-pumps-v1.jpg" as="image" type="image/jpeg">
-  <link rel="stylesheet" href="styles.css?v=20260825-product-media-1">
-  <link rel="stylesheet" href="homepage.css?v=20260915-product-media-1">
+  <link rel="stylesheet" href="styles.css?v=20260921-taxonomy-1">
+  <link rel="stylesheet" href="homepage.css?v=20260921-taxonomy-1">
   <script src="brands-data.js?v=20260818-phase1-1" defer></script>
   <script src="products-data.js?v=20260825-feed-1" defer></script>
   <script src="termojet-products-data.js?v=20260825-termojet-1" defer></script>
   <script src="wilo-products-data.js?v=20260921-wilo-1" defer></script>
   <script src="grundfos-products-data.js?v=20260921-grundfos-1" defer></script><script src="/tekkhaus-products-data.js?v=20260921-tekkhaus-1" defer></script><script src="/tech-products-data.js?v=20260921-tech-1" defer></script><script src="/heating-brands-products-data.js?v=20260921-heating-brands-1" defer></script>
   <script src="/baxi-buderus-products-data.js?v=20260921-baxi-buderus-1" defer></script>
-  <script src="script.js?v=20260915-product-media-1" defer></script>
+  <script src="/catalog-data.js?v=20260921-taxonomy-1" defer></script>
+  <script src="/catalog-ui.js?v=20260921-taxonomy-1" defer></script>
+  <script src="script.js?v=20260921-taxonomy-1" defer></script>
 </head>
-<body class="home-page">
+<body class="home-page" data-page="home">
   <a class="skip-link" href="#main">Перейти до основного вмісту</a>
 
   <div class="utility-bar">
@@ -69,10 +71,12 @@
 
     <nav class="catalog-menu" id="catalog-menu" aria-label="Каталог товарів" hidden>
       <div class="container catalog-menu__grid">
-        <a href="/catalog/heating"><strong>Опалення</strong><span>Котли, радіатори, тепла підлога</span></a>
-        <a href="/catalog/water-supply"><strong>Водопостачання</strong><span>Насоси, баки, фільтри</span></a>
-        <a href="/catalog/plumbing"><strong>Сантехніка</strong><span>Змішувачі, арматура, труби</span></a>
-        <a href="/catalog/climate"><strong>Клімат</strong><span>Кондиціонери та вентиляція</span></a>
+        <a href="/catalog/heating"><strong>Опалення</strong><span>Котли, теплові насоси, гідравліка та автоматика</span></a>
+        <a href="/catalog/water-supply"><strong>Водопостачання та каналізація</strong><span>Насоси, установки, баки й автоматика</span></a>
+        <a href="/catalog/water-treatment"><strong>Водоочищення</strong><span>Фільтри, осмос, картриджі та UV-C</span></a>
+        <a href="/catalog/smart-home"><strong>Розумний будинок</strong><span>Sinum, освітлення, датчики та клімат</span></a>
+        <a href="/catalog/climate"><strong>Клімат</strong><span>Кондиціонери та туманоутворення</span></a>
+        <a href="/catalog/household-equipment"><strong>Для господарства</strong><span>Подрібнення та підготовка кормів</span></a>
         <a href="services.html"><strong>Монтаж і сервіс</strong><span>Від підбору до запуску</span></a>
         <a href="brands.html"><strong>Бренди</strong><span>Виробники в каталозі</span></a>
       </div>
@@ -84,14 +88,12 @@
       <div class="storefront__shell">
         <nav class="storefront-categories" aria-label="Основні категорії каталогу" data-storefront-categories>
           <h2 class="storefront-categories__title">Категорії</h2>
-          <button class="storefront-category" type="button" data-storefront-category="heating" aria-expanded="false" aria-controls="storefront-subcategories"><strong>Опалення</strong><span>Котли, радіатори, тепла підлога</span></button>
-          <button class="storefront-category" type="button" data-storefront-category="boilers" aria-expanded="false" aria-controls="storefront-subcategories"><strong>Котли та водонагрівачі</strong><span>Газові, електричні, бойлери</span></button>
-          <button class="storefront-category" type="button" data-storefront-category="water" aria-expanded="false" aria-controls="storefront-subcategories"><strong>Водопостачання</strong><span>Насоси, автоматика, баки</span></button>
-          <button class="storefront-category" type="button" data-storefront-category="treatment" aria-expanded="false" aria-controls="storefront-subcategories"><strong>Водоочищення</strong><span>Фільтри, системи, картриджі</span></button>
-          <button class="storefront-category" type="button" data-storefront-category="plumbing" aria-expanded="false" aria-controls="storefront-subcategories"><strong>Сантехніка</strong><span>Змішувачі, інсталяції, аксесуари</span></button>
-          <button class="storefront-category" type="button" data-storefront-category="climate" aria-expanded="false" aria-controls="storefront-subcategories"><strong>Клімат</strong><span>Кондиціонери, вентиляція, обігрів</span></button>
-          <button class="storefront-category" type="button" data-storefront-category="pipes" aria-expanded="false" aria-controls="storefront-subcategories"><strong>Труби та арматура</strong><span>Труби, фітинги, крани</span></button>
-          <button class="storefront-category" type="button" data-storefront-category="automation" aria-expanded="false" aria-controls="storefront-subcategories"><strong>Автоматика</strong><span>Керування, датчики, реле</span></button>
+          <button class="storefront-category" type="button" data-storefront-category="heating" aria-expanded="false" aria-controls="storefront-subcategories"><strong>Опалення</strong><span>Котли, теплові насоси, гідравліка та автоматика</span></button>
+          <button class="storefront-category" type="button" data-storefront-category="water-supply" aria-expanded="false" aria-controls="storefront-subcategories"><strong>Водопостачання та каналізація</strong><span>Насоси, установки, баки й автоматика</span></button>
+          <button class="storefront-category" type="button" data-storefront-category="water-treatment" aria-expanded="false" aria-controls="storefront-subcategories"><strong>Водоочищення</strong><span>Фільтри, осмос, картриджі та UV-C</span></button>
+          <button class="storefront-category" type="button" data-storefront-category="smart-home" aria-expanded="false" aria-controls="storefront-subcategories"><strong>Розумний будинок</strong><span>Sinum, освітлення, датчики та клімат</span></button>
+          <button class="storefront-category" type="button" data-storefront-category="climate" aria-expanded="false" aria-controls="storefront-subcategories"><strong>Клімат</strong><span>Кондиціонери та туманоутворення</span></button>
+          <button class="storefront-category" type="button" data-storefront-category="household-equipment" aria-expanded="false" aria-controls="storefront-subcategories"><strong>Для господарства</strong><span>Подрібнення та підготовка кормів</span></button>
 
           <section class="storefront-subcategories" id="storefront-subcategories" aria-labelledby="storefront-subcategories-title" data-storefront-subcategories hidden>
             <div class="storefront-subcategories__head">
@@ -297,7 +299,7 @@
 
   <footer class="footer">
     <div class="container footer__grid">
-      <nav class="footer__section" aria-label="Каталог у підвалі" data-footer-section><button class="footer__toggle" type="button" aria-expanded="false"><span>Каталог</span><b aria-hidden="true">+</b></button><div class="footer__links"><a href="heating.html">Опалення</a><a href="water-supply.html">Водопостачання</a><a href="plumbing.html">Сантехніка</a><a href="climate.html">Клімат</a></div></nav>
+      <nav class="footer__section" aria-label="Каталог у підвалі" data-footer-section><button class="footer__toggle" type="button" aria-expanded="false"><span>Каталог</span><b aria-hidden="true">+</b></button><div class="footer__links"><a href="/catalog/heating">Опалення</a><a href="/catalog/water-supply">Вода й каналізація</a><a href="/catalog/water-treatment">Водоочищення</a><a href="/catalog/smart-home">Розумний будинок</a><a href="/catalog/climate">Клімат</a><a href="/catalog/household-equipment">Для господарства</a></div></nav>
       <nav class="footer__section" aria-label="Послуги у підвалі" data-footer-section><button class="footer__toggle" type="button" aria-expanded="false"><span>Послуги</span><b aria-hidden="true">+</b></button><div class="footer__links"><a href="solutions.html">Комплексні рішення</a><a href="installation.html">Монтаж</a><a href="service-center.html">Сервісний центр</a><a href="delivery.html">Доставка</a></div></nav>
       <nav class="footer__section" aria-label="Покупцям у підвалі" data-footer-section><button class="footer__toggle" type="button" aria-expanded="false"><span>Покупцям</span><b aria-hidden="true">+</b></button><div class="footer__links"><a href="buyers.html">Допомога покупцю</a><a href="payment.html">Оплата</a><a href="warranty.html">Гарантія</a><a href="returns.html">Обмін і повернення</a></div></nav>
       <div class="footer__contacts"><h2>Компанія</h2><a href="about.html">Про нас</a><a href="contact.html">Контакти магазину</a><a href="partnership.html">Для монтажників</a><p><a href="brands.html">Бренди</a><br><a href="faq.html">Часті запитання</a></p></div>

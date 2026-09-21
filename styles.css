@@ -3328,7 +3328,7 @@ ul {
 
 .catalog-menu__taxonomy {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   border: 1px solid var(--divider);
   background: var(--surface);
 }
@@ -3337,10 +3337,15 @@ ul {
   min-width: 0;
   padding: 18px 20px 17px;
   border-right: 1px solid var(--divider);
+  border-bottom: 1px solid var(--divider);
 }
 
-.catalog-menu__taxonomy section:last-child {
+.catalog-menu__taxonomy section:nth-child(3n) {
   border-right: 0;
+}
+
+.catalog-menu__taxonomy section:nth-last-child(-n + 3) {
+  border-bottom: 0;
 }
 
 .catalog-menu .catalog-menu__title {
@@ -3480,7 +3485,10 @@ ul {
   .catalog-menu::before { display: none; }
   .catalog-menu__panel { padding-top: 14px; }
   .catalog-menu__taxonomy { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .catalog-menu__taxonomy section:nth-child(2) { border-right: 0; }
+  .catalog-menu__taxonomy section:nth-child(3n) { border-right: 1px solid var(--divider); }
+  .catalog-menu__taxonomy section:nth-child(2n) { border-right: 0; }
+  .catalog-menu__taxonomy section:nth-last-child(-n + 3) { border-bottom: 1px solid var(--divider); }
+  .catalog-menu__taxonomy section:nth-last-child(-n + 2) { border-bottom: 0; }
   .categories .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
@@ -3495,7 +3503,9 @@ ul {
   .catalog-menu .catalog-menu__brands { border-left: 1px solid var(--divider); font-size: 11px; }
   .catalog-menu__taxonomy { order: 3; grid-template-columns: 1fr; border-bottom: 0; }
   .catalog-menu__taxonomy section,
-  .catalog-menu__taxonomy section:nth-child(2) { padding: 0; border-right: 0; border-bottom: 1px solid var(--divider); }
+  .catalog-menu__taxonomy section:nth-child(2n),
+  .catalog-menu__taxonomy section:nth-child(3n) { padding: 0; border-right: 0; border-bottom: 1px solid var(--divider); }
+  .catalog-menu__taxonomy section:last-child { border-bottom: 0; }
   .catalog-menu__taxonomy section.is-current-section { box-shadow: inset 3px 0 0 var(--yellow); }
   .catalog-menu .catalog-menu__title { align-items: center; min-height: 54px; padding: 0 14px; }
   .catalog-menu__title > span { display: block; }

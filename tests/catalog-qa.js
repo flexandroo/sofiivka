@@ -51,11 +51,15 @@ const canonicalCases = [
   ["/catalog", "", "catalog", "all"],
   ["/catalog/heating", "", "catalog", "heating"],
   ["/catalog/heating/circulation-pumps", "", "catalog", "circulation-pumps"],
+  ["/catalog/heating/circulation-pumps/system-circulation", "", "catalog", "system-circulation-pumps"],
+  ["/catalog/heating/heat-generation/gas-boilers", "", "catalog", "gas-boilers"],
   ["/catalog/water-supply", "", "catalog", "water-supply"],
-  ["/catalog/water-supply/water-treatment", "", "catalog", "water-treatment"],
-  ["/catalog/water-supply/water-treatment/reverse-osmosis", "", "catalog", "reverse-osmosis"],
+  ["/catalog/water-treatment", "", "catalog", "water-treatment"],
+  ["/catalog/water-treatment/drinking-water/reverse-osmosis", "", "catalog", "reverse-osmosis"],
+  ["/catalog/smart-home", "", "catalog", "smart-home"],
   ["/catalog/plumbing", "", "catalog", "plumbing"],
-  ["/catalog/climate", "", "catalog", "climate"]
+  ["/catalog/climate", "", "catalog", "climate"],
+  ["/catalog/household-equipment", "", "catalog", "household-equipment"]
 ];
 for (const [pathname, query, pageName, expected] of canonicalCases) {
   const resolved = routing.resolveLocation(pathname, query, pageName);
@@ -65,12 +69,24 @@ for (const [pathname, query, pageName, expected] of canonicalCases) {
 routeCheck(routing.resolveLocation("/catalog/not-a-category", "", "catalog").notFound, "invalid category must be controlled");
 routeCheck(routing.resolveLocation("/catalog", "?category=heating", "catalog").redirectTo === "/catalog/heating", "legacy heating query must canonicalize");
 routeCheck(routing.resolveLocation("/catalog", "?category=water", "catalog").redirectTo === "/catalog/water-supply", "legacy water query must canonicalize");
-routeCheck(routing.resolveLocation("/catalog/water-treatment", "", "catalog").redirectTo === "/catalog/water-supply/water-treatment", "legacy water root must canonicalize");
-routeCheck(routing.resolveLocation("/catalog/water-treatment/reverse-osmosis", "", "catalog").redirectTo === "/catalog/water-supply/water-treatment/reverse-osmosis", "legacy water category must canonicalize");
+routeCheck(routing.resolveLocation("/catalog/water-supply/water-treatment", "", "catalog").redirectTo === "/catalog/water-treatment", "legacy nested water root must canonicalize");
+routeCheck(routing.resolveLocation("/catalog/water-supply/water-treatment/reverse-osmosis", "", "catalog").redirectTo === "/catalog/water-treatment/drinking-water/reverse-osmosis", "legacy nested water category must canonicalize");
+routeCheck(routing.resolveLocation("/catalog/water-treatment/reverse-osmosis", "", "catalog").redirectTo === "/catalog/water-treatment/drinking-water/reverse-osmosis", "legacy direct water category must canonicalize");
+routeCheck(routing.resolveLocation("/catalog/heating/gas-boilers", "", "catalog").redirectTo === "/catalog/heating/heat-generation/gas-boilers", "legacy gas boiler route must canonicalize");
+routeCheck(routing.resolveLocation("/catalog/heating/valves", "", "catalog").redirectTo === "/catalog/heating/distribution-hydraulics/valves", "legacy heating valve route must canonicalize");
 
-assert.equal(routingAssertions, 163, "taxonomy/route regression suite must retain 163 checks");
+assert.equal(routingAssertions, state.sofievkaTaxonomy.nodes.length * 3 + canonicalCases.length + 8, "taxonomy/route regression suite must cover every canonical and legacy path");
 
 assert.equal(products.length, 3215, "catalog must contain 3215 products");
+assert.equal(catalog.catalogProducts.length, 3214, "product listing must exclude the service-only commissioning position");
+assert.equal(catalog.serviceItems.length, 1, "service-only positions must remain available outside product listings");
+assert.equal(catalog.productsForSection("heating").length, 1788, "heating section distribution changed");
+assert.equal(catalog.productsForSection("water-supply").length, 1112, "water supply and sewage section distribution changed");
+assert.equal(catalog.productsForSection("water-treatment").length, 184, "water treatment section distribution changed");
+assert.equal(catalog.productsForSection("smart-home").length, 110, "smart home section distribution changed");
+assert.equal(catalog.productsForCategory("sewage-lifting-units").length, 83, "sewage lifting units must include the seven corrected Termojet positions");
+assert.equal(catalog.productsForCategory("uv-disinfection").length, 8, "TECH UV-C water disinfection products changed");
+assert.equal(catalog.activeSections.map(section => section.id).join(","), "heating,water-supply,water-treatment,smart-home,climate,household-equipment", "active catalog sections changed");
 assert.equal(state.sofievkaNormalizationReport.waterSourceCount, 176, "water product count changed");
 assert.equal(state.sofievkaNormalizationReport.heatingSourceCount, 343, "Termojet product count changed");
 assert.equal(state.sofievkaNormalizationReport.wiloSourceCount, 1020, "Wilo product count changed");

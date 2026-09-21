@@ -15,8 +15,34 @@
   const legacyQuerySections = Object.freeze({
     heating: "heating",
     water: "water-supply",
+    treatment: "water-treatment",
+    automation: "smart-home",
     plumbing: "plumbing",
     climate: "climate"
+  });
+  const legacyCategoryPaths = Object.freeze({
+    "/catalog/heating/gas-boilers": "gas-boilers",
+    "/catalog/heating/hot-water-tanks": "hot-water-tanks",
+    "/catalog/heating/solid-fuel-boilers": "solid-fuel-boilers",
+    "/catalog/heating/pellet-boilers": "pellet-boilers",
+    "/catalog/heating/heat-accumulators": "heat-accumulators",
+    "/catalog/heating/pellet-burners": "pellet-burners",
+    "/catalog/heating/boiler-accessories": "heating-components",
+    "/catalog/heating/industrial-heating": "heat-generation",
+    "/catalog/heating/valves": "heating-valves",
+    "/catalog/water-supply/water-treatment": "water-treatment",
+    "/catalog/water-supply/water-supply-components": "water-supply-components",
+    "/catalog/water-supply/water-supply-components/pump-services": "pump-services",
+    "/catalog/water-treatment/reverse-osmosis": "reverse-osmosis",
+    "/catalog/water-treatment/flow-filters": "flow-filters",
+    "/catalog/water-treatment/mainline-filters-housings": "mainline-filters-housings",
+    "/catalog/water-treatment/mainline-cartridges": "mainline-cartridges",
+    "/catalog/water-treatment/drinking-system-cartridges": "drinking-system-cartridges",
+    "/catalog/water-treatment/filter-media": "filter-media",
+    "/catalog/water-treatment/complex-treatment": "complex-treatment",
+    "/catalog/water-treatment/water-softening": "water-softening",
+    "/catalog/water-treatment/chlorine-odor-removal": "chlorine-odor-removal",
+    "/catalog/water-treatment/mechanical-treatment": "mechanical-treatment"
   });
 
   function normalizePathname(pathname = rootPath) {
@@ -119,19 +145,20 @@
       return { categoryId: querySection, kind: "query-category", sourceCategoryId: "" };
     }
 
-    const legacyWaterRoot = clean === "/catalog/water-treatment";
-    if (legacyWaterRoot && params.has("type")) {
+    const legacyPathCategory = legacyCategoryPaths[clean];
+    if (legacyPathCategory) return { categoryId: legacyPathCategory, kind: "legacy-category-path", sourceCategoryId: "" };
+
+    if (clean === "/catalog/water-treatment" && params.has("type")) {
       const sourceCategory = params.get("type");
       const mapped = sourceMappings?.categoryMappings?.ecosoft?.[sourceCategory];
       if (mapped?.categoryId) return { categoryId: mapped.categoryId, kind: "query-type", sourceCategoryId: mapped.categoryId };
     }
 
-    const oldWaterMatch = clean.match(/^\/catalog\/water-treatment\/([^/]+)$/);
+    const oldWaterMatch = clean.match(/^\/catalog\/water-supply\/water-treatment\/([^/]+)$/);
     if (oldWaterMatch) {
-      const category = taxonomy.childrenOf("water-treatment").find(item => item.slug === oldWaterMatch[1]);
+      const category = taxonomy.descendantsOf("water-treatment").find(item => item.slug === oldWaterMatch[1] || item.id === oldWaterMatch[1]);
       if (category) return { categoryId: category.id, kind: "legacy-water-path", sourceCategoryId: category.id };
     }
-    if (legacyWaterRoot) return { categoryId: "water-treatment", kind: "legacy-water-root", sourceCategoryId: "" };
 
     const sectionAlias = legacySectionAliases[clean];
     if (sectionAlias) return { categoryId: sectionAlias, kind: "legacy-section", sourceCategoryId: "" };

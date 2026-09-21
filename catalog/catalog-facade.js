@@ -15,7 +15,7 @@
     name: "Усі товари",
     title: "Каталог обладнання",
     shortTitle: "Увесь каталог",
-    description: "Інженерне обладнання для опалення, водопостачання, сантехніки та клімату.",
+    description: "Інженерне обладнання для опалення, водопостачання, водоочищення, автоматизації, клімату та господарства.",
     menuDescription: "Усі товари та фільтри в одному каталозі",
     order: 0,
     status: "state",
@@ -26,6 +26,11 @@
   const sectionById = Object.freeze({ all: catalogState, ...Object.fromEntries(sections.map(section => [section.id, section])) });
   const categoryById = taxonomy.byId;
   const attributeDefinitions = attributeSchema.definitions;
+  const catalogProducts = Object.freeze(products.filter(product => {
+    const category = categoryById[product.primaryCategoryId];
+    return category?.status === "active" && category?.visibility === "catalog";
+  }));
+  const serviceItems = Object.freeze(products.filter(product => categoryById[product.primaryCategoryId]?.visibility === "service"));
 
   function sectionUrl(sectionId = "all") {
     return sectionId === "all" ? routing.rootPath : routing.getCategoryPath(sectionId);
@@ -37,10 +42,10 @@
 
   function brandUrl(brandId) { return `/brands/${encodeURIComponent(brandId)}`; }
   function descendantIds(categoryId) { return new Set([categoryId, ...taxonomy.descendantsOf(categoryId).map(category => category.id)]); }
-  function productsForSection(sectionId) { return sectionId === "all" ? [...products] : products.filter(product => product.sectionId === sectionId); }
+  function productsForSection(sectionId) { return sectionId === "all" ? [...catalogProducts] : catalogProducts.filter(product => product.sectionId === sectionId); }
   function productsForCategory(categoryId) {
     const ids = descendantIds(categoryId);
-    return products.filter(product => ids.has(product.primaryCategoryId));
+    return catalogProducts.filter(product => ids.has(product.primaryCategoryId));
   }
   function availableCategories(sectionId) {
     return taxonomy.childrenOf(sectionId).filter(category => category.status === "active" && productsForCategory(category.id).length > 0);
@@ -58,7 +63,7 @@
     return String(value);
   }
 
-  const waterCategories = taxonomy.childrenOf("water-treatment");
+  const waterCategories = taxonomy.descendantsOf("water-treatment").filter(category => category.legacyGroup);
   const waterGroups = [...new Set(waterCategories.map(category => category.legacyGroup))].map(groupId => Object.freeze({
     slug: groupId,
     name: waterCategories.find(category => category.legacyGroup === groupId)?.legacyGroupTitle || groupId,
@@ -70,7 +75,7 @@
     groupSlug: category.legacyGroup,
     groupName: category.legacyGroupTitle
   })])));
-  const waterProducts = Object.freeze(products.filter(product => product.sectionId === "water-supply"));
+  const waterProducts = Object.freeze(catalogProducts.filter(product => product.sectionId === "water-treatment"));
   const distribution = Object.freeze(Object.fromEntries(waterCategories.map(category => [category.id, productsForCategory(category.id).length])));
   window.sofievkaWaterCatalog = Object.freeze({
     taxonomy: Object.freeze(waterGroups),
@@ -101,6 +106,8 @@
     attributeSchema,
     sourceMappings,
     products,
+    catalogProducts,
+    serviceItems,
     brands,
     slugify: window.sofievkaProductNormalizer.slugify,
     sectionUrl,
