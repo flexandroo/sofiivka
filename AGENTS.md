@@ -47,3 +47,9 @@ After implementation:
 5. Run anti-AI-slop review.
 6. Check regressions.
 7. Fix discovered issues before declaring the task complete.
+
+## Publishing completed changes
+
+- After relevant checks pass, commit the files changed for the task and push to `origin/master` promptly.
+- A push to `origin/master` deploys the production site on Vercel. Verify the production deployment before reporting completion.
+- The user has authorized this publishing workflow without an additional confirmation request. Keep unrelated local files out of the commit.

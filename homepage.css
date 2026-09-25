@@ -85,7 +85,6 @@
   grid-template-rows: repeat(6, 1fr);
   min-width: 0;
   padding: 6px 18px 4px;
-  border: 1px solid var(--home-border);
   background: #fff;
 }
 
@@ -825,6 +824,7 @@
 }
 
 .home-page .home-brands .brand-wall .brand-logo-cell:hover {
+  box-shadow: none;
   background: transparent;
 }
 
