@@ -274,11 +274,13 @@ function setupHeroSlider() {
   start();
 }
 
-const catalogProducts = [
-  ...(Array.isArray(window.sofievkaProducts) ? window.sofievkaProducts : []),
-  ...(Array.isArray(window.sofievkaTermojetProducts) ? window.sofievkaTermojetProducts : []),
-  ...(Array.isArray(window.sofievkaWiloProducts) ? window.sofievkaWiloProducts : [])
-];
+const catalogProducts = Array.isArray(window.sofievkaCatalog?.catalogProducts)
+  ? window.sofievkaCatalog.catalogProducts
+  : [
+    ...(Array.isArray(window.sofievkaProducts) ? window.sofievkaProducts : []),
+    ...(Array.isArray(window.sofievkaTermojetProducts) ? window.sofievkaTermojetProducts : []),
+    ...(Array.isArray(window.sofievkaWiloProducts) ? window.sofievkaWiloProducts : [])
+  ];
 
 const searchItems = [
   { name: "Газові котли", meta: "Опалення", href: "/catalog/heating/heat-generation/gas-boilers" },
@@ -389,26 +391,35 @@ function setupSearch() {
 const homepageProductIds = [
   "termojet-wp_20506",
   "MO650MECOSTD",
+  "tekkhaus-1000015",
   "termojet-excel_84040BOX2",
   "CPV3ECOSTD",
+  "tekkhaus-1000125",
   "termojet-excel_47025230",
-  "FP1054CTPL",
-  "ROBUST1000STD",
-  "termojet-wp_8997"
+  "FP1054CTPL"
 ];
-const homepageProducts = homepageProductIds
-  .map(id => catalogProducts.find(product => product.id === id))
-  .filter(Boolean);
-const homepageSaleProducts = catalogProducts
-  .filter(product => (
-    product.typeSlug === "rozprodazh"
-    || product.primaryCategory === "termojet-rozprodazh"
-    || product.type === "Акція"
-  ) && (product.availability === "in_stock" || product.availabilityLabel === "В наявності"))
-  .slice(0, 8);
+const homepageSaleProductIds = [
+  "tekkhaus-1000073",
+  "termojet-new_41015110",
+  "tekkhaus-1001009",
+  "termojet-wp_19342",
+  "tekkhaus-1001047",
+  "termojet-new_42020170",
+  "tekkhaus-1000116",
+  "termojet-wp_19356"
+];
+const homepageProductById = new Map(catalogProducts.map(product => [product.id, product]));
+const homepageIsAvailable = product => product
+  && (product.availability === "in_stock" || product.availabilityLabel === "В наявності")
+  && Number(product.pricing?.amount ?? product.price) > 0;
+const homepageHasOffer = product => (Array.isArray(product.tags) && product.tags.includes("sale"))
+  || Number(product.pricing?.oldAmount ?? product.oldPrice ?? 0) > Number(product.pricing?.amount ?? product.price);
+const homepageProducts = homepageProductIds.map(id => homepageProductById.get(id)).filter(homepageIsAvailable);
+const homepageSaleProducts = homepageSaleProductIds.map(id => homepageProductById.get(id))
+  .filter(product => homepageIsAvailable(product) && homepageHasOffer(product));
 const productGroups = {
-  popular: homepageProducts.length >= 5 ? homepageProducts : catalogProducts.slice(0, 8),
-  sale: homepageSaleProducts.length >= 5 ? homepageSaleProducts : catalogProducts.slice(8, 16)
+  popular: homepageProducts,
+  sale: homepageSaleProducts
 };
 
 // Supplier photos use different canvas proportions and amounts of baked-in whitespace.
@@ -426,6 +437,9 @@ const homepageProductMediaFit = {
 function createProductCard(product, favoriteIds) {
   const productName = product.title || product.model;
   const available = product.availability === "in_stock" || product.availabilityLabel === "В наявності";
+  const price = Number(product.pricing?.amount ?? product.price);
+  const oldPrice = Number(product.pricing?.oldAmount ?? product.oldPrice ?? 0);
+  const money = amount => `${new Intl.NumberFormat("uk-UA").format(amount)} грн`;
   const escapeMarkup = value => String(value ?? "").replace(/[&<>'"]/g, character => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
   })[character]);
@@ -440,7 +454,7 @@ function createProductCard(product, favoriteIds) {
     <h3><a href="product.html?id=${encodeURIComponent(product.id)}">${escapeMarkup(productName)}</a></h3>
     <span class="product-card__code">${escapeMarkup(product.code)}</span>
     <ul class="product-card__specs" aria-label="Дані товару"><li>${escapeMarkup(product.type)}</li></ul>
-    <strong class="product-card__price">${new Intl.NumberFormat("uk-UA").format(product.price)} грн</strong>
+    <div class="product-card__price-group">${oldPrice > price ? `<del class="product-card__old-price">${money(oldPrice)}</del>` : ""}<strong class="product-card__price">${money(price)}</strong></div>
     <div class="product-card__actions">
       <button class="product-card__buy" type="button" data-buy="${escapeMarkup(product.id)}">До кошика</button>
       <button class="product-card__favorite${favoriteIds.has(product.id) ? " is-active" : ""}" type="button" data-favorite="${escapeMarkup(product.id)}" aria-label="Додати ${escapeMarkup(productName)} в обране" aria-pressed="${favoriteIds.has(product.id)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg></button>
@@ -475,7 +489,7 @@ function setupProducts() {
     if (!products.length) {
       const message = document.createElement("p");
       message.className = "empty-state";
-      message.textContent = "Каталог товарів тимчасово недоступний.";
+      message.textContent = group === "sale" ? "Акційні товари тимчасово недоступні." : "Каталог товарів тимчасово недоступний.";
       grid.append(message);
     } else {
       products.forEach(product => grid.append(createProductCard(product, favoriteIds)));
