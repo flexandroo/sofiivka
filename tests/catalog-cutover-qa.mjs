@@ -10,7 +10,7 @@ const buildScript = path.join(root, "scripts", "build-static-site.mjs");
 const devRef = "wfxcklglujgramasdzyr";
 const fakePublishableKey = "sb_publishable_cutover_qa_only";
 const feedNames = [
-  "products-data.js", "termojet-products-data.js", "wilo-products-data.js", "grundfos-products-data.js",
+  "products-data.js", "water-catalog-data.js", "termojet-products-data.js", "wilo-products-data.js", "grundfos-products-data.js",
   "tekkhaus-products-data.js", "tech-products-data.js", "heating-brands-products-data.js", "baxi-buderus-products-data.js"
 ];
 
@@ -49,7 +49,7 @@ try {
   for (const name of htmlFiles) {
     const html = read(`.cutover-test/preview/${name}`);
     assert.match(html, /catalog-runtime-config\.js/);
-    assert.doesNotMatch(html, /(?:products-data|termojet-products-data|wilo-products-data|grundfos-products-data|tekkhaus-products-data|tech-products-data|heating-brands-products-data|baxi-buderus-products-data)\.js/i);
+    assert.doesNotMatch(html, /(?:products-data|water-catalog-data|termojet-products-data|wilo-products-data|grundfos-products-data|tekkhaus-products-data|tech-products-data|heating-brands-products-data|baxi-buderus-products-data)\.js/i);
     const configIndex = html.indexOf("catalog-runtime-config.js");
     const firstRuntimeIndex = [html.indexOf("catalog-data.js"), html.indexOf("page-shell.js"), html.indexOf("script.js")].filter(index => index >= 0).sort((a, b) => a - b)[0];
     if (firstRuntimeIndex != null) assert.ok(configIndex >= 0 && configIndex < firstRuntimeIndex, `${name} selects the source after runtime loading`);

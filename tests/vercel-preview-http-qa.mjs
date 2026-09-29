@@ -25,6 +25,7 @@ const routePaths = [
 ];
 const supplierFeeds = [
   "products-data.js",
+  "water-catalog-data.js",
   "termojet-products-data.js",
   "wilo-products-data.js",
   "grundfos-products-data.js",
@@ -77,7 +78,7 @@ const routeResponses = await parallelMap(routePaths, 1, vercelCurl);
 for (const response of routeResponses) {
   if (response.status !== 200) throw new Error(`${response.pathname} returned HTTP ${response.status}.`);
   if (!/catalog-runtime-config\.js/i.test(response.body)) throw new Error(`${response.pathname} is missing runtime configuration.`);
-  if (/(?:products-data|termojet-products-data|wilo-products-data|grundfos-products-data|tekkhaus-products-data|tech-products-data|heating-brands-products-data|baxi-buderus-products-data)\.js/i.test(response.body)) {
+  if (/(?:products-data|water-catalog-data|termojet-products-data|wilo-products-data|grundfos-products-data|tekkhaus-products-data|tech-products-data|heating-brands-products-data|baxi-buderus-products-data)\.js/i.test(response.body)) {
     throw new Error(`${response.pathname} still references a supplier feed.`);
   }
 }

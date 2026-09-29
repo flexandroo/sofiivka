@@ -19,7 +19,7 @@ Supabase DEV: `sofievka`, ref `wfxcklglujgramasdzyr`, `ACTIVE_HEALTHY`, region `
 - Runtime config вставляется до `catalog-data.js`, `page-shell.js` или `script.js` во всех 33 HTML-файлах.
 - Supabase build удаляет 256 `<script>` tags восьми supplier feeds и не копирует сами feed-файлы.
 - `catalog-data.js` остаётся как ~198 KB shared taxonomy/routing/normalization/bootstrap runtime; 45.5 MB product snapshot в него не встроен.
-- `water-catalog-data.js` остаётся как небольшая taxonomy compatibility data, не product feed.
+- `water-catalog-data.js` исключён из Supabase builds вместе с остальными legacy supplier-feed entry points.
 - Local build сохраняет прежние feed tags/files.
 
 ## 3. PLP cutover
