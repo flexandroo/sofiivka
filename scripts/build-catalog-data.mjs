@@ -7,10 +7,13 @@ const sources = [
   "catalog/attribute-schema.js",
   "catalog/source-mappings.js",
   "catalog/normalize-products.js",
+  "catalog/legacy-adapter.js",
   "catalog/routing.js",
   "catalog/catalog-facade.js",
   "catalog/pdp-engine.js",
-  "catalog/search-engine.js"
+  "catalog/search-engine.js",
+  "catalog/validate-catalog.js",
+  "catalog/data-source-bootstrap.js"
 ];
 
 const sections = await Promise.all(sources.map(async source => {

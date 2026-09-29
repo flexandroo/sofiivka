@@ -1,4 +1,6 @@
 {
+  "buildCommand": "node scripts/build-static-site.mjs",
+  "outputDirectory": "dist",
   "cleanUrls": false,
   "trailingSlash": false,
   "redirects": [

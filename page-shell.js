@@ -3,6 +3,12 @@
   const TERMOJET_PRODUCTS = Array.isArray(window.sofievkaTermojetProducts) ? window.sofievkaTermojetProducts : [];
   let CATALOG = window.sofievkaCatalog || null;
   let PRODUCTS = Array.isArray(CATALOG?.catalogProducts) && CATALOG.catalogProducts.length ? CATALOG.catalogProducts : (Array.isArray(CATALOG?.products) && CATALOG.products.length ? CATALOG.products : [...BASE_PRODUCTS, ...TERMOJET_PRODUCTS]);
+  const SCOPED_PRODUCT_CACHE = new Map();
+  window.sofievkaRegisterScopedProducts = products => {
+    (Array.isArray(products) ? products : []).forEach(product => {
+      if (product?.id) SCOPED_PRODUCT_CACHE.set(product.id, product);
+    });
+  };
   const PRODUCT_TYPES = Array.isArray(window.sofievkaProductTypes) ? window.sofievkaProductTypes : [];
   let WATER = window.sofievkaWaterCatalog || { taxonomy: [], categoryBySlug: {}, report: { distribution: {} } };
   let WATER_PRODUCTS = Array.isArray(WATER.products) && WATER.products.length
@@ -73,20 +79,70 @@
     document.head.append(script);
   });
   const initialize = async () => {
+    let catalogLoadError = null;
     try {
       if (!window.sofievkaBrands) await loadScript("/brands-data.js?v=20260911-model-1");
       if (!window.sofievkaCatalog) await loadScript("/catalog-data.js?v=20260911-pdp-8");
+      if (window.sofievkaCatalogDataReady) await window.sofievkaCatalogDataReady;
+      await prepareScopedPage(page);
       if (!window.sofievkaCatalogUI) await loadScript("/catalog-ui.js?v=20260911-pdp-8");
+      if (window.sofievkaCatalogUIReady) await window.sofievkaCatalogUIReady;
       CATALOG = window.sofievkaCatalog || CATALOG;
       PRODUCTS = Array.isArray(CATALOG?.catalogProducts) && CATALOG.catalogProducts.length ? CATALOG.catalogProducts : (Array.isArray(CATALOG?.products) && CATALOG.products.length ? CATALOG.products : PRODUCTS);
       WATER = window.sofievkaWaterCatalog || WATER;
       WATER_PRODUCTS = Array.isArray(WATER.products) && WATER.products.length ? WATER.products : WATER_PRODUCTS;
-    } catch (error) { console.error("Catalog navigation failed to load", error); }
-    root.innerHTML = headerExtended() + `<main id="main" class="page-main">${PAGES[page]()}</main>` + footerExtended() + `<div class="toast" data-page-toast role="status" aria-live="polite"></div>`;
+    } catch (error) { catalogLoadError = error; console.error("Catalog navigation failed to load", error); }
+    const pageContent = catalogLoadError && window.sofievkaCatalogRemoteRequested
+      ? catalogFailureMarkup()
+      : PAGES[page]();
+    root.innerHTML = headerExtended() + `<main id="main" class="page-main">${pageContent}</main>` + footerExtended() + `<div class="toast" data-page-toast role="status" aria-live="polite"></div>`;
     window.sofievkaCatalogUI?.trackProductImages(root);
     bindGlobal();
-    bindExtendedPage(page);
+    await bindExtendedPage(page);
   };
+  async function prepareScopedPage(name) {
+    const source = window.sofievkaCatalogScopedDataSource;
+    if (!source) return;
+    let products = [];
+    let cartIds = [];
+    let favoriteIds = [];
+    let compareIds = [];
+    try { cartIds = Object.keys(JSON.parse(localStorage.getItem("sofievka-cart")) || {}); } catch {}
+    try { favoriteIds = JSON.parse(localStorage.getItem("sofievka-favorites")) || []; } catch {}
+    try { compareIds = JSON.parse(localStorage.getItem("sofievka-compare")) || []; } catch {}
+    const stateIds = [...new Set([...cartIds, ...favoriteIds, ...compareIds])].filter(Boolean).slice(0, 96);
+    if (name === "product") {
+      const id = new URLSearchParams(location.search).get("id") || "";
+      if (id) {
+        const result = await source.getProductById(id);
+        if (result?.product) products = [result.product, ...(result.relatedProducts || [])];
+        window.sofievkaScopedPdpResult = result;
+        let viewedIds = [];
+        try { viewedIds = JSON.parse(localStorage.getItem("sofievka-viewed")) || []; } catch {}
+        const previousViewedIds = [...new Set(viewedIds.filter(viewedId => viewedId && viewedId !== id))].slice(0, 8);
+        if (previousViewedIds.length) {
+          const viewed = await source.getProductsByIds(previousViewedIds);
+          window.sofievkaScopedViewedProducts = viewed.products;
+          products = [...new Map([...products, ...viewed.products].map(product => [product.id, product])).values()];
+        }
+      }
+    } else if (["cart", "checkout", "favorites", "compare"].includes(name)) {
+      const queryIds = (new URLSearchParams(location.search).get("ids") || "").split(",").filter(Boolean);
+      const ids = [...new Set([...stateIds, ...queryIds])].slice(0, 96);
+      if (ids.length) products = (await source.getProductsByIds(ids)).products;
+    } else if (stateIds.length) {
+      products = (await source.getProductsByIds(stateIds)).products;
+    }
+    if (!products.length) return;
+    window.sofievkaRegisterScopedProducts(products);
+    const bootstrap = window.sofievkaCatalogSnapshot;
+    window.sofievkaInstallCatalogSnapshot(Object.freeze({ ...bootstrap, products: Object.freeze(products) }), { useRawCatalog: false });
+    window.sofievkaInstallPdp?.();
+    window.sofievkaInstallCatalogSearch?.();
+  }
+  function catalogFailureMarkup() {
+    return `<section class="page-section"><div class="container"><div class="catalog-empty" role="alert"><span aria-hidden="true">!</span><h1>Каталог тимчасово недоступний</h1><p>Не вдалося отримати дані з development-каталогу. Локальне джерело не підставляється автоматично.</p><button class="button button--primary" type="button" onclick="location.reload()">Спробувати ще раз</button></div></div></section>`;
+  }
   function money(value) { return new Intl.NumberFormat("uk-UA").format(value) + " грн"; }
   function productCountLabel(count) { const value = Math.abs(Number(count) || 0); const ending = value % 10 === 1 && value % 100 !== 11 ? "товар" : [2, 3, 4].includes(value % 10) && ![12, 13, 14].includes(value % 100) ? "товари" : "товарів"; return `${value} ${ending}`; }
   function setCanonical(path) { let link = document.querySelector('link[rel="canonical"]'); if (!link) { link = document.createElement("link"); link.rel = "canonical"; document.head.append(link); } link.href = `https://sofievka.vercel.app${path}`; }
@@ -94,7 +150,7 @@
   function saveCart(value) { localStorage.setItem("sofievka-cart", JSON.stringify(value)); updateCounts(); }
   function favorites() { try { const value = JSON.parse(localStorage.getItem("sofievka-favorites")) || []; return value.filter(id => productById(id)); } catch { return []; } }
   function saveFavorites(value) { localStorage.setItem("sofievka-favorites", JSON.stringify(value)); updateCounts(); }
-  function productById(id) { return PRODUCTS.find(item => item.id === id) || null; }
+  function productById(id) { return SCOPED_PRODUCT_CACHE.get(id) || PRODUCTS.find(item => item.id === id) || null; }
   function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]); }
   function productUrl(product) { return `/product?id=${encodeURIComponent(product.id)}`; }
   function brandUrl(product) { return CATALOG?.brandUrl(product.brandId || CATALOG.slugify(product.brand)) || `/brands/${encodeURIComponent(product.brand.toLocaleLowerCase("en"))}`; }
@@ -760,7 +816,7 @@
     return hero("Інженерні задачі", "Від вихідних даних до робочої системи", "Показуємо логіку комплектації без вигаданих об’єктів, результатів або технічних показників.") + `<section class="page-section"><div class="container portfolio-showcase"><article class="portfolio-lead"><img src="/assets/images/solution-boiler-room.webp" alt="Обладнання котельні"><div><p class="page-kicker">Комплексна задача</p><h2>Котельня приватного будинку</h2><p>Тепловтрати, гаряча вода, зони опалення, автоматика, склад обладнання та межі монтажних робіт розглядаються як одна система.</p><a class="text-link" href="/solutions.html">Переглянути підхід до рішень →</a></div></article><div class="portfolio-notes"><article><span>01</span><h3>Вихідні дані</h3><p>Тип об'єкта, режими роботи, наявні мережі та технічні обмеження.</p></article><article><span>02</span><h3>Специфікація</h3><p>Основне обладнання, автоматика, арматура й монтажні компоненти.</p></article><article><span>03</span><h3>Реалізація</h3><p>Поставка, монтаж, запуск і розподіл відповідальності між учасниками.</p></article><article><span>04</span><h3>Супровід</h3><p>Документація, планове обслуговування та зрозумілий сервісний маршрут.</p></article></div></div></section><section class="page-section page-section--white"><div class="container consultation-band consultation-band--light"><div><p class="page-kicker">Ваш об'єкт</p><h2>Почнемо з задачі та вихідних даних</h2><p>Надішліть специфікацію, схему або опис об'єкта — визначимо, яких даних бракує для наступного кроку.</p></div><a class="button button--secondary" href="/contact.html">Передати задачу</a></div></section>`;
   }
 
-  function bindExtendedPage(name) {
+  async function bindExtendedPage(name) {
     if (["catalog", "brand", "heating", "water-supply", "plumbing", "climate"].includes(name) && window.sofievkaCatalogUI) {
       window.sofievkaCatalogUI.bind({ pageName: name, productCard: extendedProductCard });
       return;
@@ -859,11 +915,22 @@
       if (!query) {
         root.innerHTML = `<div class="empty-state search-empty"><span aria-hidden="true">⌕</span><h2>Пошук по каталогу</h2><p>Введіть назву, бренд, модель або артикул.</p></div>`;
       } else {
-        const found = window.sofievkaCatalogSearch?.search(query) || { products: [], totalProducts: 0, categories: [], brands: [] };
+        let found;
+        if (window.sofievkaCatalogScopedDataSource) {
+          root.innerHTML = `<div class="catalog-products is-loading" aria-busy="true">${Array.from({ length: 6 }, () => `<div class="product-skeleton" aria-hidden="true"><i></i><b></b><span></span><span></span></div>`).join("")}</div>`;
+          try {
+            found = await window.sofievkaCatalogScopedDataSource.search(query, { productLimit: 48, categoryLimit: 8, brandLimit: 8, seriesLimit: 8 });
+            window.sofievkaRegisterScopedProducts(found.products);
+          } catch (error) {
+            console.error("Scoped search page failed", error);
+            root.innerHTML = `<div class="empty-state search-empty" role="alert"><span aria-hidden="true">!</span><h2>Пошук тимчасово недоступний</h2><p>Перевірте з’єднання та спробуйте ще раз.</p><button class="button button--primary" type="button" onclick="location.reload()">Спробувати ще раз</button></div>`;
+            return;
+          }
+        } else found = window.sofievkaCatalogSearch?.search(query) || { products: [], totalProducts: 0, categories: [], brands: [] };
         if (!found.totalProducts) {
           root.innerHTML = `<div class="empty-state search-empty"><span aria-hidden="true">0</span><h2>За запитом «${escapeHtml(query)}» нічого не знайдено</h2><p>Перевірте написання або введіть точну модель чи артикул.</p><ul><li>Перевірте написання</li><li>Введіть модель або артикул</li><li>Перейдіть до каталогу</li></ul><a class="button button--primary" href="/catalog">До каталогу</a></div>`;
         } else {
-          const related = [...found.categories.slice(0, 3).map(hit => `<a href="${escapeHtml(hit.href)}"><span>Категорія</span>${escapeHtml(hit.entity.title)} <small>${productCountLabel(hit.count)}</small></a>`), ...found.brands.slice(0, 2).map(hit => `<a href="${escapeHtml(hit.href)}"><span>Бренд</span>${escapeHtml(hit.entity.name)} <small>${productCountLabel(hit.count)}</small></a>`)].join("");
+          const related = [...found.categories.slice(0, 3).map(hit => `<a href="${escapeHtml(hit.href || CATALOG.categoryUrl(hit.entity.id))}"><span>Категорія</span>${escapeHtml(hit.entity.title)} <small>${productCountLabel(hit.count)}</small></a>`), ...found.brands.slice(0, 2).map(hit => `<a href="${escapeHtml(hit.href || CATALOG.brandUrl(hit.entity.id))}"><span>Бренд</span>${escapeHtml(hit.entity.name)} <small>${productCountLabel(hit.count)}</small></a>`)].join("");
           let visible = 24;
           const renderProducts = () => {
             root.innerHTML = `<div class="search-result-head"><div><span>«${escapeHtml(query)}»</span><h2>${productCountLabel(found.totalProducts)}</h2></div><a href="/catalog">Увесь каталог →</a></div>${related ? `<nav class="search-related" aria-label="Пов’язані категорії та бренди">${related}</nav>` : ""}<div class="catalog-products">${found.products.slice(0, visible).map(extendedProductCard).join("")}</div>${visible < found.totalProducts ? `<div class="catalog-more"><button class="button button--secondary" type="button" data-search-more>Показати ще (${Math.min(24, found.totalProducts - visible)})</button></div>` : ""}`;

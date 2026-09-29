@@ -10,7 +10,7 @@ const collect = (directory, relative = "") => {
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
     const childRelative = path.join(relative, entry.name);
     if (entry.isDirectory()) {
-      if (["assets", "tests", "tools", "tmp", "artifacts", "backups", "reports", "node_modules", ".vercel", ".git", ".agents", ".codex"].includes(entry.name)) continue;
+      if (["assets", "tests", "tools", "tmp", "artifacts", "backups", "reports", "dist", ".cutover-test", "node_modules", ".vercel", ".git", ".agents", ".codex"].includes(entry.name)) continue;
       collect(path.join(directory, entry.name), childRelative);
     } else if (/\.(?:html|css|js)$/i.test(entry.name)) sourceFiles.push(childRelative);
   }

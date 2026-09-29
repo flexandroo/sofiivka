@@ -1,10 +1,20 @@
-(function () {
+window.sofievkaCatalogUIReady = (async function () {
   "use strict";
+
+  if (window.sofievkaCatalogDataReady) await window.sofievkaCatalogDataReady;
 
   const catalog = window.sofievkaCatalog;
   if (!catalog) return;
 
   const state = { expandedGroups: new Set(), brandQuery: "", visibleCount: 24 };
+  const dataSourceMode = new URLSearchParams(location.search).get("dataSource") || "";
+  const preserveDataSource = href => {
+    if (!dataSourceMode.startsWith("supabase") || !href || /^(?:#|mailto:|tel:|javascript:)/i.test(href)) return href;
+    const url = new URL(href, location.href);
+    if (url.origin !== location.origin) return href;
+    url.searchParams.set("dataSource", dataSourceMode);
+    return `${url.pathname}${url.search}${url.hash}`;
+  };
   const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
   const money = value => `${new Intl.NumberFormat("uk-UA").format(Number(value) || 0)} грн`;
   const countLabel = count => {
@@ -42,8 +52,8 @@
     const compareActive = containsProduct(options.compareIds, product.id);
     const cartQuantity = Number(options.cart?.[product.id] || 0);
     const title = product.title || product.shortTitle || product.model || "Товар";
-    const productHref = `/product?id=${encodeURIComponent(product.id)}`;
-    const brandHref = catalog.brandUrl(product.brandId || catalog.slugify(product.brand || ""));
+    const productHref = preserveDataSource(`/product?id=${encodeURIComponent(product.id)}`);
+    const brandHref = preserveDataSource(catalog.brandUrl(product.brandId || catalog.slugify(product.brand || "")));
     const status = product.inventory?.status || product.stockStatus || product.availability || "unknown";
     const inStock = status === "in_stock";
     const statusLabel = product.availabilityLabel || (inStock ? "В наявності" : status === "out_of_stock" ? "Немає в наявності" : "Наявність уточнюйте");
@@ -102,6 +112,28 @@
     if (image) showProductImageFallback(image);
   }, true);
   requestAnimationFrame(() => trackProductImages(document));
+
+  // Keep the explicit development data-source switch across internal navigation.
+  // Local and production URLs are untouched because they do not carry the switch.
+  document.addEventListener("click", event => {
+    const link = event.target.closest?.("a[href]");
+    if (!link) return;
+    const href = link.getAttribute("href");
+    const preserved = preserveDataSource(href);
+    if (preserved && preserved !== href) link.setAttribute("href", preserved);
+  }, true);
+  document.addEventListener("submit", event => {
+    if (!dataSourceMode.startsWith("supabase")) return;
+    const form = event.target.closest?.("form");
+    if (!form || String(form.method || "get").toLowerCase() !== "get") return;
+    const action = new URL(form.getAttribute("action") || location.href, location.href);
+    if (action.origin !== location.origin || form.elements.namedItem("dataSource")) return;
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "dataSource";
+    input.value = dataSourceMode;
+    form.append(input);
+  }, true);
 
   function brandFromLocation() {
     const pathSlug = location.pathname.split("/").filter(Boolean).pop()?.replace(/\.html$/, "");
@@ -175,10 +207,18 @@
     return products;
   }
 
+  function scopeCount(ctx) {
+    if (ctx.isBrand) return ctx.brand ? catalog.countForBrand?.(ctx.brand.id) ?? scopeProducts(ctx).length : 0;
+    if (ctx.notFound) return 0;
+    return ctx.currentCategory
+      ? (catalog.countForCategory?.(ctx.currentCategory.id) ?? scopeProducts(ctx).length)
+      : (catalog.countForSection?.("all") ?? scopeProducts(ctx).length);
+  }
+
   function selectorMarkup(ctx) {
     return `<nav class="catalog-section-tabs" aria-label="Розділи каталогу">${catalog.navigationSections.map(section => {
       const active = !ctx.isBrand && ctx.section.id === section.id;
-      return `<a href="${catalog.sectionUrl(section.id)}" class="${active ? "is-active" : ""}"${active ? ' aria-current="page"' : ""}>${escapeHtml(section.name)}<span>${catalog.productsForSection(section.id).length}</span></a>`;
+      return `<a href="${catalog.sectionUrl(section.id)}" class="${active ? "is-active" : ""}"${active ? ' aria-current="page"' : ""}>${escapeHtml(section.name)}<span>${catalog.countForSection?.(section.id) ?? catalog.productsForSection(section.id).length}</span></a>`;
     }).join("")}</nav>`;
   }
 
@@ -190,8 +230,8 @@
     if (!parent) return "";
     const categories = catalog.availableCategories(parent.id);
     if (!categories.length) return "";
-    const parentCount = catalog.productsForCategory(parent.id).length;
-    return `<nav class="catalog-subcategory-tabs${categories.length > 7 ? " catalog-subcategory-tabs--many" : ""}" aria-label="Категорії поточного рівня"><a href="${catalog.categoryUrl(parent.id)}" class="${current.id === parent.id ? "is-active" : ""}"${current.id === parent.id ? ' aria-current="page"' : ""}>Усе: ${escapeHtml(parent.shortTitle || parent.name)} <span>${parentCount}</span></a>${categories.map(category => `<a href="${catalog.categoryUrl(category.id)}" class="${current.id === category.id ? "is-active" : ""}"${current.id === category.id ? ' aria-current="page"' : ""}>${escapeHtml(category.name)} <span>${catalog.productsForCategory(category.id).length}</span></a>`).join("")}</nav>`;
+    const parentCount = catalog.countForCategory?.(parent.id) ?? catalog.productsForCategory(parent.id).length;
+    return `<nav class="catalog-subcategory-tabs${categories.length > 7 ? " catalog-subcategory-tabs--many" : ""}" aria-label="Категорії поточного рівня"><a href="${catalog.categoryUrl(parent.id)}" class="${current.id === parent.id ? "is-active" : ""}"${current.id === parent.id ? ' aria-current="page"' : ""}>Усе: ${escapeHtml(parent.shortTitle || parent.name)} <span>${parentCount}</span></a>${categories.map(category => `<a href="${catalog.categoryUrl(category.id)}" class="${current.id === category.id ? "is-active" : ""}"${current.id === category.id ? ' aria-current="page"' : ""}>${escapeHtml(category.name)} <span>${catalog.countForCategory?.(category.id) ?? catalog.productsForCategory(category.id).length}</span></a>`).join("")}</nav>`;
   }
 
   function introMarkup(ctx, total) {
@@ -208,7 +248,7 @@
 
   function render({ pageName = "catalog" } = {}) {
     const ctx = context(pageName);
-    const total = scopeProducts(ctx).length;
+    const total = scopeCount(ctx);
     applyMetadata(ctx, false);
     if (ctx.notFound || (ctx.isBrand && !ctx.brand)) return introMarkup(ctx, 0);
     if (ctx.currentCategory?.status === "future") return `${introMarkup(ctx, 0)}<section class="catalog-workspace catalog-workspace--state"><div class="container"><div class="catalog-state"><p class="page-kicker">Асортимент готується</p><h2>Розділ готується до наповнення</h2><p>Тут з’являться товари після перевірки категорій, характеристик і доступності.</p><a class="button button--secondary" href="/catalog">Перейти до каталогу</a></div></div></section>`;
@@ -239,12 +279,15 @@
     if (key === "brand") return product.brandId;
     if (key === "availability") return product.availability;
     if (key === "subcategory" || key === "category") return product.primaryCategoryId;
-    return product.normalizedAttributes?.[key];
+    return catalog.filterValue(catalog.attributeDefinitions[key], product.normalizedAttributes?.[key]);
   }
 
   function matches(product, filters, omitKey = "") {
     if (filters.q && !`${product.title} ${product.shortTitle || ""} ${product.sku} ${product.brand} ${product.sourceCategoryName}`.toLocaleLowerCase("uk").includes(filters.q.toLocaleLowerCase("uk"))) return false;
-    if (omitKey !== "price" && (product.price < filters.minPrice || product.price > filters.maxPrice)) return false;
+    if (omitKey !== "price" && (filters.minPrice > 0 || Number.isFinite(filters.maxPrice))) {
+      const amount = product.pricing?.amount;
+      if (!Number.isFinite(amount) || amount <= 0 || amount < filters.minPrice || amount > filters.maxPrice) return false;
+    }
     return Object.entries(filters.values).every(([key, selected]) => {
       if (key === omitKey || !selected.length) return true;
       const value = productValue(product, key);
@@ -269,7 +312,8 @@
   function relevantDefinitions(ctx, baseProducts) {
     const categoryIds = ctx.currentCategory?.level > 1 ? [ctx.currentCategory.id] : [...new Set(baseProducts.map(product => product.primaryCategoryId))];
     const allowed = [...new Set(categoryIds.flatMap(id => catalog.categoryById[id]?.facetIds || []))];
-    return allowed.map(id => [id, catalog.attributeDefinitions[id]]).filter(([id]) => {
+    return allowed.map(id => [id, catalog.attributeDefinitions[id]]).filter(([id, definition]) => {
+      if (!definition?.filterable) return false;
       const values = new Set(baseProducts.map(product => product.normalizedAttributes?.[id]).filter(value => value !== undefined && value !== null && value !== ""));
       return values.size >= 2;
     }).sort((a, b) => a[1].rank - b[1].rank).slice(0, 9);
@@ -317,6 +361,7 @@
 
   function paramsFromFilters(filters) {
     const params = new URLSearchParams();
+    if (window.sofievkaCatalogScopedDataSource && new URLSearchParams(location.search).get("dataSource") === "supabase") params.set("dataSource", "supabase");
     Object.entries(filters.values).forEach(([key, values]) => { if (values.length) params.set(key, values.join(",")); });
     if (filters.minPrice) params.set("minPrice", String(filters.minPrice));
     if (Number.isFinite(filters.maxPrice)) params.set("maxPrice", String(filters.maxPrice));
@@ -329,7 +374,190 @@
     return Boolean(Object.keys(filters.values).length || filters.minPrice || Number.isFinite(filters.maxPrice) || filters.q || filters.sort !== "default");
   }
 
+  function bindScoped({ pageName = "catalog", productCard } = {}) {
+    const source = window.sofievkaCatalogScopedDataSource;
+    const productRoot = document.querySelector("[data-catalog-products]");
+    const facetRoot = document.querySelector("[data-facet-root]");
+    if (!source || !productRoot || !facetRoot || typeof productCard !== "function") return;
+    let ctx = context(pageName);
+    let filters = readState(ctx);
+    let page = 1;
+    let total = scopeCount(ctx);
+    let hasMore = false;
+    let currentProducts = [];
+    let currentFacets = null;
+    let controller = null;
+    let requestSequence = 0;
+    const filterPanel = document.querySelector("[data-filter]");
+    const backdrop = document.querySelector("[data-filter-backdrop]");
+    const skeletons = Array.from({ length: 6 }, () => `<div class="product-skeleton" aria-hidden="true"><i></i><b></b><span></span><span></span></div>`).join("");
+
+    const writeUrl = (push = true) => {
+      const params = paramsFromFilters(filters);
+      const path = canonicalPath(ctx);
+      history[push ? "pushState" : "replaceState"]({}, "", `${path}${params.toString() ? `?${params}` : ""}`);
+      applyMetadata(ctx, hasIndexableFilters(filters));
+    };
+    const requestQuery = requestedPage => {
+      const technicalFilters = {};
+      Object.entries(filters.values).forEach(([key, values]) => {
+        if (!["brand", "availability", "subcategory", "category"].includes(key)) technicalFilters[key] = values;
+      });
+      const scopeCategory = ctx.currentCategory?.id || (ctx.section?.id !== "all" ? ctx.section?.id : "all");
+      return {
+        scopeCategory, scopeBrand: ctx.isBrand ? ctx.brand?.id || "" : "",
+        categoryIds: [...new Set([...(filters.values.category || []), ...(filters.values.subcategory || [])])],
+        brandIds: filters.values.brand || [], availabilityIds: filters.values.availability || [],
+        technicalFilters,
+        minPrice: filters.minPrice > 0 ? filters.minPrice : null,
+        maxPrice: Number.isFinite(filters.maxPrice) ? filters.maxPrice : null,
+        sort: filters.sort, q: filters.q, page: requestedPage, pageSize: 24
+      };
+    };
+    const countsMap = (values, selected = []) => {
+      const map = new Map(Object.entries(values || {}).map(([value, count]) => [value, Number(count) || 0]));
+      selected.forEach(value => { if (!map.has(value)) map.set(value, 0); });
+      return map;
+    };
+    const renderScopedFacets = facets => {
+      const groups = [];
+      if (ctx.isBrand) groups.push(facetGroup("category", "Категорія", countsMap(facets.categoryCounts, filters.values.category), filters, { limit: 8 }));
+      if (!ctx.isBrand) groups.push(facetGroup("brand", "Бренд", countsMap(facets.brandCounts, filters.values.brand), filters, { search: true, limit: 8 }));
+      groups.push(`<fieldset class="filter-group"><legend>Ціна, грн</legend><div class="price-filter"><label><span>Від</span><input type="number" min="0" inputmode="numeric" value="${Number.isFinite(filters.minPrice) && filters.minPrice > 0 ? filters.minPrice : ""}" data-price-min></label><label><span>До</span><input type="number" min="0" inputmode="numeric" value="${Number.isFinite(filters.maxPrice) ? filters.maxPrice : ""}" data-price-max></label></div><button class="price-apply" type="button" data-price-apply>Застосувати</button></fieldset>`);
+      groups.push(facetGroup("availability", "Наявність", countsMap(facets.availabilityCounts, filters.values.availability), filters, { limit: 4 }));
+      Object.entries(facets.technicalCounts || {})
+        .sort(([left], [right]) => (catalog.attributeDefinitions[left]?.rank || 999) - (catalog.attributeDefinitions[right]?.rank || 999))
+        .forEach(([key, counts]) => {
+          const definition = catalog.attributeDefinitions[key];
+          if (definition?.filterable) groups.push(facetGroup(key, definition.label, countsMap(counts, filters.values[key]), filters, { limit: 7 }));
+        });
+      facetRoot.innerHTML = `${groups.filter(Boolean).join("")}<button class="filter-reset" type="button" data-filter-clear>Скинути всі фільтри</button>`;
+      if (state.brandQuery) filterBrandOptions();
+    };
+    const updateCounters = () => {
+      document.querySelectorAll("[data-result-count], [data-drawer-count]").forEach(element => { element.textContent = String(total); });
+      document.querySelectorAll("[data-mobile-result-count]").forEach(element => { element.textContent = countLabel(total); });
+      document.querySelectorAll("[data-result-label]").forEach(element => { element.textContent = countLabel(total).replace(/^\d+\s+/, ""); });
+      const activeRoot = document.querySelector("[data-active-filters]");
+      if (activeRoot) activeRoot.innerHTML = activeChips(filters);
+      const sort = document.querySelector("[data-catalog-sort]");
+      if (sort) sort.value = filters.sort;
+      const loadMore = document.querySelector("[data-load-more]");
+      if (loadMore) { loadMore.hidden = !hasMore; loadMore.textContent = `Показати ще · ${Math.min(24, Math.max(0, total - currentProducts.length))}`; }
+      const mobileButton = document.querySelector("[data-filter-toggle]");
+      const activeCount = Object.values(filters.values).reduce((sum, values) => sum + values.length, 0) + Number(Boolean(filters.minPrice)) + Number(Number.isFinite(filters.maxPrice));
+      if (mobileButton) mobileButton.textContent = activeCount ? `Фільтри · ${activeCount}` : "Фільтри";
+    };
+    const renderProducts = () => {
+      window.sofievkaRegisterScopedProducts?.(currentProducts);
+      productRoot.classList.remove("is-loading");
+      productRoot.removeAttribute("aria-busy");
+      productRoot.innerHTML = currentProducts.length
+        ? currentProducts.map(productCard).join("")
+        : total === 0 && hasIndexableFilters(filters)
+          ? `<div class="catalog-empty"><span aria-hidden="true">0</span><h2>Товарів за цими параметрами немає</h2><p>Змініть один із фільтрів або скиньте вибір.</p><button class="button button--secondary" type="button" data-filter-clear>Скинути фільтри</button></div>`
+          : `<div class="catalog-empty"><span aria-hidden="true">0</span><h2>Товарів у цьому розділі поки немає</h2><p>Перейдіть до іншого розділу каталогу.</p><a class="button button--secondary" href="/catalog">Увесь каталог</a></div>`;
+      trackProductImages(productRoot);
+      updateCounters();
+    };
+    const renderError = error => {
+      productRoot.classList.remove("is-loading");
+      productRoot.removeAttribute("aria-busy");
+      productRoot.innerHTML = `<div class="catalog-empty" role="alert"><span aria-hidden="true">!</span><h2>Не вдалося завантажити товари</h2><p>Перевірте з’єднання та спробуйте ще раз.</p><button class="button button--primary" type="button" data-scoped-retry>Спробувати ще раз</button></div>`;
+      facetRoot.innerHTML = `<div class="catalog-empty" role="alert"><p>Фільтри тимчасово недоступні.</p></div>`;
+      console.error("Scoped catalogue request failed", error);
+    };
+    const load = async ({ append = false } = {}) => {
+      controller?.abort();
+      controller = new AbortController();
+      const sequence = ++requestSequence;
+      const nextPage = append ? page + 1 : 1;
+      if (!append) {
+        productRoot.classList.add("is-loading");
+        productRoot.setAttribute("aria-busy", "true");
+        productRoot.innerHTML = skeletons;
+      }
+      try {
+        const query = requestQuery(nextPage);
+        const [products, facets] = append
+          ? [await source.listProducts(query, { signal: controller.signal }), currentFacets]
+          : await Promise.all([
+            source.listProducts(query, { signal: controller.signal }),
+            source.loadFacets(query, { signal: controller.signal })
+          ]);
+        if (sequence !== requestSequence) return;
+        page = nextPage;
+        total = products.total;
+        hasMore = products.hasMore;
+        currentProducts = append ? [...currentProducts, ...products.products] : [...products.products];
+        currentFacets = facets;
+        if (!append && facets) renderScopedFacets(facets);
+        renderProducts();
+      } catch (error) {
+        if (error?.name === "AbortError" || /abort/i.test(error?.message || "")) return;
+        if (sequence === requestSequence) renderError(error);
+      }
+    };
+    const update = (push = true) => { writeUrl(push); load(); };
+    const setDrawer = open => {
+      filterPanel?.classList.toggle("is-open", open);
+      backdrop?.toggleAttribute("hidden", !open);
+      document.body.classList.toggle("filter-drawer-open", open);
+      document.querySelector("[data-filter-toggle]")?.setAttribute("aria-expanded", String(open));
+    };
+    const filterBrandOptions = () => {
+      const query = state.brandQuery.toLocaleLowerCase("uk");
+      facetRoot.querySelectorAll('[data-facet-group="brand"] [data-facet-option]').forEach(option => { option.hidden = Boolean(query) && !option.dataset.optionLabel.includes(query); });
+    };
+
+    document.addEventListener("change", event => {
+      const input = event.target.closest("[data-filter-key]");
+      if (input && (facetRoot.contains(input) || filterPanel?.contains(input))) {
+        const key = input.dataset.filterKey;
+        const values = new Set(filters.values[key] || []);
+        input.checked ? values.add(input.value) : values.delete(input.value);
+        if (values.size) filters.values[key] = [...values]; else delete filters.values[key];
+        update();
+      }
+      if (event.target.matches("[data-catalog-sort]")) { filters.sort = event.target.value; update(); }
+    });
+    document.addEventListener("input", event => {
+      if (!event.target.matches("[data-brand-search]")) return;
+      state.brandQuery = event.target.value;
+      filterBrandOptions();
+    });
+    document.addEventListener("click", event => {
+      if (event.target.closest("[data-filter-toggle]")) setDrawer(true);
+      if (event.target.closest("[data-filter-close], [data-filter-backdrop], [data-filter-apply]")) setDrawer(false);
+      if (event.target.closest("[data-price-apply]")) {
+        filters.minPrice = Number(document.querySelector("[data-price-min]")?.value || 0);
+        const maximum = document.querySelector("[data-price-max]")?.value;
+        filters.maxPrice = maximum ? Number(maximum) : Infinity;
+        update();
+      }
+      const more = event.target.closest("[data-facet-more]");
+      if (more) { state.expandedGroups.has(more.dataset.facetMore) ? state.expandedGroups.delete(more.dataset.facetMore) : state.expandedGroups.add(more.dataset.facetMore); if (currentFacets) renderScopedFacets(currentFacets); }
+      const remove = event.target.closest("[data-remove-filter]");
+      if (remove) { filters.values[remove.dataset.removeFilter] = (filters.values[remove.dataset.removeFilter] || []).filter(value => value !== remove.dataset.removeValue); if (!filters.values[remove.dataset.removeFilter].length) delete filters.values[remove.dataset.removeFilter]; update(); }
+      const price = event.target.closest("[data-remove-price]");
+      if (price) { filters[price.dataset.removePrice] = price.dataset.removePrice === "maxPrice" ? Infinity : 0; update(); }
+      if (event.target.closest("[data-remove-query]")) { filters.q = ""; update(); }
+      if (event.target.closest("[data-filter-clear]")) { filters = { values: {}, q: "", minPrice: 0, maxPrice: Infinity, sort: "default" }; state.brandQuery = ""; update(); }
+      if (event.target.closest("[data-load-more]") && hasMore) load({ append: true });
+      if (event.target.closest("[data-scoped-retry]")) load();
+    });
+    document.addEventListener("keydown", event => { if (event.key === "Escape") setDrawer(false); });
+    window.addEventListener("popstate", () => { ctx = context(pageName); filters = readState(ctx); applyMetadata(ctx, hasIndexableFilters(filters)); load(); });
+
+    const initialParams = new URLSearchParams(location.search);
+    const redundantLegacyType = catalog.sourceMappings.categoryMappings.ecosoft?.[initialParams.get("type")]?.categoryId === ctx.currentCategory?.id;
+    if (ctx.route.legacy || initialParams.has("slug") || (!ctx.isBrand && (initialParams.has("category") || redundantLegacyType))) writeUrl(false);
+    else applyMetadata(ctx, hasIndexableFilters(filters));
+    requestAnimationFrame(() => load());
+  }
+
   function bind({ pageName = "catalog", productCard } = {}) {
+    if (window.sofievkaCatalogScopedDataSource) return bindScoped({ pageName, productCard });
     const productRoot = document.querySelector("[data-catalog-products]");
     const facetRoot = document.querySelector("[data-facet-root]");
     if (!productRoot || !facetRoot || typeof productCard !== "function") return;
@@ -348,8 +576,8 @@
     const renderResults = () => {
       const baseProducts = scopeProducts(ctx);
       const results = filteredProducts(baseProducts, filters);
-      if (filters.sort === "price-asc") results.sort((a, b) => a.price - b.price);
-      if (filters.sort === "price-desc") results.sort((a, b) => b.price - a.price);
+      if (filters.sort === "price-asc") results.sort((a, b) => catalog.compareProductsByPrice(a, b, "asc"));
+      if (filters.sort === "price-desc") results.sort((a, b) => catalog.compareProductsByPrice(a, b, "desc"));
       facetRoot.innerHTML = renderFacets(ctx, baseProducts, filters);
       productRoot.classList.remove("is-loading");
       productRoot.innerHTML = results.length ? results.slice(0, state.visibleCount).map(productCard).join("") : baseProducts.length
@@ -509,15 +737,18 @@
 
   function bindSearch(form = document.querySelector("[data-search]"), options = {}) {
     const search = window.sofievkaCatalogSearch;
+    const scopedSource = window.sofievkaCatalogScopedDataSource;
     const input = form?.querySelector('input[type="search"]');
     const results = form?.querySelector(".search-results");
-    if (!search || !form || !input || !results || form.dataset.searchBound === "true") return;
+    if ((!search && !scopedSource) || !form || !input || !results || form.dataset.searchBound === "true") return;
     form.dataset.searchBound = "true";
     const instanceId = input.id || `catalog-search-${Math.random().toString(36).slice(2, 8)}`;
     const minLength = Number(options.minLength) || 2;
     let timer = 0;
     let request = 0;
     let selectedIndex = -1;
+    let controller = null;
+    const normalizeQuery = value => search?.normalizeQuery ? search.normalizeQuery(value) : String(value || "").toLocaleLowerCase("uk").replace(/\s+/g, " ").trim();
 
     input.id = instanceId;
     input.setAttribute("role", "combobox");
@@ -544,6 +775,7 @@
     };
     const close = () => {
       window.clearTimeout(timer);
+      controller?.abort();
       results.hidden = true;
       input.setAttribute("aria-expanded", "false");
       setSelected(-1);
@@ -555,22 +787,37 @@
       const html = `<section class="search-results__group search-results__group--${kind}" role="group" aria-labelledby="${escapeHtml(headingId)}"><h2 id="${escapeHtml(headingId)}">${escapeHtml(label)}</h2>${items.map((item, offset) => option({ ...mapItem(item), kind, index: startIndex + offset })).join("")}</section>`;
       return { html, next: startIndex + items.length };
     };
-    const render = () => {
+    const render = async () => {
       const rawQuery = input.value;
-      const normalizedQuery = search.normalizeQuery(rawQuery);
+      const normalizedQuery = normalizeQuery(rawQuery);
       const currentRequest = ++request;
       if (normalizedQuery.length < minLength) { close(); return; }
-      const found = search.search(rawQuery, { productLimit: 5, categoryLimit: 3, brandLimit: 2, seriesLimit: 2 });
+      controller?.abort();
+      controller = new AbortController();
+      results.innerHTML = `<div class="search-results__empty" role="status"><strong>Шукаємо…</strong><span>Перевіряємо каталог за назвою, моделлю та кодом.</span></div>`;
+      results.hidden = false;
+      input.setAttribute("aria-expanded", "true");
+      let found;
+      try {
+        found = scopedSource
+          ? await scopedSource.search(rawQuery, { productLimit: 5, categoryLimit: 3, brandLimit: 2, seriesLimit: 2, signal: controller.signal })
+          : search.search(rawQuery, { productLimit: 5, categoryLimit: 3, brandLimit: 2, seriesLimit: 2 });
+      } catch (error) {
+        if (/abort/i.test(error?.message || "")) return;
+        if (currentRequest !== request) return;
+        results.innerHTML = `<div class="search-results__empty" role="alert"><strong>Пошук тимчасово недоступний</strong><span>Спробуйте ще раз.</span></div>`;
+        return;
+      }
       if (currentRequest !== request) return;
       let index = 0;
       const blocks = [];
-      const productGroup = group("Товари", "product", found.products, index, product => ({ href: `/product?id=${encodeURIComponent(product.id)}`, title: product.title, meta: `${product.brand} · Код ${product.sku}`, image: product.image || product.images?.[0] || "" }));
+      const productGroup = group("Товари", "product", found.products, index, product => ({ href: preserveDataSource(`/product?id=${encodeURIComponent(product.id)}`), title: product.title, meta: `${product.brand} · Код ${product.sku}`, image: product.image || product.images?.[0] || "" }));
       blocks.push(productGroup.html); index = productGroup.next;
-      const categoryGroup = group("Категорії", "category", found.categories, index, hit => ({ href: hit.href, title: hit.entity.title, meta: countLabel(hit.count) }));
+      const categoryGroup = group("Категорії", "category", found.categories, index, hit => ({ href: hit.href || catalog.categoryUrl(hit.entity.id), title: hit.entity.title, meta: countLabel(hit.count) }));
       blocks.push(categoryGroup.html); index = categoryGroup.next;
-      const brandGroup = group("Бренди", "brand", found.brands, index, hit => ({ href: hit.href, title: hit.entity.name, meta: countLabel(hit.count) }));
+      const brandGroup = group("Бренди", "brand", found.brands, index, hit => ({ href: hit.href || catalog.brandUrl(hit.entity.id), title: hit.entity.name, meta: countLabel(hit.count) }));
       blocks.push(brandGroup.html); index = brandGroup.next;
-      const seriesGroup = group("Серії", "series", found.series, index, hit => ({ href: hit.href, title: hit.entity.name, meta: countLabel(hit.count) }));
+      const seriesGroup = group("Серії", "series", found.series, index, hit => ({ href: hit.href || `/search?q=${encodeURIComponent(hit.entity.name)}`, title: hit.entity.name, meta: countLabel(hit.count) }));
       blocks.push(seriesGroup.html); index = seriesGroup.next;
       const hasResults = index > 0;
       results.innerHTML = hasResults
@@ -587,7 +834,7 @@
 
     input.addEventListener("input", queueRender);
     input.addEventListener("focus", () => {
-      if (search.normalizeQuery(input.value).length >= minLength) queueRender();
+      if (normalizeQuery(input.value).length >= minLength) queueRender();
     });
     input.addEventListener("keydown", event => {
       if (event.key === "Escape") { close(); return; }
@@ -597,7 +844,7 @@
           if (selected) { event.preventDefault(); location.assign(selected.href); }
         } else if (event.key === "Enter" && input.value.trim()) {
           event.preventDefault();
-          location.assign(`/search?q=${encodeURIComponent(input.value.trim())}`);
+          location.assign(preserveDataSource(`/search?q=${encodeURIComponent(input.value.trim())}`));
         }
         return;
       }
@@ -625,10 +872,10 @@
     const homeSections = catalog.activeSections;
     return homeSections.map(section => {
       const children = catalog.availableCategories(section.id).slice(0, 4);
-      const productCount = catalog.productsForSection(section.id).length;
+      const productCount = catalog.countForSection?.(section.id) ?? catalog.productsForSection(section.id).length;
       return `<a class="category-card category-card--${escapeHtml(section.id)}" href="${catalog.sectionUrl(section.id)}"><img src="${imageBySection[section.id]}" width="1536" height="1024" loading="lazy" alt="${escapeHtml(section.name)}"><span class="category-card__content"><span class="category-card__title"><strong>${escapeHtml(section.name)}</strong><em>${productCount || "Напрям"}</em></span><small>${children.length ? children.map(category => category.name).join(" · ") : section.description}</small></span></a>`;
     }).join("");
   }
 
-  window.sofievkaCatalogUI = Object.freeze({ render, bind, renderProductCard, productCardAttributes, trackProductImages, megaMenu, bindMenu, bindSearch, homeCards, applyMetadata });
+  window.sofievkaCatalogUI = Object.freeze({ render, bind, renderProductCard, productCardAttributes, trackProductImages, megaMenu, bindMenu, bindSearch, homeCards, applyMetadata, preserveDataSource });
 })();

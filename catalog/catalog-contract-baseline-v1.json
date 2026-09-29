@@ -1,0 +1,47 @@
+{
+  "version": "catalog-contract-baseline-v1",
+  "capturedAt": "2026-09-28",
+  "counts": {
+    "products": 3215,
+    "catalogProducts": 3214,
+    "serviceItems": 1,
+    "brands": 36,
+    "categories": 87
+  },
+  "hashes": {
+    "productIds": "215e59e333ecf48b89e0a75971c3a6743cb05fa9a9f85dced9f9cb4e65e85733",
+    "skus": "db35ee4047f6d170229e9fe9d8fac43e6be91f71ea212fd6bf93f3d28af50e6f",
+    "slugs": "a54a4571c1c9b350b9fc10548143465c7c5bdc99c75902b70f4ea85fa81c1f6f",
+    "brandCategoryAssignments": "e3faf046c84b2566fae7e0985cd8c285626d039dc40f186c9e178abfdccad76f",
+    "brandIds": "453337dab34ed6ce11a1cb0487d9bcd09fa0199592305797147c69c2fe6d5076",
+    "categoryIds": "34d60d23a3a866628f083351f2ebe4f81b0f4378df54652db1172fb6aa298fd6",
+    "publicUrls": "f48c310df744f385623591848582ec25f3070c89f1060fdeacd3c76111743b18",
+    "plpCounts": "ea04b3c267be3dd87028c7583aaaa76b4a865085db3dba0ec60e02324dafa8e7",
+    "facetAvailability": "220acebb30720e054b050cde297e73b0d456e6c4350ac6e604f81cfe419e99e4",
+    "searchAvailability": "9cad45b2408f0dafbad15a0f67abaae7accca4915f398cefdafada8869e5a3f8"
+  },
+  "searchQueries": [
+    "MO550MECOSTD",
+    "Termojet",
+    "Ecosoft",
+    "зворотний осмос",
+    "Termojet насос",
+    "4248082",
+    "Wilo Stratos MAXO",
+    "93013252",
+    "Grundfos ALPHA3",
+    "1000116",
+    "TECH Sinum",
+    "BAXI DUO-TEC Compact E 24"
+  ],
+  "localStorageKeys": [
+    "sofievka-cart",
+    "sofievka-compare",
+    "sofievka-favorites",
+    "sofievka-viewed"
+  ],
+  "allowedBehaviorChanges": [
+    "Products with pricing.amount=null sort after products with a known positive price.",
+    "Non-filterable attribute definitions are excluded from facets even if a category lists them."
+  ]
+}

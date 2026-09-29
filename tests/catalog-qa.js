@@ -32,7 +32,18 @@ const catalog = state.sofievkaCatalog;
 const routing = state.sofievkaCatalogRouting;
 const search = state.sofievkaCatalogSearch;
 const products = catalog.products;
+const canonicalProducts = catalog.canonicalProducts;
+const validation = state.sofievkaCatalogValidation.validateCatalog(catalog);
 let routingAssertions = 0;
+
+assert.equal(validation.valid, true, `full catalog validation failed: ${JSON.stringify(validation.errors)}`);
+assert.equal(validation.summary.errors, 0, "full catalog validator must be a hard QA gate");
+assert.equal(canonicalProducts.length, products.length, "canonical and legacy product counts must match");
+assert.equal(new Set(canonicalProducts.map(product => product.sku)).size, canonicalProducts.length, "canonical SKU values must be unique");
+assert.equal(new Set(canonicalProducts.map(product => product.slug)).size, canonicalProducts.length, "canonical slugs must be unique");
+assert.ok(canonicalProducts.every(product => product.pricing.amount === null || product.pricing.amount > 0), "canonical prices must be positive or null");
+assert.ok(canonicalProducts.every(product => product.pricing.amount === null ? product.pricing.priceStatus !== "known" : product.pricing.priceStatus === "known"), "canonical price status must match amount semantics");
+assert.ok(canonicalProducts.every(product => ["published", "draft", "hidden", "archived"].includes(product.publicationStatus)), "canonical publication status is invalid");
 
 const routeCheck = (condition, message) => {
   assert.ok(condition, message);
@@ -345,7 +356,9 @@ console.log(JSON.stringify({
   status: "ok",
   routingAssertions,
   products: products.length,
-  validationErrors: state.sofievkaNormalizationReport.normalizationErrors.length,
+  validationErrors: validation.summary.errors,
+  validationWarnings: validation.summary.warnings,
+  validationWarningsByCode: Object.fromEntries(validation.warnings.map(warning => [warning.code, warning.count])),
   reviewMappings,
   unmappedAttributeProducts,
   brandsWithoutProducts,

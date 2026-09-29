@@ -1,6 +1,8 @@
 (function () {
   "use strict";
 
+  function installCatalogSearch() {
+
   const catalog = window.sofievkaCatalog;
   if (!catalog) throw new Error("Catalog search requires the centralized catalog facade.");
   const searchableProducts = catalog.catalogProducts || catalog.products;
@@ -357,6 +359,11 @@
     aliases: CATEGORY_ALIASES,
     index: Object.freeze({ products: productIndex, brands: brandIndex, categories: categoryIndex, series: seriesIndex })
   });
-  window.sofievkaCatalogSearch = api;
-  window.catalogSearch = search;
+    window.sofievkaCatalogSearch = api;
+    window.catalogSearch = search;
+    return api;
+  }
+
+  window.sofievkaInstallCatalogSearch = installCatalogSearch;
+  installCatalogSearch();
 })();

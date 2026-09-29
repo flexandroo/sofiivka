@@ -9,4 +9,5 @@ reports
 assets/design-references
 assets/images/*.png
 data/*.xml
-scripts
+scripts/*
+!scripts/build-static-site.mjs

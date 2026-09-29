@@ -1,6 +1,8 @@
 (function () {
   "use strict";
 
+  function installPdp() {
+
   const catalog = window.sofievkaCatalog;
   if (!catalog) throw new Error("Catalog facade must load before the PDP engine.");
 
@@ -165,5 +167,10 @@
     return !new Set(["drinking-system-cartridges", "mainline-cartridges", "filter-media"]).has(product.primaryCategoryId);
   }
 
-  window.sofievkaPdp = Object.freeze({ keySpecs, specificationGroups, images, documents, model, purchase, relatedProducts, brand, installationRelevant });
+    window.sofievkaPdp = Object.freeze({ keySpecs, specificationGroups, images, documents, model, purchase, relatedProducts, brand, installationRelevant });
+    return window.sofievkaPdp;
+  }
+
+  window.sofievkaInstallPdp = installPdp;
+  installPdp();
 })();

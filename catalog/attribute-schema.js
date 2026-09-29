@@ -10,10 +10,17 @@
     filterable: true,
     sortable: false,
     categoryScope: Object.freeze([]),
+    booleanValues: Object.freeze({ true: Object.freeze([]), false: Object.freeze([]) }),
+    legacyValues: Object.freeze({}),
     rank: 100,
     ...definition,
     aliases: Object.freeze([...(definition.aliases || [])]),
-    categoryScope: Object.freeze([...(definition.categoryScope || [])])
+    categoryScope: Object.freeze([...(definition.categoryScope || [])]),
+    booleanValues: Object.freeze({
+      true: Object.freeze([...(definition.booleanValues?.true || [])]),
+      false: Object.freeze([...(definition.booleanValues?.false || [])])
+    }),
+    legacyValues: Object.freeze({ ...(definition.legacyValues || {}) })
   });
 
   const definitions = Object.freeze({
@@ -70,20 +77,22 @@
     zones: define("zones", { label: "Кількість зон", type: "number", rank: 21.2, aliases: [/^кількість зон$/i, /^зони$/i, /^кількість приміщень$/i] }),
     temperature: define("temperature", { label: "Температурний діапазон", rank: 22, aliases: [/^діапазон температур$/i, /^температура рідини$/i, /^макс\.?\s*температура$/i, /^максимальна температура$/i, /^температура$/i] }),
     eei: define("eei", { label: "Індекс енергоефективності EEI", rank: 22.1, aliases: [/^індекс енергетичної ефективності(?: \(eei\))?$/i, /^eei$/i] }),
-    selfPriming: define("selfPriming", { label: "Самовсмоктування", rank: 22.2, aliases: [/^самовсмоктувальне виконання$/i] }),
+    selfPriming: define("selfPriming", { label: "Самовсмоктування", type: "boolean", rank: 22.2, aliases: [/^самовсмоктувальне виконання$/i], booleanValues: { true: ["yes", "так", "да", "є"], false: ["no", "ні", "нет", "немає", "відсутнє"] }, legacyValues: { true: "yes", false: "no" } }),
     maxImmersionDepthM: define("maxImmersionDepthM", { label: "Максимальна глибина занурення, м", type: "number", unit: "м", rank: 22.3, aliases: [/^максимальна глибина занурення$/i] }),
     freePassageMm: define("freePassageMm", { label: "Вільний прохід, мм", type: "number", unit: "мм", rank: 22.4, aliases: [/^вільний сферичний прохід$/i, /^вільний прохід$/i] }),
     cableLengthM: define("cableLengthM", { label: "Довжина кабелю, м", type: "number", unit: "м", rank: 22.5, aliases: [/^довжина кабелю$/i] }),
-    floatSwitch: define("floatSwitch", { label: "Поплавковий вимикач", rank: 22.6, aliases: [/^поплавковий вимикач$/i] }),
+    floatSwitch: define("floatSwitch", { label: "Поплавковий вимикач", type: "boolean", rank: 22.6, aliases: [/^поплавковий вимикач$/i], booleanValues: { true: ["yes", "так", "да", "є"], false: ["no", "ні", "нет", "немає", "відсутній", "відсутнє"] }, legacyValues: { true: "да", false: "немає" } }),
     waterType: define("waterType", { label: "Тип води", rank: 23, aliases: [/^вода$/i, /^тип води$/i] }),
     format: define("format", { label: "Формат / типорозмір", rank: 24, aliases: [/^формат$/i, /^типорозмір$/i] }),
-    pump: define("pump", { label: "Помпа", rank: 25, aliases: [/^помпа$/i, /^насос підвищення тиску$/i] }),
+    pump: define("pump", { label: "Помпа", type: "boolean", rank: 25, aliases: [/^помпа$/i, /^насос підвищення тиску$/i], booleanValues: { true: ["yes", "так", "да", "є"], false: ["no", "ні", "нет", "немає", "без помпи"] }, legacyValues: { true: "yes", false: "no" } }),
     mineralizer: define("mineralizer", { label: "Мінералізація", rank: 26, aliases: [/^мінералізація$/i, /^мінералізатор$/i] }),
     flowType: define("flowType", { label: "Тип системи", rank: 27, aliases: [/^тип системи$/i, /^формат системи$/i] }),
     scope: define("scope", { label: "Для об’єкта", rank: 28, aliases: [/^для об'єкта$/i, /^сфера застосування$/i] })
   });
 
   const valueLabels = Object.freeze({
+    true: "Так",
+    false: "Ні",
     yes: "Так",
     no: "Ні",
     direct: "Прямоточна",

@@ -165,10 +165,17 @@
     filterable: true,
     sortable: false,
     categoryScope: Object.freeze([]),
+    booleanValues: Object.freeze({ true: Object.freeze([]), false: Object.freeze([]) }),
+    legacyValues: Object.freeze({}),
     rank: 100,
     ...definition,
     aliases: Object.freeze([...(definition.aliases || [])]),
-    categoryScope: Object.freeze([...(definition.categoryScope || [])])
+    categoryScope: Object.freeze([...(definition.categoryScope || [])]),
+    booleanValues: Object.freeze({
+      true: Object.freeze([...(definition.booleanValues?.true || [])]),
+      false: Object.freeze([...(definition.booleanValues?.false || [])])
+    }),
+    legacyValues: Object.freeze({ ...(definition.legacyValues || {}) })
   });
 
   const definitions = Object.freeze({
@@ -225,20 +232,22 @@
     zones: define("zones", { label: "Кількість зон", type: "number", rank: 21.2, aliases: [/^кількість зон$/i, /^зони$/i, /^кількість приміщень$/i] }),
     temperature: define("temperature", { label: "Температурний діапазон", rank: 22, aliases: [/^діапазон температур$/i, /^температура рідини$/i, /^макс\.?\s*температура$/i, /^максимальна температура$/i, /^температура$/i] }),
     eei: define("eei", { label: "Індекс енергоефективності EEI", rank: 22.1, aliases: [/^індекс енергетичної ефективності(?: \(eei\))?$/i, /^eei$/i] }),
-    selfPriming: define("selfPriming", { label: "Самовсмоктування", rank: 22.2, aliases: [/^самовсмоктувальне виконання$/i] }),
+    selfPriming: define("selfPriming", { label: "Самовсмоктування", type: "boolean", rank: 22.2, aliases: [/^самовсмоктувальне виконання$/i], booleanValues: { true: ["yes", "так", "да", "є"], false: ["no", "ні", "нет", "немає", "відсутнє"] }, legacyValues: { true: "yes", false: "no" } }),
     maxImmersionDepthM: define("maxImmersionDepthM", { label: "Максимальна глибина занурення, м", type: "number", unit: "м", rank: 22.3, aliases: [/^максимальна глибина занурення$/i] }),
     freePassageMm: define("freePassageMm", { label: "Вільний прохід, мм", type: "number", unit: "мм", rank: 22.4, aliases: [/^вільний сферичний прохід$/i, /^вільний прохід$/i] }),
     cableLengthM: define("cableLengthM", { label: "Довжина кабелю, м", type: "number", unit: "м", rank: 22.5, aliases: [/^довжина кабелю$/i] }),
-    floatSwitch: define("floatSwitch", { label: "Поплавковий вимикач", rank: 22.6, aliases: [/^поплавковий вимикач$/i] }),
+    floatSwitch: define("floatSwitch", { label: "Поплавковий вимикач", type: "boolean", rank: 22.6, aliases: [/^поплавковий вимикач$/i], booleanValues: { true: ["yes", "так", "да", "є"], false: ["no", "ні", "нет", "немає", "відсутній", "відсутнє"] }, legacyValues: { true: "да", false: "немає" } }),
     waterType: define("waterType", { label: "Тип води", rank: 23, aliases: [/^вода$/i, /^тип води$/i] }),
     format: define("format", { label: "Формат / типорозмір", rank: 24, aliases: [/^формат$/i, /^типорозмір$/i] }),
-    pump: define("pump", { label: "Помпа", rank: 25, aliases: [/^помпа$/i, /^насос підвищення тиску$/i] }),
+    pump: define("pump", { label: "Помпа", type: "boolean", rank: 25, aliases: [/^помпа$/i, /^насос підвищення тиску$/i], booleanValues: { true: ["yes", "так", "да", "є"], false: ["no", "ні", "нет", "немає", "без помпи"] }, legacyValues: { true: "yes", false: "no" } }),
     mineralizer: define("mineralizer", { label: "Мінералізація", rank: 26, aliases: [/^мінералізація$/i, /^мінералізатор$/i] }),
     flowType: define("flowType", { label: "Тип системи", rank: 27, aliases: [/^тип системи$/i, /^формат системи$/i] }),
     scope: define("scope", { label: "Для об’єкта", rank: 28, aliases: [/^для об'єкта$/i, /^сфера застосування$/i] })
   });
 
   const valueLabels = Object.freeze({
+    true: "Так",
+    false: "Ні",
     yes: "Так",
     no: "Ні",
     direct: "Прямоточна",
@@ -922,6 +931,18 @@
     return Number.isFinite(number) ? { value: Number(number.toFixed(4)), unitStatus: "normalized" } : { value: null, unitStatus: "malformed" };
   }
 
+  function parseBoolean(value, definition) {
+    if (typeof value === "boolean") return value;
+    if (value === 1) return true;
+    if (value === 0) return false;
+    const normalized = String(value ?? "").toLocaleLowerCase("uk-UA").replace(/\s+/g, " ").trim();
+    const trueValues = new Set(["yes", "true", "1", "так", "да", "є", ...(definition.booleanValues?.true || [])]);
+    const falseValues = new Set(["no", "false", "0", "ні", "нет", "немає", "відсутній", "відсутнє", ...(definition.booleanValues?.false || [])]);
+    if (trueValues.has(normalized)) return true;
+    if (falseValues.has(normalized)) return false;
+    return null;
+  }
+
   function normalizeAttributes(product, supplier, category) {
     const entries = detailEntries(product);
     const normalized = {};
@@ -936,6 +957,7 @@
       let rule = featureOrigins[id]?.rule || (value !== undefined ? "normalized-feature" : "");
       let sourceLabel = "";
       let sourceValue = "";
+      let matchedEntry = null;
       if (id === "productType") {
         value = product.type || category.title;
         provenance = "mapped";
@@ -945,7 +967,7 @@
         const index = entries.findIndex(entry => !usedEntries.has(entry) && matchesAlias(entry.label, definition));
         if (index >= 0) {
           const entry = entries[index];
-          usedEntries.add(entry);
+          matchedEntry = entry;
           value = entry.value;
           sourceLabel = entry.label;
           sourceValue = entry.value;
@@ -960,7 +982,15 @@
         if (parsed.value === null) return;
         value = parsed.value;
         unitStatus = parsed.unitStatus;
+      } else if (definition.type === "boolean") {
+        const parsed = parseBoolean(value, definition);
+        if (parsed === null) return;
+        value = parsed;
+      } else if (definition.type === "select" || definition.type === "string") {
+        value = cleanSupplierText(value);
+        if (!value) return;
       }
+      if (matchedEntry) usedEntries.add(matchedEntry);
       entries.filter(entry => matchesAlias(entry.label, definition)).forEach(entry => usedEntries.add(entry));
       normalized[id] = value;
       records.push(Object.freeze({ id, label: definition.label, value, unit: definition.unit || "", provenance, rule, sourceLabel, sourceValue, unitStatus }));
@@ -1000,11 +1030,48 @@
     };
   }
 
+  function normalizeDescriptionSections(product) {
+    if (!Array.isArray(product.descriptionSections)) return Object.freeze([]);
+    return Object.freeze(product.descriptionSections.flatMap(section => {
+      if (!section || typeof section !== "object") return [];
+      const title = cleanSupplierText(section.title || "");
+      const paragraphs = (Array.isArray(section.paragraphs)
+        ? section.paragraphs
+        : [section.content || section.text || section.description || ""])
+        .map(cleanSupplierText)
+        .filter(Boolean);
+      if (!title && !paragraphs.length) return [];
+      return [Object.freeze({ title, paragraphs: Object.freeze(paragraphs) })];
+    }));
+  }
+
+  function normalizeDocuments(product) {
+    if (!Array.isArray(product.documents)) return Object.freeze([]);
+    return Object.freeze(product.documents.flatMap(document => {
+      if (!document || typeof document !== "object" || !document.url) return [];
+      return [Object.freeze({ ...document, url: String(document.url) })];
+    }));
+  }
+
+  function normalizeSeo(product) {
+    if (product.seo && typeof product.seo === "object") {
+      const title = cleanSupplierText(product.seo.title || product.seoTitle || product.seo_title || "");
+      const description = cleanSupplierText(product.seo.description || product.seoDescription || product.seo_description || "");
+      return title || description ? Object.freeze({ title, description }) : null;
+    }
+    const title = cleanSupplierText(product.seoTitle || product.seo_title || "");
+    const description = cleanSupplierText(product.seoDescription || product.seo_description || "");
+    return title || description ? Object.freeze({ title, description }) : null;
+  }
+
   function normalizeProduct(rawProduct) {
     const supplier = sourceMappings.supplierFor(rawProduct);
     const mapping = sourceMappings.resolve(rawProduct, supplier);
     const category = taxonomy.byId[mapping.categoryId];
-    if (!supplier || !category) return Object.freeze({ ...rawProduct, normalizationError: !supplier ? "unknown-supplier" : "unmapped-category" });
+    if (!supplier || !category) return Object.freeze({
+      id: String(rawProduct?.id || ""),
+      normalizationError: !supplier ? "unknown-supplier" : "unmapped-category"
+    });
     const enrichedProduct = supplier === "ecosoft" ? enrichEcosoft(rawProduct, mapping) : rawProduct;
     const product = applyEditorialCorrections(enrichedProduct, category);
     const supplierConfig = sourceMappings.suppliers[supplier];
@@ -1016,42 +1083,53 @@
     const images = Object.freeze((Array.isArray(product.images) && product.images.length ? [...product.images] : [product.image].filter(Boolean)).map(resolveImage));
     const tags = Object.freeze([...new Set([...(Array.isArray(product.tags) ? product.tags : []), ...mapping.tags])]);
     const collections = Object.freeze([...new Set([...(Array.isArray(product.collections) ? product.collections : []), ...mapping.collectionIds])]);
-    const amount = Number(product.price);
+    const rawAmount = Number(product.price);
+    const amount = Number.isFinite(rawAmount) && rawAmount > 0 ? rawAmount : null;
+    const rawOldAmount = Number(product.oldPrice ?? product.pricing?.oldAmount);
+    const oldAmount = amount !== null && Number.isFinite(rawOldAmount) && rawOldAmount > amount ? rawOldAmount : null;
+    const explicitPriceStatus = String(product.priceStatus || product.pricing?.priceStatus || "").trim();
+    const priceStatus = amount !== null ? "known" : explicitPriceStatus === "on_request" ? "on_request" : "unknown";
     const inventoryStatus = product.availability || "unknown";
+    const publicationStatus = category.visibility === "service"
+      ? "hidden"
+      : category.status === "active" && category.visibility === "catalog"
+      ? "published"
+      : category.status === "future"
+      ? "draft"
+      : "archived";
+    const title = cleanSupplierText(product.title || product.productName || product.product_name || product.id);
+    const description = String(product.description || product.shortDescription || product.short_description || "").trim();
+    const shortDescription = String(product.shortDescription || product.short_description || description).trim();
+    const fullDescription = String(product.fullDescription || product.full_description || description).trim();
     return Object.freeze({
-      ...product,
-      id: product.id,
-      sku: product.sku,
+      id: String(product.id),
       slug: slugify(product.slug || product.link?.split("/").filter(Boolean).pop() || product.id),
-      model: product.model || product.title,
-      seriesId: mapping.seriesId || product.seriesId || null,
+      sku: String(product.sku || product.code || product.id),
+      title,
+      shortTitle: cleanSupplierText(product.shortTitle || title),
+      model: cleanSupplierText(product.model || title),
       brandId,
       primaryCategoryId: category.id,
       secondaryCategoryIds: Object.freeze(Array.isArray(product.secondaryCategoryIds) ? [...product.secondaryCategoryIds] : []),
-      sectionId: category.sectionId,
-      sourceCategoryId: mapping.sourceCategory,
-      sourceCategoryName: product.primaryCategoryName || product.type || mapping.sourceCategory,
-      primaryCategory: category.id,
-      primaryCategoryName: category.title,
-      categoryGroup: category.parentId,
-      categoryGroupName: taxonomy.byId[category.parentId]?.title || "",
-      normalizedType: category.id,
-      price: amount,
-      pricing: Object.freeze({ amount, currency: product.currency || "UAH" }),
+      seriesId: mapping.seriesId || product.seriesId || null,
+      pricing: Object.freeze({ amount, oldAmount, currency: product.currency || "UAH", priceStatus }),
       inventory: Object.freeze({ status: inventoryStatus }),
-      stockStatus: inventoryStatus,
+      publicationStatus,
       images,
+      description,
+      shortDescription,
+      fullDescription,
+      descriptionSections: normalizeDescriptionSections(product),
       sourceAttributes,
-      attributes: sourceAttributes,
       catalogAttributes: attributeResult.records,
       normalizedAttributes: attributeResult.normalized,
       unmappedAttributes: attributeResult.unmapped,
+      documents: normalizeDocuments(product),
       tags,
       collections,
-      source: Object.freeze({ supplier, sourceId: String(product.id), sourceCategory: mapping.sourceCategory, mappingStatus: mapping.mappingStatus }),
-      compareType: category.id,
       badges: Object.freeze(Array.isArray(product.badges) ? [...product.badges] : []),
-      image: images[0] || ""
+      source: Object.freeze({ supplier, sourceId: String(product.id), sourceCategory: mapping.sourceCategory, mappingStatus: mapping.mappingStatus }),
+      seo: normalizeSeo(product)
     });
   }
 
@@ -1090,10 +1168,17 @@
   const rawTechProducts = Array.isArray(window.sofievkaTechProducts) ? window.sofievkaTechProducts : [];
   const rawHeatingBrandsProducts = Array.isArray(window.sofievkaHeatingBrandsProducts) ? window.sofievkaHeatingBrandsProducts : [];
   const rawBaxiBuderusProducts = Array.isArray(window.sofievkaBaxiBuderusProducts) ? window.sofievkaBaxiBuderusProducts : [];
-  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts, ...rawTechProducts, ...rawHeatingBrandsProducts, ...rawBaxiBuderusProducts]);
+  const rawSupplierProducts = Object.freeze([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts, ...rawTechProducts, ...rawHeatingBrandsProducts, ...rawBaxiBuderusProducts]);
+  const rawProductsById = new Map(rawSupplierProducts.map(product => [String(product.id), product]));
+  const result = normalizeAll(rawSupplierProducts);
 
-  window.sofievkaProductNormalizer = Object.freeze({ slugify, normalizeProduct, normalizeAll });
-  window.sofievkaNormalizedProducts = result.products;
+  window.sofievkaProductNormalizer = Object.freeze({ slugify, normalizeProduct, normalizeAll, parseBoolean });
+  window.sofievkaRawSupplierProducts = rawSupplierProducts;
+  window.sofievkaRawSupplierCatalog = Object.freeze({
+    products: rawSupplierProducts,
+    productById: id => rawProductsById.get(String(id)) || null
+  });
+  window.sofievkaCanonicalProducts = result.products;
   window.sofievkaNormalizationReport = Object.freeze({
     sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length + rawTekkhausProducts.length + rawTechProducts.length + rawHeatingBrandsProducts.length + rawBaxiBuderusProducts.length,
     normalizedCount: result.products.length,
@@ -1109,6 +1194,120 @@
     adjustedSlugs: result.adjustedSlugs,
     normalizationErrors: Object.freeze(result.products.filter(product => product.normalizationError).map(product => Object.freeze({ id: product.id, error: product.normalizationError })))
   });
+})();
+/* Source: catalog/legacy-adapter.js */
+(function () {
+  "use strict";
+
+  function inventoryLabel(status) {
+    return ({
+      in_stock: "В наявності",
+      out_of_stock: "Немає в наявності",
+      preorder: "Передзамовлення",
+      discontinued: "Знято з виробництва",
+      unknown: "Наявність уточнюйте"
+    })[status] || "Наявність уточнюйте";
+  }
+
+  function createLegacyAdapter(options = {}) {
+    const taxonomy = options.taxonomy || window.sofievkaTaxonomy;
+    const brands = Array.isArray(options.brands) ? options.brands : [];
+    const rawCatalog = options.rawCatalog || null;
+    if (!taxonomy) throw new Error("LegacyAdapter requires catalogue taxonomy.");
+    const brandById = Object.freeze(Object.fromEntries(brands.map(brand => [brand.id, brand])));
+
+    function technicalDetails(canonical, raw) {
+      if (Array.isArray(raw.technicalDetails)) return raw.technicalDetails;
+      return Object.freeze([
+        ...(canonical.catalogAttributes || []).filter(attribute => attribute.id !== "productType").map(attribute => Object.freeze([attribute.label, `${attribute.value}${attribute.unit ? ` ${attribute.unit}` : ""}`])),
+        ...(canonical.unmappedAttributes || []).map(attribute => Object.freeze([attribute.label, attribute.value]))
+      ]);
+    }
+
+    function adaptProduct(canonical, rawProduct) {
+      const resolvedRaw = rawProduct === undefined ? rawCatalog?.productById?.(canonical.id) : rawProduct;
+      const raw = resolvedRaw && typeof resolvedRaw === "object" ? resolvedRaw : {};
+      const category = taxonomy.byId[canonical.primaryCategoryId];
+      const parent = taxonomy.byId[category?.parentId];
+      const brand = brandById[canonical.brandId];
+      const status = canonical.inventory?.status || "unknown";
+      const legacyPrice = canonical.pricing?.amount ?? (Number.isFinite(Number(raw.price)) ? Number(raw.price) : 0);
+      const legacyOldPrice = canonical.pricing?.oldAmount ?? (Number.isFinite(Number(raw.oldPrice)) && Number(raw.oldPrice) > 0 ? Number(raw.oldPrice) : undefined);
+      const sourceCategoryName = raw.primaryCategoryName || raw.type || canonical.source?.sourceCategory || "";
+
+      return Object.freeze({
+        // Supplier fields remain available only in the temporary local projection.
+        // Supabase mode passes no raw object and therefore cannot leak private evidence.
+        ...raw,
+        ...canonical,
+        price: legacyPrice,
+        oldPrice: legacyOldPrice,
+        currency: canonical.pricing?.currency || "UAH",
+        availability: status,
+        availabilityLabel: inventoryLabel(status),
+        stockStatus: status,
+        image: canonical.images?.[0] || "",
+        brand: brand?.name || raw.brand || canonical.brandId,
+        primaryCategory: canonical.primaryCategoryId,
+        primaryCategoryName: category?.title || raw.primaryCategoryName || "",
+        category: category?.sectionId || raw.category || "",
+        categoryGroup: category?.parentId || "",
+        categoryGroupName: parent?.title || "",
+        sectionId: category?.sectionId || "",
+        sourceCategoryId: canonical.source?.sourceCategory || "",
+        sourceCategoryName,
+        type: canonical.normalizedAttributes?.productType || raw.type || category?.title || "",
+        typeSlug: raw.typeSlug || canonical.source?.sourceCategory || "",
+        normalizedType: canonical.primaryCategoryId,
+        compareType: canonical.primaryCategoryId,
+        attributes: canonical.sourceAttributes || [],
+        features: raw.features && typeof raw.features === "object" ? raw.features : (canonical.normalizedAttributes || {}),
+        technicalDetails: technicalDetails(canonical, raw),
+        variants: Object.freeze(Array.isArray(raw.variants) ? [...raw.variants] : []),
+        compatibleProducts: Object.freeze(Array.isArray(raw.compatibleProducts) ? [...raw.compatibleProducts] : []),
+        compatibleConsumables: Object.freeze(Array.isArray(raw.compatibleConsumables) ? [...raw.compatibleConsumables] : []),
+        instructions: Object.freeze(Array.isArray(raw.instructions) ? [...raw.instructions] : [])
+      });
+    }
+
+    function adaptProducts(products = [], adaptOptions = {}) {
+      const useRawCatalog = adaptOptions.useRawCatalog !== false;
+      return Object.freeze(products.map(product => adaptProduct(product, useRawCatalog ? undefined : {})));
+    }
+
+    return Object.freeze({ inventoryLabel, adaptProduct, adaptProducts });
+  }
+
+  function installSnapshot(snapshot, options = {}) {
+    if (!snapshot || !Array.isArray(snapshot.products) || !Array.isArray(snapshot.brands)) {
+      throw new Error("LegacyAdapter received an invalid CatalogSnapshot.");
+    }
+    const adapter = createLegacyAdapter({
+      taxonomy: window.sofievkaTaxonomy,
+      brands: snapshot.brands,
+      rawCatalog: options.useRawCatalog === false ? null : window.sofievkaRawSupplierCatalog
+    });
+    const products = adapter.adaptProducts(snapshot.products, options);
+    window.sofievkaCanonicalProducts = snapshot.products;
+    window.sofievkaBrands = snapshot.brands;
+    window.sofievkaLegacyProducts = products;
+    window.sofievkaNormalizedProducts = products;
+    window.sofievkaProductLegacyAdapter = Object.freeze({
+      ...adapter,
+      createLegacyAdapter,
+      installSnapshot
+    });
+    return products;
+  }
+
+  const localSnapshot = Object.freeze({
+    products: Array.isArray(window.sofievkaCanonicalProducts) ? window.sofievkaCanonicalProducts : [],
+    brands: Array.isArray(window.sofievkaBrands) ? window.sofievkaBrands : []
+  });
+  if (!window.sofievkaTaxonomy || !window.sofievkaRawSupplierCatalog) {
+    throw new Error("Canonical catalog inputs are incomplete.");
+  }
+  installSnapshot(localSnapshot, { useRawCatalog: true });
 })();
 /* Source: catalog/routing.js */
 (function () {
@@ -1318,130 +1517,170 @@
 (function () {
   "use strict";
 
-  const taxonomy = window.sofievkaTaxonomy;
+  const baseTaxonomy = window.sofievkaTaxonomy;
   const attributeSchema = window.sofievkaAttributeSchema;
   const sourceMappings = window.sofievkaSourceMappings;
   const routing = window.sofievkaCatalogRouting;
-  const products = Array.isArray(window.sofievkaNormalizedProducts) ? window.sofievkaNormalizedProducts : [];
-  const brands = Array.isArray(window.sofievkaBrands) ? window.sofievkaBrands : [];
-  if (!taxonomy || !attributeSchema || !sourceMappings || !routing) throw new Error("Central catalog modules are incomplete.");
+  if (!baseTaxonomy || !attributeSchema || !sourceMappings || !routing) throw new Error("Central catalog modules are incomplete.");
 
-  const catalogState = Object.freeze({
-    id: "all",
-    slug: "",
-    name: "Усі товари",
-    title: "Каталог обладнання",
-    shortTitle: "Увесь каталог",
-    description: "Інженерне обладнання для опалення, водопостачання, водоочищення, автоматизації, клімату та господарства.",
-    menuDescription: "Усі товари та фільтри в одному каталозі",
-    order: 0,
-    status: "state",
-    metaTitle: "Каталог інженерного обладнання | ТД «Софіївка»"
-  });
-  const sections = taxonomy.businessSections;
-  const categories = taxonomy.productCategories;
-  const sectionById = Object.freeze({ all: catalogState, ...Object.fromEntries(sections.map(section => [section.id, section])) });
-  const categoryById = taxonomy.byId;
-  const attributeDefinitions = attributeSchema.definitions;
-  const catalogProducts = Object.freeze(products.filter(product => {
-    const category = categoryById[product.primaryCategoryId];
-    return category?.status === "active" && category?.visibility === "catalog";
-  }));
-  const serviceItems = Object.freeze(products.filter(product => categoryById[product.primaryCategoryId]?.visibility === "service"));
-
-  function sectionUrl(sectionId = "all") {
-    return sectionId === "all" ? routing.rootPath : routing.getCategoryPath(sectionId);
+  function createTaxonomy(nodesInput) {
+    const nodes = Object.freeze((Array.isArray(nodesInput) ? nodesInput : []).map(item => Object.freeze(item)));
+    const byId = Object.freeze(Object.fromEntries(nodes.map(item => [item.id, item])));
+    const childrenOf = parentId => nodes.filter(item => item.parentId === parentId).sort((a, b) => a.order - b.order);
+    const descendantsOf = parentId => {
+      const result = [];
+      const visit = id => childrenOf(id).forEach(child => { result.push(child); visit(child.id); });
+      visit(parentId);
+      return result;
+    };
+    return Object.freeze({
+      nodes,
+      byId,
+      businessSections: Object.freeze(nodes.filter(item => item.level === 1).sort((a, b) => a.order - b.order)),
+      productCategories: Object.freeze(nodes.filter(item => item.level > 1).sort((a, b) => a.order - b.order)),
+      childrenOf,
+      descendantsOf
+    });
   }
 
-  function categoryUrl(categoryId) {
-    return routing.getCategoryPath(categoryId);
+  function installCatalogSnapshot(snapshotOverride = null, options = {}) {
+    let canonicalProducts = snapshotOverride?.products || window.sofievkaCanonicalProducts || [];
+    let brands = snapshotOverride?.brands || window.sofievkaBrands || [];
+    let products = window.sofievkaNormalizedProducts || [];
+    if (snapshotOverride) {
+      products = window.sofievkaProductLegacyAdapter.installSnapshot(snapshotOverride, options);
+      canonicalProducts = snapshotOverride.products;
+      brands = snapshotOverride.brands;
+    }
+    const taxonomy = snapshotOverride ? createTaxonomy(snapshotOverride.categories) : baseTaxonomy;
+    const attributeDefinitions = snapshotOverride?.attributeDefinitions || attributeSchema.definitions;
+    const categoryCounts = Object.freeze({ ...(snapshotOverride?.categoryCounts || {}) });
+    const brandCounts = Object.freeze({ ...(snapshotOverride?.brandCounts || {}) });
+    const totalProducts = Number(snapshotOverride?.totalProducts ?? products.length);
+
+    const catalogState = Object.freeze({
+      id: "all",
+      slug: "",
+      name: "Усі товари",
+      title: "Каталог обладнання",
+      shortTitle: "Увесь каталог",
+      description: "Інженерне обладнання для опалення, водопостачання, водоочищення, автоматизації, клімату та господарства.",
+      menuDescription: "Усі товари та фільтри в одному каталозі",
+      order: 0,
+      status: "state",
+      metaTitle: "Каталог інженерного обладнання | ТД «Софіївка»"
+    });
+    const sections = taxonomy.businessSections;
+    const categories = taxonomy.productCategories;
+    const sectionById = Object.freeze({ all: catalogState, ...Object.fromEntries(sections.map(section => [section.id, section])) });
+    const categoryById = taxonomy.byId;
+    const catalogProducts = Object.freeze(products.filter(product => {
+      const category = categoryById[product.primaryCategoryId];
+      return product.publicationStatus === "published" && category?.status === "active" && category?.visibility === "catalog";
+    }));
+    const serviceItems = Object.freeze(products.filter(product => categoryById[product.primaryCategoryId]?.visibility === "service"));
+
+    function sectionUrl(sectionId = "all") { return sectionId === "all" ? routing.rootPath : routing.getCategoryPath(sectionId); }
+    function categoryUrl(categoryId) { return routing.getCategoryPath(categoryId); }
+    function brandUrl(brandId) { return `/brands/${encodeURIComponent(brandId)}`; }
+    function descendantIds(categoryId) { return new Set([categoryId, ...taxonomy.descendantsOf(categoryId).map(category => category.id)]); }
+    function productsForSection(sectionId) { return sectionId === "all" ? [...catalogProducts] : catalogProducts.filter(product => product.sectionId === sectionId); }
+    function productsForCategory(categoryId) {
+      const ids = descendantIds(categoryId);
+      return catalogProducts.filter(product => ids.has(product.primaryCategoryId));
+    }
+    function countForCategory(categoryId) { return Number(categoryCounts[categoryId] ?? productsForCategory(categoryId).length); }
+    function countForSection(sectionId) { return sectionId === "all" ? totalProducts : countForCategory(sectionId); }
+    function countForBrand(brandId) { return Number(brandCounts[brandId] ?? catalogProducts.filter(product => product.brandId === brandId).length); }
+    function availableCategories(sectionId) {
+      return taxonomy.childrenOf(sectionId).filter(category => category.status === "active" && countForCategory(category.id) > 0);
+    }
+    const activeSections = Object.freeze(sections.filter(section => section.status === "active" && countForSection(section.id) > 0));
+    const navigationSections = Object.freeze([catalogState, ...activeSections]);
+
+    function resolveRoute(pathname = location.pathname, search = location.search, pageName = "catalog") {
+      return routing.resolveLocation(pathname, search, pageName);
+    }
+    function valueLabel(definition, value) {
+      if (definition?.type === "boolean") return value === true || value === "true" || value === "yes" ? "Так" : "Ні";
+      if (attributeSchema.valueLabels[value]) return attributeSchema.valueLabels[value];
+      if (definition?.type === "number") return `${new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 4 }).format(Number(value))} ${definition.unit}`;
+      return String(value);
+    }
+    function filterValue(definition, value) {
+      if (definition?.type !== "boolean") return value;
+      return definition.legacyValues?.[String(value)] || String(value);
+    }
+    function compareProductsByPrice(firstProduct, secondProduct, direction = "asc") {
+      const first = Number.isFinite(firstProduct?.pricing?.amount) && firstProduct.pricing.amount > 0 ? firstProduct.pricing.amount : null;
+      const second = Number.isFinite(secondProduct?.pricing?.amount) && secondProduct.pricing.amount > 0 ? secondProduct.pricing.amount : null;
+      if (first === null || second === null) return first === null && second === null ? 0 : first === null ? 1 : -1;
+      return direction === "desc" ? second - first : first - second;
+    }
+
+    const snapshot = Object.freeze(snapshotOverride || {
+      version: "catalog-contract-v1",
+      products: canonicalProducts,
+      categories: taxonomy.nodes,
+      brands,
+      attributeDefinitions
+    });
+    window.sofievkaCatalogSnapshot = snapshot;
+
+    const waterCategories = taxonomy.descendantsOf("water-treatment").filter(category => category.legacyGroup);
+    const waterGroups = [...new Set(waterCategories.map(category => category.legacyGroup))].map(groupId => Object.freeze({
+      slug: groupId,
+      name: waterCategories.find(category => category.legacyGroup === groupId)?.legacyGroupTitle || groupId,
+      children: Object.freeze(waterCategories.filter(category => category.legacyGroup === groupId).map(category => Object.freeze({ slug: category.slug, name: category.title })))
+    }));
+    const waterCategoryBySlug = Object.freeze(Object.fromEntries(waterCategories.map(category => [category.slug, Object.freeze({
+      slug: category.slug,
+      name: category.title,
+      groupSlug: category.legacyGroup,
+      groupName: category.legacyGroupTitle
+    })])));
+    const waterProducts = Object.freeze(catalogProducts.filter(product => product.sectionId === "water-treatment"));
+    const distribution = Object.freeze(Object.fromEntries(waterCategories.map(category => [category.id, productsForCategory(category.id).length])));
+    window.sofievkaWaterCatalog = Object.freeze({
+      taxonomy: Object.freeze(waterGroups),
+      categoryBySlug: waterCategoryBySlug,
+      supplierMappings: sourceMappings.supplierLabelMappings.ecosoft,
+      products: waterProducts,
+      report: Object.freeze({
+        sourceCount: window.sofievkaNormalizationReport?.waterSourceCount || waterProducts.length,
+        normalizedCount: waterProducts.length,
+        uncategorized: Object.freeze(waterProducts.filter(product => !categoryById[product.primaryCategoryId]).map(product => product.id)),
+        duplicateIds: window.sofievkaNormalizationReport?.duplicateInputIds || Object.freeze([]),
+        ambiguous: Object.freeze([]),
+        distribution
+      })
+    });
+    window.sofievkaProducts = waterProducts;
+
+    const catalog = Object.freeze({
+      catalogState, sections, activeSections, navigationSections, categories, taxonomy,
+      sectionById, categoryById, attributeDefinitions, attributeSchema, sourceMappings,
+      snapshot, canonicalProducts, products, catalogProducts, serviceItems, brands,
+      totalProducts, categoryCounts, brandCounts,
+      slugify: window.sofievkaProductNormalizer.slugify,
+      sectionUrl, categoryUrl,
+      getCategoryPath: routing.getCategoryPath,
+      getCategoryAncestors: routing.getCategoryAncestors,
+      brandUrl, productsForSection, productsForCategory, countForSection, countForCategory, countForBrand, availableCategories,
+      resolveRoute, valueLabel, filterValue, compareProductsByPrice
+    });
+    window.sofievkaCatalog = catalog;
+    return catalog;
   }
 
-  function brandUrl(brandId) { return `/brands/${encodeURIComponent(brandId)}`; }
-  function descendantIds(categoryId) { return new Set([categoryId, ...taxonomy.descendantsOf(categoryId).map(category => category.id)]); }
-  function productsForSection(sectionId) { return sectionId === "all" ? [...catalogProducts] : catalogProducts.filter(product => product.sectionId === sectionId); }
-  function productsForCategory(categoryId) {
-    const ids = descendantIds(categoryId);
-    return catalogProducts.filter(product => ids.has(product.primaryCategoryId));
-  }
-  function availableCategories(sectionId) {
-    return taxonomy.childrenOf(sectionId).filter(category => category.status === "active" && productsForCategory(category.id).length > 0);
-  }
-  const activeSections = Object.freeze(sections.filter(section => section.status === "active" && productsForSection(section.id).length > 0));
-  const navigationSections = Object.freeze([catalogState, ...activeSections]);
-
-  function resolveRoute(pathname = location.pathname, search = location.search, pageName = "catalog") {
-    return routing.resolveLocation(pathname, search, pageName);
-  }
-
-  function valueLabel(definition, value) {
-    if (attributeSchema.valueLabels[value]) return attributeSchema.valueLabels[value];
-    if (definition?.type === "number") return `${new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 4 }).format(Number(value))} ${definition.unit}`;
-    return String(value);
-  }
-
-  const waterCategories = taxonomy.descendantsOf("water-treatment").filter(category => category.legacyGroup);
-  const waterGroups = [...new Set(waterCategories.map(category => category.legacyGroup))].map(groupId => Object.freeze({
-    slug: groupId,
-    name: waterCategories.find(category => category.legacyGroup === groupId)?.legacyGroupTitle || groupId,
-    children: Object.freeze(waterCategories.filter(category => category.legacyGroup === groupId).map(category => Object.freeze({ slug: category.slug, name: category.title })))
-  }));
-  const waterCategoryBySlug = Object.freeze(Object.fromEntries(waterCategories.map(category => [category.slug, Object.freeze({
-    slug: category.slug,
-    name: category.title,
-    groupSlug: category.legacyGroup,
-    groupName: category.legacyGroupTitle
-  })])));
-  const waterProducts = Object.freeze(catalogProducts.filter(product => product.sectionId === "water-treatment"));
-  const distribution = Object.freeze(Object.fromEntries(waterCategories.map(category => [category.id, productsForCategory(category.id).length])));
-  window.sofievkaWaterCatalog = Object.freeze({
-    taxonomy: Object.freeze(waterGroups),
-    categoryBySlug: waterCategoryBySlug,
-    supplierMappings: sourceMappings.supplierLabelMappings.ecosoft,
-    products: waterProducts,
-    report: Object.freeze({
-      sourceCount: window.sofievkaNormalizationReport?.waterSourceCount || waterProducts.length,
-      normalizedCount: waterProducts.length,
-      uncategorized: Object.freeze(waterProducts.filter(product => !categoryById[product.primaryCategoryId]).map(product => product.id)),
-      duplicateIds: window.sofievkaNormalizationReport?.duplicateInputIds || Object.freeze([]),
-      ambiguous: Object.freeze([]),
-      distribution
-    })
-  });
-  window.sofievkaProducts = waterProducts;
-
-  window.sofievkaCatalog = Object.freeze({
-    catalogState,
-    sections,
-    activeSections,
-    navigationSections,
-    categories,
-    taxonomy,
-    sectionById,
-    categoryById,
-    attributeDefinitions,
-    attributeSchema,
-    sourceMappings,
-    products,
-    catalogProducts,
-    serviceItems,
-    brands,
-    slugify: window.sofievkaProductNormalizer.slugify,
-    sectionUrl,
-    categoryUrl,
-    getCategoryPath: routing.getCategoryPath,
-    getCategoryAncestors: routing.getCategoryAncestors,
-    brandUrl,
-    productsForSection,
-    productsForCategory,
-    availableCategories,
-    resolveRoute,
-    valueLabel
-  });
+  window.sofievkaInstallCatalogSnapshot = installCatalogSnapshot;
+  installCatalogSnapshot();
 })();
 /* Source: catalog/pdp-engine.js */
 (function () {
   "use strict";
+
+  function installPdp() {
 
   const catalog = window.sofievkaCatalog;
   if (!catalog) throw new Error("Catalog facade must load before the PDP engine.");
@@ -1607,11 +1846,18 @@
     return !new Set(["drinking-system-cartridges", "mainline-cartridges", "filter-media"]).has(product.primaryCategoryId);
   }
 
-  window.sofievkaPdp = Object.freeze({ keySpecs, specificationGroups, images, documents, model, purchase, relatedProducts, brand, installationRelevant });
+    window.sofievkaPdp = Object.freeze({ keySpecs, specificationGroups, images, documents, model, purchase, relatedProducts, brand, installationRelevant });
+    return window.sofievkaPdp;
+  }
+
+  window.sofievkaInstallPdp = installPdp;
+  installPdp();
 })();
 /* Source: catalog/search-engine.js */
 (function () {
   "use strict";
+
+  function installCatalogSearch() {
 
   const catalog = window.sofievkaCatalog;
   if (!catalog) throw new Error("Catalog search requires the centralized catalog facade.");
@@ -1969,6 +2215,206 @@
     aliases: CATEGORY_ALIASES,
     index: Object.freeze({ products: productIndex, brands: brandIndex, categories: categoryIndex, series: seriesIndex })
   });
-  window.sofievkaCatalogSearch = api;
-  window.catalogSearch = search;
+    window.sofievkaCatalogSearch = api;
+    window.catalogSearch = search;
+    return api;
+  }
+
+  window.sofievkaInstallCatalogSearch = installCatalogSearch;
+  installCatalogSearch();
+})();
+/* Source: catalog/validate-catalog.js */
+(function () {
+  "use strict";
+
+  function duplicateValues(items, selector) {
+    const counts = new Map();
+    items.forEach(item => {
+      const value = selector(item);
+      if (value !== undefined && value !== null && value !== "") counts.set(String(value), (counts.get(String(value)) || 0) + 1);
+    });
+    return [...counts].filter(([, count]) => count > 1).map(([value, count]) => ({ value, count }));
+  }
+
+  function validateCatalog(catalog = window.sofievkaCatalog) {
+    if (!catalog) throw new Error("sofievkaCatalog is not initialized.");
+    const errors = [];
+    const warnings = [];
+    const add = (target, code, items, message) => {
+      if (items.length) target.push(Object.freeze({ code, count: items.length, message, items: Object.freeze(items) }));
+    };
+    const products = catalog.canonicalProducts || catalog.snapshot?.products || catalog.products;
+    const legacyProducts = catalog.products;
+    const brands = catalog.brands;
+    const inventoryStatuses = new Set(["in_stock", "out_of_stock", "preorder", "discontinued", "unknown"]);
+    const publicationStatuses = new Set(["published", "draft", "hidden", "archived"]);
+    const priceStatuses = new Set(["known", "on_request", "unknown"]);
+    const canonicalFields = new Set([
+      "id", "slug", "sku", "title", "shortTitle", "model",
+      "brandId", "primaryCategoryId", "secondaryCategoryIds", "seriesId",
+      "pricing", "inventory", "publicationStatus", "images",
+      "description", "shortDescription", "fullDescription", "descriptionSections",
+      "normalizedAttributes", "catalogAttributes", "sourceAttributes", "unmappedAttributes",
+      "documents", "tags", "collections", "badges", "source", "seo", "normalizationError"
+    ]);
+
+    add(errors, "duplicate-product-id", duplicateValues(products, product => product.id), "Product IDs must be unique.");
+    add(errors, "duplicate-sku", duplicateValues(products, product => product.sku), "SKU values must be unique.");
+    add(errors, "duplicate-product-slug", duplicateValues(products, product => product.slug), "Product slugs must be unique.");
+    add(errors, "unknown-brand", products.filter(product => !brands.some(brand => brand.id === product.brandId)).map(product => ({ id: product.id, brandId: product.brandId })), "Every product must reference the brand registry.");
+    add(errors, "unknown-category", products.filter(product => !catalog.categoryById[product.primaryCategoryId]).map(product => ({ id: product.id, primaryCategoryId: product.primaryCategoryId })), "Every product must reference the category registry.");
+    add(errors, "missing-primary-category", products.filter(product => !product.primaryCategoryId).map(product => ({ id: product.id })), "Primary category is required.");
+    add(errors, "invalid-price", products.filter(product => {
+      const pricing = product.pricing;
+      if (!pricing || !pricing.currency || !priceStatuses.has(pricing.priceStatus)) return true;
+      if (pricing.amount !== null && (!Number.isFinite(pricing.amount) || pricing.amount <= 0)) return true;
+      if (pricing.priceStatus === "known" && pricing.amount === null) return true;
+      if (pricing.priceStatus !== "known" && pricing.amount !== null) return true;
+      if (pricing.oldAmount !== null && (!Number.isFinite(pricing.oldAmount) || pricing.amount === null || pricing.oldAmount <= pricing.amount)) return true;
+      return false;
+    }).map(product => ({ id: product.id, pricing: product.pricing })), "Canonical pricing must use nullable positive amounts and a consistent price status.");
+    add(errors, "invalid-inventory-status", products.filter(product => !inventoryStatuses.has(product.inventory?.status)).map(product => ({ id: product.id, status: product.inventory?.status })), "Inventory status is outside the supported enum.");
+    add(errors, "invalid-publication-status", products.filter(product => !publicationStatuses.has(product.publicationStatus)).map(product => ({ id: product.id, publicationStatus: product.publicationStatus })), "Publication status is outside the supported enum.");
+    add(errors, "invalid-attribute-value", products.flatMap(product => product.catalogAttributes.filter(attribute => {
+      const definition = catalog.attributeDefinitions[attribute.id];
+      if (!definition) return true;
+      if (definition.type === "number") return !Number.isFinite(attribute.value);
+      if (definition.type === "boolean") return typeof attribute.value !== "boolean";
+      return typeof attribute.value !== "string";
+    }).map(attribute => ({ id: product.id, attributeId: attribute.id, value: attribute.value }))), "Normalized attributes must match the centralized schema.");
+    add(errors, "invalid-normalized-attribute-reference", products.flatMap(product => Object.keys(product.normalizedAttributes || {}).filter(id => !catalog.attributeDefinitions[id]).map(attributeId => ({ id: product.id, attributeId }))), "Every normalized attribute must reference the centralized schema.");
+    add(errors, "invalid-facet-id", catalog.taxonomy.nodes.flatMap(category => (category.facetIds || []).filter(id => !catalog.attributeDefinitions[id]).map(attributeId => ({ categoryId: category.id, attributeId }))), "Every category facet must reference the centralized attribute schema.");
+    add(errors, "invalid-image-structure", products.filter(product => !Array.isArray(product.images) || product.images.some(image => typeof image !== "string" || !image.trim())).map(product => ({ id: product.id })), "Images must be a list of non-empty URL or asset-path strings.");
+    add(errors, "invalid-document-structure", products.filter(product => !Array.isArray(product.documents) || product.documents.some(document => !document || typeof document !== "object" || typeof document.url !== "string" || !/^(?:https?:\/\/|\/)/.test(document.url))).map(product => ({ id: product.id })), "Documents must contain valid URL-bearing objects.");
+    add(errors, "canonical-field-leak", products.flatMap(product => Object.keys(product).filter(field => !canonicalFields.has(field)).map(field => ({ id: product.id, field }))), "Canonical products must not contain supplier-specific top-level fields.");
+    add(errors, "legacy-adapter-count-mismatch", legacyProducts.length === products.length ? [] : [{ canonical: products.length, legacy: legacyProducts.length }], "Legacy adapter must preserve the canonical product count.");
+    add(errors, "legacy-adapter-id-mismatch", products.filter((product, index) => legacyProducts[index]?.id !== product.id).map((product, index) => ({ index, canonicalId: product.id, legacyId: legacyProducts[index]?.id })), "Legacy adapter must preserve product order and public IDs.");
+    add(errors, "products-in-hidden-category", products.filter(product => ["hidden", "future"].includes(catalog.categoryById[product.primaryCategoryId]?.status)).map(product => ({ id: product.id, primaryCategoryId: product.primaryCategoryId })), "Products cannot reference hidden or future categories.");
+    add(errors, "source-mapping-target-missing", Object.entries(catalog.sourceMappings.categoryMappings).flatMap(([supplier, mappings]) => Object.entries(mappings).filter(([, mapping]) => mapping.categoryId && !catalog.categoryById[mapping.categoryId]).map(([sourceCategory, mapping]) => ({ supplier, sourceCategory, categoryId: mapping.categoryId }))), "Every explicit source mapping must target the category registry.");
+    add(errors, "normalization-error", products.filter(product => product.normalizationError).map(product => ({ id: product.id, error: product.normalizationError })), "All source products must normalize successfully.");
+
+    const rawSourceCategories = new Set(products.map(product => `${product.source?.supplier}:${product.source?.sourceCategory}`));
+    const configuredSourceCategories = new Set(Object.entries(catalog.sourceMappings.categoryMappings).flatMap(([supplier, mappings]) => Object.keys(mappings).map(sourceCategory => `${supplier}:${sourceCategory}`)));
+    add(errors, "unmapped-source-category", [...rawSourceCategories].filter(value => !configuredSourceCategories.has(value)).map(value => ({ source: value })), "Every source category must have an explicit mapping.");
+
+    const activeNodes = catalog.taxonomy.nodes.filter(category => category.status === "active");
+    add(warnings, "empty-active-category", activeNodes.filter(category => catalog.productsForCategory(category.id).length === 0).map(category => ({ categoryId: category.id, title: category.title })), "Active categories should contain products; future sections are excluded.");
+    add(warnings, "brand-without-products", brands.filter(brand => brand.type === "catalog" && !products.some(product => product.brandId === brand.id)).map(brand => ({ brandId: brand.id, name: brand.name })), "Catalog brand has no products in the current feeds.");
+    add(warnings, "mapping-needs-review", products.filter(product => product.source?.mappingStatus === "review").map(product => ({ id: product.id, sourceCategory: product.source.sourceCategory, categoryId: product.primaryCategoryId })), "Compatibility mapping needs business review.");
+    add(warnings, "unmapped-source-attribute", products.filter(product => product.unmappedAttributes.length).map(product => ({ id: product.id, count: product.unmappedAttributes.length, labels: [...new Set(product.unmappedAttributes.map(attribute => attribute.label))] })), "Supplier attributes remain preserved but are not part of the filter schema.");
+    add(warnings, "non-filterable-category-facet", catalog.taxonomy.nodes.flatMap(category => (category.facetIds || []).filter(id => catalog.attributeDefinitions[id] && !catalog.attributeDefinitions[id].filterable).map(attributeId => ({ categoryId: category.id, attributeId }))), "Non-filterable definitions are ignored even when listed in category facets.");
+
+    const provenance = products.flatMap(product => product.catalogAttributes).reduce((counts, attribute) => {
+      counts[attribute.provenance] = (counts[attribute.provenance] || 0) + 1;
+      return counts;
+    }, {});
+    return Object.freeze({
+      valid: errors.length === 0,
+      summary: Object.freeze({
+        products: products.length,
+        brands: brands.length,
+        categories: catalog.taxonomy.nodes.length,
+        sourceMappings: configuredSourceCategories.size,
+        errors: errors.reduce((sum, group) => sum + group.count, 0),
+        warnings: warnings.reduce((sum, group) => sum + group.count, 0),
+        attributeProvenance: Object.freeze(provenance)
+      }),
+      errors: Object.freeze(errors),
+      warnings: Object.freeze(warnings)
+    });
+  }
+
+  window.sofievkaCatalogValidation = Object.freeze({ validateCatalog });
+})();
+/* Source: catalog/data-source-bootstrap.js */
+(function () {
+  "use strict";
+
+  const query = typeof location === "object" ? new URLSearchParams(location.search) : null;
+  const runtimeConfig = window.SOFIEVKA_CATALOG_CONFIG || {};
+  const configuredSource = runtimeConfig.source == null || runtimeConfig.source === "" ? "local" : String(runtimeConfig.source);
+  const override = query?.get("dataSource") || "";
+  const localHost = typeof location === "object" && ["127.0.0.1", "localhost"].includes(location.hostname);
+  const explicitlyEnabled = window.SOFIEVKA_DEV_CATALOG_SOURCE === true;
+  const debugOverride = localHost && explicitlyEnabled && ["local", "supabase", "supabase-full"].includes(override) ? override : "";
+  const mode = debugOverride || configuredSource;
+  const invalidSource = !["local", "supabase", "supabase-full"].includes(mode);
+  const requested = mode === "supabase" || mode === "supabase-full";
+  const setDocumentDataSource = value => {
+    if (typeof document === "object" && document.documentElement) {
+      document.documentElement.dataset.catalogDataSource = value;
+    }
+  };
+
+  window.sofievkaCatalogRemoteRequested = requested;
+  window.sofievkaCatalogDataSource = invalidSource ? "configuration-error" : requested ? `${mode}-loading` : "local";
+  setDocumentDataSource(window.sofievkaCatalogDataSource);
+  const startup = invalidSource
+    ? Promise.reject(new Error(`Unsupported catalogue source: ${mode}`))
+    : requested
+      ? (mode === "supabase-full" ? loadSupabaseSnapshot() : loadSupabaseScoped())
+      : Promise.resolve(window.sofievkaCatalogSnapshot);
+  window.sofievkaCatalogDataReady = startup.catch(error => {
+    window.sofievkaCatalogStartupError = error;
+    window.sofievkaCatalogDataSource = "configuration-error";
+    setDocumentDataSource("configuration-error");
+    throw error;
+  });
+
+  async function createSource() {
+    const configuredSupabase = runtimeConfig.supabase || {};
+    const legacySupabase = window.SOFIEVKA_SUPABASE_CONFIG || {};
+    const config = {
+      url: configuredSupabase.url || runtimeConfig.supabaseUrl || legacySupabase.url,
+      publishableKey: configuredSupabase.publishableKey || runtimeConfig.supabasePublishableKey || legacySupabase.publishableKey
+    };
+    if (!config.url || !config.publishableKey) {
+      throw new Error("Supabase catalogue source requires SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY.");
+    }
+    const [{ createSofievkaSupabasePublicClient }, { SupabaseCatalogDataSource }] = await Promise.all([
+      import("/lib/supabase-client.mjs"), import("/catalog/supabase-data-source.mjs")
+    ]);
+    return new SupabaseCatalogDataSource({ client: createSofievkaSupabasePublicClient(config), cacheTtlMs: 300_000 });
+  }
+
+  async function loadSupabaseScoped() {
+    const source = await createSource();
+    window.sofievkaCatalogScopedDataSource = source;
+    window.sofievkaCatalogDataSource = "supabase-scoped-loading";
+    const bootstrap = await source.loadBootstrap();
+    const snapshot = Object.freeze({
+      version: bootstrap.version,
+      products: Object.freeze([]),
+      categories: bootstrap.categories,
+      brands: bootstrap.brands,
+      attributeDefinitions: bootstrap.attributeDefinitions,
+      totalProducts: bootstrap.totalProducts,
+      categoryCounts: bootstrap.categoryCounts,
+      brandCounts: bootstrap.brandCounts,
+      collections: bootstrap.collections
+    });
+    if (typeof window.sofievkaInstallCatalogSnapshot !== "function") throw new Error("Catalog runtime installer is unavailable.");
+    window.sofievkaInstallCatalogSnapshot(snapshot, { useRawCatalog: false });
+    window.sofievkaInstallPdp?.();
+    window.sofievkaInstallCatalogSearch?.();
+    window.sofievkaCatalogDataSource = "supabase-scoped";
+    window.sofievkaCatalogDataSourceMetrics = source.lastMetrics;
+    setDocumentDataSource("supabase-scoped");
+    return snapshot;
+  }
+
+  async function loadSupabaseSnapshot() {
+    const source = await createSource();
+    const snapshot = await source.loadCatalogSnapshot();
+    if (typeof window.sofievkaInstallCatalogSnapshot !== "function") {
+      throw new Error("Catalog runtime installer is unavailable.");
+    }
+    window.sofievkaInstallCatalogSnapshot(snapshot, { useRawCatalog: false });
+    window.sofievkaInstallPdp?.();
+    window.sofievkaInstallCatalogSearch?.();
+    window.sofievkaCatalogDataSource = "supabase-full-debug";
+    window.sofievkaCatalogDataSourceMetrics = source.lastMetrics;
+    setDocumentDataSource("supabase-full-debug");
+    return snapshot;
+  }
 })();

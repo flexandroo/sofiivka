@@ -204,6 +204,18 @@
     return Number.isFinite(number) ? { value: Number(number.toFixed(4)), unitStatus: "normalized" } : { value: null, unitStatus: "malformed" };
   }
 
+  function parseBoolean(value, definition) {
+    if (typeof value === "boolean") return value;
+    if (value === 1) return true;
+    if (value === 0) return false;
+    const normalized = String(value ?? "").toLocaleLowerCase("uk-UA").replace(/\s+/g, " ").trim();
+    const trueValues = new Set(["yes", "true", "1", "так", "да", "є", ...(definition.booleanValues?.true || [])]);
+    const falseValues = new Set(["no", "false", "0", "ні", "нет", "немає", "відсутній", "відсутнє", ...(definition.booleanValues?.false || [])]);
+    if (trueValues.has(normalized)) return true;
+    if (falseValues.has(normalized)) return false;
+    return null;
+  }
+
   function normalizeAttributes(product, supplier, category) {
     const entries = detailEntries(product);
     const normalized = {};
@@ -218,6 +230,7 @@
       let rule = featureOrigins[id]?.rule || (value !== undefined ? "normalized-feature" : "");
       let sourceLabel = "";
       let sourceValue = "";
+      let matchedEntry = null;
       if (id === "productType") {
         value = product.type || category.title;
         provenance = "mapped";
@@ -227,7 +240,7 @@
         const index = entries.findIndex(entry => !usedEntries.has(entry) && matchesAlias(entry.label, definition));
         if (index >= 0) {
           const entry = entries[index];
-          usedEntries.add(entry);
+          matchedEntry = entry;
           value = entry.value;
           sourceLabel = entry.label;
           sourceValue = entry.value;
@@ -242,7 +255,15 @@
         if (parsed.value === null) return;
         value = parsed.value;
         unitStatus = parsed.unitStatus;
+      } else if (definition.type === "boolean") {
+        const parsed = parseBoolean(value, definition);
+        if (parsed === null) return;
+        value = parsed;
+      } else if (definition.type === "select" || definition.type === "string") {
+        value = cleanSupplierText(value);
+        if (!value) return;
       }
+      if (matchedEntry) usedEntries.add(matchedEntry);
       entries.filter(entry => matchesAlias(entry.label, definition)).forEach(entry => usedEntries.add(entry));
       normalized[id] = value;
       records.push(Object.freeze({ id, label: definition.label, value, unit: definition.unit || "", provenance, rule, sourceLabel, sourceValue, unitStatus }));
@@ -282,11 +303,48 @@
     };
   }
 
+  function normalizeDescriptionSections(product) {
+    if (!Array.isArray(product.descriptionSections)) return Object.freeze([]);
+    return Object.freeze(product.descriptionSections.flatMap(section => {
+      if (!section || typeof section !== "object") return [];
+      const title = cleanSupplierText(section.title || "");
+      const paragraphs = (Array.isArray(section.paragraphs)
+        ? section.paragraphs
+        : [section.content || section.text || section.description || ""])
+        .map(cleanSupplierText)
+        .filter(Boolean);
+      if (!title && !paragraphs.length) return [];
+      return [Object.freeze({ title, paragraphs: Object.freeze(paragraphs) })];
+    }));
+  }
+
+  function normalizeDocuments(product) {
+    if (!Array.isArray(product.documents)) return Object.freeze([]);
+    return Object.freeze(product.documents.flatMap(document => {
+      if (!document || typeof document !== "object" || !document.url) return [];
+      return [Object.freeze({ ...document, url: String(document.url) })];
+    }));
+  }
+
+  function normalizeSeo(product) {
+    if (product.seo && typeof product.seo === "object") {
+      const title = cleanSupplierText(product.seo.title || product.seoTitle || product.seo_title || "");
+      const description = cleanSupplierText(product.seo.description || product.seoDescription || product.seo_description || "");
+      return title || description ? Object.freeze({ title, description }) : null;
+    }
+    const title = cleanSupplierText(product.seoTitle || product.seo_title || "");
+    const description = cleanSupplierText(product.seoDescription || product.seo_description || "");
+    return title || description ? Object.freeze({ title, description }) : null;
+  }
+
   function normalizeProduct(rawProduct) {
     const supplier = sourceMappings.supplierFor(rawProduct);
     const mapping = sourceMappings.resolve(rawProduct, supplier);
     const category = taxonomy.byId[mapping.categoryId];
-    if (!supplier || !category) return Object.freeze({ ...rawProduct, normalizationError: !supplier ? "unknown-supplier" : "unmapped-category" });
+    if (!supplier || !category) return Object.freeze({
+      id: String(rawProduct?.id || ""),
+      normalizationError: !supplier ? "unknown-supplier" : "unmapped-category"
+    });
     const enrichedProduct = supplier === "ecosoft" ? enrichEcosoft(rawProduct, mapping) : rawProduct;
     const product = applyEditorialCorrections(enrichedProduct, category);
     const supplierConfig = sourceMappings.suppliers[supplier];
@@ -298,42 +356,53 @@
     const images = Object.freeze((Array.isArray(product.images) && product.images.length ? [...product.images] : [product.image].filter(Boolean)).map(resolveImage));
     const tags = Object.freeze([...new Set([...(Array.isArray(product.tags) ? product.tags : []), ...mapping.tags])]);
     const collections = Object.freeze([...new Set([...(Array.isArray(product.collections) ? product.collections : []), ...mapping.collectionIds])]);
-    const amount = Number(product.price);
+    const rawAmount = Number(product.price);
+    const amount = Number.isFinite(rawAmount) && rawAmount > 0 ? rawAmount : null;
+    const rawOldAmount = Number(product.oldPrice ?? product.pricing?.oldAmount);
+    const oldAmount = amount !== null && Number.isFinite(rawOldAmount) && rawOldAmount > amount ? rawOldAmount : null;
+    const explicitPriceStatus = String(product.priceStatus || product.pricing?.priceStatus || "").trim();
+    const priceStatus = amount !== null ? "known" : explicitPriceStatus === "on_request" ? "on_request" : "unknown";
     const inventoryStatus = product.availability || "unknown";
+    const publicationStatus = category.visibility === "service"
+      ? "hidden"
+      : category.status === "active" && category.visibility === "catalog"
+      ? "published"
+      : category.status === "future"
+      ? "draft"
+      : "archived";
+    const title = cleanSupplierText(product.title || product.productName || product.product_name || product.id);
+    const description = String(product.description || product.shortDescription || product.short_description || "").trim();
+    const shortDescription = String(product.shortDescription || product.short_description || description).trim();
+    const fullDescription = String(product.fullDescription || product.full_description || description).trim();
     return Object.freeze({
-      ...product,
-      id: product.id,
-      sku: product.sku,
+      id: String(product.id),
       slug: slugify(product.slug || product.link?.split("/").filter(Boolean).pop() || product.id),
-      model: product.model || product.title,
-      seriesId: mapping.seriesId || product.seriesId || null,
+      sku: String(product.sku || product.code || product.id),
+      title,
+      shortTitle: cleanSupplierText(product.shortTitle || title),
+      model: cleanSupplierText(product.model || title),
       brandId,
       primaryCategoryId: category.id,
       secondaryCategoryIds: Object.freeze(Array.isArray(product.secondaryCategoryIds) ? [...product.secondaryCategoryIds] : []),
-      sectionId: category.sectionId,
-      sourceCategoryId: mapping.sourceCategory,
-      sourceCategoryName: product.primaryCategoryName || product.type || mapping.sourceCategory,
-      primaryCategory: category.id,
-      primaryCategoryName: category.title,
-      categoryGroup: category.parentId,
-      categoryGroupName: taxonomy.byId[category.parentId]?.title || "",
-      normalizedType: category.id,
-      price: amount,
-      pricing: Object.freeze({ amount, currency: product.currency || "UAH" }),
+      seriesId: mapping.seriesId || product.seriesId || null,
+      pricing: Object.freeze({ amount, oldAmount, currency: product.currency || "UAH", priceStatus }),
       inventory: Object.freeze({ status: inventoryStatus }),
-      stockStatus: inventoryStatus,
+      publicationStatus,
       images,
+      description,
+      shortDescription,
+      fullDescription,
+      descriptionSections: normalizeDescriptionSections(product),
       sourceAttributes,
-      attributes: sourceAttributes,
       catalogAttributes: attributeResult.records,
       normalizedAttributes: attributeResult.normalized,
       unmappedAttributes: attributeResult.unmapped,
+      documents: normalizeDocuments(product),
       tags,
       collections,
-      source: Object.freeze({ supplier, sourceId: String(product.id), sourceCategory: mapping.sourceCategory, mappingStatus: mapping.mappingStatus }),
-      compareType: category.id,
       badges: Object.freeze(Array.isArray(product.badges) ? [...product.badges] : []),
-      image: images[0] || ""
+      source: Object.freeze({ supplier, sourceId: String(product.id), sourceCategory: mapping.sourceCategory, mappingStatus: mapping.mappingStatus }),
+      seo: normalizeSeo(product)
     });
   }
 
@@ -372,10 +441,17 @@
   const rawTechProducts = Array.isArray(window.sofievkaTechProducts) ? window.sofievkaTechProducts : [];
   const rawHeatingBrandsProducts = Array.isArray(window.sofievkaHeatingBrandsProducts) ? window.sofievkaHeatingBrandsProducts : [];
   const rawBaxiBuderusProducts = Array.isArray(window.sofievkaBaxiBuderusProducts) ? window.sofievkaBaxiBuderusProducts : [];
-  const result = normalizeAll([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts, ...rawTechProducts, ...rawHeatingBrandsProducts, ...rawBaxiBuderusProducts]);
+  const rawSupplierProducts = Object.freeze([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts, ...rawTechProducts, ...rawHeatingBrandsProducts, ...rawBaxiBuderusProducts]);
+  const rawProductsById = new Map(rawSupplierProducts.map(product => [String(product.id), product]));
+  const result = normalizeAll(rawSupplierProducts);
 
-  window.sofievkaProductNormalizer = Object.freeze({ slugify, normalizeProduct, normalizeAll });
-  window.sofievkaNormalizedProducts = result.products;
+  window.sofievkaProductNormalizer = Object.freeze({ slugify, normalizeProduct, normalizeAll, parseBoolean });
+  window.sofievkaRawSupplierProducts = rawSupplierProducts;
+  window.sofievkaRawSupplierCatalog = Object.freeze({
+    products: rawSupplierProducts,
+    productById: id => rawProductsById.get(String(id)) || null
+  });
+  window.sofievkaCanonicalProducts = result.products;
   window.sofievkaNormalizationReport = Object.freeze({
     sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length + rawTekkhausProducts.length + rawTechProducts.length + rawHeatingBrandsProducts.length + rawBaxiBuderusProducts.length,
     normalizedCount: result.products.length,

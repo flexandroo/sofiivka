@@ -4,6 +4,10 @@
 .env
 .env.*
 !.env.example
+supabase/.temp/
+supabase/.branches/
+supabase/.env
+supabase/.env.*
 .agents/
 .codex/
 node_modules/
@@ -11,6 +15,8 @@ tmp/
 artifacts/
 backups/
 reports/
+dist/
+.cutover-test/
 assets/design-references/
 assets/images/*.png
 *.log

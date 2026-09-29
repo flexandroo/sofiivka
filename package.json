@@ -1,0 +1,23 @@
+{
+  "scripts": {
+    "catalog:snapshot": "node scripts/export-canonical-snapshot.mjs",
+    "catalog:migrate": "node scripts/import-catalog-to-supabase.mjs",
+    "catalog:sql-checks": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-remote-catalog-sql-checks.ps1",
+    "catalog:adapter:verify": "node scripts/publish-catalog-read-model.mjs --verify --project-ref=wfxcklglujgramasdzyr",
+    "catalog:adapter:publish": "node scripts/publish-catalog-read-model.mjs --project-ref=wfxcklglujgramasdzyr",
+    "catalog:adapter:parity": "node --expose-gc tests/catalog-data-source-parity.mjs",
+    "catalog:adapter:demo": "node scripts/serve-supabase-catalog-demo.mjs --project-ref=wfxcklglujgramasdzyr --port=4174",
+    "catalog:performance:baseline": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/measure-catalog-performance-baseline.ps1",
+    "catalog:performance:v2": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/measure-catalog-performance-v2.ps1",
+    "catalog:scoped:parity": "node tests/catalog-scoped-parity.mjs",
+    "site:build": "node scripts/build-static-site.mjs",
+    "catalog:cutover:demo": "node scripts/serve-supabase-catalog-demo.mjs --project-ref=wfxcklglujgramasdzyr --source=supabase --port=4174",
+    "catalog:cutover:failure": "node scripts/serve-supabase-catalog-demo.mjs --project-ref=wfxcklglujgramasdzyr --source=supabase --failure=network --port=4175",
+    "catalog:cutover:qa": "node tests/catalog-cutover-qa.mjs",
+    "catalog:cutover:configure-preview": "node scripts/configure-vercel-preview.mjs",
+    "catalog:cutover:preview-http": "node tests/vercel-preview-http-qa.mjs"
+  },
+  "devDependencies": {
+    "supabase": "^2.118.0"
+  }
+}

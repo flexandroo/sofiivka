@@ -4,12 +4,17 @@ const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
 
-const projectRoot = path.resolve(__dirname, "..");
+const workspaceRoot = path.resolve(__dirname, "..");
+const projectRoot = process.env.QA_ROOT ? path.resolve(workspaceRoot, process.env.QA_ROOT) : workspaceRoot;
+if (projectRoot !== workspaceRoot && !projectRoot.startsWith(workspaceRoot + path.sep)) {
+  throw new Error("QA_ROOT must stay inside the project workspace.");
+}
 const port = Number(process.env.PORT || 4173);
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".png": "image/png",
@@ -28,10 +33,11 @@ function pageFor(urlPath) {
   if (clean && fs.existsSync(path.join(projectRoot, directoryIndex))) return directoryIndex;
   const legacyDirectoryIndex = clean.endsWith(".html") ? path.join(clean.slice(0, -5), "index.html") : "";
   if (legacyDirectoryIndex && fs.existsSync(path.join(projectRoot, legacyDirectoryIndex))) return legacyDirectoryIndex;
+  if (clean.includes(".")) return clean;
   if (urlPath === "/brands") return "brands.html";
   if (urlPath === "/catalog" || urlPath.startsWith("/catalog/")) return "catalog.html";
   if (urlPath.startsWith("/brands/")) return "brand.html";
-  return clean.includes(".") ? clean : `${clean}.html`;
+  return `${clean}.html`;
 }
 
 http.createServer((request, response) => {

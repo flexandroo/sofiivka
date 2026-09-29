@@ -274,7 +274,7 @@ function setupHeroSlider() {
   start();
 }
 
-const catalogProducts = Array.isArray(window.sofievkaCatalog?.catalogProducts)
+let catalogProducts = Array.isArray(window.sofievkaCatalog?.catalogProducts)
   ? window.sofievkaCatalog.catalogProducts
   : [
     ...(Array.isArray(window.sofievkaProducts) ? window.sofievkaProducts : []),
@@ -408,16 +408,16 @@ const homepageSaleProductIds = [
   "tekkhaus-1000116",
   "termojet-wp_19356"
 ];
-const homepageProductById = new Map(catalogProducts.map(product => [product.id, product]));
+let homepageProductById = new Map(catalogProducts.map(product => [product.id, product]));
 const homepageIsAvailable = product => product
   && (product.availability === "in_stock" || product.availabilityLabel === "В наявності")
   && Number(product.pricing?.amount ?? product.price) > 0;
 const homepageHasOffer = product => (Array.isArray(product.tags) && product.tags.includes("sale"))
   || Number(product.pricing?.oldAmount ?? product.oldPrice ?? 0) > Number(product.pricing?.amount ?? product.price);
-const homepageProducts = homepageProductIds.map(id => homepageProductById.get(id)).filter(homepageIsAvailable);
-const homepageSaleProducts = homepageSaleProductIds.map(id => homepageProductById.get(id))
+let homepageProducts = homepageProductIds.map(id => homepageProductById.get(id)).filter(homepageIsAvailable);
+let homepageSaleProducts = homepageSaleProductIds.map(id => homepageProductById.get(id))
   .filter(product => homepageIsAvailable(product) && homepageHasOffer(product));
-const productGroups = {
+let productGroups = {
   popular: homepageProducts,
   sale: homepageSaleProducts
 };
@@ -436,7 +436,7 @@ const homepageProductMediaFit = {
 
 function createProductCard(product, favoriteIds) {
   const productName = product.title || product.model;
-  const available = product.availability === "in_stock" || product.availabilityLabel === "В наявності";
+  const available = product.availability === "in_stock" || product.inventory?.status === "in_stock" || product.availabilityLabel === "В наявності";
   const price = Number(product.pricing?.amount ?? product.price);
   const oldPrice = Number(product.pricing?.oldAmount ?? product.oldPrice ?? 0);
   const money = amount => `${new Intl.NumberFormat("uk-UA").format(amount)} грн`;
@@ -448,12 +448,12 @@ function createProductCard(product, favoriteIds) {
   const mediaFit = homepageProductMediaFit[product.id];
   if (mediaFit) card.dataset.mediaFit = mediaFit;
   card.innerHTML = `
-    <a class="product-card__image" href="product.html?id=${encodeURIComponent(product.id)}"><img src="${escapeMarkup(product.image)}" width="1536" height="1536" loading="lazy" alt="${escapeMarkup(productName)}"></a>
+    <a class="product-card__image" href="product.html?id=${encodeURIComponent(product.id)}"><img src="${escapeMarkup(product.image || product.images?.[0] || "")}" width="1536" height="1536" loading="lazy" alt="${escapeMarkup(productName)}"></a>
     <span class="product-card__status product-card__status--${available ? "available" : "unavailable"}">${escapeMarkup(product.availabilityLabel || (available ? "В наявності" : "Немає в наявності"))}</span>
     <span class="product-card__brand">${escapeMarkup(product.brand)}</span>
     <h3><a href="product.html?id=${encodeURIComponent(product.id)}">${escapeMarkup(productName)}</a></h3>
-    <span class="product-card__code">${escapeMarkup(product.code)}</span>
-    <ul class="product-card__specs" aria-label="Дані товару"><li>${escapeMarkup(product.type)}</li></ul>
+    <span class="product-card__code">${escapeMarkup(product.code || product.sku || product.id)}</span>
+    <ul class="product-card__specs" aria-label="Дані товару"><li>${escapeMarkup(product.type || product.normalizedAttributes?.productType || "Інженерне обладнання")}</li></ul>
     <div class="product-card__price-group">${oldPrice > price ? `<del class="product-card__old-price">${money(oldPrice)}</del>` : ""}<strong class="product-card__price">${money(price)}</strong></div>
     <div class="product-card__actions">
       <button class="product-card__buy" type="button" data-buy="${escapeMarkup(product.id)}">До кошика</button>
@@ -472,9 +472,13 @@ function setupProducts() {
   let storedFavorites = [];
   try { storedCart = JSON.parse(localStorage.getItem("sofievka-cart")) || {}; } catch {}
   try { storedFavorites = JSON.parse(localStorage.getItem("sofievka-favorites")) || []; } catch {}
-  const validProductIds = new Set(catalogProducts.map(product => product.id));
-  storedCart = Object.fromEntries(Object.entries(storedCart).filter(([id, quantity]) => validProductIds.has(id) && Number(quantity) > 0));
-  storedFavorites = storedFavorites.filter(id => validProductIds.has(id));
+  if (window.sofievkaCatalogScopedDataSource) {
+    storedCart = Object.fromEntries(Object.entries(storedCart).filter(([, quantity]) => Number(quantity) > 0));
+  } else {
+    const validProductIds = new Set(catalogProducts.map(product => product.id));
+    storedCart = Object.fromEntries(Object.entries(storedCart).filter(([id, quantity]) => validProductIds.has(id) && Number(quantity) > 0));
+    storedFavorites = storedFavorites.filter(id => validProductIds.has(id));
+  }
   const favoriteIds = new Set(storedFavorites);
   let cart = Object.values(storedCart).reduce((sum, quantity) => sum + Number(quantity || 0), 0);
   if (cartCount) cartCount.textContent = String(cart);
@@ -918,15 +922,55 @@ function setupBrandDirectory() {
   searchForm?.addEventListener("submit", event => event.preventDefault());
 }
 
-setupCatalogMenu();
-setupStorefrontCategories();
-setupHeroSlider();
-setupSearch();
-setupProducts();
-setupHeaderActions();
-setupHomepageBrands();
-setupHomepageContact();
-setupBrandDirectory();
-setupFooterAccordion();
-setupReveal();
-setupSignatureMotion();
+async function prepareScopedHomepage() {
+  const source = window.sofievkaCatalogScopedDataSource;
+  if (!source) return;
+  const [popular, sale] = await Promise.all([
+    source.getCollection("homepage-products"),
+    source.getCollection("homepage-sale-products")
+  ]);
+  const cards = [...new Map([...(popular?.products || []), ...(sale?.products || [])].map(product => [product.id, product])).values()];
+  const bootstrap = window.sofievkaCatalogSnapshot;
+  window.sofievkaInstallCatalogSnapshot(Object.freeze({ ...bootstrap, products: Object.freeze(cards) }), { useRawCatalog: false });
+  window.sofievkaInstallPdp?.();
+  const adaptedById = new Map(window.sofievkaCatalog.catalogProducts.map(product => [product.id, product]));
+  catalogProducts = [...adaptedById.values()];
+  homepageProductById = adaptedById;
+  homepageProducts = (popular?.products || []).map(product => adaptedById.get(product.id)).filter(homepageIsAvailable);
+  homepageSaleProducts = (sale?.products || []).map(product => adaptedById.get(product.id)).filter(product => homepageIsAvailable(product) && homepageHasOffer(product));
+  productGroups = { popular: homepageProducts, sale: homepageSaleProducts };
+}
+
+function renderHomepageCatalogFailure() {
+  document.querySelectorAll("[data-product-grid]").forEach(grid => {
+    grid.setAttribute("aria-busy", "false");
+    grid.innerHTML = `<div class="catalog-empty" role="alert"><span aria-hidden="true">!</span><h3>Каталог тимчасово недоступний</h3><p>Не вдалося отримати дані каталогу. Локальне джерело не підставляється автоматично.</p><button class="button button--primary" type="button" data-catalog-retry>Спробувати ще раз</button></div>`;
+  });
+  document.querySelectorAll("[data-products-prev], [data-products-next]").forEach(button => { button.disabled = true; });
+  document.addEventListener("click", event => { if (event.target.closest("[data-catalog-retry]")) location.reload(); });
+}
+
+(async function initializeHomepage() {
+  let catalogLoadError = null;
+  try {
+    if (window.sofievkaCatalogDataReady) await window.sofievkaCatalogDataReady;
+    await prepareScopedHomepage();
+  } catch (error) {
+    catalogLoadError = error;
+    console.error("Scoped homepage collections failed", error);
+  }
+  if (window.sofievkaCatalogUIReady) await window.sofievkaCatalogUIReady;
+  setupCatalogMenu();
+  setupStorefrontCategories();
+  setupHeroSlider();
+  setupSearch();
+  if (catalogLoadError && window.sofievkaCatalogRemoteRequested) renderHomepageCatalogFailure();
+  else setupProducts();
+  setupHeaderActions();
+  setupHomepageBrands();
+  setupHomepageContact();
+  setupBrandDirectory();
+  setupFooterAccordion();
+  setupReveal();
+  setupSignatureMotion();
+})();
