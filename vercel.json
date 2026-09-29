@@ -40,6 +40,8 @@
     { "source": "/:page.html", "destination": "/:page", "permanent": true }
   ],
   "rewrites": [
+    { "source": "/admin", "destination": "/admin/index.html" },
+    { "source": "/admin/:path*", "destination": "/admin/index.html" },
     { "source": "/catalog", "destination": "/catalog.html" },
     { "source": "/catalog/:path*", "destination": "/catalog.html" },
     { "source": "/brands/:slug", "destination": "/brand.html" },

@@ -21,6 +21,7 @@ const missing = [];
 const duplicateScripts = [];
 const legacyNavigationLinks = [];
 const accountNavigationLinks = [];
+const generatedAssets = new Set(["/catalog-runtime-config.js"]);
 let references = 0;
 
 for (const file of sourceFiles) {
@@ -37,7 +38,7 @@ for (const file of sourceFiles) {
     if (!reference || reference.startsWith("//")) continue;
     references += 1;
     const target = path.join(root, reference.replace(/^\//, "").replaceAll("/", path.sep));
-    if (!fs.existsSync(target)) missing.push({ file, reference });
+    if (!fs.existsSync(target) && !generatedAssets.has(reference)) missing.push({ file, reference });
     if (/\.html$/i.test(file) && /\.js$/i.test(reference)) {
       if (seenScripts.has(reference)) duplicateScripts.push({ file, reference });
       seenScripts.add(reference);

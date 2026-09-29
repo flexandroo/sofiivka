@@ -15,7 +15,9 @@
     "catalog:cutover:failure": "node scripts/serve-supabase-catalog-demo.mjs --project-ref=wfxcklglujgramasdzyr --source=supabase --failure=network --port=4175",
     "catalog:cutover:qa": "node tests/catalog-cutover-qa.mjs",
     "catalog:cutover:configure-preview": "node scripts/configure-vercel-preview.mjs",
-    "catalog:cutover:preview-http": "node tests/vercel-preview-http-qa.mjs"
+    "catalog:cutover:preview-http": "node tests/vercel-preview-http-qa.mjs",
+    "admin:qa": "node tests/admin-foundation-qa.mjs",
+    "admin:auth:dev": "node tests/admin-dev-auth-integration.mjs"
   },
   "devDependencies": {
     "supabase": "^2.118.0"

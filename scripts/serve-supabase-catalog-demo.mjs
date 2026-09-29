@@ -34,6 +34,7 @@ const mimeTypes = {
 
 function pageFor(urlPath) {
   if (urlPath === '/') return 'index.html';
+  if (urlPath === '/admin' || (urlPath.startsWith('/admin/') && !path.extname(urlPath))) return 'admin/index.html';
   let clean = urlPath.replace(/^\//, '').replace(/\/$/, '');
   if (clean === 'catalog/water-treatment' || clean.startsWith('catalog/water-treatment/')) {
     clean = clean.replace(/^catalog\/water-treatment/, 'catalog/water-supply/water-treatment');
@@ -51,6 +52,15 @@ function pageFor(urlPath) {
 
 http.createServer((request, response) => {
   const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
+  if (url.pathname === '/catalog-runtime-config.js') {
+    response.writeHead(200, {
+      'Content-Type': 'text/javascript; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'X-Sofievka-Catalog-Demo': 'supabase-scoped-dev',
+    });
+    response.end(publicConfigScript.replace(/^<script>|<\/script>$/g, ''));
+    return;
+  }
   const relativePath = pageFor(url.pathname);
   const absolutePath = path.resolve(PROJECT_ROOT, relativePath);
   if (!absolutePath.startsWith(`${PROJECT_ROOT}${path.sep}`) && absolutePath !== path.join(PROJECT_ROOT, 'index.html')) {

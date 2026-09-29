@@ -1,7 +1,15 @@
 # ADMIN IMPLEMENTATION READINESS
 
 Дата: 2026-09-29
-Статус: production public read path активен; admin mutations и admin UI не реализованы.
+Статус: production public read path активен; Admin Foundation v1 реализован в Preview/DEV, admin mutations и полный CRUD не реализованы.
+
+## Admin Foundation v1
+
+- Реализованы `/admin/login`, guarded `/admin/*`, session restore/logout/expired states и проверка active `admin_profiles`.
+- Реализован branded application shell, responsive drawer, role-aware routes и украинский UI.
+- Dashboard получает lightweight counts через user JWT и существующий RLS; full catalog в admin shell не загружается.
+- Reusable component foundation и архитектура описаны в `ADMIN-ARCHITECTURE.md`.
+- Production `/admin` не развёрнут; первый production owner не создавался.
 
 ## Environment architecture после production cutover
 

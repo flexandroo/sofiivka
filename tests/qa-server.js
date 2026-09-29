@@ -25,6 +25,7 @@ const mimeTypes = {
 
 function pageFor(urlPath) {
   if (urlPath === "/") return "index.html";
+  if (urlPath === "/admin" || (urlPath.startsWith("/admin/") && !path.extname(urlPath))) return "admin/index.html";
   let clean = urlPath.replace(/^\//, "").replace(/\/$/, "");
   if (clean === "catalog/water-treatment" || clean.startsWith("catalog/water-treatment/")) {
     clean = clean.replace(/^catalog\/water-treatment/, "catalog/water-supply/water-treatment");

@@ -54,7 +54,7 @@ if (source === "supabase") {
 await fs.rm(outputDirectory, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 await fs.mkdir(outputDirectory, { recursive: true });
 
-const allowedDirectories = new Set(["assets", "catalog", "lib"]);
+const allowedDirectories = new Set(["admin", "assets", "catalog", "lib"]);
 const allowedRootExtensions = new Set([".css", ".html", ".ico", ".js", ".json", ".mjs", ".svg", ".txt", ".webmanifest", ".xml"]);
 const rootEntries = await fs.readdir(root, { withFileTypes: true });
 for (const entry of rootEntries) {
