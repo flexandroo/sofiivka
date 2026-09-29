@@ -1,6 +1,7 @@
 import { createAdminAuthClient } from "/admin/admin-auth.mjs";
 import { createAdminApi, AdminApiError } from "/admin/admin-api.mjs";
 import { icon } from "/admin/admin-icons.mjs";
+import { createProductsListView, createProductEditorView } from "/admin/admin-products.mjs";
 
 const DEV_PROJECT_REF = "wfxcklglujgramasdzyr";
 const ROLES = new Set(["owner", "admin", "manager", "content_manager"]);
@@ -71,6 +72,7 @@ let api;
 let activeProfile = null;
 let activeSession = null;
 let drawerReturnFocus = null;
+let routeController = null;
 
 start().catch(error => renderFatal(error));
 
@@ -83,6 +85,9 @@ async function start() {
 }
 
 async function route() {
+  routeController?.abort();
+  routeController = new AbortController();
+  const signal = routeController.signal;
   setLoading(true);
   const path = normalizePath(location.pathname);
   activeSession = await auth.getSession();
@@ -100,7 +105,10 @@ async function route() {
   activeProfile = await api.getProfile(activeSession.user.id);
   if (!isAuthorizedProfile(activeProfile)) return renderAccessDenied(activeProfile);
 
-  const definition = ROUTES[path];
+  const productEditorMatch = path.match(/^\/admin\/products\/([^/]+)$/);
+  const definition = productEditorMatch
+    ? { ...ROUTES["/admin/products"], title: "Редагування товару" }
+    : ROUTES[path];
   if (!definition) return renderNotFound();
   if (!definition.roles.includes(activeProfile.role)) return renderForbidden(definition);
 
@@ -116,6 +124,31 @@ async function route() {
       return renderShell(definition, renderDashboardError(error));
     }
   }
+  if (path === "/admin/products") {
+    try {
+      const view = await createProductsListView({ api, profile: activeProfile, navigate, search: location.search, signal });
+      renderShell(definition, view.html);
+      view.bind(root);
+      return;
+    } catch (error) {
+      if (error instanceof AdminApiError && error.code === "aborted") return;
+      if (error instanceof AdminApiError && error.status === 401) return expireSession();
+      return renderShell(definition, renderProductsError(error));
+    }
+  }
+  if (productEditorMatch) {
+    try {
+      const legacyId = decodeURIComponent(productEditorMatch[1]);
+      const view = await createProductEditorView({ api, profile: activeProfile, navigate, legacyId, signal });
+      renderShell(definition, view.html);
+      view.bind(root);
+      return;
+    } catch (error) {
+      if (error instanceof AdminApiError && error.code === "aborted") return;
+      if (error instanceof AdminApiError && error.status === 401) return expireSession();
+      return renderShell(definition, renderProductsError(error));
+    }
+  }
   return renderShell(definition, renderPlaceholder(definition));
 }
 
@@ -129,7 +162,17 @@ function assertDevRuntime(value) {
 function setLoading(isLoading) {
   document.body.dataset.adminState = isLoading ? "loading" : "ready";
   if (boot) boot.hidden = !isLoading;
-  if (isLoading) root.replaceChildren();
+  if (isLoading) {
+    root.querySelector("[data-product-editor]")?.dispatchEvent(new CustomEvent("admin:dispose"));
+    root.replaceChildren();
+  }
+}
+
+function renderProductsError(error) {
+  return `<section class="admin-state-panel" role="alert">
+    ${icon("warning")}<div><p class="admin-kicker">PRODUCTS ADMIN</p><h1>Не вдалося відкрити товари</h1><p>${escapeHtml(error?.message || "DEV database не відповіла.")}</p></div>
+    <button class="admin-button admin-button--secondary" type="button" data-retry>Спробувати ще раз</button>
+  </section>`;
 }
 
 function renderLogin(message = "") {

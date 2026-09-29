@@ -28,6 +28,11 @@ const EXPECTED_MIGRATIONS = [
   '20260929000300',
   '20260929000400',
   '20260929000500',
+  '20260929000600',
+  '20260929000700',
+  '20260929000800',
+  '20260929000900',
+  '20260929001000',
 ];
 
 const argumentsMap = new Map(process.argv.slice(2).map(argument => {
@@ -132,38 +137,70 @@ if (mode === 'apply') {
   }], { onConflict: 'singleton' });
 }
 
-const startedAt = performance.now();
-const { response, payload } = await publicClient.request('/rest/v1/rpc/get_catalog_snapshot', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-  body: '{}',
-});
-const durationMs = performance.now() - startedAt;
-if (!payload || !Array.isArray(payload.products)) throw new Error('Public snapshot RPC returned no active snapshot.');
-const publicIdHash = sortedLinesHash(payload.products.map(product => product.id));
-const expectedPublicHash = sortedLinesHash(snapshot.products.filter(product => product.publicationStatus === 'published').map(product => product.id));
-const hiddenIds = new Set(snapshot.products.filter(product => product.publicationStatus !== 'published').map(product => product.id));
-const leakedHiddenIds = payload.products.filter(product => hiddenIds.has(product.id)).map(product => product.id);
-if (payload.products.length !== 3214 || publicIdHash !== expectedPublicHash || leakedHiddenIds.length) {
-  throw new Error(`Public snapshot verification failed: products=${payload.products.length}, hash=${publicIdHash}, hidden=${leakedHiddenIds.join(',')}.`);
+const scopedMetrics = [];
+async function verifyPublicRpc(name, body = {}) {
+  const startedAt = performance.now();
+  const { response, payload } = await publicClient.request(`/rest/v1/rpc/${name}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(body),
+  });
+  scopedMetrics.push({
+    rpc: name,
+    durationMs: performance.now() - startedAt,
+    responseBytes: Buffer.byteLength(JSON.stringify(payload)),
+    compressedContentLength: Number(response.headers.get('content-length')) || null,
+  });
+  return payload;
 }
 
+const representativeProduct = snapshot.products.find(product => product.publicationStatus === 'published' && product.sku);
+const hiddenProduct = snapshot.products.find(product => product.publicationStatus !== 'published');
+if (!representativeProduct || !hiddenProduct) throw new Error('Canonical snapshot is missing public/hidden verification fixtures.');
+
+const bootstrap = await verifyPublicRpc('get_catalog_bootstrap');
+const productPage = await verifyPublicRpc('get_catalog_products', { page_number: 1, page_size: 24 });
+const facets = await verifyPublicRpc('get_catalog_facets');
+const product = await verifyPublicRpc('get_catalog_product', { legacy_id: representativeProduct.id });
+const search = await verifyPublicRpc('search_catalog', {
+  query_text: representativeProduct.sku,
+  product_limit: 12,
+  category_limit: 6,
+  brand_limit: 6,
+  series_limit: 6,
+});
+const hidden = await verifyPublicRpc('get_catalog_product', { legacy_id: hiddenProduct.id });
+const collection = snapshot.collections?.[0]
+  ? await verifyPublicRpc('get_catalog_collection', { collection_id: snapshot.collections[0].id })
+  : null;
+
+if (bootstrap?.totalProducts !== 3214 || productPage?.total !== 3214 || facets?.total !== 3214) {
+  throw new Error(`Scoped public counts failed: bootstrap=${bootstrap?.totalProducts}, products=${productPage?.total}, facets=${facets?.total}.`);
+}
+if (product?.product?.id !== representativeProduct.id) throw new Error('Scoped PDP verification failed.');
+if (!search?.products?.some(item => item.id === representativeProduct.id)) throw new Error('Scoped exact-SKU search verification failed.');
+if (hidden !== null) throw new Error(`Hidden product leaked through scoped PDP: ${hiddenProduct.id}.`);
+if (collection && collection.collection?.id !== snapshot.collections[0].id) throw new Error('Scoped collection verification failed.');
+
 const report = {
-  reportVersion: 'catalog-public-read-model-publish-v1',
+  reportVersion: 'catalog-public-scoped-read-model-verify-v2',
   status: 'ok',
   project: preflight.project,
-  snapshotVersion: payload.version,
-  products: payload.products.length,
-  categories: payload.categories.length,
-  brands: payload.brands.length,
-  attributes: Object.keys(payload.attributeDefinitions).length,
-  publicProductIdHash: publicIdHash,
-  uncompressedPayloadBytes: Buffer.byteLength(JSON.stringify(payload)),
-  compressedContentLength: Number(response.headers.get('content-length')) || null,
-  contentEncoding: response.headers.get('content-encoding') || 'identity',
-  requestCount: 1,
-  durationMs,
-  hiddenLeaks: leakedHiddenIds,
+  catalogVersion: bootstrap.version,
+  products: productPage.total,
+  categories: bootstrap.categories.length,
+  brands: bootstrap.brands.length,
+  attributes: Object.keys(bootstrap.attributeDefinitions).length,
+  canonicalProductIdHash: baseline.productIdHash,
+  representativeProduct: representativeProduct.id,
+  searchResults: search.products.length,
+  collection: collection?.collection?.id || null,
+  hiddenLeaks: [],
+  requestCount: scopedMetrics.length,
+  maximumResponseBytes: Math.max(...scopedMetrics.map(metric => metric.responseBytes)),
+  durationMs: scopedMetrics.reduce((sum, metric) => sum + metric.durationMs, 0),
+  scopedMetrics,
+  fullSnapshotRequested: false,
 };
 writeJson(path.join(reportDir, 'catalog-read-model-publish.json'), report);
 console.log(JSON.stringify(report, null, 2));

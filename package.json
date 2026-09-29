@@ -17,7 +17,9 @@
     "catalog:cutover:configure-preview": "node scripts/configure-vercel-preview.mjs",
     "catalog:cutover:preview-http": "node tests/vercel-preview-http-qa.mjs",
     "admin:qa": "node tests/admin-foundation-qa.mjs",
-    "admin:auth:dev": "node tests/admin-dev-auth-integration.mjs"
+    "admin:auth:dev": "node tests/admin-dev-auth-integration.mjs",
+    "admin:products:dev": "node tests/products-admin-dev-integration.mjs",
+    "admin:products:qa": "node tests/products-admin-qa.mjs"
   },
   "devDependencies": {
     "supabase": "^2.118.0"

@@ -12,7 +12,7 @@ export class AdminApiError extends Error {
 export function createAdminApi(config, getAccessToken, fetchImplementation = globalThis.fetch) {
   const { url, publishableKey } = validatePublicConfig(config);
 
-  async function request(pathname, { method = "GET", body, headers = {}, optional = false } = {}) {
+  async function request(pathname, { method = "GET", body, headers = {}, optional = false, signal } = {}) {
     const token = getAccessToken();
     if (!token) throw new AdminApiError("Сесію завершено. Увійдіть знову.", { status: 401, code: "session_expired" });
     let response;
@@ -27,9 +27,10 @@ export function createAdminApi(config, getAccessToken, fetchImplementation = glo
           ...headers
         },
         body: body ? JSON.stringify(body) : undefined,
-        signal: AbortSignal.timeout(25_000)
+        signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(25_000)]) : AbortSignal.timeout(25_000)
       });
-    } catch {
+    } catch (error) {
+      if (error?.name === "AbortError") throw new AdminApiError("Запит скасовано.", { code: "aborted" });
       if (optional) return null;
       throw new AdminApiError("DEV database зараз недоступна. Спробуйте ще раз.", { code: "network_error" });
     }
@@ -85,6 +86,85 @@ export function createAdminApi(config, getAccessToken, fetchImplementation = glo
     return response ? response.json() : null;
   }
 
+  async function rpc(name, body = {}, signal) {
+    const response = await request(`/rest/v1/rpc/${name}`, { method: "POST", body, signal });
+    return response.json();
+  }
+
+  async function getProductReferenceData() {
+    return rpc("admin_product_reference_data");
+  }
+
+  async function listProducts(filters = {}, { signal } = {}) {
+    return rpc("admin_list_products", {
+      query_text: filters.query || null,
+      filter_category_id: filters.categoryId || null,
+      filter_brand_id: filters.brandId || null,
+      filter_publication: filters.publication || null,
+      filter_inventory: filters.inventory || null,
+      filter_price: filters.price || null,
+      sort_mode: filters.sort || "updated-desc",
+      page_number: Math.max(1, Number(filters.page) || 1),
+      page_size: Math.min(100, Math.max(1, Number(filters.pageSize) || 50))
+    }, signal);
+  }
+
+  async function getProduct(legacyId, { signal } = {}) {
+    return rpc("admin_get_product", { target_legacy_id: String(legacyId || "").trim() }, signal);
+  }
+
+  async function createProduct(payload) {
+    return rpc("admin_create_product", { payload });
+  }
+
+  async function saveProduct(payload) {
+    return rpc("admin_save_product", { payload });
+  }
+
+  async function bulkProducts(legacyIds, action, value = null) {
+    return rpc("admin_bulk_products", {
+      target_legacy_ids: legacyIds,
+      action_name: action,
+      action_value: value || null
+    });
+  }
+
+  async function uploadAsset(file, { productId, kind = "media" }) {
+    if (!(file instanceof File)) throw new AdminApiError("Оберіть файл для завантаження.", { code: "invalid_file" });
+    const bucket = kind === "document" ? "documents" : "product-media";
+    const maximum = kind === "document" ? 25 * 1024 * 1024 : 50 * 1024 * 1024;
+    if (!file.size || file.size > maximum) throw new AdminApiError("Файл перевищує дозволений розмір.", { code: "invalid_file_size" });
+    const safeName = file.name.toLocaleLowerCase("en-US").replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "asset";
+    const storagePath = `${productId}/${crypto.randomUUID()}-${safeName}`;
+    const token = getAccessToken();
+    if (!token) throw new AdminApiError("Сесію завершено. Увійдіть знову.", { status: 401, code: "session_expired" });
+    let response;
+    try {
+      response = await fetchImplementation(`${url}/storage/v1/object/${bucket}/${storagePath.split("/").map(encodeURIComponent).join("/")}`, {
+        method: "POST",
+        headers: {
+          apikey: publishableKey,
+          Authorization: `Bearer ${token}`,
+          "Content-Type": file.type || "application/octet-stream",
+          "x-upsert": "false"
+        },
+        body: file,
+        signal: AbortSignal.timeout(60_000)
+      });
+    } catch {
+      throw new AdminApiError("Файл не завантажено. Перевірте з’єднання.", { code: "upload_error" });
+    }
+    if (!response.ok) {
+      const payload = await response.json().catch(() => null);
+      throw new AdminApiError(payload?.message || "Storage відхилив файл.", { status: response.status, code: payload?.error || "upload_error" });
+    }
+    return Object.freeze({
+      bucket,
+      storagePath,
+      url: `${url}/storage/v1/object/public/${bucket}/${storagePath.split("/").map(encodeURIComponent).join("/")}`
+    });
+  }
+
   async function getDashboard() {
     const [products, published, noPrice, unknownInventory, categoryReviews, brands, lastImport, version] = await Promise.all([
       count("products"),
@@ -99,5 +179,15 @@ export function createAdminApi(config, getAccessToken, fetchImplementation = glo
     return Object.freeze({ products, published, noPrice, unknownInventory, categoryReviews, brands, lastImport, version });
   }
 
-  return Object.freeze({ getProfile, getDashboard });
+  return Object.freeze({
+    getProfile,
+    getDashboard,
+    getProductReferenceData,
+    listProducts,
+    getProduct,
+    createProduct,
+    saveProduct,
+    bulkProducts,
+    uploadAsset
+  });
 }

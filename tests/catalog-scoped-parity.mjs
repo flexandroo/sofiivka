@@ -27,7 +27,7 @@ async function remoteCall(operation, call) {
 
 const bootstrapLocal = await local.loadBootstrap();
 const bootstrapRemote = await remoteCall('bootstrap', () => remote.loadBootstrap());
-assert.match(bootstrapRemote.version, /^[a-f0-9]{64}$/);
+assert.match(bootstrapRemote.version, /^[a-f0-9]{64}:admin:\d+$/);
 assert.equal(bootstrapRemote.totalProducts, bootstrapLocal.totalProducts);
 for (const layer of ['categories', 'brands', 'attributeDefinitions', 'categoryCounts', 'brandCounts']) {
   assert.equal(sha256(stableStringify(bootstrapRemote[layer])), sha256(stableStringify(bootstrapLocal[layer])), `bootstrap ${layer} parity failed`);
