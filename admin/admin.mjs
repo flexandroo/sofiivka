@@ -1,18 +1,25 @@
 import { createAdminAuthClient } from "/admin/admin-auth.mjs";
 import { createAdminApi, AdminApiError } from "/admin/admin-api.mjs";
 import { icon } from "/admin/admin-icons.mjs";
-import { createProductsListView, createProductEditorView } from "/admin/admin-products.mjs";
+import { createProductsListView, createProductEditorView, resetProductsCache } from "/admin/admin-products.mjs";
+import { resolveAdminEnvironment } from "/admin/admin-env.mjs";
+import {
+  CRM_ROLES, createOrdersListView, createOrderDetailView, createLeadsListView, createLeadDetailView,
+  createCustomersListView, createCustomerDetailView, renderCrmOverview
+} from "/admin/admin-crm.mjs";
 
-const DEV_PROJECT_REF = "wfxcklglujgramasdzyr";
 const ROLES = new Set(["owner", "admin", "manager", "content_manager"]);
 const ROLE_LABELS = Object.freeze({
   owner: "Власник",
   admin: "Адміністратор",
-  manager: "Менеджер каталогу",
+  manager: "Менеджер",
   content_manager: "Контент-менеджер"
 });
 const ROUTES = Object.freeze({
-  "/admin": { title: "Огляд каталогу", section: "dashboard", icon: "dashboard", roles: [...ROLES] },
+  "/admin": { title: "Огляд", section: "dashboard", icon: "dashboard", roles: [...ROLES] },
+  "/admin/orders": { title: "Замовлення", section: "orders", icon: "orders", roles: [...CRM_ROLES] },
+  "/admin/leads": { title: "Заявки", section: "leads", icon: "leads", roles: [...CRM_ROLES] },
+  "/admin/customers": { title: "Клієнти", section: "customers", icon: "user", roles: [...CRM_ROLES] },
   "/admin/products": { title: "Товари", section: "products", icon: "products", roles: [...ROLES] },
   "/admin/categories": { title: "Категорії", section: "categories", icon: "categories", roles: [...ROLES] },
   "/admin/brands": { title: "Бренди", section: "brands", icon: "brands", roles: [...ROLES] },
@@ -22,13 +29,15 @@ const ROUTES = Object.freeze({
   "/admin/settings": { title: "Налаштування", section: "settings", icon: "settings", roles: ["owner", "admin"] }
 });
 const NAV_GROUPS = Object.freeze([
-  { label: "Каталог", paths: ["/admin", "/admin/products", "/admin/collections"] },
+  { label: "Головне", paths: ["/admin"] },
+  { label: "Продажі", paths: ["/admin/orders", "/admin/leads", "/admin/customers"] },
+  { label: "Каталог", paths: ["/admin/products", "/admin/collections"] },
   { label: "Дані", paths: ["/admin/categories", "/admin/brands", "/admin/attributes", "/admin/media"] },
   { label: "Система", paths: ["/admin/settings"] }
 ]);
 const PLACEHOLDERS = Object.freeze({
   products: {
-    eyebrow: "3 215 записів у DEV",
+    eyebrow: "Канонічний каталог",
     lead: "Робоча область списку й редактора товарів буде наступним етапом.",
     rows: [["Список товарів", "Таблиця, пошук, фільтри та сортування"], ["Редактор", "Канонічні поля, атрибути й provenance"], ["Публікація", "Окремі draft / publish / hide команди"]]
   },
@@ -60,7 +69,7 @@ const PLACEHOLDERS = Object.freeze({
   settings: {
     eyebrow: "Owner / admin",
     lead: "Системні налаштування поки доступні лише як захищений маршрут.",
-    rows: [["Доступ", "Профілі, ролі та active state"], ["Середовище", "Preview → Supabase DEV"], ["Безпека", "Publishable key у browser, жодного service role"]]
+    rows: [["Доступ", "Профілі, ролі та active state"], ["Середовище", "Preview → DEV, сайт → PROD"], ["Безпека", "Publishable key у browser, жодного service role"]]
   }
 });
 
@@ -73,13 +82,15 @@ let activeProfile = null;
 let activeSession = null;
 let drawerReturnFocus = null;
 let routeController = null;
+let environment = null;
 
 start().catch(error => renderFatal(error));
 
 async function start() {
-  assertDevRuntime(runtime);
+  environment = resolveAdminEnvironment(runtime);
+  document.body.dataset.adminEnvironment = environment.key;
   auth = createAdminAuthClient(runtime.supabase);
-  api = createAdminApi(runtime.supabase, auth.getAccessToken);
+  api = createAdminApi(runtime.supabase, auth.getFreshAccessToken, { environment });
   bindRouter();
   await route();
 }
@@ -106,19 +117,28 @@ async function route() {
   if (!isAuthorizedProfile(activeProfile)) return renderAccessDenied(activeProfile);
 
   const productEditorMatch = path.match(/^\/admin\/products\/([^/]+)$/);
-  const definition = productEditorMatch
-    ? { ...ROUTES["/admin/products"], title: "Редагування товару" }
+  const orderMatch = path.match(/^\/admin\/orders\/(\d{1,12})$/);
+  const leadMatch = path.match(/^\/admin\/leads\/(\d{1,12})$/);
+  const customerMatch = path.match(/^\/admin\/customers\/([0-9a-f-]{36})$/i);
+  const definition = productEditorMatch ? { ...ROUTES["/admin/products"], title: "Редагування товару" }
+    : orderMatch ? { ...ROUTES["/admin/orders"], title: `Замовлення № ${orderMatch[1]}` }
+    : leadMatch ? { ...ROUTES["/admin/leads"], title: `Заявка № ${leadMatch[1]}` }
+    : customerMatch ? { ...ROUTES["/admin/customers"], title: "Клієнт" }
     : ROUTES[path];
   if (!definition) return renderNotFound();
   if (!definition.roles.includes(activeProfile.role)) return renderForbidden(definition);
 
   if (path === "/admin") {
     try {
-      const rawDashboard = await api.getDashboard();
+      const canCrm = CRM_ROLES.includes(activeProfile.role);
+      const [rawDashboard, crmOverview] = await Promise.all([
+        api.getDashboard(),
+        canCrm ? api.crm.overview().catch(() => null) : Promise.resolve(null)
+      ]);
       const dashboard = activeProfile.role === "content_manager"
         ? { ...rawDashboard, categoryReviews: null, lastImport: null }
         : rawDashboard;
-      return renderShell(definition, renderDashboard(dashboard));
+      return renderShell(definition, renderDashboard(dashboard, renderCrmOverview(crmOverview)));
     } catch (error) {
       if (error instanceof AdminApiError && error.status === 401) return expireSession();
       return renderShell(definition, renderDashboardError(error));
@@ -149,14 +169,33 @@ async function route() {
       return renderShell(definition, renderProductsError(error));
     }
   }
+  const crmView = path === "/admin/orders" ? () => createOrdersListView({ api, signal })
+    : orderMatch ? () => createOrderDetailView({ api, navigate, orderNumber: orderMatch[1], signal })
+    : path === "/admin/leads" ? () => createLeadsListView({ api, signal })
+    : leadMatch ? () => createLeadDetailView({ api, leadNumber: leadMatch[1], signal })
+    : path === "/admin/customers" ? () => createCustomersListView({ api, signal })
+    : customerMatch ? () => createCustomerDetailView({ api, customerId: customerMatch[1], signal })
+    : null;
+  if (crmView) {
+    try {
+      const view = await crmView();
+      renderShell(definition, view.html);
+      view.bind(root);
+      return;
+    } catch (error) {
+      if (error instanceof AdminApiError && error.code === "aborted") return;
+      if (error instanceof AdminApiError && error.status === 401) return expireSession();
+      return renderShell(definition, renderCrmError(error));
+    }
+  }
   return renderShell(definition, renderPlaceholder(definition));
 }
 
-function assertDevRuntime(value) {
-  const ref = value?.supabase?.projectRef;
-  if (value?.source !== "supabase" || ref !== DEV_PROJECT_REF) {
-    throw new Error("Admin Preview має працювати тільки з підтвердженим Supabase DEV.");
-  }
+function renderCrmError(error) {
+  return `<section class="admin-state-panel" role="alert">
+    ${icon("warning")}<div><p class="admin-kicker">ПРОДАЖІ</p><h1>Не вдалося відкрити розділ</h1><p>${escapeHtml(error?.message || "База даних не відповіла.")}</p></div>
+    <button class="admin-button admin-button--secondary" type="button" data-retry>Спробувати ще раз</button>
+  </section>`;
 }
 
 function setLoading(isLoading) {
@@ -170,7 +209,7 @@ function setLoading(isLoading) {
 
 function renderProductsError(error) {
   return `<section class="admin-state-panel" role="alert">
-    ${icon("warning")}<div><p class="admin-kicker">PRODUCTS ADMIN</p><h1>Не вдалося відкрити товари</h1><p>${escapeHtml(error?.message || "DEV database не відповіла.")}</p></div>
+    ${icon("warning")}<div><p class="admin-kicker">PRODUCTS ADMIN</p><h1>Не вдалося відкрити товари</h1><p>${escapeHtml(error?.message || "База даних не відповіла.")}</p></div>
     <button class="admin-button admin-button--secondary" type="button" data-retry>Спробувати ще раз</button>
   </section>`;
 }
@@ -186,11 +225,11 @@ function renderLogin(message = "") {
           <span>Керування каталогом</span>
         </a>
         <div class="admin-login__statement">
-          <p class="admin-kicker">DEV WORKSPACE</p>
+          <p class="admin-kicker">${environment.isProduction ? "РОБОЧИЙ ПРОСТІР" : "DEV WORKSPACE"}</p>
           <h1 id="admin-login-brand-title">Точні дані для інженерного каталогу</h1>
           <p>Опалення, вода, водоочищення, сантехніка та клімат — в одному контрольованому середовищі.</p>
         </div>
-        <div class="admin-login__environment"><span aria-hidden="true"></span>Supabase DEV · ${DEV_PROJECT_REF}</div>
+        <div class="admin-login__environment"><span aria-hidden="true"></span>${escapeHtml(environment.name)}</div>
       </section>
       <section class="admin-login__form-wrap" aria-labelledby="admin-login-title">
         <form class="admin-login__form" data-login-form novalidate>
@@ -203,7 +242,7 @@ function renderLogin(message = "") {
           <label class="admin-field">
             <span>Електронна адреса</span>
             <input name="email" type="email" inputmode="email" autocomplete="username" required aria-describedby="login-email-hint">
-            <small id="login-email-hint">Адреса користувача Supabase Auth у DEV.</small>
+            <small id="login-email-hint">Обліковий запис працівника з активним профілем.</small>
           </label>
           <label class="admin-field">
             <span>Пароль</span>
@@ -281,8 +320,8 @@ function renderShell(definition, content) {
             ${icon("search")}
             <input id="admin-global-search" name="q" type="search" autocomplete="off" placeholder="Пошук товару або SKU">
           </form>
-          <a class="admin-environment" href="https://supabase.com/dashboard/project/${DEV_PROJECT_REF}" target="_blank" rel="noreferrer" aria-label="Відкрити Supabase DEV у новій вкладці">
-            <span aria-hidden="true"></span><strong>DEV</strong><small>Supabase</small>${icon("external")}
+          <a class="admin-environment admin-environment--${environment.key}" href="${environment.dashboardUrl}" target="_blank" rel="noreferrer" aria-label="Відкрити ${escapeHtml(environment.name)} у новій вкладці">
+            <span aria-hidden="true"></span><strong>${environment.label}</strong><small>Supabase</small>${icon("external")}
           </a>
         </header>
         <main class="admin-main" id="admin-main" tabindex="-1">${content}</main>
@@ -293,30 +332,31 @@ function renderShell(definition, content) {
 }
 
 function renderNavigation(activeSection) {
-  return NAV_GROUPS.map(group => `
+  return NAV_GROUPS.filter(group => group.paths.some(path => ROUTES[path].roles.includes(activeProfile.role))).map(group => `
     <section class="admin-nav__group" aria-labelledby="nav-${slug(group.label)}">
       <h2 id="nav-${slug(group.label)}">${group.label}</h2>
       ${group.paths.map(path => {
         const item = ROUTES[path];
         const allowed = item.roles.includes(activeProfile.role);
-        if (!allowed && path === "/admin/settings") return "";
+        if (!allowed) return "";
         return `<a href="${path}" data-admin-link ${item.section === activeSection ? 'aria-current="page"' : ""}>${icon(item.icon)}<span>${item.title}</span></a>`;
       }).join("")}
     </section>`).join("");
 }
 
-function renderDashboard(data) {
+function renderDashboard(data, salesHtml = "") {
   const importDate = data.lastImport?.finished_at || data.lastImport?.started_at;
   const version = typeof data.version === "string" ? data.version : data.version?.version;
   return `
     <div class="admin-page-head">
       <div>
-        <p class="admin-kicker">КАТАЛОГ · ${formatDate(new Date())}</p>
-        <h1>Огляд каталогу</h1>
-        <p>Стан канонічних даних у development середовищі.</p>
+        <p class="admin-kicker">${formatDate(new Date())}</p>
+        <h1>Огляд</h1>
+        <p>Продажі та каталог · ${escapeHtml(environment.name)}.</p>
       </div>
       <a class="admin-button admin-button--secondary" href="/admin/products" data-admin-link>Перейти до товарів${icon("arrow")}</a>
     </div>
+    ${salesHtml}
     <section class="admin-metrics" aria-labelledby="catalog-state-title">
       <header><h2 id="catalog-state-title">Стан даних</h2><span class="admin-status admin-status--success">${icon("check")}Синхронізовано</span></header>
       <dl>
@@ -340,8 +380,8 @@ function renderDashboard(data) {
       <aside class="admin-panel admin-release" aria-labelledby="release-title">
         <header class="admin-panel__head"><div><p class="admin-kicker">ДЖЕРЕЛО</p><h2 id="release-title">Останнє оновлення</h2></div></header>
         <dl>
-          <div><dt>Середовище</dt><dd>Supabase DEV</dd></div>
-          <div><dt>Project ref</dt><dd><code>${DEV_PROJECT_REF}</code></dd></div>
+          <div><dt>Середовище</dt><dd>${escapeHtml(environment.name)}</dd></div>
+          <div><dt>Project ref</dt><dd><code>${environment.projectRef}</code></dd></div>
           <div><dt>Catalog version</dt><dd>${escapeHtml(shortVersion(version) || "Поточна")}</dd></div>
           <div><dt>Import</dt><dd>${data.lastImport ? escapeHtml(data.lastImport.status) : "Недоступно для ролі"}</dd></div>
           <div><dt>Завершено</dt><dd>${importDate ? formatDateTime(importDate) : "—"}</dd></div>
@@ -356,10 +396,10 @@ function renderDashboard(data) {
 
 function renderDashboardError(error) {
   return `
-    <div class="admin-page-head"><div><p class="admin-kicker">КАТАЛОГ</p><h1>Огляд каталогу</h1><p>Стан канонічних даних у development середовищі.</p></div></div>
+    <div class="admin-page-head"><div><p class="admin-kicker">КАТАЛОГ</p><h1>Огляд каталогу</h1><p>Стан канонічних даних · ${escapeHtml(environment.name)}.</p></div></div>
     <section class="admin-state-panel" role="alert">
       ${icon("warning")}
-      <div><h2>Не вдалося завантажити показники</h2><p>${escapeHtml(error?.message || "DEV database не відповіла.")}</p></div>
+      <div><h2>Не вдалося завантажити показники</h2><p>${escapeHtml(error?.message || "База даних не відповіла.")}</p></div>
       <button class="admin-button admin-button--secondary" type="button" data-retry>Спробувати ще раз</button>
     </section>`;
 }
@@ -377,7 +417,7 @@ function renderPlaceholder(definition) {
       <header><span>${icon(definition.icon)}</span><div><p class="admin-kicker">ПІДГОТОВЛЕНО</p><h2 id="foundation-title">Контур наступного етапу</h2></div></header>
       <ol>${page.rows.map(([title, description], index) => `<li><span>${String(index + 1).padStart(2, "0")}</span><div><strong>${escapeHtml(title)}</strong><p>${escapeHtml(description)}</p></div><small>Ще не активовано</small></li>`).join("")}</ol>
     </section>
-    <p class="admin-boundary-note">На етапі Admin Foundation зміни даних вимкнені. Production storefront і Supabase PROD не зачіпаються.</p>`;
+    <p class="admin-boundary-note">Розділ ще в розробці: зміни даних тут поки вимкнені.</p>`;
 }
 
 function renderAccessDenied(profile) {
@@ -416,7 +456,7 @@ function renderNotFound() {
 
 function renderFatal(error) {
   document.title = "Помилка конфігурації | Софіївка";
-  root.innerHTML = `<main class="admin-fatal"><span>${icon("warning")}</span><h1>Admin Foundation не запущено</h1><p>${escapeHtml(error?.message || "Невідома помилка конфігурації.")}</p><a href="/">Повернутися на сайт</a></main>`;
+  root.innerHTML = `<main class="admin-fatal"><span>${icon("warning")}</span><h1>Адміністрування не запущено</h1><p>${escapeHtml(error?.message || "Невідома помилка конфігурації.")}</p><a href="/">Повернутися на сайт</a></main>`;
   setLoading(false);
 }
 
@@ -466,6 +506,7 @@ function handleDrawerKeydown(event) {
 }
 
 async function handleLogout() {
+  resetProductsCache();
   await auth.signOut();
   activeProfile = null;
   activeSession = null;
@@ -473,6 +514,7 @@ async function handleLogout() {
 }
 
 async function expireSession() {
+  resetProductsCache();
   auth.clearSession();
   activeProfile = null;
   activeSession = null;
@@ -489,6 +531,7 @@ function bindRouter() {
     navigate(`${link.pathname}${link.search}`);
   });
   window.addEventListener("popstate", () => route().catch(renderFatal));
+  window.addEventListener("admin:navigate", event => navigate(event.detail.target, { replace: Boolean(event.detail.replace) }));
 }
 
 function navigate(target, { replace = false } = {}) {

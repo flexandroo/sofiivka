@@ -52,8 +52,9 @@ assert.deepEqual(legacyNavigationLinks, [], `legacy category links remain in act
 assert.deepEqual(accountNavigationLinks, [], `unfinished account remains in active navigation: ${JSON.stringify(accountNavigationLinks)}`);
 
 const shellSource = fs.readFileSync(path.join(root, "page-shell.js"), "utf8");
-assert.ok(shellSource.includes("Дані з цієї форми залишаються у браузері й не передаються магазину"), "checkout must disclose that the inactive form does not transmit data");
-assert.ok(!shellSource.includes(">Надіслати замовлення</button>"), "inactive checkout must not claim to submit an order");
+// Checkout is live since CRM v1: it submits through the CRM client, and discloses when online ordering is unavailable.
+assert.ok(shellSource.includes("window.sofievkaCrm.submitOrder"), "checkout must submit orders through the CRM client");
+assert.ok(shellSource.includes("Онлайн-оформлення тимчасово недоступне"), "checkout must disclose when online ordering is unavailable");
 assert.ok(!shellSource.includes("Що ще не підключено в макеті"), "customer-facing payment copy must not mention a mockup");
 assert.ok(!shellSource.includes("Редакційні заготовки"), "blog must not expose editorial placeholder copy");
 assert.ok(!shellSource.includes("Майбутній формат кейсу"), "portfolio must not expose a future-case template");

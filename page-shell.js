@@ -199,9 +199,146 @@
   function renderPortfolio(){ return hero("Реалізовані об'єкти","Рішення, які можна перевірити","Ми не публікуємо вигадані кейси. Тут з'являться підтверджені об'єкти з фотографіями, складом системи та межами виконаних робіт.") + `<section class="page-section"><div class="container"><div class="portfolio-grid"><article class="editorial-card"><span>Формат кейсу</span><div><h2>Вихідна задача</h2><p>Тип об'єкта, обмеження та критерії, за якими обиралося рішення.</p></div></article><article class="editorial-card"><span>Формат кейсу</span><div><h2>Склад системи</h2><p>Перевірені моделі, ключові вузли та монтажні матеріали без рекламного перебільшення.</p></div></article><article class="editorial-card"><span>Формат кейсу</span><div><h2>Результат і сервіс</h2><p>Фактичний обсяг робіт, запуск, документація та подальше обслуговування.</p></div></article></div><div class="empty-state" style="margin-top:32px"><h2>Готуємо перші підтверджені кейси</h2><p>Фото й результати будуть додані після дозволу замовників та технічної перевірки описів.</p><a class="button button--secondary" href="/solutions.html">Переглянути напрями рішень</a></div></div></section>`; }
 
   function renderCart(){ const value=cart(); const lines=Object.entries(value).filter(([id,q])=>q>0 && productById(id)); return hero("Кошик","Ваше замовлення","Перевірте товари й кількість перед оформленням.",true)+`<section class="page-section"><div class="container" data-cart-view>${cartMarkup(lines)}</div></section>`; }
-  function cartMarkup(lines){ if(!lines.length) return `<div class="empty-state"><h2>Кошик порожній</h2><p>Додайте товар з каталогу, щоб перейти до оформлення.</p><a class="button button--primary" href="/catalog.html">До каталогу</a></div>`; const total=lines.reduce((sum,[id,q])=>sum+productById(id).price*q,0); return `<div class="cart-layout"><div class="cart-items">${lines.map(([id,q])=>{const p=productById(id);return `<article class="cart-item"><a class="cart-item__image" href="${productUrl(p)}"><img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.title)}"></a><div><h2><a href="${productUrl(p)}">${escapeHtml(p.title)}</a></h2><p>Код товару: ${escapeHtml(p.sku)}</p><div class="cart-item__controls"><button data-qty="${escapeHtml(id)}" data-delta="-1" aria-label="Зменшити">−</button><output>${q}</output><button data-qty="${escapeHtml(id)}" data-delta="1" aria-label="Збільшити">+</button></div></div><div class="cart-item__price"><strong>${money(p.price*q)}</strong><button class="cart-item__remove" data-remove="${escapeHtml(id)}">Видалити</button></div></article>`}).join("")}</div><aside class="order-summary"><h2>Разом</h2><dl><div><dt>Товари</dt><dd>${money(total)}</dd></div><div><dt>Доставка</dt><dd>після уточнення</dd></div><div class="order-summary__total"><dt>До оплати</dt><dd>${money(total)}</dd></div></dl><a class="button button--primary" href="/checkout.html">Перейти до оформлення</a></aside></div>`; }
+  function linePrice(product) { return Number(product?.price) > 0 ? Number(product.price) : null; }
+  function cartTotals(lines) {
+    return lines.reduce((acc, [id, q]) => {
+      const price = linePrice(productById(id));
+      if (price === null) acc.unpriced += 1; else acc.total += price * q;
+      acc.count += q;
+      return acc;
+    }, { total: 0, unpriced: 0, count: 0 });
+  }
+  function totalLabel(totals) {
+    if (!totals.unpriced) return money(totals.total);
+    return totals.total ? `${money(totals.total)} + уточнення` : "Після уточнення";
+  }
+  function cartMarkup(lines){
+    if(!lines.length) return `<div class="empty-state"><h2>Кошик порожній</h2><p>Додайте товар з каталогу, щоб перейти до оформлення.</p><a class="button button--primary" href="/catalog.html">До каталогу</a></div>`;
+    const totals = cartTotals(lines);
+    return `<div class="cart-layout"><div class="cart-items">${lines.map(([id,q])=>{const p=productById(id);const price=linePrice(p);return `<article class="cart-item"><a class="cart-item__image" href="${productUrl(p)}"><img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.title)}"></a><div><h2><a href="${productUrl(p)}">${escapeHtml(p.title)}</a></h2><p>Код товару: ${escapeHtml(p.sku)}</p><div class="cart-item__controls"><button data-qty="${escapeHtml(id)}" data-delta="-1" aria-label="Зменшити">−</button><output>${q}</output><button data-qty="${escapeHtml(id)}" data-delta="1" aria-label="Збільшити">+</button></div></div><div class="cart-item__price"><strong>${price===null?"Ціну уточнюйте":money(price*q)}</strong><button class="cart-item__remove" data-remove="${escapeHtml(id)}">Видалити</button></div></article>`}).join("")}</div><aside class="order-summary"><h2>Разом</h2><dl><div><dt>Товари</dt><dd>${totals.total?money(totals.total):"—"}</dd></div>${totals.unpriced?`<div><dt>Ціна за запитом</dt><dd>${totals.unpriced} поз.</dd></div>`:""}<div><dt>Доставка</dt><dd>після уточнення</dd></div><div class="order-summary__total"><dt>До оплати</dt><dd>${totalLabel(totals)}</dd></div></dl><a class="button button--primary" href="/checkout.html">Перейти до оформлення</a></aside></div>`;
+  }
 
-  function renderCheckout(){ const value=cart(); const lines=Object.entries(value).filter(([id,q])=>q>0 && productById(id)); const total=lines.reduce((s,[id,q])=>s+productById(id).price*q,0); return hero("Оформлення","Перевірка майбутнього замовлення","Перевірте склад кошика та доступні способи отримання. Онлайн-оформлення буде активоване після погодження операційного й юридичного процесу.",true)+`<section class="page-section"><div class="container checkout-layout"><form class="checkout-form" data-checkout><div class="notice"><strong>Замовлення не надсилається.</strong> Онлайн-оформлення ще не активне. Дані з цієї форми залишаються у браузері й не передаються магазину.</div><section class="form-section"><h2>1. Контактні дані</h2><div class="form-grid"><label class="field"><span>Ім'я</span><input name="name" autocomplete="name" required></label><label class="field"><span>Телефон</span><input name="phone" type="tel" autocomplete="tel" required placeholder="+38 (___) ___ __ __"></label><label class="field field--full"><span>Email</span><input name="email" type="email" autocomplete="email"></label></div></section><section class="form-section"><h2>2. Доставка</h2><div class="choice-list"><label class="choice"><input type="radio" name="delivery" value="carrier" checked><span><strong>Перевізник по Україні</strong><small>Місто й відділення менеджер уточнить під час підтвердження.</small></span></label><label class="choice"><input type="radio" name="delivery" value="pickup"><span><strong>Самовивіз</strong><small>Після підтвердження готовності замовлення.</small></span></label></div></section><section class="form-section"><h2>3. Оплата</h2><div class="choice-list"><label class="choice"><input type="radio" name="payment" value="confirm" checked><span><strong>Після підтвердження менеджером</strong><small>Доступний спосіб залежить від товару та доставки.</small></span></label></div><label class="field" style="margin-top:18px"><span>Коментар</span><textarea name="comment" placeholder="Питання щодо сумісності, доставки або документів"></textarea></label></section><button class="button button--primary" type="submit">Перевірити заповнення</button></form><aside class="order-summary"><h2>Ваше замовлення</h2><dl>${lines.length?lines.map(([id,q])=>{const p=productById(id);return `<div><dt>${escapeHtml(p.title)} · ${q} шт.</dt><dd>${money(p.price*q)}</dd></div>`}).join(""):`<div><dt>Кошик</dt><dd>порожній</dd></div>`}<div class="order-summary__total"><dt>Разом</dt><dd>${money(total)}</dd></div></dl><a href="/cart.html">← Повернутися до кошика</a></aside></div></section>`; }
+  function renderCheckout(){
+    const value=cart();
+    const lines=Object.entries(value).filter(([id,q])=>q>0 && productById(id));
+    const totals=cartTotals(lines);
+    const online=Boolean(window.sofievkaCrm?.available);
+    if(!lines.length) return hero("Оформлення","Оформлення замовлення","Додайте товари до кошика, щоб оформити замовлення.",true)+`<section class="page-section"><div class="container">${cartMarkup([])}</div></section>`;
+    return hero("Оформлення","Оформлення замовлення","Залиште контакти — менеджер перевірить наявність, уточнить доставку й підтвердить замовлення. Оплата після підтвердження.",true)+`<section class="page-section"><div class="container checkout-layout"><form class="checkout-form" data-checkout novalidate>
+      ${online?"":`<div class="notice"><strong>Онлайн-оформлення тимчасово недоступне.</strong> Зателефонуйте нам — менеджер оформить замовлення.</div>`}
+      <div class="notice notice--error" data-checkout-error role="alert" hidden></div>
+      <section class="form-section"><h2>1. Контактні дані</h2><div class="form-grid">
+        <label class="field"><span>Ім'я та прізвище</span><input name="name" autocomplete="name" required minlength="2" maxlength="160"></label>
+        <label class="field"><span>Телефон</span><input name="phone" type="tel" autocomplete="tel" required placeholder="+38 (0__) ___ __ __" inputmode="tel" maxlength="24"></label>
+        <label class="field field--full"><span>Email <small>(необов'язково)</small></span><input name="email" type="email" autocomplete="email" maxlength="254"></label>
+      </div></section>
+      <section class="form-section"><h2>2. Отримання</h2><div class="choice-list">
+        <label class="choice"><input type="radio" name="delivery" value="carrier" checked><span><strong>Доставка перевізником по Україні</strong><small>Нова пошта або інший перевізник — погодимо під час підтвердження.</small></span></label>
+        <label class="choice"><input type="radio" name="delivery" value="pickup"><span><strong>Самовивіз з магазину</strong><small>Після підтвердження готовності замовлення.</small></span></label>
+      </div><div class="form-grid" data-carrier-fields style="margin-top:18px">
+        <label class="field"><span>Місто</span><input name="city" autocomplete="address-level2" maxlength="120"></label>
+        <label class="field"><span>Відділення або адреса</span><input name="deliveryPoint" maxlength="240"></label>
+      </div></section>
+      <section class="form-section"><h2>3. Оплата</h2><div class="choice-list"><label class="choice"><input type="radio" name="payment" value="confirm" checked><span><strong>Після підтвердження менеджером</strong><small>Рахунок, оплата на картку або при отриманні — залежно від товару та доставки.</small></span></label></div>
+        <label class="field" style="margin-top:18px"><span>Коментар</span><textarea name="comment" maxlength="4000" placeholder="Питання щодо сумісності, доставки або документів"></textarea></label>
+      </section>
+      <label class="checkout-hp" aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+      <button class="button button--primary" type="submit" data-checkout-submit ${online?"":"disabled"}>Підтвердити замовлення</button>
+      <p class="checkout-legal">Натискаючи кнопку, ви погоджуєтесь на обробку контактних даних для виконання замовлення. <a href="/privacy">Політика конфіденційності</a></p>
+    </form><aside class="order-summary"><h2>Ваше замовлення</h2><dl>${lines.map(([id,q])=>{const p=productById(id);const price=linePrice(p);return `<div><dt>${escapeHtml(p.title)} · ${q} шт.</dt><dd>${price===null?"за запитом":money(price*q)}</dd></div>`}).join("")}<div class="order-summary__total"><dt>Разом</dt><dd>${totalLabel(totals)}</dd></div></dl>${totals.unpriced?`<p class="order-summary__note">Ціну позицій «за запитом» менеджер повідомить під час підтвердження.</p>`:""}<a href="/cart.html">← Повернутися до кошика</a></aside></div></section>`;
+  }
+  function renderOrderSuccess(result){
+    const number = escapeHtml(result?.number ?? "");
+    return `<div class="empty-state checkout-success" tabindex="-1"><p class="page-kicker">Замовлення прийнято</p><h2>№ ${number}</h2><p>Дякуємо! Менеджер зателефонує найближчим часом у робочий час, щоб підтвердити наявність, доставку й оплату.</p>${result?.hasUnpricedItems?`<p>Ціну позицій «за запитом» повідомимо під час дзвінка.</p>`:""}<a class="button button--primary" href="/catalog.html">Повернутися до каталогу</a></div>`;
+  }
+  function bindCheckout(){
+    const form=document.querySelector("[data-checkout]");
+    if(!form) return;
+    const carrierFields=form.querySelector("[data-carrier-fields]");
+    const syncDelivery=()=>{ if(carrierFields) carrierFields.hidden=form.querySelector('input[name="delivery"]:checked')?.value!=="carrier"; };
+    form.querySelectorAll('input[name="delivery"]').forEach(input=>input.addEventListener("change",syncDelivery));
+    syncDelivery();
+    const errorBox=form.querySelector("[data-checkout-error]");
+    const submit=form.querySelector("[data-checkout-submit]");
+    form.addEventListener("submit",async event=>{
+      event.preventDefault();
+      errorBox.hidden=true;
+      const data=new FormData(form);
+      const phoneDigits=String(data.get("phone")||"").replace(/\D/g,"");
+      const phoneInput=form.querySelector('input[name="phone"]');
+      phoneInput.setCustomValidity(phoneDigits.length>=9&&phoneDigits.length<=15?"":"Вкажіть номер телефону, наприклад 067 123 45 67");
+      if(!form.reportValidity()) return;
+      const items=Object.entries(cart()).map(([id,quantity])=>({id,quantity}));
+      if(!items.length){ errorBox.textContent="Кошик порожній."; errorBox.hidden=false; return; }
+      submit.disabled=true; submit.setAttribute("aria-busy","true"); submit.textContent="Надсилаємо…";
+      try{
+        const result=await window.sofievkaCrm.submitOrder({
+          name:data.get("name"), phone:data.get("phone"), email:data.get("email"),
+          delivery:data.get("delivery"), city:data.get("city"), deliveryPoint:data.get("deliveryPoint"),
+          comment:data.get("comment"), website:data.get("website"), items
+        });
+        saveCart({});
+        const container=form.closest(".checkout-layout");
+        container.innerHTML=renderOrderSuccess(result);
+        container.querySelector(".checkout-success")?.focus();
+        window.scrollTo({top:0,behavior:"smooth"});
+      }catch(error){
+        errorBox.textContent=error?.message||"Не вдалося надіслати замовлення. Спробуйте ще раз.";
+        errorBox.hidden=false;
+        errorBox.scrollIntoView({block:"center",behavior:"smooth"});
+        submit.disabled=false; submit.removeAttribute("aria-busy"); submit.textContent="Підтвердити замовлення";
+      }
+    });
+  }
+  // Generic lead form: [data-lead-form="contact|partner_spec|callback"].
+  function bindLeadForms(){
+    document.querySelectorAll("[data-lead-form]").forEach(form=>{
+      if(form.dataset.leadBound) return;
+      form.dataset.leadBound="1";
+      const errorBox=form.querySelector("[data-lead-error]");
+      const submit=form.querySelector('[type="submit"]');
+      const idleLabel=submit?.textContent;
+      if(!window.sofievkaCrm?.available && submit){ submit.disabled=true; if(errorBox){ errorBox.textContent="Онлайн-відправлення тимчасово недоступне. Зателефонуйте або напишіть нам."; errorBox.hidden=false; } }
+      form.addEventListener("submit",async event=>{
+        event.preventDefault();
+        if(errorBox) errorBox.hidden=true;
+        const data=new FormData(form);
+        const phoneDigits=String(data.get("phone")||"").replace(/\D/g,"");
+        const phoneInput=form.querySelector('input[name="phone"]');
+        phoneInput?.setCustomValidity(phoneDigits.length>=9&&phoneDigits.length<=15?"":"Вкажіть номер телефону, наприклад 067 123 45 67");
+        if(!form.reportValidity()) return;
+        const spec=String(data.get("spec")||"");
+        if(submit){ submit.disabled=true; submit.setAttribute("aria-busy","true"); submit.textContent="Надсилаємо…"; }
+        try{
+          const result=await window.sofievkaCrm.submitLead({
+            type:form.dataset.leadForm, name:data.get("name"), phone:data.get("phone"), email:data.get("email"),
+            company:data.get("company"), subject:data.get("subject"), message:data.get("message"),
+            specLines:spec?window.sofievkaCrm.parseSpecLines(spec):[], pageUrl:location.pathname, website:data.get("website")
+          });
+          form.innerHTML=`<div class="lead-success" tabindex="-1" role="status"><p class="page-kicker">Звернення № ${escapeHtml(result?.number??"")}</p><h3>Дякуємо, ми отримали ваш запит</h3><p>Менеджер зв’яжеться з вами найближчим часом у робочий час.</p></div>`;
+          form.querySelector(".lead-success")?.focus();
+        }catch(error){
+          if(errorBox){ errorBox.textContent=error?.message||"Не вдалося надіслати. Спробуйте ще раз."; errorBox.hidden=false; }
+          if(submit){ submit.disabled=false; submit.removeAttribute("aria-busy"); submit.textContent=idleLabel; }
+        }
+      });
+    });
+  }
+  function leadFormFields({ company=false, subject=false, spec=false, messageLabel="Ваш запит", messageRequired=true, submitLabel="Надіслати" }={}){
+    return `<div class="notice notice--error" data-lead-error role="alert" hidden></div>
+      <div class="form-grid">
+        <label class="field"><span>Ім'я</span><input name="name" autocomplete="name" required minlength="2" maxlength="160"></label>
+        <label class="field"><span>Телефон</span><input name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="24" placeholder="+38 (0__) ___ __ __"></label>
+        ${company?`<label class="field"><span>Компанія <small>(необов'язково)</small></span><input name="company" autocomplete="organization" maxlength="200"></label>`:""}
+        <label class="field${company?"":" field--full"}"><span>Email <small>(необов'язково)</small></span><input name="email" type="email" autocomplete="email" maxlength="254"></label>
+        ${subject?`<label class="field field--full"><span>Об'єкт або тема</span><input name="subject" maxlength="240" placeholder="Наприклад, котельня ЖК «Сонячний»"></label>`:""}
+        ${spec?`<label class="field field--full"><span>Позиції: код і кількість, кожна з нового рядка</span><textarea name="spec" rows="6" maxlength="20000" placeholder="UPS 25-60 180 4&#10;MO550MECOSTD 2"></textarea></label>`:""}
+        <label class="field field--full"><span>${messageLabel}</span><textarea name="message" maxlength="8000" ${messageRequired?"required":""}></textarea></label>
+      </div>
+      <label aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+      <button class="button button--primary" type="submit">${submitLabel}</button>
+      <p class="checkout-legal">Надсилаючи форму, ви погоджуєтесь на обробку контактних даних для відповіді на звернення. <a href="/privacy">Політика конфіденційності</a></p>`;
+  }
   function renderFavorites(){ const selected=favorites().map(productById).filter(Boolean); return hero("Збережене","Обрані товари","Зберігайте моделі для порівняння або майбутньої консультації.",true)+`<section class="page-section"><div class="container">${selected.length?`<div class="catalog-products">${selected.map(productCard).join("")}</div>`:`<div class="empty-state"><h2>Поки нічого не збережено</h2><p>Позначте серцем потрібні товари — вони з'являться тут.</p><a class="button button--primary" href="/catalog.html">Перейти до каталогу</a></div>`}</div></section>`; }
   function renderAccount(){ return hero("Профіль","Особистий кабінет","Майбутнє місце для замовлень, збережених специфікацій і сервісних звернень.",true)+`<section class="page-section"><div class="container content-layout"><form class="aside-card" style="position:static" data-account><h2>Увійти</h2><p>Авторизація ще не підключена. Форма працює лише як візуальний сценарій.</p><label class="field" style="margin-top:22px"><span>Email або телефон</span><input required></label><label class="field" style="margin-top:14px"><span>Пароль</span><input type="password" required></label><button class="button button--primary" type="submit">Продовжити</button></form><div class="prose"><h2>Для приватних клієнтів</h2><p>Історія замовлень, гарантійні документи, адреси доставки та збережені комплекти.</p><h2>Для професіоналів</h2><p>Об'єкти, специфікації, повторне замовлення за кодами й доступ до погоджених документів.</p></div></div></section>`; }
 
@@ -245,7 +382,8 @@
   function updateCounts(){ const cartCount=Object.values(cart()).reduce((s,q)=>s+q,0); document.querySelectorAll("[data-cart-count]").forEach(x=>x.textContent=cartCount); document.querySelectorAll("[data-fav-count]").forEach(x=>x.textContent=favorites().length); }
   function bindPage(name){ if(name==="catalog"){const params=new URLSearchParams(location.search);let category=params.get("category")||"all";const query=(params.get("q")||"").toLocaleLowerCase("uk");const pills=[...document.querySelectorAll("[data-category]")];const render=()=>{const brands=[...document.querySelectorAll("[data-brand-filter]:checked")].map(x=>x.value);const result=PRODUCTS.filter(p=>(category==="all"||p.category===category)&&(!brands.length||brands.includes(p.brand))&&(!query||`${p.brand} ${p.model} ${p.code}`.toLocaleLowerCase("uk").includes(query)));document.querySelector("[data-catalog-products]").innerHTML=result.length?result.map(productCard).join(""):`<div class="catalog-empty"><h2>Нічого не знайдено</h2><p>Спробуйте іншу категорію або очистіть фільтри.</p></div>`;document.querySelector("[data-result-count]").textContent=result.length;pills.forEach(b=>b.classList.toggle("is-active",b.dataset.category===category));};pills.forEach(b=>b.addEventListener("click",()=>{category=b.dataset.category;render();}));document.querySelectorAll("[data-brand-filter]").forEach(x=>x.addEventListener("change",render));document.querySelector("[data-filter-toggle]")?.addEventListener("click",()=>document.querySelector("[data-filter]")?.classList.toggle("is-open"));render();}
     if(name==="cart") document.querySelector("[data-cart-view]")?.addEventListener("click",e=>{const q=e.target.closest("[data-qty]");const r=e.target.closest("[data-remove]");const value=cart();if(q)value[q.dataset.qty]=Math.max(0,(value[q.dataset.qty]||0)+Number(q.dataset.delta));if(r)delete value[r.dataset.remove];if(q||r){saveCart(value);const lines=Object.entries(value).filter(([,n])=>n>0);document.querySelector("[data-cart-view]").innerHTML=cartMarkup(lines);}});
-    document.querySelector("[data-checkout]")?.addEventListener("submit",e=>{e.preventDefault();toast("Заповнення перевірено. Дані не надсилалися й замовлення не створене.");});document.querySelector("[data-account]")?.addEventListener("submit",e=>{e.preventDefault();toast("Авторизація ще не підключена");}); }
+    if(name==="checkout") bindCheckout();
+    bindLeadForms();document.querySelector("[data-account]")?.addEventListener("submit",e=>{e.preventDefault();toast("Авторизація ще не підключена");}); }
   function siteNavLink(href, label, pages) {
     const active = pages.includes(page);
     return `<a href="${href}"${active ? ' class="is-active" aria-current="page"' : ""}>${label}</a>`;
@@ -784,7 +922,7 @@
   }
 
   function renderPartnershipExtended() {
-    return hero("Для професіоналів", "Закупівлі й комплектація за специфікацією", "Монтажникам, проєктантам і бізнесу — робота за кодами, перевірка аналогів, документи та узгоджені поставки.") + `<section class="page-section"><div class="container partner-capabilities"><article><span>01</span><h2>Специфікації</h2><p>Приймаємо PDF, XLSX або структурований список із кодами й кількістю.</p></article><article><span>02</span><h2>Технічна перевірка</h2><p>Звіряємо моделі, базові параметри та критичні точки сумісності.</p></article><article><span>03</span><h2>Поставка</h2><p>Фіксуємо резерв, партії, строки та спосіб передачі на об'єкт.</p></article><article><span>04</span><h2>Повторні замовлення</h2><p>Зберігаємо контекст об'єкта, щоб швидше відновити погоджений склад.</p></article></div></section><section class="page-section page-section--white"><div class="container content-layout"><article class="prose"><h2>Що надіслати для першого прорахунку</h2><ul><li>Назву або внутрішнє позначення об'єкта.</li><li>Коди, моделі, кількість і допустимі аналоги.</li><li>Бажаний строк та адресу або спосіб отримання.</li><li>Реквізити для рахунку після технічного погодження.</li></ul><h2>Як працюємо з аналогами</h2><p>Альтернатива не повинна змінювати проєкт непомітно. Ми позначаємо відмінності у приєднаннях, потужності, керуванні, монтажних розмірах та гарантійному маршруті.</p><h2>Комерційні умови</h2><p>Ціна залежить від бренду, обсягу, регулярності, способу оплати та логістики. Конкретні умови фіксуються у пропозиції, а не декларуються універсально на сторінці.</p></article><aside class="aside-card"><h2>Надіслати специфікацію</h2><p>У темі листа вкажіть об'єкт, а у файлі — коди та кількість.</p><a class="button button--primary" href="mailto:partner@sofievka.ua?subject=Специфікація%20об'єкта">partner@sofievka.ua</a><div class="link-list"><a href="/installation.html">Монтаж <span>→</span></a><a href="/delivery.html">Поставка <span>→</span></a></div></aside></div></section>`;
+    return hero("Для професіоналів", "Закупівлі й комплектація за специфікацією", "Монтажникам, проєктантам і бізнесу — робота за кодами, перевірка аналогів, документи та узгоджені поставки.") + `<section class="page-section"><div class="container partner-capabilities"><article><span>01</span><h2>Специфікації</h2><p>Приймаємо PDF, XLSX або структурований список із кодами й кількістю.</p></article><article><span>02</span><h2>Технічна перевірка</h2><p>Звіряємо моделі, базові параметри та критичні точки сумісності.</p></article><article><span>03</span><h2>Поставка</h2><p>Фіксуємо резерв, партії, строки та спосіб передачі на об'єкт.</p></article><article><span>04</span><h2>Повторні замовлення</h2><p>Зберігаємо контекст об'єкта, щоб швидше відновити погоджений склад.</p></article></div></section><section class="page-section page-section--white"><div class="container content-layout"><article class="prose"><h2>Що надіслати для першого прорахунку</h2><ul><li>Назву або внутрішнє позначення об'єкта.</li><li>Коди, моделі, кількість і допустимі аналоги.</li><li>Бажаний строк та адресу або спосіб отримання.</li><li>Реквізити для рахунку після технічного погодження.</li></ul><h2>Як працюємо з аналогами</h2><p>Альтернатива не повинна змінювати проєкт непомітно. Ми позначаємо відмінності у приєднаннях, потужності, керуванні, монтажних розмірах та гарантійному маршруті.</p><h2>Комерційні умови</h2><p>Ціна залежить від бренду, обсягу, регулярності, способу оплати та логістики. Конкретні умови фіксуються у пропозиції, а не декларуються універсально на сторінці.</p></article><aside class="aside-card"><h2>Є файл специфікації?</h2><p>PDF або XLSX надішліть листом — у темі вкажіть об'єкт.</p><a class="button button--secondary" href="mailto:partner@sofievka.ua?subject=Специфікація%20об'єкта">partner@sofievka.ua</a><div class="link-list"><a href="/installation.html">Монтаж <span>→</span></a><a href="/delivery.html">Поставка <span>→</span></a></div></aside></div></section><section class="page-section" id="specification"><div class="container"><form class="checkout-form lead-form" data-lead-form="partner_spec" novalidate><section class="form-section"><h2>Надіслати специфікацію на прорахунок</h2><p>Вставте коди й кількість — менеджер перевірить наявність, аналоги та повернеться з пропозицією.</p>${leadFormFields({ company: true, subject: true, spec: true, messageLabel: "Коментар: строки, допустимі аналоги, доставка", messageRequired: false, submitLabel: "Надіслати на прорахунок" })}</section></form></div></section>`;
   }
 
   function renderInstallationExtended() {
@@ -804,7 +942,7 @@
   }
 
   function renderContactExtended() {
-    return hero("Контакти", "Поговоріть із фахівцем", "Знайдемо товар за кодом, перевіримо базову сумісність або приймемо специфікацію на прорахунок.", true) + `<section class="page-section"><div class="container contact-grid"><div><dl class="contact-details"><div><dt>Телефони</dt><dd><a href="tel:+380501234567">+38 (050) 123 45 67</a><br><a href="tel:+380671234567">+38 (067) 123 45 67</a></dd></div><div><dt>Email</dt><dd><a href="mailto:info@sofievka.ua">info@sofievka.ua</a><br><a href="mailto:partner@sofievka.ua">partner@sofievka.ua</a></dd></div><div><dt>Графік</dt><dd>Пн–Пт: 9:00–18:00<br>Сб: 9:00–15:00</dd></div><div><dt>Адреса макета</dt><dd>м. Софіївка, вул. Соборна, 45<br><small>Підтвердити перед публічним запуском</small></dd></div></dl><div class="contact-purpose"><h2>Що вказати у зверненні</h2><ul><li>Назву або код товару.</li><li>Тип об'єкта й коротку задачу.</li><li>Фото, схему або специфікацію.</li><li>Місто й бажаний строк.</li></ul></div></div><div class="contact-map"><p class="page-kicker">Магазин і консультація</p><h2>Перед візитом уточніть наявність моделі</h2><p>Менеджер перевірить склад і підготує товар або консультацію до вашого приїзду.</p><a class="button button--primary" href="https://maps.google.com/?q=Софіївка+вул.+Соборна+45" target="_blank" rel="noreferrer">Прокласти маршрут</a></div></div></section>`;
+    return hero("Контакти", "Поговоріть із фахівцем", "Знайдемо товар за кодом, перевіримо базову сумісність або приймемо специфікацію на прорахунок.", true) + `<section class="page-section"><div class="container contact-grid"><div><dl class="contact-details"><div><dt>Телефони</dt><dd><a href="tel:+380501234567">+38 (050) 123 45 67</a><br><a href="tel:+380671234567">+38 (067) 123 45 67</a></dd></div><div><dt>Email</dt><dd><a href="mailto:info@sofievka.ua">info@sofievka.ua</a><br><a href="mailto:partner@sofievka.ua">partner@sofievka.ua</a></dd></div><div><dt>Графік</dt><dd>Пн–Пт: 9:00–18:00<br>Сб: 9:00–15:00</dd></div><div><dt>Адреса макета</dt><dd>м. Софіївка, вул. Соборна, 45<br><small>Підтвердити перед публічним запуском</small></dd></div></dl><div class="contact-purpose"><h2>Що вказати у зверненні</h2><ul><li>Назву або код товару.</li><li>Тип об'єкта й коротку задачу.</li><li>Фото, схему або специфікацію.</li><li>Місто й бажаний строк.</li></ul></div></div><div class="contact-map"><p class="page-kicker">Магазин і консультація</p><h2>Перед візитом уточніть наявність моделі</h2><p>Менеджер перевірить склад і підготує товар або консультацію до вашого приїзду.</p><a class="button button--primary" href="https://maps.google.com/?q=Софіївка+вул.+Соборна+45" target="_blank" rel="noreferrer">Прокласти маршрут</a></div></div></section><section class="page-section page-section--white" id="contact-form"><div class="container"><form class="checkout-form lead-form" data-lead-form="contact" novalidate><section class="form-section"><h2>Написати нам</h2><p>Опишіть задачу або вкажіть код товару — відповімо телефоном або листом.</p>${leadFormFields({ messageLabel: "Ваш запит", submitLabel: "Надіслати звернення" })}</section></form></div></section>`;
   }
 
   function renderBlogExtended() {

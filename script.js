@@ -844,7 +844,39 @@ function setupHomepageContact() {
       request ? `Запит: ${request}` : "Запит: консультація щодо обладнання"
     ].join("\n");
 
-    window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const crm = window.sofievkaCrm;
+    if (!crm?.available) {
+      window.location.href = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      return;
+    }
+
+    const submit = form.querySelector('[type="submit"]');
+    const idleLabel = submit?.innerHTML;
+    let status = form.querySelector("[data-home-contact-status]");
+    if (!status) {
+      status = document.createElement("p");
+      status.dataset.homeContactStatus = "";
+      status.setAttribute("role", "status");
+      status.className = "home-contact__status";
+      form.append(status);
+    }
+    if (submit) { submit.disabled = true; submit.textContent = "Надсилаємо…"; }
+    status.textContent = "";
+    crm.submitLead({
+      type: request ? "contact" : "callback",
+      name,
+      phone,
+      subject: `Магазин: ${store}`,
+      message: request,
+      pageUrl: location.pathname
+    }).then(result => {
+      form.reset();
+      status.textContent = `Дякуємо! Звернення № ${result?.number ?? ""} прийнято — передзвонимо найближчим часом.`;
+    }).catch(error => {
+      status.textContent = error?.message || "Не вдалося надіслати. Зателефонуйте нам, будь ласка.";
+    }).finally(() => {
+      if (submit) { submit.disabled = false; submit.innerHTML = idleLabel; }
+    });
   });
 }
 

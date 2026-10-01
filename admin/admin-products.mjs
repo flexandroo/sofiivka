@@ -6,6 +6,10 @@ const PRICE = Object.freeze({ known: "Вказана", on_request: "За зап�
 const DOCUMENT_TYPES = Object.freeze({ manual: "Посібник", datasheet: "Технічний лист", certificate: "Сертифікат", instruction: "Інструкція", other: "Інше" });
 let referenceCache = null;
 
+export function resetProductsCache() {
+  referenceCache = null;
+}
+
 export async function createProductsListView({ api, profile, navigate, search = location.search, signal }) {
   const filters = parseFilters(search);
   const [references, result] = await Promise.all([
@@ -17,7 +21,7 @@ export async function createProductsListView({ api, profile, navigate, search = 
   const html = `
     <section class="admin-products-page" data-products-page>
       <header class="admin-page-head admin-page-head--products">
-        <div><p class="admin-kicker">КАНОНІЧНИЙ КАТАЛОГ · DEV</p><h1>Товари</h1><p><strong>${formatNumber(result.total)}</strong> записів за поточними умовами.</p></div>
+        <div><p class="admin-kicker">КАНОНІЧНИЙ КАТАЛОГ</p><h1>Товари</h1><p><strong>${formatNumber(result.total)}</strong> записів за поточними умовами.</p></div>
         <button class="admin-button admin-button--primary" type="button" data-create-product ${canMutate ? "" : "disabled title=\"Недоступно для цієї ролі\""}>Новий товар${icon("arrow")}</button>
       </header>
       <form class="admin-products-filters" data-products-filters>
@@ -105,7 +109,7 @@ export async function createProductEditorView({ api, profile, navigate, legacyId
         <div><span class="admin-save-state" data-save-state>Змін немає</span><small>Збереження створює audit-запис і нову catalog revision.</small></div>
         <div class="admin-save-actions"><button class="admin-button admin-button--ghost" type="button" data-reset-product disabled>Скасувати зміни</button><button class="admin-button admin-button--primary" type="button" data-save-product disabled>Зберегти зміни</button></div>
       </footer>
-      <dialog class="admin-dialog" data-archive-dialog><h2>Архівувати товар?</h2><p>Товар зникне з публічного каталогу, але запис і його історія залишаться в DEV.</p><div><button class="admin-button admin-button--ghost" type="button" data-dialog-cancel>Скасувати</button><button class="admin-button admin-button--danger" type="button" data-archive-confirm>Архівувати</button></div></dialog>
+      <dialog class="admin-dialog" data-archive-dialog><h2>Архівувати товар?</h2><p>Товар зникне з публічного каталогу, але запис і його історія залишаться в базі.</p><div><button class="admin-button admin-button--ghost" type="button" data-dialog-cancel>Скасувати</button><button class="admin-button admin-button--danger" type="button" data-archive-confirm>Архівувати</button></div></dialog>
       <div class="admin-toast" data-editor-toast role="status" aria-live="polite" hidden></div>
     </section>`;
   return { html, bind: container => bindProductEditor(container, { api, references, detail, navigate, canCore, canContent }) };
@@ -215,7 +219,7 @@ function bindProductsList(container, context) {
   const bulkDialog = container.querySelector("[data-bulk-dialog]");
   openBulk?.addEventListener("click", () => {
     const labels = { publish: "опублікувати", hide: "приховати", archive: "архівувати", category: "змінити категорію для", brand: "змінити бренд для" };
-    bulkDialog.querySelector("[data-bulk-summary]").textContent = `Підтвердіть дію «${labels[action.value]}» для ${selected().length} товарів. Зміна одразу потрапить до public DEV read model.`;
+    bulkDialog.querySelector("[data-bulk-summary]").textContent = `Підтвердіть дію «${labels[action.value]}» для ${selected().length} товарів. Зміна одразу з’явиться на сайті.`;
     bulkDialog.showModal();
   });
   bulkDialog?.querySelector("[data-dialog-cancel]")?.addEventListener("click", () => bulkDialog.close());

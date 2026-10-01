@@ -9,11 +9,11 @@ export class AdminApiError extends Error {
   }
 }
 
-export function createAdminApi(config, getAccessToken, fetchImplementation = globalThis.fetch) {
+export function createAdminApi(config, getAccessToken, { fetchImplementation = globalThis.fetch } = {}) {
   const { url, publishableKey } = validatePublicConfig(config);
 
   async function request(pathname, { method = "GET", body, headers = {}, optional = false, signal } = {}) {
-    const token = getAccessToken();
+    const token = await getAccessToken();
     if (!token) throw new AdminApiError("Сесію завершено. Увійдіть знову.", { status: 401, code: "session_expired" });
     let response;
     try {
@@ -32,13 +32,13 @@ export function createAdminApi(config, getAccessToken, fetchImplementation = glo
     } catch (error) {
       if (error?.name === "AbortError") throw new AdminApiError("Запит скасовано.", { code: "aborted" });
       if (optional) return null;
-      throw new AdminApiError("DEV database зараз недоступна. Спробуйте ще раз.", { code: "network_error" });
+      throw new AdminApiError("База даних зараз недоступна. Спробуйте ще раз.", { code: "network_error" });
     }
     if (response.status === 401) throw new AdminApiError("Сесію завершено. Увійдіть знову.", { status: 401, code: "session_expired" });
     if (!response.ok) {
       if (optional && [403, 404].includes(response.status)) return null;
       const payload = await response.json().catch(() => null);
-      throw new AdminApiError(payload?.message || "Не вдалося отримати дані з DEV database.", { status: response.status, code: payload?.code });
+      throw new AdminApiError(payload?.message || "Не вдалося отримати дані з бази.", { status: response.status, code: payload?.code });
     }
     return response;
   }
@@ -136,7 +136,7 @@ export function createAdminApi(config, getAccessToken, fetchImplementation = glo
     if (!file.size || file.size > maximum) throw new AdminApiError("Файл перевищує дозволений розмір.", { code: "invalid_file_size" });
     const safeName = file.name.toLocaleLowerCase("en-US").replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "asset";
     const storagePath = `${productId}/${crypto.randomUUID()}-${safeName}`;
-    const token = getAccessToken();
+    const token = await getAccessToken();
     if (!token) throw new AdminApiError("Сесію завершено. Увійдіть знову.", { status: 401, code: "session_expired" });
     let response;
     try {
@@ -179,7 +179,41 @@ export function createAdminApi(config, getAccessToken, fetchImplementation = glo
     return Object.freeze({ products, published, noPrice, unknownInventory, categoryReviews, brands, lastImport, version });
   }
 
+  // CRM
+  const crmPage = filters => ({
+    page_number: Math.max(1, Number(filters.page) || 1),
+    page_size: Math.min(100, Math.max(1, Number(filters.pageSize) || 50))
+  });
+  const crm = Object.freeze({
+    overview: () => rpc("admin_crm_overview"),
+    listOrders: (filters = {}, { signal } = {}) => rpc("admin_crm_list_orders", {
+      query_text: filters.query || null, filter_status: filters.status || null, ...crmPage(filters)
+    }, signal),
+    getOrder: (number, { signal } = {}) => rpc("admin_crm_get_order", { order_number: Number(number) }, signal),
+    updateOrder: (number, patch, expectedUpdatedAt) => rpc("admin_crm_update_order", {
+      order_number: Number(number), patch, expected_updated_at: expectedUpdatedAt || null
+    }),
+    listLeads: (filters = {}, { signal } = {}) => rpc("admin_crm_list_leads", {
+      query_text: filters.query || null, filter_status: filters.status || null, filter_type: filters.type || null, ...crmPage(filters)
+    }, signal),
+    getLead: (number, { signal } = {}) => rpc("admin_crm_get_lead", { lead_number: Number(number) }, signal),
+    updateLead: (number, patch, expectedUpdatedAt) => rpc("admin_crm_update_lead", {
+      lead_number: Number(number), patch, expected_updated_at: expectedUpdatedAt || null
+    }),
+    listCustomers: (filters = {}, { signal } = {}) => rpc("admin_crm_list_customers", {
+      query_text: filters.query || null, ...crmPage(filters)
+    }, signal),
+    getCustomer: (id, { signal } = {}) => rpc("admin_crm_get_customer", { customer_id: id }, signal),
+    updateCustomer: (id, patch, expectedUpdatedAt) => rpc("admin_crm_update_customer", {
+      customer_id: id, patch, expected_updated_at: expectedUpdatedAt || null
+    }),
+    addNote: (entityType, entityKey, note) => rpc("admin_crm_add_note", {
+      entity_type: entityType, entity_key: String(entityKey), note
+    })
+  });
+
   return Object.freeze({
+    crm,
     getProfile,
     getDashboard,
     getProductReferenceData,

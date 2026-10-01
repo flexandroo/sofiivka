@@ -32,14 +32,26 @@ Push to `master` deploys production. Other branches deploy Vercel Preview builds
 ```bash
 npm run -s admin:qa
 npm run -s admin:products:qa
+npm run -s crm:qa
+npm run -s db:local:test        # every migration on in-process Postgres (PGlite) + CRM scenarios
+node tests/static-assets-qa.js
 node scripts/build-static-site.mjs --output-dir=dist --skip-assets
 ```
 
-## Admin status (2026-10-01)
+Full local browser QA without touching Supabase: build `dist`, then
+`node tests/db-local/qa-server.mjs --port=4300` serves the site plus a PGlite-backed Supabase
+look-alike (QA users `owner@qa.test`, `manager@qa.test`, `content@qa.test`, password in the file).
+Playwright: `/opt/npm-tools/node_modules/playwright` with Chromium in `/opt/pw-browsers` (the
+Playwright MCP blocks localhost, so drive the browser from a script).
 
-- Products Admin v1 lives on branch `codex/audit-phase-0` (commits `e3ae6fd`, `b390ade`).
-- Migrations `20260929000600`–`20260929001000` are applied on DEV only; repo files match DEV exactly.
-- Before merging to `master`: apply those migrations to PROD first, because the production build
-  serves `/admin` as soon as the branch is merged.
-- Open hardening item: legacy RPCs `update_product_commercial` / `update_product_content` and direct
-  table writes bypass `admin_save_product` (audit, concurrency check, public card refresh).
+## Admin and CRM status (2026-10-02)
+
+- Branch `codex/audit-phase-0`: Products Admin v1 (Codex) + CRM v1 and fixes (Claude).
+- Migrations `20260929000600`–`20260929001000` are on DEV only.
+- `20261001000100_admin_write_consistency` and `20261001000200_crm_v1` are written and tested on
+  PGlite; not yet applied to DEV or PROD.
+- CRM: storefront calls `crm_submit_order` / `crm_submit_lead` (anon); staff use `admin_crm_*`
+  RPCs (owner/admin/manager). Admin routes `/admin/orders`, `/admin/leads`, `/admin/customers`.
+- Admin runs against DEV in Preview and PROD in Production (`admin/admin-env.mjs`).
+- Go-live order: apply all pending migrations to PROD first, then merge to `master` (production
+  serves `/admin` and the live checkout as soon as it deploys), then create the PROD owner profile.

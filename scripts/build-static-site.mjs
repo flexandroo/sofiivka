@@ -79,6 +79,7 @@ for (const entry of await fs.readdir(outputDirectory, { withFileTypes: true })) 
   const filePath = path.join(outputDirectory, entry.name);
   let html = await fs.readFile(filePath, "utf8");
   if (!/catalog-runtime-config\.js/i.test(html)) html = html.replace(/<head>/i, '<head><script src="/catalog-runtime-config.js"></script>');
+  if (!/crm-client\.js/i.test(html)) html = html.replace(/<\/head>/i, '<script src="/crm-client.js?v=20261001-crm-1" defer></script></head>');
   if (source === "supabase") {
     html = html.replace(supplierFeedPattern, match => {
       removedFeedTags += 1;

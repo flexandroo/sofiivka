@@ -932,3 +932,19 @@ body[data-page="product"] {
 @media (prefers-reduced-motion: reduce) {
   .pdp-master *, .pdp-master *::before, .pdp-master *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* CRM forms: checkout, contact, partner specification */
+.notice--error { border-left-color: var(--danger); color: var(--danger); }
+.notice[hidden] { display: none; }
+.checkout-legal { margin: 14px 0 0; color: var(--text-subtle); font-size: 13px; }
+.checkout-legal a { color: inherit; text-decoration: underline; }
+.order-summary__note { margin: 12px 0 14px; color: rgba(255, 255, 255, .7); font-size: 13px; line-height: 1.45; }
+.order-summary dd { white-space: nowrap; }
+.lead-form .form-section > p { margin: -6px 0 20px; color: var(--text-secondary); }
+.lead-form .notice { margin-bottom: 18px; }
+.lead-form .field small, .checkout-form .field small { color: var(--text-subtle); font-weight: 400; }
+.lead-success, .checkout-success { outline: none; }
+.lead-success { padding: 8px 0; }
+.lead-success h3 { margin: 6px 0 8px; font-size: 22px; }
+.lead-success p:last-child { color: var(--text-secondary); }
+[data-carrier-fields][hidden] { display: none; }

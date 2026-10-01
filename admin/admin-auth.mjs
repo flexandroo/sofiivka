@@ -125,8 +125,19 @@ export function createAdminAuthClient(config, options = {}) {
     catch { /* Local logout remains authoritative if the network is unavailable. */ }
   }
 
+  // Access token for API calls, refreshed shortly before it expires so long editing
+  // sessions do not lose unsaved work to a silent 401.
+  async function getFreshAccessToken() {
+    const session = readStoredSession();
+    if (!session) return null;
+    if (!expiresSoon(session)) return session.access_token;
+    try { return (await refreshSession(session)).access_token; }
+    catch { return null; }
+  }
+
   return Object.freeze({
     getSession,
+    getFreshAccessToken,
     signInWithPassword,
     signOut,
     clearSession,

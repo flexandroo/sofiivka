@@ -19,9 +19,12 @@
     "admin:qa": "node tests/admin-foundation-qa.mjs",
     "admin:auth:dev": "node tests/admin-dev-auth-integration.mjs",
     "admin:products:dev": "node tests/products-admin-dev-integration.mjs",
-    "admin:products:qa": "node tests/products-admin-qa.mjs"
+    "admin:products:qa": "node tests/products-admin-qa.mjs",
+    "crm:qa": "node tests/crm-qa.mjs",
+    "db:local:test": "node tests/db-local/harness.mjs scenarios.mjs"
   },
   "devDependencies": {
-    "supabase": "^2.118.0"
+    "supabase": "^2.118.0",
+    "@electric-sql/pglite": "^0.5.8"
   }
 }
