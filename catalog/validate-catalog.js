@@ -29,7 +29,7 @@
       "pricing", "inventory", "publicationStatus", "images",
       "description", "shortDescription", "fullDescription", "descriptionSections",
       "normalizedAttributes", "catalogAttributes", "sourceAttributes", "unmappedAttributes",
-      "documents", "tags", "collections", "badges", "source", "seo", "normalizationError"
+      "documents", "tags", "collections", "badges", "source", "seo", "relatedProductIds", "normalizationError"
     ]);
 
     add(errors, "duplicate-product-id", duplicateValues(products, product => product.id), "Product IDs must be unique.");
