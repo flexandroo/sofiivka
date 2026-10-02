@@ -17,6 +17,7 @@ import { createAttributesListView, createAttributeDetailView } from "/admin/admi
 import { createPriceImportView } from "/admin/admin-prices.mjs";
 import { createPagesListView, createPageEditorView } from "/admin/admin-pages.mjs";
 import { createBannersView } from "/admin/admin-banners.mjs";
+import { createPostsListView, createPostEditorView } from "/admin/admin-posts.mjs";
 
 const ROLES = new Set(["owner", "admin", "manager", "content_manager"]);
 const ROLE_LABELS = Object.freeze({
@@ -38,6 +39,7 @@ const ROUTES = Object.freeze({
   "/admin/banners": { title: "Банери головної", section: "banners", icon: "media", roles: [...ROLES] },
   "/admin/media": { title: "Медіа", section: "media", icon: "media", roles: [...ROLES] },
   "/admin/pages": { title: "Сторінки", section: "pages", icon: "pages", roles: [...ROLES] },
+  "/admin/blog": { title: "Блог і кейси", section: "blog", icon: "blog", roles: [...ROLES] },
   "/admin/settings": { title: "Налаштування", section: "settings", icon: "settings", roles: ["owner", "admin"] },
   "/admin/users": { title: "Працівники", section: "users", icon: "user", roles: ["owner", "admin"] },
   "/admin/account": { title: "Мій обліковий запис", section: "account", icon: "lock", roles: [...ROLES] }
@@ -46,7 +48,7 @@ const NAV_GROUPS = Object.freeze([
   { label: "Головне", paths: ["/admin"] },
   { label: "Продажі", paths: ["/admin/orders", "/admin/leads", "/admin/customers"] },
   { label: "Каталог", paths: ["/admin/products", "/admin/collections"] },
-  { label: "Сайт", paths: ["/admin/banners", "/admin/pages"] },
+  { label: "Сайт", paths: ["/admin/banners", "/admin/pages", "/admin/blog"] },
   { label: "Дані", paths: ["/admin/categories", "/admin/brands", "/admin/attributes", "/admin/media"] },
   { label: "Система", paths: ["/admin/settings", "/admin/users"] }
 ]);
@@ -118,6 +120,7 @@ async function route() {
   const collectionMatch = path.match(/^\/admin\/collections\/([^/]+)$/);
   const attributeMatch = path.match(/^\/admin\/attributes\/([^/]+)$/);
   const pageMatch = path.match(/^\/admin\/pages\/([a-z0-9-]+)$/);
+  const postMatch = path.match(/^\/admin\/blog\/([0-9a-f-]{36})$/i);
   const definition = priceImport ? { ...ROUTES["/admin/products"], title: "Ціни та наявність" }
     : productEditorMatch ? { ...ROUTES["/admin/products"], title: "Редагування товару" }
     : orderMatch ? { ...ROUTES["/admin/orders"], title: `Замовлення № ${orderMatch[1]}` }
@@ -130,6 +133,7 @@ async function route() {
     : collectionMatch ? { ...ROUTES["/admin/collections"], title: "Підбірка" }
     : attributeMatch ? { ...ROUTES["/admin/attributes"], title: "Характеристика" }
     : pageMatch ? { ...ROUTES["/admin/pages"], title: "Сторінка" }
+    : postMatch ? { ...ROUTES["/admin/blog"], title: "Матеріал" }
     : ROUTES[path];
   if (!definition) return renderNotFound();
   if (!definition.roles.includes(activeProfile.role)) return renderForbidden(definition);
@@ -198,6 +202,8 @@ async function route() {
     : priceImport ? () => createPriceImportView({ api, search: location.search, signal })
     : path === "/admin/pages" ? () => createPagesListView({ api, signal })
     : pageMatch ? () => createPageEditorView({ api, slug: pageMatch[1], signal })
+    : path === "/admin/blog" ? () => createPostsListView({ api, search: location.search, signal })
+    : postMatch ? () => createPostEditorView({ api, id: postMatch[1].toLowerCase(), signal })
     : null;
   if (crmView) {
     try {

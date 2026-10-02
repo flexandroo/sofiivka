@@ -360,6 +360,18 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     upload: file => uploadAsset(file, { productId: "banners", kind: "site" })
   });
 
+  // Blog articles and cases (/admin/blog). Images go to the public site-media bucket.
+  const posts = Object.freeze({
+    list: ({ signal } = {}) => rpc("admin_list_site_posts", {}, signal),
+    get: (id, { signal } = {}) => rpc("admin_get_site_post", { post_id: String(id || "") }, signal),
+    create: payload => rpc("admin_create_site_post", { payload }),
+    update: (id, payload, expectedUpdatedAt) => rpc("admin_update_site_post", {
+      post_id: String(id), payload, expected_updated_at: expectedUpdatedAt || null
+    }),
+    remove: (id, expectedUpdatedAt) => rpc("admin_delete_site_post", { post_id: String(id), expected_updated_at: expectedUpdatedAt || null }),
+    upload: file => uploadAsset(file, { productId: "posts", kind: "site" })
+  });
+
   async function changePassword(password) {
     await request("/auth/v1/user", { method: "PUT", body: { password } });
   }
@@ -376,6 +388,7 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     relations,
     series,
     banners,
+    posts,
     getProfile,
     getDashboard,
     getProductReferenceData,

@@ -49,6 +49,7 @@
     returns: renderReturnsExtended,
     blog: renderBlogExtended,
     portfolio: renderPortfolioExtended,
+    post: renderPostTemplate,
     payment: renderPaymentExtended,
     buyers: renderBuyersExtended,
     search: renderSearchExtended,
@@ -88,6 +89,16 @@
     script.onerror = () => resolve(null);
     document.head.append(script);
   });
+  // Blog and cases: blog.html / portfolio.html keep their built-in cards as first paint;
+  // site-posts.js then lists the posts published in /admin/blog and fills post.html.
+  const SITE_POST_PAGES = new Set(["blog", "portfolio", "post"]);
+  const sitePosts = !SITE_POST_PAGES.has(page) ? null : window.sofievkaSitePosts ? Promise.resolve(window.sofievkaSitePosts) : new Promise(resolve => {
+    const script = document.createElement("script");
+    script.src = "/site-posts.js?v=20261002-posts-1";
+    script.onload = () => resolve(window.sofievkaSitePosts || null);
+    script.onerror = () => resolve(null);
+    document.head.append(script);
+  });
   const initialize = async () => {
     let catalogLoadError = null;
     try {
@@ -109,6 +120,7 @@
     window.sofievkaCatalogUI?.trackProductImages(root);
     window.sofievkaSiteSettings?.applyHooks(root);
     if (sitePages && !(catalogLoadError && window.sofievkaCatalogRemoteRequested)) sitePages.then(api => api?.apply(page, root)).catch(error => console.error("Page texts failed to load", error));
+    if (sitePosts && !(catalogLoadError && window.sofievkaCatalogRemoteRequested)) sitePosts.then(api => api?.apply(page, root)).catch(error => console.error("Posts failed to load", error));
     bindGlobal();
     await bindExtendedPage(page);
   };
@@ -993,6 +1005,14 @@
 
   function renderPortfolioExtended() {
     return hero("Інженерні задачі", "Від вихідних даних до робочої системи", "Показуємо логіку комплектації без вигаданих об’єктів, результатів або технічних показників.") + `<section class="page-section"><div class="container portfolio-showcase"><article class="portfolio-lead"><img src="/assets/images/solution-boiler-room.webp" alt="Обладнання котельні"><div><p class="page-kicker">Комплексна задача</p><h2>Котельня приватного будинку</h2><p>Тепловтрати, гаряча вода, зони опалення, автоматика, склад обладнання та межі монтажних робіт розглядаються як одна система.</p><a class="text-link" href="/solutions.html">Переглянути підхід до рішень →</a></div></article><div class="portfolio-notes"><article><span>01</span><h3>Вихідні дані</h3><p>Тип об'єкта, режими роботи, наявні мережі та технічні обмеження.</p></article><article><span>02</span><h3>Специфікація</h3><p>Основне обладнання, автоматика, арматура й монтажні компоненти.</p></article><article><span>03</span><h3>Реалізація</h3><p>Поставка, монтаж, запуск і розподіл відповідальності між учасниками.</p></article><article><span>04</span><h3>Супровід</h3><p>Документація, планове обслуговування та зрозумілий сервісний маршрут.</p></article></div></div></section><section class="page-section page-section--white"><div class="container consultation-band consultation-band--light"><div><p class="page-kicker">Ваш об'єкт</p><h2>Почнемо з задачі та вихідних даних</h2><p>Надішліть специфікацію, схему або опис об'єкта — визначимо, яких даних бракує для наступного кроку.</p></div><a class="button button--secondary" href="/contact.html">Передати задачу</a></div></section>`;
+  }
+
+  // post.html (/blog/<slug>, /portfolio/<slug>): a neutral frame that site-posts.js fills.
+  function renderPostTemplate() {
+    const isCase = location.pathname.startsWith("/portfolio/") || new URLSearchParams(location.search).get("kind") === "case";
+    const listTitle = isCase ? "Інженерні задачі" : "Корисно знати";
+    const listHref = isCase ? "/portfolio" : "/blog";
+    return `<section class="page-hero page-hero--light post-hero"><div class="container"><nav class="page-breadcrumbs" aria-label="Хлібні крихти"><a href="/index.html">Головна</a><span>/</span><a href="${listHref}" data-post-list-link="crumb">${listTitle}</a><span>/</span><span aria-current="page" data-post-current>Матеріал</span></nav><div class="page-hero__grid"><div><p class="page-kicker" data-post-kicker>${listTitle}</p><h1 data-post-title>Завантажуємо матеріал…</h1></div><p class="page-hero__lead" data-post-lead></p></div><p class="post-meta" data-post-meta hidden></p></div></section><section class="page-section page-section--white"><div class="container content-layout post-layout"><div class="post-main"><figure class="post-cover" data-post-cover hidden></figure><article class="prose post-body" data-post-body></article><div class="post-gallery" data-post-gallery hidden></div></div><aside class="aside-card post-aside"><dl class="post-facts" data-post-facts hidden></dl><p class="page-kicker">Ваш об'єкт</p><h2>Є схожа задача?</h2><p>Надішліть опис, схему або специфікацію — підкажемо, яких даних бракує для наступного кроку.</p><a class="button button--primary" href="/contact.html">Передати задачу</a><div class="link-list"><a href="${listHref}" data-post-list-link="back">← ${listTitle}</a><a href="/solutions.html">Комплексні рішення <span>→</span></a></div></aside></div></section><section class="page-section" data-post-more hidden><div class="container"><h2 class="post-more__title">Інші матеріали</h2><div class="article-grid article-grid--expanded" data-post-more-list></div></div></section>`;
   }
 
   async function bindExtendedPage(name) {
