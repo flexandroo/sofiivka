@@ -1,5 +1,6 @@
 import { icon } from "/admin/admin-icons.mjs";
 import { createCategoryFiltersPanel } from "/admin/admin-attributes.mjs";
+import { seriesPanel, bindSeriesPanel } from "/admin/admin-series.mjs";
 
 // Brands and categories. Identity fields (id, slug, parent, brand name) are set once at creation
 // and read-only afterwards: they drive storefront URLs and product cards. Records can be deleted
@@ -128,29 +129,32 @@ export async function createBrandDetailView({ api, brandId, signal }) {
               <a href="/admin/products?brand=${encodeURIComponent(brand.internalId)}" data-admin-link>Товари${icon("arrow")}</a></header>
             <dl>
               <div><dt>Усього</dt><dd>${number(brand.productCount)}</dd></div>
-              <div><dt>Серій</dt><dd>${number(brand.seriesCount)}</dd></div>
+              <div><dt>Серій</dt><dd data-series-count>${number(brand.seriesCount)}</dd></div>
             </dl>
           </section>
           ${countList("КАТЕГОРІЇ", "Де представлений", detail.categories, item => `<a href="/admin/categories/${encodeURIComponent(item.id)}" data-admin-link>${escape(item.title)}</a>`)}
-          ${countList("СЕРІЇ", "Лінійки бренду", detail.series, item => escape(item.name))}
+          ${seriesPanel(canEdit)}
           ${historyPanel(detail.history)}
           ${canEdit ? deletePanel("бренд", brand.name, brand.productCount
             ? `До бренду прив’язано товарів: ${number(brand.productCount)}. Перенесіть їх на інший бренд або приховайте бренд.`
-            : brand.seriesCount ? `У бренду є серії товарів: ${number(brand.seriesCount)}.` : "") : ""}
+            : brand.seriesCount ? `У бренду є серії товарів: ${number(brand.seriesCount)}. Спершу видаліть їх у блоці «Серії».` : "") : ""}
         </aside>
       </div>
       <div class="admin-toast" role="status" aria-live="polite" hidden></div>
     </section>`;
   return {
     html,
-    bind: container => bindEditor(container, {
-      canEdit,
-      fields: ["country", "websiteUrl", "logoUrl", "description", "visibility", "featured", "featuredOrder", "seoTitle", "seoDescription"],
-      toPatch: patch => ("featured" in patch ? { ...patch, featured: patch.featured === "true" } : patch),
-      save: patch => api.taxonomy.updateBrand(brand.id, patch, brand.updatedAt),
-      remove: () => api.taxonomy.deleteBrand(brand.id, brand.updatedAt),
-      afterRemove: "/admin/brands"
-    })
+    bind: container => {
+      bindEditor(container, {
+        canEdit,
+        fields: ["country", "websiteUrl", "logoUrl", "description", "visibility", "featured", "featuredOrder", "seoTitle", "seoDescription"],
+        toPatch: patch => ("featured" in patch ? { ...patch, featured: patch.featured === "true" } : patch),
+        save: patch => api.taxonomy.updateBrand(brand.id, patch, brand.updatedAt),
+        remove: () => api.taxonomy.deleteBrand(brand.id, brand.updatedAt),
+        afterRemove: "/admin/brands"
+      });
+      bindSeriesPanel(container, { api, brandId: brand.id });
+    }
   };
 }
 

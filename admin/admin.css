@@ -3187,3 +3187,33 @@ a.admin-user:hover strong { text-decoration: underline; }
   .admin-pages-block__head { flex-wrap: wrap; gap: 8px; }
   .admin-crm-table--pages td:nth-child(2) { display: none; }
 }
+/* Related products and series */
+.admin-related__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.admin-related__actions .admin-save-state { color: var(--text-subtle); font-size: 13px; }
+.admin-related__actions .admin-save-state.is-dirty { color: var(--text); font-weight: 700; }
+.admin-related__loading { padding: 18px 20px; }
+.admin-related__kind { padding: 18px 0 4px; border-bottom: 1px solid var(--divider); }
+.admin-related__kind:last-child { border-bottom: 0; }
+.admin-related__kind-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 20px; }
+.admin-related__kind-head h3 { margin: 0; font-size: 15px; letter-spacing: -.01em; }
+.admin-related__count { color: var(--text-subtle); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.admin-related__note { margin: 4px 20px 6px; color: var(--text-secondary); font-size: 13px; }
+.admin-related__search { margin-top: 4px; padding-bottom: 14px; }
+.admin-series__list { display: grid; margin: 0; padding: 4px 20px 12px; list-style: none; }
+.admin-series__list > li { padding: 10px 0; border-bottom: 1px solid var(--divider); }
+.admin-series__list > li:last-child { border-bottom: 0; }
+.admin-series__item { display: grid; gap: 6px; }
+.admin-series__info { display: grid; min-width: 0; gap: 2px; }
+.admin-series__info strong { overflow-wrap: anywhere; }
+.admin-series__info small { color: var(--text-subtle); font-size: 12px; overflow-wrap: anywhere; }
+.admin-series__actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.admin-series__actions .admin-button { min-height: 32px; padding: 4px 10px; font-size: 13px; }
+.admin-series__delete { color: var(--danger); }
+.admin-series .admin-panel__head { gap: 12px; }
+@media (max-width: 760px) {
+  .admin-related > header { align-items: flex-start; flex-direction: column; }
+  .admin-related__actions { width: 100%; justify-content: flex-start; }
+}
+.admin-related [hidden] { display: none; }
+/* The relations tab saves with its own button; hide the product form save bar there unless it has changes. */
+.admin-product-editor.is-relations-tab .admin-save-bar:has([data-save-product]:disabled) { display: none; }

@@ -329,6 +329,26 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     apply: payload => rpc("admin_apply_price_updates", { payload })
   });
 
+  // Manual related products of one product (accessory / compatible / similar).
+  const relations = Object.freeze({
+    get: (legacyId, { signal } = {}) => rpc("admin_get_product_relations", { target_legacy_id: String(legacyId || "") }, signal),
+    set: (legacyId, lists, expectedState) => rpc("admin_set_product_relations", {
+      target_legacy_id: String(legacyId), relations: lists, expected_state: expectedState || null
+    })
+  });
+
+  // Product series of one brand.
+  const series = Object.freeze({
+    list: (brandId, { signal } = {}) => rpc("admin_list_brand_series", { brand_id: String(brandId || "") }, signal),
+    create: (brandId, payload) => rpc("admin_create_series", { brand_id: String(brandId), payload }),
+    update: (id, patch, expectedUpdatedAt) => rpc("admin_update_series", {
+      series_id: String(id), patch, expected_updated_at: expectedUpdatedAt || null
+    }),
+    remove: (id, expectedUpdatedAt, unlinkProducts = false) => rpc("admin_delete_series", {
+      series_id: String(id), expected_updated_at: expectedUpdatedAt || null, unlink_products: Boolean(unlinkProducts)
+    })
+  });
+
   async function changePassword(password) {
     await request("/auth/v1/user", { method: "PUT", body: { password } });
   }
@@ -342,6 +362,8 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     pages,
     collections,
     attributes,
+    relations,
+    series,
     getProfile,
     getDashboard,
     getProductReferenceData,

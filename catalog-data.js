@@ -1836,14 +1836,43 @@
     });
   }
 
+  // Manual related products: the editor's ordered lists ({accessory, compatible, similar} of
+  // product ids). Products that are not loaded or not published are skipped.
+  const productById = new Map(products.map(item => [String(item.id), item]));
+  const relationKinds = Object.freeze(["accessory", "compatible", "similar"]);
+  function manualRelated(product, kind) {
+    const ids = product?.relatedProductIds?.[kind];
+    if (!Array.isArray(ids)) return [];
+    const seen = new Set([String(product.id)]);
+    return ids.map(id => String(id)).filter(id => !seen.has(id) && seen.add(id))
+      .map(id => productById.get(id))
+      .filter(item => item && (!item.publicationStatus || item.publicationStatus === "published"));
+  }
+  function manualRelatedIds(product) {
+    return new Set(relationKinds.flatMap(kind => Array.isArray(product?.relatedProductIds?.[kind]) ? product.relatedProductIds[kind].map(String) : []));
+  }
+  function accessoryProducts(product, limit = 8) {
+    return Object.freeze(manualRelated(product, "accessory").slice(0, limit));
+  }
+  function compatibleProducts(product, limit = 8) {
+    return Object.freeze(manualRelated(product, "compatible").slice(0, limit));
+  }
+
+  // Manual similar products first (up to 8), then automatic ones up to the limit.
   function relatedProducts(product, limit = 4) {
+    const manual = manualRelated(product, "similar").slice(0, Math.max(limit, 8));
+    return Object.freeze([...manual, ...automaticRelated(product, Math.max(0, limit - manual.length), manualRelatedIds(product))]);
+  }
+
+  function automaticRelated(product, limit, excluded) {
+    if (limit <= 0) return [];
     const sourceAttributes = product.normalizedAttributes || {};
-    return Object.freeze(products.filter(item => item.id !== product.id && item.primaryCategoryId === product.primaryCategoryId).map(item => {
+    return products.filter(item => item.id !== product.id && !excluded.has(String(item.id)) && item.primaryCategoryId === product.primaryCategoryId).map(item => {
       const shared = Object.keys(sourceAttributes).filter(id => hasValue(sourceAttributes[id]) && sourceAttributes[id] === item.normalizedAttributes?.[id]).length;
       const score = (item.seriesId && item.seriesId === product.seriesId ? 40 : 0) + (item.brandId === product.brandId ? 12 : 0) + shared * 5;
       const priceDistance = Math.abs(Number(item.price || 0) - Number(product.price || 0));
       return { item, score, priceDistance };
-    }).sort((a, b) => b.score - a.score || a.priceDistance - b.priceDistance || a.item.id.localeCompare(b.item.id)).slice(0, limit).map(entry => entry.item));
+    }).sort((a, b) => b.score - a.score || a.priceDistance - b.priceDistance || a.item.id.localeCompare(b.item.id)).slice(0, limit).map(entry => entry.item);
   }
 
   function brand(product) {
@@ -1854,7 +1883,7 @@
     return !new Set(["drinking-system-cartridges", "mainline-cartridges", "filter-media"]).has(product.primaryCategoryId);
   }
 
-    window.sofievkaPdp = Object.freeze({ keySpecs, specificationGroups, images, documents, model, purchase, relatedProducts, brand, installationRelevant });
+    window.sofievkaPdp = Object.freeze({ keySpecs, specificationGroups, images, documents, model, purchase, relatedProducts, accessoryProducts, compatibleProducts, brand, installationRelevant });
     return window.sofievkaPdp;
   }
 
@@ -2263,7 +2292,7 @@
       "pricing", "inventory", "publicationStatus", "images",
       "description", "shortDescription", "fullDescription", "descriptionSections",
       "normalizedAttributes", "catalogAttributes", "sourceAttributes", "unmappedAttributes",
-      "documents", "tags", "collections", "badges", "source", "seo", "normalizationError"
+      "documents", "tags", "collections", "badges", "source", "seo", "relatedProductIds", "normalizationError"
     ]);
 
     add(errors, "duplicate-product-id", duplicateValues(products, product => product.id), "Product IDs must be unique.");

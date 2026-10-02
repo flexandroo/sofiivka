@@ -1,5 +1,6 @@
 import { icon } from "/admin/admin-icons.mjs";
 import { priceImportHref } from "/admin/admin-prices.mjs";
+import { relationsPanel, bindRelationsPanel } from "/admin/admin-product-relations.mjs";
 
 const PUBLICATION = Object.freeze({ published: "Опубліковано", draft: "Чернетка", hidden: "Приховано", archived: "Архів" });
 const INVENTORY = Object.freeze({ in_stock: "В наявності", out_of_stock: "Немає", preorder: "Передзамовлення", discontinued: "Знято", unknown: "Невідомо" });
@@ -92,7 +93,7 @@ export async function createProductEditorView({ api, profile, navigate, legacyId
       <div class="admin-editor-layout">
         <nav class="admin-editor-tabs" aria-label="Розділи товару" role="tablist">
           ${tab("core", "Основне", true)}${tab("content", "Контент")}${tab("attributes", `Характеристики · ${detail.attributes.length}`)}
-          ${tab("media", `Медіа · ${detail.media.length}`)}${tab("documents", `Документи · ${detail.documents.length}`)}${tab("seo", "SEO")}
+          ${tab("media", `Медіа · ${detail.media.length}`)}${tab("documents", `Документи · ${detail.documents.length}`)}${tab("seo", "SEO")}${tab("relations", "Пов’язані товари")}
         </nav>
         <form class="admin-editor-form" data-editor-form novalidate>
           ${renderCorePanel(product, references, canCore)}
@@ -101,6 +102,7 @@ export async function createProductEditorView({ api, profile, navigate, legacyId
           ${renderMediaPanel(detail.media, canContent)}
           ${renderDocumentsPanel(detail.documents, canContent)}
           ${renderSeoPanel(product, canContent)}
+          ${relationsPanel()}
         </form>
         <aside class="admin-editor-context">
           <section><p class="admin-kicker">ІДЕНТИЧНІСТЬ</p><dl><div><dt>Legacy ID</dt><dd><code>${escape(product.legacyId)}</code></dd></div><div><dt>Створено</dt><dd>${formatDateTime(product.createdAt)}</dd></div><div><dt>Імпорт</dt><dd>${formatDateTime(product.lastImportedAt)}</dd></div><div><dt>Перевірено</dt><dd>${formatDateTime(product.lastVerifiedAt)}</dd></div></dl></section>
@@ -114,7 +116,10 @@ export async function createProductEditorView({ api, profile, navigate, legacyId
       <dialog class="admin-dialog" data-archive-dialog><h2>Архівувати товар?</h2><p>Товар зникне з публічного каталогу, але запис і його історія залишаться в базі.</p><div><button class="admin-button admin-button--ghost" type="button" data-dialog-cancel>Скасувати</button><button class="admin-button admin-button--danger" type="button" data-archive-confirm>Архівувати</button></div></dialog>
       <div class="admin-toast" data-editor-toast role="status" aria-live="polite" hidden></div>
     </section>`;
-  return { html, bind: container => bindProductEditor(container, { api, references, detail, navigate, canCore, canContent }) };
+  return { html, bind: container => {
+    bindProductEditor(container, { api, references, detail, navigate, canCore, canContent });
+    bindRelationsPanel(container.querySelector("[data-product-editor]"), { api, legacyId: product.legacyId });
+  } };
 }
 
 async function getReferences(api) {
