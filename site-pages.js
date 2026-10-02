@@ -97,7 +97,6 @@
     if (hero) {
       if (typeof page.kicker === "string") setText(hero.querySelector(".page-kicker"), page.kicker || "\u00a0");
       setText(hero.querySelector("h1"), page.title);
-      setText(hero.querySelector('.page-breadcrumbs [aria-current="page"]'), page.title);
       if (typeof page.lead === "string") { const lead = hero.querySelector(".page-hero__lead"); if (lead) lead.textContent = page.lead; }
     }
     // An empty body keeps the built-in article rather than leaving a blank column.

@@ -110,7 +110,8 @@ pages.renderPage(fakeRoot, {
   seo: { title: "SEO заголовок", description: "SEO опис" }
 });
 assert.equal(nodes.h1.textContent, "<img src=x onerror=alert(1)>");
-assert.equal(nodes.crumb.textContent, "<img src=x onerror=alert(1)>");
+// The breadcrumb keeps the page name (page-shell PAGE_NAMES); only the headline follows the admin title.
+assert.equal(nodes.crumb.textContent, "");
 const article = nodes["main article.prose"].html();
 assert.match(article, /^<h2>&lt;script>alert\(1\)&lt;\/script><\/h2>/);
 assert.match(article, /<a href="\/delivery\.html">доставку<\/a>/);

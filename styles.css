@@ -1792,7 +1792,7 @@ ul {
 }
 
 .brand-directory-all {
-  padding-block: var(--section-space);
+  padding-block: clamp(32px, 4vw, 56px) var(--section-space);
 }
 
 .brand-directory-section {
