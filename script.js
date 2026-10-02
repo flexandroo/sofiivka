@@ -657,11 +657,25 @@ function setupSignatureMotion() {
   });
 }
 
-const brands = Array.isArray(window.sofievkaBrands) ? window.sofievkaBrands : [];
-const catalogBrands = brands.filter(brand => brand.type === "catalog");
-const featuredBrands = catalogBrands
-  .filter(brand => brand.featured)
-  .sort((first, second) => first.featuredOrder - second.featuredOrder);
+// Brands come from the active catalogue (Supabase release once it has loaded, edited in the admin);
+// the static registry only fills presentation details the database does not hold (logo theme).
+function catalogBrandList() {
+  const registry = Array.isArray(window.sofievkaBrandRegistry) ? window.sofievkaBrandRegistry : [];
+  const live = Array.isArray(window.sofievkaBrands) ? window.sofievkaBrands : registry;
+  const staticBySlug = new Map(registry.map(brand => [brand.slug, brand]));
+  return live
+    .map(brand => {
+      const fallback = staticBySlug.get(brand.slug) || {};
+      return { ...fallback, ...brand, logo: brand.logo || fallback.logo || "", description: brand.description || fallback.description || "" };
+    })
+    .filter(brand => brand.type === "catalog" && brand.visibility !== "hidden");
+}
+
+function featuredCatalogBrands() {
+  return catalogBrandList()
+    .filter(brand => brand.featured)
+    .sort((first, second) => (first.featuredOrder ?? 999) - (second.featuredOrder ?? 999) || first.name.localeCompare(second.name, "uk"));
+}
 
 function createBrandMedia(brand, fallbackTarget) {
   const media = document.createElement("div");
@@ -743,7 +757,7 @@ function setupHomepageBrands() {
   const wall = document.querySelector("[data-homepage-brands]");
   if (!wall) return;
 
-  const brands = featuredBrands.slice(0, 9);
+  const brands = featuredCatalogBrands().slice(0, 9);
   const createGroup = decorativeDuplicate => {
     const group = document.createElement("div");
     group.className = "brand-wall__group";
@@ -848,6 +862,11 @@ function setupHomepageContact() {
   });
 
   selectStore("kyiv");
+  // Without the CRM (local builds) the form falls back to a prepared email.
+  if (!window.sofievkaCrm?.available) {
+    const note = form.querySelector("[data-home-contact-note]");
+    if (note) note.textContent = "Відкриється ваш поштовий застосунок із заповненими даними.";
+  }
 
   form.addEventListener("submit", event => {
     event.preventDefault();
@@ -929,7 +948,7 @@ function setupBrandDirectory() {
 
   const alphabetOrder = ["A", "B", "D", "E", "F", "G", "K", "L", "M", "P", "R", "S", "С", "T", "V", "W"];
   const grouped = new Map(alphabetOrder.map(letter => [letter, []]));
-  catalogBrands.forEach(brand => {
+  catalogBrandList().sort((first, second) => first.name.localeCompare(second.name, "uk")).forEach(brand => {
     const letter = getBrandLetter(brand);
     if (!grouped.has(letter)) grouped.set(letter, []);
     grouped.get(letter).push(brand);
