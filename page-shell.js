@@ -103,10 +103,10 @@
     let catalogLoadError = null;
     try {
       if (!window.sofievkaBrands) await loadScript("/brands-data.js?v=20260911-model-1");
-      if (!window.sofievkaCatalog) await loadScript("/catalog-data.js?v=20260911-pdp-8");
+      if (!window.sofievkaCatalog) await loadScript("/catalog-data.js?v=20261002-sections-2");
       if (window.sofievkaCatalogDataReady) await window.sofievkaCatalogDataReady;
       await prepareScopedPage(page);
-      if (!window.sofievkaCatalogUI) await loadScript("/catalog-ui.js?v=20260911-pdp-8");
+      if (!window.sofievkaCatalogUI) await loadScript("/catalog-ui.js?v=20261002-stage1-1");
       if (window.sofievkaCatalogUIReady) await window.sofievkaCatalogUIReady;
       CATALOG = window.sofievkaCatalog || CATALOG;
       PRODUCTS = Array.isArray(CATALOG?.catalogProducts) && CATALOG.catalogProducts.length ? CATALOG.catalogProducts : (Array.isArray(CATALOG?.products) && CATALOG.products.length ? CATALOG.products : PRODUCTS);
@@ -176,7 +176,9 @@
   function favorites() { try { const value = JSON.parse(localStorage.getItem("sofievka-favorites")) || []; return value.filter(id => productById(id)); } catch { return []; } }
   function saveFavorites(value) { localStorage.setItem("sofievka-favorites", JSON.stringify(value)); updateCounts(); }
   function productById(id) { return SCOPED_PRODUCT_CACHE.get(id) || PRODUCTS.find(item => item.id === id) || null; }
-  function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]); }
+  // Some supplier texts arrive with HTML entities already in them (&lt;); decode first so they are not escaped twice.
+  function decodeEntities(value) { return String(value ?? "").replace(/&(?:#(\d+)|#x([0-9a-f]+)|(lt|gt|amp|quot|apos|nbsp));/gi, (entity, dec, hex, name) => dec ? String.fromCodePoint(+dec) : hex ? String.fromCodePoint(parseInt(hex, 16)) : ({ lt: "<", gt: ">", amp: "&", quot: '"', apos: "'", nbsp: " " })[name.toLowerCase()]); }
+  function escapeHtml(value) { return decodeEntities(value).replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]); }
   function productUrl(product) { return `/product?id=${encodeURIComponent(product.id)}`; }
   function brandUrl(product) { return CATALOG?.brandUrl(product.brandId || CATALOG.slugify(product.brand)) || `/brands/${encodeURIComponent(product.brand.toLocaleLowerCase("en"))}`; }
   function compareSelection() { try { return (JSON.parse(localStorage.getItem("sofievka-compare")) || []).filter(id => productById(id)).slice(0, 4); } catch { return []; } }
@@ -539,13 +541,14 @@
     return `<nav class="page-breadcrumbs" aria-label="Хлібні крихти"><a href="/catalog/water-treatment">Каталог</a><span>→</span><a href="/water-supply.html">Водопостачання</a><span>→</span><a href="/catalog/water-treatment">Очищення води</a>${category.groupName ? `<span>→</span><a href="${waterCategoryUrl(product.primaryCategory)}">${escapeHtml(category.groupName)}</a>` : ""}<span>→</span><a aria-current="page" href="${waterCategoryUrl(product.primaryCategory)}">${escapeHtml(product.primaryCategoryName)}</a></nav>`;
   }
   function productCrumbs(product) {
-    if (CATALOG && product.sectionId) {
-      const category = CATALOG.categoryById[product.primaryCategoryId];
+    // Products from the database carry primaryCategoryId but no sectionId, so look the category up.
+    const category = CATALOG?.categoryById?.[product.primaryCategoryId];
+    if (CATALOG && (product.sectionId || category)) {
       const chain = category ? [...CATALOG.getCategoryAncestors(category.id), category] : [];
       return `<nav class="page-breadcrumbs" aria-label="Хлібні крихти"><a href="/">Головна</a><span>/</span><a href="/catalog">Каталог</a>${chain.map(item => `<span>/</span><a href="${CATALOG.getCategoryPath(item.id)}">${escapeHtml(item.title || item.name)}</a>`).join("")}<span>/</span><span aria-current="page">${escapeHtml(product.title)}</span></nav>`;
     }
     if (product.category === "water") return waterCrumbs(product);
-    return `<nav class="page-breadcrumbs" aria-label="Хлібні крихти"><a href="/index.html">Головна</a><span>→</span><a href="/heating.html">Опалення</a><span>→</span><a href="/brands/termojet">Termojet</a><span>→</span><span aria-current="page">${escapeHtml(product.primaryCategoryName)}</span></nav>`;
+    return `<nav class="page-breadcrumbs" aria-label="Хлібні крихти"><a href="/">Головна</a><span>/</span><a href="/catalog">Каталог</a><span>/</span><span aria-current="page">${escapeHtml(product.title || product.primaryCategoryName || "")}</span></nav>`;
   }
 
   function extendedProductCard(product) {

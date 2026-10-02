@@ -626,6 +626,10 @@ body[data-page="brand"] { background: var(--canvas); }
     line-height: 1.25;
   }
   .catalog-workspace .catalog-product .product-card__specs div:nth-child(n+3) { display: none; }
+  /* Long labels and values share the narrow card evenly and wrap instead of running into each other. */
+  .catalog-workspace .catalog-product .product-card__specs div { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
+  .catalog-workspace .catalog-product .product-card__specs dt,
+  .catalog-workspace .catalog-product .product-card__specs dd { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
   .catalog-workspace .catalog-product .product-card__specs-empty { min-height: 53px; font-size: 8px; }
   .catalog-workspace .catalog-product .product-card__code { display: none; }
   .catalog-workspace .catalog-product .product-card__commercial {

@@ -15,7 +15,9 @@ window.sofievkaCatalogUIReady = (async function () {
     url.searchParams.set("dataSource", dataSourceMode);
     return `${url.pathname}${url.search}${url.hash}`;
   };
-  const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
+  // Supplier texts may already contain HTML entities (&lt;); decode first so they are not escaped twice.
+  const decodeEntities = value => String(value ?? "").replace(/&(?:#(\d+)|#x([0-9a-f]+)|(lt|gt|amp|quot|apos|nbsp));/gi, (entity, dec, hex, name) => dec ? String.fromCodePoint(+dec) : hex ? String.fromCodePoint(parseInt(hex, 16)) : ({ lt: "<", gt: ">", amp: "&", quot: '"', apos: "'", nbsp: " " })[name.toLowerCase()]);
+  const escapeHtml = value => decodeEntities(value).replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
   const money = value => `${new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 0 }).format(Math.round(Number(value) || 0))} грн`;
   const countLabel = count => {
     const value = Math.abs(Number(count) || 0);
@@ -216,6 +218,9 @@ window.sofievkaCatalogUIReady = (async function () {
   }
 
   function selectorMarkup(ctx) {
+    // On a brand page these tabs would show whole-catalogue counts; the «Категорія» filter
+    // already lists the brand's own categories with the brand's counts.
+    if (ctx.isBrand) return "";
     return `<nav class="catalog-section-tabs" aria-label="Розділи каталогу">${catalog.navigationSections.map(section => {
       const active = !ctx.isBrand && ctx.section.id === section.id;
       return `<a href="${catalog.sectionUrl(section.id)}" class="${active ? "is-active" : ""}"${active ? ' aria-current="page"' : ""}>${escapeHtml(section.name)}<span>${catalog.countForSection?.(section.id) ?? catalog.productsForSection(section.id).length}</span></a>`;
@@ -329,7 +334,11 @@ window.sofievkaCatalogUIReady = (async function () {
   function facetGroup(key, label, counts, filters, options = {}) {
     const selected = filters.values[key] || [];
     let items = [...counts].map(([value, count]) => ({ value, count, label: labelFor(key, value) }));
-    items.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "uk", { numeric: true }));
+    // Numeric parameters (power, head, pressure…) read in ascending order; the rest by popularity.
+    const numeric = catalog.attributeDefinitions[key]?.type === "number";
+    items.sort(numeric
+      ? (a, b) => (Number(a.value) || 0) - (Number(b.value) || 0)
+      : (a, b) => b.count - a.count || a.label.localeCompare(b.label, "uk", { numeric: true }));
     const expanded = state.expandedGroups.has(key);
     const limit = options.limit || 8;
     const visible = expanded ? items : items.filter((item, index) => index < limit || selected.includes(item.value));
@@ -677,7 +686,7 @@ window.sofievkaCatalogUIReady = (async function () {
     if (!toggle || !menu || toggle.dataset.catalogMenuBound === "true") return;
     toggle.dataset.catalogMenuBound = "true";
     toggle.setAttribute("aria-haspopup", "true");
-    const catalogRoute = /^\/catalog(?:\/|$)/.test(location.pathname) || ["heating", "water-supply", "water-treatment", "smart-home", "plumbing", "climate", "household-equipment"].includes(document.body.dataset.page);
+    const catalogRoute = /^\/catalog(?:\/|$)/.test(location.pathname) || ["heating", "water-supply", "water-treatment", "sewerage", "smart-home", "climate", "household-equipment"].includes(document.body.dataset.page);
     toggle.classList.toggle("is-active", catalogRoute);
     if (catalogRoute) toggle.setAttribute("aria-label", "Каталог, поточний розділ. Відкрити меню");
 

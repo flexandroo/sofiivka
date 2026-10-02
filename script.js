@@ -721,7 +721,7 @@ function createLogoCell(brand, linkToDirectory = false, decorativeDuplicate = fa
   } else {
     cell.setAttribute("aria-label", brand.name);
   }
-  if (linkToDirectory) cell.href = "brands.html";
+  if (linkToDirectory) cell.href = brand.futurePath ? brand.futurePath.replace(/\/$/, "") : "brands.html";
   cell.append(createBrandMedia(brand, cell));
   return cell;
 }
