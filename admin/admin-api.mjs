@@ -9,6 +9,9 @@ export class AdminApiError extends Error {
   }
 }
 
+// CSV exports are fetched in pages of this size (the RPCs cap pages at 1000 rows).
+export const CRM_EXPORT_PAGE_SIZE = 500;
+
 export function createAdminApi(config, getAccessToken, { fetchImplementation = globalThis.fetch } = {}) {
   const { url, publishableKey } = validatePublicConfig(config);
 
@@ -209,6 +212,20 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     }),
     addNote: (entityType, entityKey, note) => rpc("admin_crm_add_note", {
       entity_type: entityType, entity_key: String(entityKey), note
+    }),
+    updateOrderItems: (number, lines, expectedUpdatedAt) => rpc("admin_crm_update_order_items", {
+      order_number: Number(number), lines, expected_updated_at: expectedUpdatedAt || null
+    }),
+    createOrder: payload => rpc("admin_crm_create_order", { payload }),
+    searchProducts: (query, { signal } = {}) => rpc("admin_crm_search_products", {
+      query_text: String(query || "").trim(), max_rows: 12
+    }, signal),
+    exportOrders: (filters = {}, page = 1) => rpc("admin_crm_export_orders", {
+      query_text: filters.query || null, filter_status: filters.status || null,
+      page_number: Math.max(1, Number(page) || 1), page_size: CRM_EXPORT_PAGE_SIZE
+    }),
+    exportCustomers: (filters = {}, page = 1) => rpc("admin_crm_export_customers", {
+      query_text: filters.query || null, page_number: Math.max(1, Number(page) || 1), page_size: CRM_EXPORT_PAGE_SIZE
     })
   });
 

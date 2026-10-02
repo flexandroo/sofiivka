@@ -4,7 +4,7 @@ import { icon } from "/admin/admin-icons.mjs";
 import { createProductsListView, createProductEditorView, resetProductsCache } from "/admin/admin-products.mjs";
 import { resolveAdminEnvironment } from "/admin/admin-env.mjs";
 import {
-  CRM_ROLES, createOrdersListView, createOrderDetailView, createLeadsListView, createLeadDetailView,
+  CRM_ROLES, createOrdersListView, createOrderDetailView, createOrderCreateView, createOrderPrintView, createLeadsListView, createLeadDetailView,
   createCustomersListView, createCustomerDetailView, renderCrmOverview
 } from "/admin/admin-crm.mjs";
 import {
@@ -111,12 +111,16 @@ async function route() {
 
   const productEditorMatch = path.match(/^\/admin\/products\/([^/]+)$/);
   const orderMatch = path.match(/^\/admin\/orders\/(\d{1,12})$/);
+  const orderPrintMatch = path.match(/^\/admin\/orders\/(\d{1,12})\/print$/);
+  const orderCreate = path === "/admin/orders/new";
   const leadMatch = path.match(/^\/admin\/leads\/(\d{1,12})$/);
   const customerMatch = path.match(/^\/admin\/customers\/([0-9a-f-]{36})$/i);
   const brandMatch = path.match(/^\/admin\/brands\/([^/]+)$/);
   const categoryMatch = path.match(/^\/admin\/categories\/([^/]+)$/);
   const definition = productEditorMatch ? { ...ROUTES["/admin/products"], title: "Редагування товару" }
     : orderMatch ? { ...ROUTES["/admin/orders"], title: `Замовлення № ${orderMatch[1]}` }
+    : orderPrintMatch ? { ...ROUTES["/admin/orders"], title: `Друк замовлення № ${orderPrintMatch[1]}` }
+    : orderCreate ? { ...ROUTES["/admin/orders"], title: "Нове замовлення" }
     : leadMatch ? { ...ROUTES["/admin/leads"], title: `Заявка № ${leadMatch[1]}` }
     : customerMatch ? { ...ROUTES["/admin/customers"], title: "Клієнт" }
     : brandMatch ? { ...ROUTES["/admin/brands"], title: "Бренд" }
@@ -168,6 +172,8 @@ async function route() {
   }
   const crmView = path === "/admin/orders" ? () => createOrdersListView({ api, signal })
     : orderMatch ? () => createOrderDetailView({ api, navigate, orderNumber: orderMatch[1], signal })
+    : orderPrintMatch ? () => createOrderPrintView({ api, orderNumber: orderPrintMatch[1], signal })
+    : orderCreate ? () => createOrderCreateView({ api, search: location.search, signal })
     : path === "/admin/leads" ? () => createLeadsListView({ api, signal })
     : leadMatch ? () => createLeadDetailView({ api, leadNumber: leadMatch[1], signal })
     : path === "/admin/customers" ? () => createCustomersListView({ api, signal })
