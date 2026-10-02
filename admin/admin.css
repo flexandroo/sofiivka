@@ -3042,3 +3042,42 @@ a.admin-user:hover strong { text-decoration: underline; }
   .admin-staff-table tr { padding: 12px 0; border-bottom: 1px solid var(--divider); }
   .admin-staff-table td { padding: 4px 20px; border: 0; }
 }
+
+/* Information pages (/admin/pages) */
+.admin-pages .admin-form-grid .admin-field + .admin-field { margin-top: 0; }
+.admin-pages .admin-panel > .admin-settings-check { padding: 14px 20px 0; min-height: 0; }
+.admin-pages-blocks,
+.admin-pages-faq__list { display: grid; margin: 0; padding: 0 20px; list-style: none; }
+.admin-pages-blocks__empty { padding: 14px 0; }
+.admin-pages-block,
+.admin-pages-faq__item { display: grid; gap: 8px; padding: 14px 0; border-bottom: 1px solid var(--divider); }
+.admin-pages-block__head { display: flex; align-items: center; gap: 14px; min-height: 34px; }
+.admin-pages-block__type { margin-right: auto; font-size: 12px; font-weight: 700; }
+.admin-pages-block__ordered { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 12px; }
+.admin-pages-block__ordered input { width: 16px; height: 16px; }
+.admin-pages-block :is(input[type="text"], textarea) { width: 100%; padding: 10px 12px; border: 1px solid var(--divider); border-radius: var(--radius-control); background: var(--surface); line-height: 1.55; }
+.admin-pages-block--heading input[type="text"] { min-height: 44px; font-weight: 700; }
+.admin-pages-block textarea { min-height: 96px; resize: vertical; }
+.admin-pages-block :is(input, textarea):disabled { background: var(--surface-soft); }
+.admin-pages-add { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 20px 20px; }
+.admin-pages-add .admin-button svg,
+.admin-pages-faq > .admin-button svg { width: 16px; height: 16px; }
+.admin-pages-faq > .admin-button { margin: 16px 20px 20px; }
+.admin-pages-faq__item .admin-form-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 0; }
+.admin-pages-faq__item.is-hidden :is(input[type="text"], textarea) { color: var(--text-subtle); }
+.admin-pages-faq .admin-button[hidden] { display: none; }
+.admin-pages-actions { align-items: center; justify-content: space-between; gap: 12px; }
+.admin-pages-actions small { color: var(--text-subtle); font-size: 12px; }
+.admin-pages .admin-field small.is-over { color: var(--danger); }
+.admin-pages .admin-panel-note code,
+.admin-pages-help code { padding: 1px 4px; border-radius: 4px; background: var(--surface-soft); font-size: 12px; overflow-wrap: anywhere; }
+.admin-pages-help ul { display: grid; gap: 8px; margin: 0; padding: 14px 20px 18px 38px; color: var(--text-secondary); font-size: 13px; }
+.admin-pages .admin-editor-meta a { display: inline-flex; align-items: center; gap: 4px; }
+.admin-pages .admin-editor-meta a svg { width: 14px; height: 14px; }
+.admin-crm-table--pages td small { display: block; color: var(--text-subtle); font-size: 12px; }
+@media (max-width: 760px) {
+  .admin-pages .admin-form-grid { grid-template-columns: minmax(0, 1fr); }
+  .admin-pages-faq .admin-panel__head { flex-wrap: wrap; gap: 10px; padding: 12px 20px; }
+  .admin-pages-block__head { flex-wrap: wrap; gap: 8px; }
+  .admin-crm-table--pages td:nth-child(2) { display: none; }
+}

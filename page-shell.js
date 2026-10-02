@@ -78,6 +78,16 @@
     script.onerror = reject;
     document.head.append(script);
   });
+  // Info pages: the built-in texts below render first; site-pages.js then applies the copy edited
+  // in /admin/pages (get_site_page). Pages that are mostly layout keep only their first screen editable.
+  const SITE_PAGE_SLUGS = new Set(["about", "services", "installation", "service-center", "solutions", "partnership", "buyers", "delivery", "payment", "warranty", "returns", "faq", "privacy", "terms"]);
+  const sitePages = !SITE_PAGE_SLUGS.has(page) ? null : window.sofievkaSitePages ? Promise.resolve(window.sofievkaSitePages) : new Promise(resolve => {
+    const script = document.createElement("script");
+    script.src = "/site-pages.js?v=20261002-pages-1";
+    script.onload = () => resolve(window.sofievkaSitePages || null);
+    script.onerror = () => resolve(null);
+    document.head.append(script);
+  });
   const initialize = async () => {
     let catalogLoadError = null;
     try {
@@ -98,6 +108,7 @@
     root.innerHTML = headerExtended() + `<main id="main" class="page-main">${pageContent}</main>` + footerExtended() + `<div class="toast" data-page-toast role="status" aria-live="polite"></div>`;
     window.sofievkaCatalogUI?.trackProductImages(root);
     window.sofievkaSiteSettings?.applyHooks(root);
+    if (sitePages && !(catalogLoadError && window.sofievkaCatalogRemoteRequested)) sitePages.then(api => api?.apply(page, root)).catch(error => console.error("Page texts failed to load", error));
     bindGlobal();
     await bindExtendedPage(page);
   };
