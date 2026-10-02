@@ -2,7 +2,8 @@ import { icon } from "/admin/admin-icons.mjs";
 
 // Shop settings: stores and contacts, checkout options, social links, company name and order
 // notification recipients. Each section saves on its own (admin_update_settings) with an
-// optimistic lock; the storefront reads the public sections through get_site_settings.
+// optimistic lock; the storefront reads the public sections through get_site_settings. Header and
+// footer menus live in the same table but have their own page (admin-menus.mjs, /admin/menus).
 
 const SOCIAL = Object.freeze([
   ["instagram", "Instagram"], ["facebook", "Facebook"], ["youtube", "YouTube"], ["telegram", "Telegram"], ["viber", "Viber"]
@@ -86,6 +87,7 @@ export async function createSettingsView({ api, signal }) {
         ${saveBar(canEdit, notifications.updatedAt)}
       </form>
 ${sections?.integrations ? integrationsForm(canEdit, integrations) : ""}
+${sections?.cookies ? cookiesForm(canEdit, section("cookies")) : ""}
 ${sections?.seo ? seoForm(canEdit, seo) : ""}
       <div class="admin-toast" role="status" aria-live="polite" hidden></div>
     </section>`;
@@ -225,6 +227,11 @@ const READERS = Object.freeze({
     // Accept the whole <meta name="google-site-verification" content="…"> tag as pasted from Google.
     searchConsoleToken: (/content=["']([^"']+)["']/i.exec(text(form, "searchConsoleToken"))?.[1] || text(form, "searchConsoleToken")).trim()
   }),
+  cookies: form => ({
+    enabled: checked(form, "enabled"),
+    text: text(form, "text"),
+    privacyHref: text(form, "privacyHref")
+  }),
   seo: form => ({
     pages: [...form.querySelectorAll("[data-seo-list] [data-seo-page]")].map(item => ({
       path: text(item, "path"),
@@ -245,6 +252,22 @@ function integrationsForm(canEdit, { value, updatedAt }) {
           ${textField("searchConsoleToken", "Google Search Console", value?.searchConsoleToken, 300, { placeholder: "значення content", hint: "Метод «HTML-тег»: можна вставити весь мета-тег." })}
         </div>
         <p class="admin-panel-note">Порожні поля нічого не підключають. Код Search Console потрапляє в HTML головної сторінки під час наступного деплою сайту; після нього натисніть «Підтвердити» в Search Console.</p>
+        ${saveBar(canEdit, updatedAt)}
+      </form>`;
+}
+
+// Cookie consent banner on the storefront (site-settings.js). While it is on, GA4, Tag Manager and
+// Meta Pixel load only after the visitor presses «Прийняти всі».
+function cookiesForm(canEdit, { value, updatedAt }) {
+  return `
+      <form class="admin-panel" data-settings-form="cookies">
+        <header class="admin-panel__head"><div><p class="admin-kicker">COOKIE</p><h2>Згода на cookie</h2></div></header>
+        <div class="admin-form-grid">
+          ${checkbox("enabled", "Показувати банер згоди", value?.enabled === true)}
+          ${textField("privacyHref", "Посилання «Детальніше»", value?.privacyHref, 300, { placeholder: "/privacy.html", hint: "Сторінка сайту (/privacy.html) або https://. Порожнє поле: без посилання." })}
+          <label class="admin-field admin-field--full"><span>Текст банера</span><textarea name="text" maxlength="400" rows="3" required>${escape(value?.text ?? "")}</textarea></label>
+        </div>
+        <p class="admin-panel-note">Коли банер увімкнено, Google Analytics, Tag Manager і Meta Pixel з розділу «Інтеграції» завантажуються лише після «Прийняти всі» (Google Consent Mode: до згоди все заборонено). «Лише необхідні» не завантажує їх зовсім. Вибір зберігається в браузері відвідувача; змінити його можна посиланням «Cookie» внизу сайту.</p>
         ${saveBar(canEdit, updatedAt)}
       </form>`;
 }
@@ -362,7 +385,7 @@ function bindNotificationStatus(container, { api, canEdit }) {
     box.insertAdjacentHTML("beforeend", `
       <div class="admin-notify-status__head">
         <p>${status.configured
-          ? `<span class="admin-status admin-status--success">${icon("check")} Підключено</span> Сповіщення йдуть у Telegram через функцію crm-notify. Тест іде на збережені chat id. Email поки не надсилається.`
+          ? `<span class="admin-status admin-status--success">${icon("check")} Підключено</span> Сповіщення йдуть через функцію crm-notify: у Telegram на збережені chat id і листом на збережені email (якщо у функції задано RESEND_API_KEY і NOTIFY_EMAIL_FROM). Тест іде тим самим отримувачам; пропущений канал видно в журналі.`
           : `<span class="admin-status admin-status--warning">${icon("warning")} Не підключено</span> Отримувачі зберігаються, але відправки немає. Бракує: ${escape(missing.join(", "))}. Інструкція: docs/notifications-setup.md.`}</p>
         <button class="admin-button admin-button--secondary" type="button" data-notify-test ${status.configured ? "" : "disabled"}>Надіслати тестове повідомлення</button>
       </div>

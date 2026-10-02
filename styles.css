@@ -295,6 +295,63 @@ ul {
   transform: scaleX(1);
 }
 
+/* Menu items with children (/admin/menus). The panel is positioned against .site-nav, not the
+   scrolling row, so the row's overflow does not clip it; it opens on hover and keyboard focus. */
+.site-nav {
+  position: relative;
+}
+
+.site-nav__group {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.site-nav .site-nav__parent {
+  padding-right: 14px;
+}
+
+.site-nav__parent::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-70%) rotate(45deg);
+}
+
+.site-nav__sub {
+  position: absolute;
+  top: 100%;
+  z-index: 2;
+  display: none;
+  min-width: 220px;
+  padding: 8px 0;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-top: 0;
+  border-radius: 0 0 var(--radius-control) var(--radius-control);
+  background: rgba(14, 14, 14, .98);
+}
+
+.site-nav__group:hover .site-nav__sub,
+.site-nav__group:focus-within .site-nav__sub {
+  display: grid;
+}
+
+.site-nav .site-nav__sub a {
+  padding: 9px 18px;
+}
+
+.site-nav .site-nav__sub a::after {
+  display: none;
+}
+
+.site-nav .site-nav__sub a[aria-current="page"] {
+  color: var(--yellow);
+}
+
 .brand {
   display: inline-flex;
   width: 194px;
@@ -2352,6 +2409,93 @@ ul {
 .footer__contacts p {
   margin-top: 14px;
   line-height: 1.7;
+}
+
+/* Wrapper of the menu columns from /admin/menus; the columns stay items of .footer__grid. */
+.footer__menu {
+  display: contents;
+}
+
+.footer__cookie-settings {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.footer__cookie-settings:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Cookie consent (site-settings.js). Fixed over the page bottom, so nothing below it moves. */
+.cookie-consent {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 80;
+  border-top: 1px solid var(--divider);
+  background: var(--surface);
+  box-shadow: 0 -8px 28px rgba(32, 32, 32, .09);
+}
+
+.cookie-consent__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-block: 16px calc(16px + env(safe-area-inset-bottom));
+}
+
+.cookie-consent__text {
+  max-width: 760px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.cookie-consent__text a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cookie-consent__actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+}
+
+.cookie-consent__actions .button {
+  min-height: 44px;
+  padding-inline: 20px;
+}
+
+@media (max-width: 640px) {
+  .cookie-consent__inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding-block: 14px calc(14px + env(safe-area-inset-bottom));
+  }
+
+  .cookie-consent__text {
+    font-size: 13px;
+  }
+
+  .cookie-consent__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cookie-consent__actions .button {
+    padding-inline: 12px;
+    white-space: normal;
+  }
 }
 
 .footer__bottom {

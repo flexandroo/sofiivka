@@ -937,18 +937,18 @@ function setupHomepageContact() {
   });
 }
 
+// Delegated: the menu columns are re-rendered from /admin/menus by site-settings.js.
 function setupFooterAccordion() {
-  const sections = [...document.querySelectorAll("[data-footer-section]")];
-  if (!sections.length) return;
+  if (!document.querySelector("[data-footer-section]")) return;
   document.documentElement.classList.add("footer-accordion-ready");
 
-  sections.forEach(section => {
-    const toggle = section.querySelector(".footer__toggle");
-    toggle?.addEventListener("click", () => {
-      const open = section.classList.toggle("is-open");
-      toggle.setAttribute("aria-expanded", String(open));
-      toggle.querySelector("b").textContent = open ? "−" : "+";
-    });
+  document.addEventListener("click", event => {
+    const toggle = event.target.closest(".footer__toggle");
+    const section = toggle?.closest("[data-footer-section]");
+    if (!section) return;
+    const open = section.classList.toggle("is-open");
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.querySelector("b").textContent = open ? "−" : "+";
   });
 }
 

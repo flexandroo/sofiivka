@@ -65,7 +65,7 @@ for (const name of ["admin_list_site_posts", "admin_get_site_post", "admin_creat
 assert.match(api, /expected_updated_at: expectedUpdatedAt \|\| null/);
 assert.match(api, /posts,\n/, "api exposes posts");
 assert.match(app, /"\/admin\/blog": \{[^}]*roles: \[\.\.\.ROLES\]/);
-assert.match(app, /\{ label: "Сайт", paths: \["\/admin\/banners", "\/admin\/pages", "\/admin\/blog"\] \}/);
+assert.match(app, /\{ label: "Сайт", paths: \[[^\]]*"\/admin\/blog"[^\]]*\] \}/);
 assert.match(app, /createPostEditorView/);
 assert.match(app, /\/\^\\\/admin\\\/blog\\\/\(\[0-9a-f-\]\{36\}\)\$\/i/);
 assert.match(view, /«Статті»|Статті/);
