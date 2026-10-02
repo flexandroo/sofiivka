@@ -1,4 +1,5 @@
 import { icon } from "/admin/admin-icons.mjs";
+import { createCategoryFiltersPanel } from "/admin/admin-attributes.mjs";
 
 // Brands and categories. Identity fields (id, slug, parent, brand name) are set once at creation
 // and read-only afterwards: they drive storefront URLs and product cards. Records can be deleted
@@ -28,7 +29,7 @@ const FIELD_LABELS = Object.freeze({
   sort_order: "Порядок", status: "Статус", visibility: "Видимість", seo_title: "SEO title",
   seo_description: "SEO description", country: "Країна", website_url: "Сайт", logo_url: "Логотип",
   featured: "Рекомендований", featured_order: "Порядок серед рекомендованих",
-  created: "Створено", deleted: "Видалено"
+  filters: "Фільтри", created: "Створено", deleted: "Видалено"
 });
 const HOMEPAGE_LIMIT = 8;
 
@@ -206,7 +207,10 @@ export async function createCategoriesListView({ api, search = location.search, 
 }
 
 export async function createCategoryDetailView({ api, categoryId, signal }) {
-  const detail = await api.taxonomy.getCategory(categoryId, { signal });
+  const [detail, filters] = await Promise.all([
+    api.taxonomy.getCategory(categoryId, { signal }),
+    createCategoryFiltersPanel({ api, categoryId, signal })
+  ]);
   if (!detail?.category) return notFound("Категорію не знайдено", "/admin/categories", "До категорій");
   const { category, canEdit } = detail;
   const trail = detail.path.map(item => `<a href="/admin/categories/${encodeURIComponent(item.id)}" data-admin-link>${escape(item.title)}</a>`).join(" / ");
@@ -222,6 +226,7 @@ export async function createCategoryDetailView({ api, categoryId, signal }) {
         ${canEdit && category.level < 3 ? `<button class="admin-button admin-button--secondary" type="button" data-create-open>Додати підкатегорію</button>` : ""}
       </header>
       <div class="admin-crm-layout">
+        <div class="admin-crm-main">
         <form class="admin-crm-main" data-taxonomy-form>
           <section class="admin-panel">
             <header class="admin-panel__head"><div><p class="admin-kicker">ОПИС</p><h2>Назва й тексти</h2></div></header>
@@ -245,6 +250,8 @@ export async function createCategoryDetailView({ api, categoryId, signal }) {
           ${seoPanel(category)}
           ${canEdit ? saveBar() : readOnlyNote()}
         </form>
+        ${filters.html}
+        </div>
         <aside class="admin-crm-side">
           <section class="admin-panel admin-crm-contact">
             <header class="admin-panel__head"><div><p class="admin-kicker">ТОВАРИ</p><h2>${number(category.publishedCount)} на сайті</h2></div>
@@ -267,15 +274,18 @@ export async function createCategoryDetailView({ api, categoryId, signal }) {
     </section>`;
   return {
     html,
-    bind: container => bindEditor(container, {
-      canEdit,
-      fields: ["title", "shortTitle", "menuDescription", "description", "status", "visibility", "sortOrder", "seoTitle", "seoDescription"],
-      toPatch: patch => patch,
-      save: patch => api.taxonomy.updateCategory(category.id, patch, category.updatedAt),
-      remove: () => api.taxonomy.deleteCategory(category.id, category.updatedAt),
-      afterRemove: "/admin/categories",
-      extra: bindCategoryCreate
-    }, api)
+    bind: container => {
+      filters.bind(container);
+      bindEditor(container, {
+        canEdit,
+        fields: ["title", "shortTitle", "menuDescription", "description", "status", "visibility", "sortOrder", "seoTitle", "seoDescription"],
+        toPatch: patch => patch,
+        save: patch => api.taxonomy.updateCategory(category.id, patch, category.updatedAt),
+        remove: () => api.taxonomy.deleteCategory(category.id, category.updatedAt),
+        afterRemove: "/admin/categories",
+        extra: bindCategoryCreate
+      }, api);
+    }
   };
 }
 

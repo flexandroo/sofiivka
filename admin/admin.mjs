@@ -12,6 +12,7 @@ import {
 } from "/admin/admin-taxonomy.mjs";
 import { createSettingsView } from "/admin/admin-settings.mjs";
 import { createCollectionsListView, createCollectionDetailView } from "/admin/admin-collections.mjs";
+import { createAttributesListView, createAttributeDetailView } from "/admin/admin-attributes.mjs";
 
 const ROLES = new Set(["owner", "admin", "manager", "content_manager"]);
 const ROLE_LABELS = Object.freeze({
@@ -45,11 +46,6 @@ const PLACEHOLDERS = Object.freeze({
     eyebrow: "Канонічний каталог",
     lead: "Робоча область списку й редактора товарів буде наступним етапом.",
     rows: [["Список товарів", "Таблиця, пошук, фільтри та сортування"], ["Редактор", "Канонічні поля, атрибути й provenance"], ["Публікація", "Окремі draft / publish / hide команди"]]
-  },
-  attributes: {
-    eyebrow: "64 визначення",
-    lead: "Типізовані характеристики й фасети підключимо після CRUD-контрактів.",
-    rows: [["Визначення", "Тип, одиниця, нормалізована назва"], ["Категорійні правила", "Required, facet і порядок"], ["Контроль значень", "Без мовчазного перезапису source evidence"]]
   },
   media: {
     eyebrow: "13 006 медіазаписів",
@@ -108,6 +104,7 @@ async function route() {
   const brandMatch = path.match(/^\/admin\/brands\/([^/]+)$/);
   const categoryMatch = path.match(/^\/admin\/categories\/([^/]+)$/);
   const collectionMatch = path.match(/^\/admin\/collections\/([^/]+)$/);
+  const attributeMatch = path.match(/^\/admin\/attributes\/([^/]+)$/);
   const definition = productEditorMatch ? { ...ROUTES["/admin/products"], title: "Редагування товару" }
     : orderMatch ? { ...ROUTES["/admin/orders"], title: `Замовлення № ${orderMatch[1]}` }
     : leadMatch ? { ...ROUTES["/admin/leads"], title: `Заявка № ${leadMatch[1]}` }
@@ -115,6 +112,7 @@ async function route() {
     : brandMatch ? { ...ROUTES["/admin/brands"], title: "Бренд" }
     : categoryMatch ? { ...ROUTES["/admin/categories"], title: "Категорія" }
     : collectionMatch ? { ...ROUTES["/admin/collections"], title: "Підбірка" }
+    : attributeMatch ? { ...ROUTES["/admin/attributes"], title: "Характеристика" }
     : ROUTES[path];
   if (!definition) return renderNotFound();
   if (!definition.roles.includes(activeProfile.role)) return renderForbidden(definition);
@@ -173,6 +171,8 @@ async function route() {
     : path === "/admin/settings" ? () => createSettingsView({ api, signal })
     : path === "/admin/collections" ? () => createCollectionsListView({ api, signal })
     : collectionMatch ? () => createCollectionDetailView({ api, collectionId: decodeURIComponent(collectionMatch[1]), signal })
+    : path === "/admin/attributes" ? () => createAttributesListView({ api, signal })
+    : attributeMatch ? () => createAttributeDetailView({ api, attributeId: decodeURIComponent(attributeMatch[1]), signal })
     : null;
   if (crmView) {
     try {
