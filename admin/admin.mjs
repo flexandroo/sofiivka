@@ -11,6 +11,7 @@ import {
   createBrandsListView, createBrandDetailView, createCategoriesListView, createCategoryDetailView
 } from "/admin/admin-taxonomy.mjs";
 import { createSettingsView } from "/admin/admin-settings.mjs";
+import { createCollectionsListView, createCollectionDetailView } from "/admin/admin-collections.mjs";
 
 const ROLES = new Set(["owner", "admin", "manager", "content_manager"]);
 const ROLE_LABELS = Object.freeze({
@@ -49,11 +50,6 @@ const PLACEHOLDERS = Object.freeze({
     eyebrow: "64 визначення",
     lead: "Типізовані характеристики й фасети підключимо після CRUD-контрактів.",
     rows: [["Визначення", "Тип, одиниця, нормалізована назва"], ["Категорійні правила", "Required, facet і порядок"], ["Контроль значень", "Без мовчазного перезапису source evidence"]]
-  },
-  collections: {
-    eyebrow: "Керовані добірки",
-    lead: "Маршрут готовий для майбутнього editorial workflow.",
-    rows: [["Склад", "Ручне додавання та стабільний порядок"], ["Період дії", "Видимість і розклад публікації"], ["Preview", "Перевірка складу перед release"]]
   },
   media: {
     eyebrow: "13 006 медіазаписів",
@@ -111,12 +107,14 @@ async function route() {
   const customerMatch = path.match(/^\/admin\/customers\/([0-9a-f-]{36})$/i);
   const brandMatch = path.match(/^\/admin\/brands\/([^/]+)$/);
   const categoryMatch = path.match(/^\/admin\/categories\/([^/]+)$/);
+  const collectionMatch = path.match(/^\/admin\/collections\/([^/]+)$/);
   const definition = productEditorMatch ? { ...ROUTES["/admin/products"], title: "Редагування товару" }
     : orderMatch ? { ...ROUTES["/admin/orders"], title: `Замовлення № ${orderMatch[1]}` }
     : leadMatch ? { ...ROUTES["/admin/leads"], title: `Заявка № ${leadMatch[1]}` }
     : customerMatch ? { ...ROUTES["/admin/customers"], title: "Клієнт" }
     : brandMatch ? { ...ROUTES["/admin/brands"], title: "Бренд" }
     : categoryMatch ? { ...ROUTES["/admin/categories"], title: "Категорія" }
+    : collectionMatch ? { ...ROUTES["/admin/collections"], title: "Підбірка" }
     : ROUTES[path];
   if (!definition) return renderNotFound();
   if (!definition.roles.includes(activeProfile.role)) return renderForbidden(definition);
@@ -173,6 +171,8 @@ async function route() {
     : path === "/admin/categories" ? () => createCategoriesListView({ api, signal })
     : categoryMatch ? () => createCategoryDetailView({ api, categoryId: decodeURIComponent(categoryMatch[1]), signal })
     : path === "/admin/settings" ? () => createSettingsView({ api, signal })
+    : path === "/admin/collections" ? () => createCollectionsListView({ api, signal })
+    : collectionMatch ? () => createCollectionDetailView({ api, collectionId: decodeURIComponent(collectionMatch[1]), signal })
     : null;
   if (crmView) {
     try {

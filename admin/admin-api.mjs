@@ -238,10 +238,28 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     })
   });
 
+  // Collections (homepage blocks and other product selections)
+  const collections = Object.freeze({
+    list: ({ signal } = {}) => rpc("admin_list_collections", {}, signal),
+    get: (id, { signal } = {}) => rpc("admin_get_collection", { collection_id: String(id || "") }, signal),
+    update: (id, patch, expectedUpdatedAt) => rpc("admin_update_collection", {
+      collection_id: String(id), patch, expected_updated_at: expectedUpdatedAt || null
+    }),
+    setProducts: (id, productIds, expectedUpdatedAt) => rpc("admin_set_collection_products", {
+      collection_id: String(id), product_ids: productIds, expected_updated_at: expectedUpdatedAt || null
+    }),
+    searchProducts: (query, { signal } = {}) => rpc("admin_search_collection_products", {
+      query_text: String(query || ""), result_limit: 20
+    }, signal),
+    create: payload => rpc("admin_create_collection", { payload }),
+    remove: (id, expectedUpdatedAt) => rpc("admin_delete_collection", { collection_id: String(id), expected_updated_at: expectedUpdatedAt || null })
+  });
+
   return Object.freeze({
     crm,
     taxonomy,
     settings,
+    collections,
     getProfile,
     getDashboard,
     getProductReferenceData,
