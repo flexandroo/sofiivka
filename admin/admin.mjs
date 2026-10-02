@@ -10,6 +10,7 @@ import {
 import {
   createBrandsListView, createBrandDetailView, createCategoriesListView, createCategoryDetailView
 } from "/admin/admin-taxonomy.mjs";
+import { createAttributesListView, createAttributeDetailView } from "/admin/admin-attributes.mjs";
 
 const ROLES = new Set(["owner", "admin", "manager", "content_manager"]);
 const ROLE_LABELS = Object.freeze({
@@ -43,11 +44,6 @@ const PLACEHOLDERS = Object.freeze({
     eyebrow: "Канонічний каталог",
     lead: "Робоча область списку й редактора товарів буде наступним етапом.",
     rows: [["Список товарів", "Таблиця, пошук, фільтри та сортування"], ["Редактор", "Канонічні поля, атрибути й provenance"], ["Публікація", "Окремі draft / publish / hide команди"]]
-  },
-  attributes: {
-    eyebrow: "64 визначення",
-    lead: "Типізовані характеристики й фасети підключимо після CRUD-контрактів.",
-    rows: [["Визначення", "Тип, одиниця, нормалізована назва"], ["Категорійні правила", "Required, facet і порядок"], ["Контроль значень", "Без мовчазного перезапису source evidence"]]
   },
   collections: {
     eyebrow: "Керовані добірки",
@@ -115,12 +111,14 @@ async function route() {
   const customerMatch = path.match(/^\/admin\/customers\/([0-9a-f-]{36})$/i);
   const brandMatch = path.match(/^\/admin\/brands\/([^/]+)$/);
   const categoryMatch = path.match(/^\/admin\/categories\/([^/]+)$/);
+  const attributeMatch = path.match(/^\/admin\/attributes\/([^/]+)$/);
   const definition = productEditorMatch ? { ...ROUTES["/admin/products"], title: "Редагування товару" }
     : orderMatch ? { ...ROUTES["/admin/orders"], title: `Замовлення № ${orderMatch[1]}` }
     : leadMatch ? { ...ROUTES["/admin/leads"], title: `Заявка № ${leadMatch[1]}` }
     : customerMatch ? { ...ROUTES["/admin/customers"], title: "Клієнт" }
     : brandMatch ? { ...ROUTES["/admin/brands"], title: "Бренд" }
     : categoryMatch ? { ...ROUTES["/admin/categories"], title: "Категорія" }
+    : attributeMatch ? { ...ROUTES["/admin/attributes"], title: "Характеристика" }
     : ROUTES[path];
   if (!definition) return renderNotFound();
   if (!definition.roles.includes(activeProfile.role)) return renderForbidden(definition);
@@ -176,6 +174,8 @@ async function route() {
     : brandMatch ? () => createBrandDetailView({ api, brandId: decodeURIComponent(brandMatch[1]), signal })
     : path === "/admin/categories" ? () => createCategoriesListView({ api, signal })
     : categoryMatch ? () => createCategoryDetailView({ api, categoryId: decodeURIComponent(categoryMatch[1]), signal })
+    : path === "/admin/attributes" ? () => createAttributesListView({ api, signal })
+    : attributeMatch ? () => createAttributeDetailView({ api, attributeId: decodeURIComponent(attributeMatch[1]), signal })
     : null;
   if (crmView) {
     try {

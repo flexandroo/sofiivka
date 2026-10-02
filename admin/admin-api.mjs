@@ -231,9 +231,25 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     setHomepageCategories: ids => rpc("admin_set_homepage_categories", { category_ids: ids })
   });
 
+  // Characteristics and category filters
+  const attributes = Object.freeze({
+    list: ({ signal } = {}) => rpc("admin_list_attributes", {}, signal),
+    get: (id, { signal } = {}) => rpc("admin_get_attribute", { attribute_id: String(id || "") }, signal),
+    create: payload => rpc("admin_create_attribute", { payload }),
+    update: (id, patch, expectedUpdatedAt) => rpc("admin_update_attribute", {
+      attribute_id: String(id), patch, expected_updated_at: expectedUpdatedAt || null
+    }),
+    remove: (id, expectedUpdatedAt) => rpc("admin_delete_attribute", { attribute_id: String(id), expected_updated_at: expectedUpdatedAt || null }),
+    getCategoryFilters: (categoryId, { signal } = {}) => rpc("admin_get_category_attributes", { category_id: String(categoryId || "") }, signal),
+    setCategoryFilters: (categoryId, items, version) => rpc("admin_set_category_attributes", {
+      category_id: String(categoryId), payload: { items }, expected_version: version || null
+    })
+  });
+
   return Object.freeze({
     crm,
     taxonomy,
+    attributes,
     getProfile,
     getDashboard,
     getProductReferenceData,
