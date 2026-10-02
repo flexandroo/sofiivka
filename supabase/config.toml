@@ -49,3 +49,7 @@ secure_password_change = true
 
 [experimental.pgdelta]
 enabled = true
+
+[functions.crm-notify]
+# Called by the database (pg_net) with a shared secret header, not with a user JWT.
+verify_jwt = false
