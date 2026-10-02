@@ -212,8 +212,23 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     })
   });
 
+  // Brands and categories
+  const taxonomy = Object.freeze({
+    listBrands: ({ signal } = {}) => rpc("admin_list_brands", {}, signal),
+    getBrand: (id, { signal } = {}) => rpc("admin_get_brand", { brand_id: String(id || "") }, signal),
+    updateBrand: (id, patch, expectedUpdatedAt) => rpc("admin_update_brand", {
+      brand_id: String(id), patch, expected_updated_at: expectedUpdatedAt || null
+    }),
+    listCategories: ({ signal } = {}) => rpc("admin_list_categories", {}, signal),
+    getCategory: (id, { signal } = {}) => rpc("admin_get_category", { category_id: String(id || "") }, signal),
+    updateCategory: (id, patch, expectedUpdatedAt) => rpc("admin_update_category", {
+      category_id: String(id), patch, expected_updated_at: expectedUpdatedAt || null
+    })
+  });
+
   return Object.freeze({
     crm,
+    taxonomy,
     getProfile,
     getDashboard,
     getProductReferenceData,

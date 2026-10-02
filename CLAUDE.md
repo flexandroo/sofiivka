@@ -47,11 +47,14 @@ Playwright MCP blocks localhost, so drive the browser from a script).
 ## Admin and CRM status (2026-10-02)
 
 - Branch `codex/audit-phase-0`: Products Admin v1 (Codex) + CRM v1 and fixes (Claude).
-- Migrations `20260929000600`–`20260929001000` are on DEV only.
-- `20261001000100_admin_write_consistency` and `20261001000200_crm_v1` are written and tested on
-  PGlite; not yet applied to DEV or PROD.
+- All migrations through `20261002000100_taxonomy_admin_v1` are applied on DEV; PROD has none of them.
+- The Supabase MCP connector silently times out on SQL with `drop trigger`, `delete from` function
+  bodies or trigger loops; apply such migrations through the Supabase SQL Editor instead.
 - CRM: storefront calls `crm_submit_order` / `crm_submit_lead` (anon); staff use `admin_crm_*`
   RPCs (owner/admin/manager). Admin routes `/admin/orders`, `/admin/leads`, `/admin/customers`.
+- Brands/categories admin (`/admin/brands`, `/admin/categories`, `admin/admin-taxonomy.mjs`):
+  content edits patch the active catalog release and bump the cache revision. Identity fields
+  (name, slug, parent) are read-only. Homepage and brands.html still use static `brands-data.js`.
 - Admin runs against DEV in Preview and PROD in Production (`admin/admin-env.mjs`).
 - Go-live order: apply all pending migrations to PROD first, then merge to `master` (production
   serves `/admin` and the live checkout as soon as it deploys), then create the PROD owner profile.

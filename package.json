@@ -21,7 +21,8 @@
     "admin:products:dev": "node tests/products-admin-dev-integration.mjs",
     "admin:products:qa": "node tests/products-admin-qa.mjs",
     "crm:qa": "node tests/crm-qa.mjs",
-    "db:local:test": "node tests/db-local/harness.mjs scenarios.mjs"
+    "db:local:test": "node tests/db-local/harness.mjs scenarios.mjs && node tests/db-local/harness.mjs taxonomy-scenarios.mjs",
+    "taxonomy:qa": "node tests/taxonomy-qa.mjs"
   },
   "devDependencies": {
     "supabase": "^2.118.0",

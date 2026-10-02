@@ -7,6 +7,9 @@ import {
   CRM_ROLES, createOrdersListView, createOrderDetailView, createLeadsListView, createLeadDetailView,
   createCustomersListView, createCustomerDetailView, renderCrmOverview
 } from "/admin/admin-crm.mjs";
+import {
+  createBrandsListView, createBrandDetailView, createCategoriesListView, createCategoryDetailView
+} from "/admin/admin-taxonomy.mjs";
 
 const ROLES = new Set(["owner", "admin", "manager", "content_manager"]);
 const ROLE_LABELS = Object.freeze({
@@ -40,16 +43,6 @@ const PLACEHOLDERS = Object.freeze({
     eyebrow: "Канонічний каталог",
     lead: "Робоча область списку й редактора товарів буде наступним етапом.",
     rows: [["Список товарів", "Таблиця, пошук, фільтри та сортування"], ["Редактор", "Канонічні поля, атрибути й provenance"], ["Публікація", "Окремі draft / publish / hide команди"]]
-  },
-  categories: {
-    eyebrow: "87 категорій",
-    lead: "Таксономія залишається read-only у межах foundation.",
-    rows: [["Дерево", "Рівні, path, видимість і кількість товарів"], ["Mapping review", "29 рішень потребують перевірки"], ["Безпечне переміщення", "Preview впливу на URL та breadcrumbs"]]
-  },
-  brands: {
-    eyebrow: "36 брендів",
-    lead: "Підготовлено маршрут для керування брендами без mutation surface.",
-    rows: [["Довідник", "Назва, slug, видимість і логотип"], ["Зв’язки", "Товари, серії та колекції бренду"], ["Захист", "Перевірка залежностей перед видаленням"]]
   },
   attributes: {
     eyebrow: "64 визначення",
@@ -120,10 +113,14 @@ async function route() {
   const orderMatch = path.match(/^\/admin\/orders\/(\d{1,12})$/);
   const leadMatch = path.match(/^\/admin\/leads\/(\d{1,12})$/);
   const customerMatch = path.match(/^\/admin\/customers\/([0-9a-f-]{36})$/i);
+  const brandMatch = path.match(/^\/admin\/brands\/([^/]+)$/);
+  const categoryMatch = path.match(/^\/admin\/categories\/([^/]+)$/);
   const definition = productEditorMatch ? { ...ROUTES["/admin/products"], title: "Редагування товару" }
     : orderMatch ? { ...ROUTES["/admin/orders"], title: `Замовлення № ${orderMatch[1]}` }
     : leadMatch ? { ...ROUTES["/admin/leads"], title: `Заявка № ${leadMatch[1]}` }
     : customerMatch ? { ...ROUTES["/admin/customers"], title: "Клієнт" }
+    : brandMatch ? { ...ROUTES["/admin/brands"], title: "Бренд" }
+    : categoryMatch ? { ...ROUTES["/admin/categories"], title: "Категорія" }
     : ROUTES[path];
   if (!definition) return renderNotFound();
   if (!definition.roles.includes(activeProfile.role)) return renderForbidden(definition);
@@ -175,6 +172,10 @@ async function route() {
     : leadMatch ? () => createLeadDetailView({ api, leadNumber: leadMatch[1], signal })
     : path === "/admin/customers" ? () => createCustomersListView({ api, signal })
     : customerMatch ? () => createCustomerDetailView({ api, customerId: customerMatch[1], signal })
+    : path === "/admin/brands" ? () => createBrandsListView({ api, signal })
+    : brandMatch ? () => createBrandDetailView({ api, brandId: decodeURIComponent(brandMatch[1]), signal })
+    : path === "/admin/categories" ? () => createCategoriesListView({ api, signal })
+    : categoryMatch ? () => createCategoryDetailView({ api, categoryId: decodeURIComponent(categoryMatch[1]), signal })
     : null;
   if (crmView) {
     try {
@@ -185,15 +186,15 @@ async function route() {
     } catch (error) {
       if (error instanceof AdminApiError && error.code === "aborted") return;
       if (error instanceof AdminApiError && error.status === 401) return expireSession();
-      return renderShell(definition, renderCrmError(error));
+      return renderShell(definition, renderSectionError(error, definition));
     }
   }
   return renderShell(definition, renderPlaceholder(definition));
 }
 
-function renderCrmError(error) {
+function renderSectionError(error, definition) {
   return `<section class="admin-state-panel" role="alert">
-    ${icon("warning")}<div><p class="admin-kicker">ПРОДАЖІ</p><h1>Не вдалося відкрити розділ</h1><p>${escapeHtml(error?.message || "База даних не відповіла.")}</p></div>
+    ${icon("warning")}<div><p class="admin-kicker">${escapeHtml(definition.title.toUpperCase())}</p><h1>Не вдалося відкрити розділ</h1><p>${escapeHtml(error?.message || "База даних не відповіла.")}</p></div>
     <button class="admin-button admin-button--secondary" type="button" data-retry>Спробувати ще раз</button>
   </section>`;
 }
