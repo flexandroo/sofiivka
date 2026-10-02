@@ -12,54 +12,7 @@
   background: #fff;
 }
 
-.home-page .utility-bar {
-  height: 36px;
-  font-size: 10px;
-}
-
-.home-page .site-header {
-  backdrop-filter: none;
-}
-
-.home-page .site-header__inner {
-  grid-template-columns: 142px 104px minmax(260px, 1fr) auto;
-  min-height: 56px;
-  gap: 12px;
-}
-
-.home-page .site-header .brand {
-  width: 122px;
-  height: 46px;
-}
-
-.home-page .catalog-button,
-.home-page .search input {
-  min-height: var(--home-control-height);
-  height: var(--home-control-height);
-}
-
-.home-page .catalog-button {
-  padding-inline: 15px;
-  border-radius: 6px;
-  font-size: 13px;
-}
-
-.home-page .search > button {
-  top: 2px;
-  right: 2px;
-  bottom: auto;
-  height: calc(var(--home-control-height) - 4px);
-}
-
-.home-page .header-actions .header-action {
-  min-height: 40px;
-  font-size: 11px;
-}
-
-.home-page .header-actions .header-action svg {
-  width: 20px;
-  height: 20px;
-}
+/* The homepage uses the same header as every other page (styles.css). */
 
 .storefront {
   padding: var(--home-gap) var(--home-edge) 0;
@@ -1187,22 +1140,8 @@
 }
 
 @media (max-width: 900px) {
-  .home-page .site-header__inner {
-    grid-template-columns: 132px 44px minmax(180px, 1fr) 44px;
-    min-height: 58px;
-    gap: 8px;
-  }
 
-  .home-page .site-header .brand {
-    width: 124px;
-    height: 42px;
-  }
 
-  .home-page .catalog-button {
-    width: 44px;
-    padding: 0;
-    font-size: 0;
-  }
 
   .storefront__shell {
     grid-template-columns: 1fr;
@@ -1316,34 +1255,10 @@
     --home-gap: 0px;
   }
 
-  .home-page .site-header__inner {
-    grid-template-columns: minmax(106px, 1fr) 42px 42px;
-    min-height: 52px;
-    column-gap: 8px;
-    row-gap: 0;
-  }
 
-  .home-page .site-header .brand {
-    width: 112px;
-    height: 38px;
-  }
 
-  .home-page .catalog-button {
-    width: 42px;
-    min-height: 40px;
-    padding: 0;
-    font-size: 0;
-  }
 
-  .home-page .site-header .search {
-    margin-inline: -4px;
-    padding-bottom: 6px;
-  }
 
-  .home-page .header-actions .header-action[data-cart] {
-    width: 42px;
-    min-height: 40px;
-  }
 
   .home-page .catalog-menu {
     max-height: calc(100dvh - 92px);

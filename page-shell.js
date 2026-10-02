@@ -55,6 +55,7 @@
     search: renderSearchExtended,
     compare: renderCompareExtended,
     product: renderProductMaster,
+    "not-found": renderNotFound,
     heating: () => renderCatalogSystem("heating"),
     "water-supply": () => renderCatalogSystem("water-supply"),
     climate: () => renderCatalogSystem("climate"),
@@ -170,6 +171,7 @@
   }
   function money(value) { return new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 0 }).format(Math.round(Number(value) || 0)) + " грн"; }
   function productCountLabel(count) { const value = Math.abs(Number(count) || 0); const ending = value % 10 === 1 && value % 100 !== 11 ? "товар" : [2, 3, 4].includes(value % 10) && ![12, 13, 14].includes(value % 100) ? "товари" : "товарів"; return `${value} ${ending}`; }
+  function setNoindex() { let meta = document.querySelector('meta[name="robots"]'); if (!meta) { meta = document.createElement("meta"); meta.name = "robots"; document.head.append(meta); } meta.content = "noindex, follow"; document.querySelector('link[rel="canonical"]')?.remove(); }
   function setCanonical(path) { let link = document.querySelector('link[rel="canonical"]'); if (!link) { link = document.createElement("link"); link.rel = "canonical"; document.head.append(link); } link.href = `https://sofievka.vercel.app${path}`; }
   function cart() { try { const value = JSON.parse(localStorage.getItem("sofievka-cart")) || {}; return Object.fromEntries(Object.entries(value).filter(([id, quantity]) => productById(id) && Number(quantity) > 0)); } catch { return {}; } }
   function saveCart(value) { localStorage.setItem("sofievka-cart", JSON.stringify(value)); updateCounts(); }
@@ -221,7 +223,23 @@
     if (!settings) return "";
     return settings.stores.map(store => `<a class="button button--primary" href="${escapeHtml(window.sofievkaSiteSettings.mapRoute(store.mapQuery || store.address))}" target="_blank" rel="noreferrer">Маршрут: ${escapeHtml(store.city || store.title)}</a>`).join("");
   }
+  // Google map of one store at a time; the tabs switch the store.
+  function contactMapMarkup(active = 0) {
+    const settings = siteSettings();
+    const stores = (settings?.stores || []).filter(store => store.mapQuery || store.address);
+    if (!stores.length) return "";
+    const index = Math.min(active, stores.length - 1);
+    const store = stores[index];
+    const tabs = stores.length > 1 ? `<div class="contact-map__tabs" role="tablist">${stores.map((item, i) => `<button type="button" role="tab" aria-selected="${i === index}" data-map-store="${i}">${escapeHtml(item.city || item.title)}</button>`).join("")}</div>` : "";
+    return `${tabs}<iframe src="${escapeHtml(window.sofievkaSiteSettings.mapEmbed(store.mapQuery || store.address))}" title="Карта: ${escapeHtml(store.title || store.city || store.address)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+  }
+  document.addEventListener("click", event => {
+    const tab = event.target.closest("[data-map-store]");
+    const frame = tab?.closest("[data-site-map]");
+    if (frame) frame.innerHTML = contactMapMarkup(Number(tab.dataset.mapStore) || 0);
+  });
   function refreshSiteSettingsBlocks() {
+    document.querySelectorAll("[data-site-map]").forEach(node => { node.innerHTML = contactMapMarkup(Number(node.querySelector('[aria-selected="true"]')?.dataset.mapStore) || 0); });
     document.querySelectorAll("[data-site-stores]").forEach(node => { node.innerHTML = contactStoresMarkup(); });
     document.querySelectorAll("[data-site-routes]").forEach(node => { node.innerHTML = contactRoutesMarkup(); });
     window.sofievkaSiteSettings?.applyHooks();
@@ -497,7 +515,7 @@
   function headerExtended() {
     const searchQuery = page === "search" ? (new URLSearchParams(location.search).get("q") || "") : "";
     return `<a class="skip-link" href="#main">Перейти до основного вмісту</a>
-      <div class="utility-bar"><div class="container utility-bar__inner"><ul><li>Інженерний торговий дім</li><li>Обладнання, комплектація, монтаж і сервіс</li><li><a href="/partnership.html">Для професіоналів</a></li></ul><div class="utility-bar__contact"><a href="/contact.html">Контакти та графік роботи</a></div></div></div>
+      <div class="utility-bar"><div class="container utility-bar__inner"><p data-site-primary-address>с. Софіївська Борщагівка, вул. Київська, 3</p><ul aria-label="Переваги магазину"><li>Доставка по Україні</li><li>Офіційна продукція з гарантією</li></ul><div class="utility-bar__contact"><a href="tel:+380503582284" data-site-primary-phone>+38 (050) 358-22-84</a><span data-site-primary-hours>Пн–Пт 9:00–18:00, Сб 9:00–14:00</span></div></div></div>
       <header class="site-header" data-page-header>${siteNavMarkup()}<div class="container site-header__inner">
         <a class="brand" href="/index.html" aria-label="Софіївка, головна"><img src="/assets/logo-sofievka-transparent.png" width="1942" height="809" alt="Софіївка"></a>
         <div class="catalog-navigation"><button class="catalog-button" type="button" data-page-menu aria-expanded="false" aria-controls="page-catalog-menu" aria-haspopup="true" aria-label="Відкрити каталог і меню"><span class="catalog-button__mark" aria-hidden="true"><i></i><i></i><i></i></span>Каталог</button>
@@ -812,8 +830,7 @@
       ${series ? `<div class="pdp-heading__top"><span class="pdp__series">Серія ${escapeHtml(series)}</span></div>` : ""}
       <h1>${escapeHtml(product.title)}</h1>
       <dl class="pdp-identifiers">${model !== product.sku ? `<div><dt>Модель</dt><dd>${escapeHtml(model)}</dd></div>` : ""}<div><dt>Артикул</dt><dd>${escapeHtml(product.sku || product.id)}<button class="pdp-copy-code" type="button" data-copy-sku="${escapeHtml(product.sku || product.id)}" aria-label="Копіювати артикул ${escapeHtml(product.sku || product.id)}">${pdpIcon("Документ")}</button></dd></div></dl>
-      ${summary ? `<p class="pdp-summary">${escapeHtml(summary)}</p>` : ""}
-    </header>`;
+    </header>${summary ? `<p class="pdp-summary">${escapeHtml(summary)}</p>` : ""}`;
   }
 
   function renderPdpGallery(view) {
@@ -915,6 +932,7 @@
     const product = productById(id);
     if (!product) {
       document.title = "Товар не знайдено | ТД «Софіївка»";
+      setNoindex();
       return `<section class="pdp-missing"><div class="container">${crumbs("Товар не знайдено")}<span class="pdp-missing__code">404</span><h1>Товар не знайдено</h1><p>${id ? "Посилання містить невідомий ідентифікатор товару." : "У посиланні немає ідентифікатора товару."}</p><div><a class="button button--primary" href="/catalog">До каталогу</a><button class="text-link pdp-back" type="button" data-history-back>← Повернутися назад</button></div></div></section>`;
     }
     document.title = product.seo?.title || product.seoTitle || `${product.title} | ТД «Софіївка»`;
@@ -949,6 +967,17 @@
     const query = (new URLSearchParams(location.search).get("q") || "").trim();
     document.title = query ? `${query} — пошук | ТД «Софіївка»` : "Пошук по каталогу | ТД «Софіївка»";
     return `<section class="search-page-hero"><div class="container">${crumbs("Пошук")}<p class="page-kicker">Каталог інженерного обладнання</p><h1>${query ? "Результати пошуку" : "Пошук по каталогу"}</h1>${query ? `<p class="search-page-hero__query">«${escapeHtml(query)}»</p>` : `<p>Введіть назву, бренд, модель або артикул.</p>`}</div></section><section class="page-section search-page-section"><div class="container"><form class="search-page-form" action="/search"><label for="search-page-query">Пошуковий запит</label><div><input id="search-page-query" name="q" type="search" value="${escapeHtml(query)}" placeholder="Наприклад, Ecosoft осмос або MO550MECOSTD"><button class="button button--primary" type="submit">Знайти</button></div></form><div class="search-page-results" data-search-page-results aria-live="polite"></div></div></section>`;
+  }
+
+  // 404.html: Vercel serves it with status 404 for any unknown address.
+  function renderNotFound() {
+    document.title = "Сторінку не знайдено | ТД «Софіївка»";
+    setNoindex();
+    const sections = (window.sofievkaCatalog?.activeSections || []).filter(section => window.sofievkaCatalog.countForSection(section.id) > 0);
+    const sectionLinks = sections.length
+      ? sections.map(section => `<a href="${escapeHtml(window.sofievkaCatalog.sectionUrl(section.id))}">${escapeHtml(section.name)} <span>${window.sofievkaCatalog.countForSection(section.id)}</span></a>`).join("")
+      : `<a href="/catalog/heating">Опалення</a><a href="/catalog/water-supply">Водопостачання</a><a href="/catalog/water-treatment">Водопідготовка та очистка</a><a href="/catalog/sewerage">Каналізація та дренаж</a>`;
+    return `<section class="page-hero page-hero--light not-found"><div class="container"><p class="page-kicker">Помилка 404</p><h1>Сторінку не знайдено</h1><p class="page-hero__lead">Посилання могло застаріти або адресу введено з помилкою. Спробуйте пошук або оберіть розділ каталогу.</p><form class="search-page-form not-found__search" action="/search"><label for="not-found-query">Пошук по каталогу</label><div><input id="not-found-query" name="q" type="search" placeholder="Назва, бренд, модель або артикул"><button class="button button--primary" type="submit">Знайти</button></div></form></div></section><section class="page-section page-section--compact"><div class="container"><div class="page-heading"><h2>Популярні розділи</h2></div><div class="brand-categories not-found__sections">${sectionLinks}<a href="/brands">Бренди</a></div><div class="not-found__links"><a class="button button--primary" href="/">На головну</a><a class="text-link" href="/contact.html">Зв'язатися з нами →</a></div></div></section>`;
   }
 
   function renderBrandExtended() {
@@ -1037,7 +1066,7 @@
   }
 
   function renderContactExtended() {
-    return hero("Контакти", "Поговоріть із фахівцем", "Знайдемо товар за кодом, перевіримо базову сумісність або приймемо специфікацію на прорахунок.", true) + `<section class="page-section"><div class="container contact-grid"><div><div data-site-stores>${contactStoresMarkup()}</div><div class="contact-purpose"><h2>Що вказати у зверненні</h2><ul><li>Назву або код товару.</li><li>Тип об'єкта й коротку задачу.</li><li>Фото, схему або специфікацію.</li><li>Місто й бажаний строк.</li></ul></div></div><div class="contact-map"><p class="page-kicker">Магазин і консультація</p><h2>Перед візитом уточніть наявність моделі</h2><p>Менеджер перевірить склад і підготує товар або консультацію до вашого приїзду.</p><div class="contact-routes" data-site-routes>${contactRoutesMarkup()}</div></div></div></section><section class="page-section page-section--white" id="contact-form"><div class="container"><form class="checkout-form lead-form" data-lead-form="contact" novalidate><section class="form-section"><h2>Написати нам</h2><p>Опишіть задачу або вкажіть код товару — відповімо телефоном або листом.</p>${leadFormFields({ messageLabel: "Ваш запит", submitLabel: "Надіслати звернення" })}</section></form></div></section>`;
+    return hero("Контакти", "Поговоріть із фахівцем", "Знайдемо товар за кодом, перевіримо базову сумісність або приймемо специфікацію на прорахунок.", true) + `<section class="page-section"><div class="container contact-grid"><div><div data-site-stores>${contactStoresMarkup()}</div><div class="contact-purpose"><h2>Що вказати у зверненні</h2><ul><li>Назву або код товару.</li><li>Тип об'єкта й коротку задачу.</li><li>Фото, схему або специфікацію.</li><li>Місто й бажаний строк.</li></ul></div></div><div class="contact-map"><div class="contact-map__frame" data-site-map>${contactMapMarkup()}</div><div class="contact-map__body"><p class="page-kicker">Магазин і консультація</p><h2>Перед візитом уточніть наявність моделі</h2><p>Менеджер перевірить склад і підготує товар або консультацію до вашого приїзду.</p><div class="contact-routes" data-site-routes>${contactRoutesMarkup()}</div></div></div></div></section><section class="page-section page-section--white" id="contact-form"><div class="container"><form class="checkout-form lead-form" data-lead-form="contact" novalidate><section class="form-section"><h2>Написати нам</h2><p>Опишіть задачу або вкажіть код товару — відповімо телефоном або листом.</p>${leadFormFields({ messageLabel: "Ваш запит", submitLabel: "Надіслати звернення" })}</section></form></div></section>`;
   }
 
   function renderBlogExtended() {
