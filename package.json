@@ -21,12 +21,13 @@
     "admin:products:dev": "node tests/products-admin-dev-integration.mjs",
     "admin:products:qa": "node tests/products-admin-qa.mjs",
     "crm:qa": "node tests/crm-qa.mjs",
-    "db:local:test": "node tests/db-local/harness.mjs scenarios.mjs && node tests/db-local/harness.mjs taxonomy-scenarios.mjs && node tests/db-local/harness.mjs taxonomy-v2-scenarios.mjs && node tests/db-local/harness.mjs settings-scenarios.mjs && node tests/db-local/harness.mjs collections-scenarios.mjs && node tests/db-local/harness.mjs attributes-scenarios.mjs && node tests/db-local/harness.mjs crm-v2-scenarios.mjs && node tests/db-local/harness.mjs staff-scenarios.mjs",
+    "db:local:test": "node tests/db-local/harness.mjs scenarios.mjs && node tests/db-local/harness.mjs taxonomy-scenarios.mjs && node tests/db-local/harness.mjs taxonomy-v2-scenarios.mjs && node tests/db-local/harness.mjs settings-scenarios.mjs && node tests/db-local/harness.mjs collections-scenarios.mjs && node tests/db-local/harness.mjs attributes-scenarios.mjs && node tests/db-local/harness.mjs crm-v2-scenarios.mjs && node tests/db-local/harness.mjs staff-scenarios.mjs && node tests/db-local/harness.mjs price-import-scenarios.mjs",
     "taxonomy:qa": "node tests/taxonomy-qa.mjs",
     "settings:qa": "node tests/settings-qa.mjs",
     "collections:qa": "node tests/collections-qa.mjs",
     "attributes:qa": "node tests/attributes-qa.mjs",
-    "staff:qa": "node tests/staff-qa.mjs"
+    "staff:qa": "node tests/staff-qa.mjs",
+    "prices:qa": "node tests/price-import-qa.mjs"
   },
   "devDependencies": {
     "supabase": "^2.118.0",

@@ -307,6 +307,16 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     }
   });
 
+  // Prices and stock: CSV export and the batched price import (/admin/products/import)
+  const prices = Object.freeze({
+    exportProducts: (filters = {}, page = 1, pageSize = 1000) => rpc("admin_export_products", {
+      query_text: filters.query || null, filter_category_id: filters.categoryId || null, filter_brand_id: filters.brandId || null,
+      filter_publication: filters.publication || null, filter_inventory: filters.inventory || null, filter_price: filters.price || null,
+      page_number: Math.max(1, Number(page) || 1), page_size: Math.min(1000, Math.max(1, Number(pageSize) || 1000))
+    }),
+    apply: payload => rpc("admin_apply_price_updates", { payload })
+  });
+
   async function changePassword(password) {
     await request("/auth/v1/user", { method: "PUT", body: { password } });
   }
@@ -327,6 +337,7 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     createProduct,
     saveProduct,
     bulkProducts,
-    uploadAsset
+    uploadAsset,
+    prices
   });
 }

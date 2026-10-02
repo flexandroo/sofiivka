@@ -14,6 +14,7 @@ import { createSettingsView } from "/admin/admin-settings.mjs";
 import { createStaffView, createAccountView } from "/admin/admin-staff.mjs";
 import { createCollectionsListView, createCollectionDetailView } from "/admin/admin-collections.mjs";
 import { createAttributesListView, createAttributeDetailView } from "/admin/admin-attributes.mjs";
+import { createPriceImportView } from "/admin/admin-prices.mjs";
 
 const ROLES = new Set(["owner", "admin", "manager", "content_manager"]);
 const ROLE_LABELS = Object.freeze({
@@ -100,7 +101,8 @@ async function route() {
   activeProfile = await api.getProfile(activeSession.user.id);
   if (!isAuthorizedProfile(activeProfile)) return renderAccessDenied(activeProfile);
 
-  const productEditorMatch = path.match(/^\/admin\/products\/([^/]+)$/);
+  const priceImport = path === "/admin/products/import";
+  const productEditorMatch = !priceImport && path.match(/^\/admin\/products\/([^/]+)$/);
   const orderMatch = path.match(/^\/admin\/orders\/(\d{1,12})$/);
   const orderPrintMatch = path.match(/^\/admin\/orders\/(\d{1,12})\/print$/);
   const orderCreate = path === "/admin/orders/new";
@@ -110,7 +112,8 @@ async function route() {
   const categoryMatch = path.match(/^\/admin\/categories\/([^/]+)$/);
   const collectionMatch = path.match(/^\/admin\/collections\/([^/]+)$/);
   const attributeMatch = path.match(/^\/admin\/attributes\/([^/]+)$/);
-  const definition = productEditorMatch ? { ...ROUTES["/admin/products"], title: "Редагування товару" }
+  const definition = priceImport ? { ...ROUTES["/admin/products"], title: "Ціни та наявність" }
+    : productEditorMatch ? { ...ROUTES["/admin/products"], title: "Редагування товару" }
     : orderMatch ? { ...ROUTES["/admin/orders"], title: `Замовлення № ${orderMatch[1]}` }
     : orderPrintMatch ? { ...ROUTES["/admin/orders"], title: `Друк замовлення № ${orderPrintMatch[1]}` }
     : orderCreate ? { ...ROUTES["/admin/orders"], title: "Нове замовлення" }
@@ -184,6 +187,7 @@ async function route() {
     : collectionMatch ? () => createCollectionDetailView({ api, collectionId: decodeURIComponent(collectionMatch[1]), signal })
     : path === "/admin/attributes" ? () => createAttributesListView({ api, signal })
     : attributeMatch ? () => createAttributeDetailView({ api, attributeId: decodeURIComponent(attributeMatch[1]), signal })
+    : priceImport ? () => createPriceImportView({ api, search: location.search, signal })
     : null;
   if (crmView) {
     try {

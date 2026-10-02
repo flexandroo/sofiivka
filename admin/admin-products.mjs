@@ -1,4 +1,5 @@
 import { icon } from "/admin/admin-icons.mjs";
+import { priceImportHref } from "/admin/admin-prices.mjs";
 
 const PUBLICATION = Object.freeze({ published: "Опубліковано", draft: "Чернетка", hidden: "Приховано", archived: "Архів" });
 const INVENTORY = Object.freeze({ in_stock: "В наявності", out_of_stock: "Немає", preorder: "Передзамовлення", discontinued: "Знято", unknown: "Невідомо" });
@@ -22,7 +23,8 @@ export async function createProductsListView({ api, profile, navigate, search = 
     <section class="admin-products-page" data-products-page>
       <header class="admin-page-head admin-page-head--products">
         <div><p class="admin-kicker">КАНОНІЧНИЙ КАТАЛОГ</p><h1>Товари</h1><p><strong>${formatNumber(result.total)}</strong> записів за поточними умовами.</p></div>
-        <button class="admin-button admin-button--primary" type="button" data-create-product ${canMutate ? "" : "disabled title=\"Недоступно для цієї ролі\""}>Новий товар${icon("arrow")}</button>
+        <div class="admin-crm-head-actions"><a class="admin-button admin-button--secondary" href="${escape(priceImportHref(search))}" data-admin-link data-price-import-link>${icon("download")}Ціни: імпорт / експорт</a>
+        <button class="admin-button admin-button--primary" type="button" data-create-product ${canMutate ? "" : "disabled title=\"Недоступно для цієї ролі\""}>Новий товар${icon("arrow")}</button></div>
       </header>
       <form class="admin-products-filters" data-products-filters>
         <button class="admin-filter-close" type="button" data-close-mobile-filters aria-label="Закрити фільтри">×</button>
