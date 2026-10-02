@@ -1,7 +1,8 @@
 // Build-time sitemap.xml + robots.txt (+ the Search Console verification meta on the homepage).
 // The project has no serverless functions, so the sitemap is generated when Vercel builds the site:
 // from the public catalogue RPCs when the build reads Supabase, otherwise (or if Supabase is not
-// reachable) from the bundled catalogue feeds. Products published after a deploy appear in the
+// reachable) from the bundled catalogue feeds. Published blog articles and cases are listed from
+// get_site_posts when the build reads Supabase. Products published after a deploy appear in the
 // sitemap on the next deploy.
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -9,12 +10,15 @@ import path from "node:path";
 // Pages that must stay out of search: private, per-visitor or result pages and page templates.
 export const SITEMAP_EXCLUDED_PAGES = Object.freeze(new Set([
   "404", "account", "cart", "checkout", "compare", "favorites", "search",
-  "brand", "product", // templates: their real URLs come from the catalogue
+  "brand", "product", "post", // templates: their real URLs come from the catalogue and the published posts
   "catalog", "index", "heating", "water-supply", "plumbing", "climate" // listed under their canonical URLs
 ]));
 export const ROBOTS_DISALLOW = Object.freeze(["/admin", "/cart", "/checkout", "/account", "/search", "/compare", "/favorites"]);
 const PAGE_SIZE = 96;
 const MAX_PRODUCT_PAGES = 400;
+const POST_PAGE_SIZE = 48;
+const MAX_POST_PAGES = 50;
+export const POST_BASES = Object.freeze({ article: "/blog", case: "/portfolio" });
 
 export function resolveSiteUrl(env = process.env) {
   const explicit = String(env.SOFIEVKA_SITE_URL || "").trim();
@@ -102,6 +106,29 @@ async function supabaseCatalog(supabase) {
   return { ...bootstrap, productIds };
 }
 
+// Published blog articles and cases (get_site_posts); anything unexpected is skipped, never thrown.
+export function postPaths(posts) {
+  const paths = [];
+  for (const post of Array.isArray(posts) ? posts : []) {
+    const base = POST_BASES[post?.kind];
+    if (base && typeof post.slug === "string" && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(post.slug)) paths.push(`${base}/${post.slug}`);
+  }
+  return paths;
+}
+
+async function supabasePosts(supabase) {
+  const posts = [];
+  for (const kind of Object.keys(POST_BASES)) {
+    for (let page = 1; page <= MAX_POST_PAGES; page += 1) {
+      const result = await rpc(supabase, "get_site_posts", { post_kind: kind, page_number: page, page_size: POST_PAGE_SIZE });
+      if (!Array.isArray(result?.posts)) break;
+      posts.push(...result.posts);
+      if (!result.hasMore) break;
+    }
+  }
+  return posts;
+}
+
 async function localCatalog(root) {
   const { loadCatalogRuntime } = await import("./catalog-db-utils.mjs");
   const snapshot = loadCatalogRuntime(root).sofievkaCatalogSnapshot;
@@ -126,6 +153,7 @@ export async function writeSeoFiles({ root, outputDirectory, config, env = proce
   let catalog = null;
   let catalogSource = "local";
   let settings = null;
+  let posts = [];
   if (config.supabase) {
     try {
       catalog = await supabaseCatalog(config.supabase);
@@ -134,6 +162,7 @@ export async function writeSeoFiles({ root, outputDirectory, config, env = proce
       log(`[sitemap] Supabase catalogue unavailable (${error.message}); using the bundled feeds.`);
     }
     try { settings = await rpc(config.supabase, "get_site_settings", {}); } catch (error) { log(`[sitemap] get_site_settings: ${error.message}`); }
+    try { posts = await supabasePosts(config.supabase); } catch (error) { log(`[sitemap] get_site_posts: ${error.message}`); }
   }
   if (!catalog) {
     try { catalog = await localCatalog(root); } catch (error) {
@@ -142,7 +171,8 @@ export async function writeSeoFiles({ root, outputDirectory, config, env = proce
       catalogSource = "none";
     }
   }
-  const paths = [...await staticPagePaths(root), ...catalogPaths(catalog)];
+  const blogPaths = postPaths(posts);
+  const paths = [...await staticPagePaths(root), ...blogPaths, ...catalogPaths(catalog)];
   await fs.writeFile(path.join(outputDirectory, "sitemap.xml"), renderSitemap(siteUrl, paths), "utf8");
   await fs.writeFile(path.join(outputDirectory, "robots.txt"), renderRobots(siteUrl, { indexable }), "utf8");
 
@@ -157,5 +187,5 @@ export async function writeSeoFiles({ root, outputDirectory, config, env = proce
       verification = true;
     }
   }
-  return { siteUrl, urls: new Set(paths).size, catalogSource, indexable, verification };
+  return { siteUrl, urls: new Set(paths).size, catalogSource, posts: blogPaths.length, indexable, verification };
 }

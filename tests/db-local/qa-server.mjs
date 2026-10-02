@@ -172,6 +172,7 @@ function serveStatic(response, pathname) {
   if (!file.startsWith(dist)) return send(response, 403, "forbidden");
   if (pathname === "/" ) file = path.join(dist, "index.html");
   else if (pathname === "/admin" || pathname.startsWith("/admin/") && !path.extname(pathname)) file = path.join(dist, "admin/index.html");
+  else if (/^\/(blog|portfolio)\/[^/]+$/.test(pathname)) file = path.join(dist, "post.html");
   else if (!path.extname(pathname)) file = path.join(dist, `${pathname}.html`);
   if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) return send(response, 404, "not found");
   response.writeHead(200, { "Content-Type": MIME[path.extname(file)] || "application/octet-stream", "Cache-Control": "no-store" });
