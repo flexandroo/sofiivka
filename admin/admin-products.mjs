@@ -1,6 +1,7 @@
 import { icon } from "/admin/admin-icons.mjs";
 import { priceImportHref } from "/admin/admin-prices.mjs";
 import { relationsPanel, bindRelationsPanel } from "/admin/admin-product-relations.mjs";
+import { openMediaPicker } from "/admin/admin-media.mjs";
 
 const PUBLICATION = Object.freeze({ published: "Опубліковано", draft: "Чернетка", hidden: "Приховано", archived: "Архів" });
 const INVENTORY = Object.freeze({ in_stock: "В наявності", out_of_stock: "Немає", preorder: "Передзамовлення", discontinued: "Знято", unknown: "Невідомо" });
@@ -325,7 +326,7 @@ function attributeRow(item, rule = null) {
 
 function renderMediaPanel(media, enabled) {
   return `<section id="panel-media" class="admin-editor-panel" data-editor-panel="media" role="tabpanel" aria-labelledby="tab-media" hidden>
-    <header><div><p class="admin-kicker">МЕДІА</p><h2>Зображення і відео</h2></div>${enabled ? `<div class="admin-inline-actions"><button class="admin-button admin-button--secondary" type="button" data-add-media>Додати URL</button><label class="admin-button admin-button--primary admin-upload-button">Завантажити<input type="file" accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm" data-upload-media></label></div>` : `<span>Лише перегляд</span>`}</header>
+    <header><div><p class="admin-kicker">МЕДІА</p><h2>Зображення і відео</h2></div>${enabled ? `<div class="admin-inline-actions"><button class="admin-button admin-button--secondary" type="button" data-add-media>Додати URL</button><button class="admin-button admin-button--secondary" type="button" data-pick-media>З медіатеки</button><label class="admin-button admin-button--primary admin-upload-button">Завантажити<input type="file" accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm" data-upload-media></label></div>` : `<span>Лише перегляд</span>`}</header>
     <p class="admin-panel-note">Зовнішні URL зберігаються; нові файли завантажуються в <code>product-media/{product_uuid}</code>.</p>
     <div class="admin-asset-list" data-media-list>${media.map(mediaRow).join("") || `<p class="admin-muted" data-no-media>Медіа відсутні.</p>`}</div>
   </section>`;
@@ -504,6 +505,7 @@ function bindAssets(editor, context, setDirty) {
   };
   editor.querySelectorAll("[data-media-row],[data-document-row]").forEach(bindRow);
   editor.querySelector("[data-add-media]")?.addEventListener("click", () => { mediaList.querySelector("[data-no-media]")?.remove(); mediaList.insertAdjacentHTML("beforeend", mediaRow({ mediaType: "image", role: "gallery", url: "", altText: "", sortOrder: mediaList.children.length, active: true })); bindRow(mediaList.lastElementChild); setDirty(true); });
+  editor.querySelector("[data-pick-media]")?.addEventListener("click", async () => { let url = null; try { url = await openMediaPicker({ api: context.api }); } catch (error) { showToast(editor, error.message, true); } if (!url) return; mediaList.querySelector("[data-no-media]")?.remove(); mediaList.insertAdjacentHTML("beforeend", mediaRow({ mediaType: "image", role: mediaList.querySelector("[data-media-role] option:checked[value=primary]") ? "gallery" : "primary", url, altText: "", sortOrder: mediaList.children.length, active: true })); bindRow(mediaList.lastElementChild); setDirty(true); });
   editor.querySelector("[data-add-document]")?.addEventListener("click", () => { documentList.querySelector("[data-no-documents]")?.remove(); documentList.insertAdjacentHTML("beforeend", documentRow({ title: "", documentType: "other", url: "", sortOrder: documentList.children.length, active: true })); bindRow(documentList.lastElementChild); setDirty(true); });
   editor.querySelector("[data-upload-media]")?.addEventListener("change", event => upload(event, "media", mediaList, mediaRow));
   editor.querySelector("[data-upload-document]")?.addEventListener("change", event => upload(event, "document", documentList, documentRow));

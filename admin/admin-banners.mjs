@@ -1,4 +1,5 @@
 import { icon } from "/admin/admin-icons.mjs";
+import { openMediaPicker } from "/admin/admin-media.mjs";
 
 // Homepage banners: the hero slider and the promo tiles beside it. The storefront reads the
 // live ones through get_homepage_banners (index.html keeps the static copy as first paint).
@@ -288,6 +289,19 @@ function bindBanners(container, api, initial) {
     dialog.querySelector(`[data-upload-for="${button.dataset.uploadButton}"]`)?.click();
   }));
 
+  // Pick an image that is already in the media library (/admin/media).
+  dialog.querySelectorAll("[data-media-pick]").forEach(button => button.addEventListener("click", async () => {
+    const url = await openMediaPicker({ api }).catch(failure => {
+      errorNode.textContent = failure.message;
+      errorNode.hidden = false;
+      return null;
+    });
+    if (!url) return;
+    field(button.dataset.mediaPick).value = url;
+    syncPreview();
+    field(button.dataset.mediaPick).focus();
+  }));
+
   if (deleteDialog) {
     dialog.querySelector("[data-banner-delete]").addEventListener("click", () => {
       if (!editing) return;
@@ -423,7 +437,8 @@ function iconButton(label, text, data, disabled) {
 function urlField(name, label, { required = false, upload = false, hint = "", heroOnly = false } = {}) {
   return `<div class="admin-field admin-field--full"${heroOnly ? " data-hero-only" : ""}><span><label for="banner-${name}">${escape(label)}</label></span>
     <div class="admin-banner-url"><input id="banner-${name}" name="${name}" maxlength="1000" autocomplete="off" spellcheck="false" ${required ? "required" : ""}>
-      ${upload ? `<button class="admin-button admin-button--secondary" type="button" data-upload-button="${name}">Завантажити</button>
+      ${upload ? `<span class="admin-banner-url__actions"><button class="admin-button admin-button--secondary" type="button" data-media-pick="${name}">Медіатека</button>
+      <button class="admin-button admin-button--secondary" type="button" data-upload-button="${name}">Завантажити</button></span>
       <input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/svg+xml" data-upload-for="${name}" hidden>` : ""}</div>
     ${hint ? `<small>${escape(hint)}</small>` : ""}</div>`;
 }

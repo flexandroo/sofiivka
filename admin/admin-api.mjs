@@ -360,6 +360,40 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     upload: file => uploadAsset(file, { productId: "banners", kind: "site" })
   });
 
+  // Media library (/admin/media): files live in the public site-media bucket under library/.
+  // The browser uploads with the staff JWT, then registers the file; a failed registration
+  // removes the just-uploaded object again.
+  async function removeStorageObject(bucket, storagePath) {
+    await request(`/storage/v1/object/${bucket}/${String(storagePath).split("/").map(encodeURIComponent).join("/")}`, { method: "DELETE" });
+  }
+  const media = Object.freeze({
+    list: ({ query = "", page = 1 } = {}, { signal } = {}) => rpc("admin_list_media", {
+      search_text: String(query || "").trim() || null, page_number: Math.max(1, Number(page) || 1)
+    }, signal),
+    async upload(file, { alt = "", width = null, height = null } = {}) {
+      // Storage paths stay short: keep the tail of a long file name (it holds the extension).
+      const named = file.name.length > 80 ? new File([file], file.name.slice(-80), { type: file.type }) : file;
+      const uploaded = await uploadAsset(named, { productId: "library", kind: "site" });
+      try {
+        return await rpc("admin_register_media", {
+          payload: { path: uploaded.storagePath, url: uploaded.url, name: file.name, mimeType: file.type, size: file.size, alt, width, height }
+        });
+      } catch (error) {
+        await removeStorageObject(uploaded.bucket, uploaded.storagePath).catch(() => {});
+        throw error;
+      }
+    },
+    update: (id, alt, expectedUpdatedAt) => rpc("admin_update_media", {
+      media_id: id, alt_text: String(alt ?? ""), expected_updated_at: expectedUpdatedAt || null
+    }),
+    async remove(id) {
+      const result = await rpc("admin_delete_media", { media_id: id });
+      // The row is gone; a leftover object is harmless (public, unreferenced), so report but do not fail.
+      const objectRemoved = await removeStorageObject(result.bucket, result.path).then(() => true, () => false);
+      return { ...result, objectRemoved };
+    }
+  });
+
   async function changePassword(password) {
     await request("/auth/v1/user", { method: "PUT", body: { password } });
   }
@@ -376,6 +410,7 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     relations,
     series,
     banners,
+    media,
     getProfile,
     getDashboard,
     getProductReferenceData,

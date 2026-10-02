@@ -17,6 +17,7 @@ import { createAttributesListView, createAttributeDetailView } from "/admin/admi
 import { createPriceImportView } from "/admin/admin-prices.mjs";
 import { createPagesListView, createPageEditorView } from "/admin/admin-pages.mjs";
 import { createBannersView } from "/admin/admin-banners.mjs";
+import { createMediaView } from "/admin/admin-media.mjs";
 
 const ROLES = new Set(["owner", "admin", "manager", "content_manager"]);
 const ROLE_LABELS = Object.freeze({
@@ -36,7 +37,7 @@ const ROUTES = Object.freeze({
   "/admin/attributes": { title: "Характеристики", section: "attributes", icon: "attributes", roles: [...ROLES] },
   "/admin/collections": { title: "Підбірки", section: "collections", icon: "collections", roles: [...ROLES] },
   "/admin/banners": { title: "Банери головної", section: "banners", icon: "media", roles: [...ROLES] },
-  "/admin/media": { title: "Медіа", section: "media", icon: "media", roles: [...ROLES] },
+  "/admin/media": { title: "Медіатека", section: "media", icon: "media", roles: [...ROLES] },
   "/admin/pages": { title: "Сторінки", section: "pages", icon: "pages", roles: [...ROLES] },
   "/admin/settings": { title: "Налаштування", section: "settings", icon: "settings", roles: ["owner", "admin"] },
   "/admin/users": { title: "Працівники", section: "users", icon: "user", roles: ["owner", "admin"] },
@@ -55,11 +56,6 @@ const PLACEHOLDERS = Object.freeze({
     eyebrow: "Канонічний каталог",
     lead: "Робоча область списку й редактора товарів буде наступним етапом.",
     rows: [["Список товарів", "Таблиця, пошук, фільтри та сортування"], ["Редактор", "Канонічні поля, атрибути й provenance"], ["Публікація", "Окремі draft / publish / hide команди"]]
-  },
-  media: {
-    eyebrow: "13 006 медіазаписів",
-    lead: "Медіа залишаються в поточному джерелі; перенесення в Storage не входить у цей етап.",
-    rows: [["Зображення", "Primary, gallery, dimension і alt text"], ["Документи", "3 885 інструкцій та технічних файлів"], ["Майбутнє завантаження", "Лише через server-authorized signed flow"]]
   }
 });
 
@@ -194,6 +190,7 @@ async function route() {
     : collectionMatch ? () => createCollectionDetailView({ api, collectionId: decodeURIComponent(collectionMatch[1]), signal })
     : path === "/admin/attributes" ? () => createAttributesListView({ api, signal })
     : path === "/admin/banners" ? () => createBannersView({ api, signal })
+    : path === "/admin/media" ? () => createMediaView({ api, signal })
     : attributeMatch ? () => createAttributeDetailView({ api, attributeId: decodeURIComponent(attributeMatch[1]), signal })
     : priceImport ? () => createPriceImportView({ api, search: location.search, signal })
     : path === "/admin/pages" ? () => createPagesListView({ api, signal })
