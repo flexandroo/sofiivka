@@ -14,6 +14,7 @@ import { createSettingsView } from "/admin/admin-settings.mjs";
 import { createStaffView, createAccountView } from "/admin/admin-staff.mjs";
 import { createCollectionsListView, createCollectionDetailView } from "/admin/admin-collections.mjs";
 import { createAttributesListView, createAttributeDetailView } from "/admin/admin-attributes.mjs";
+import { createBannersView } from "/admin/admin-banners.mjs";
 
 const ROLES = new Set(["owner", "admin", "manager", "content_manager"]);
 const ROLE_LABELS = Object.freeze({
@@ -32,6 +33,7 @@ const ROUTES = Object.freeze({
   "/admin/brands": { title: "Бренди", section: "brands", icon: "brands", roles: [...ROLES] },
   "/admin/attributes": { title: "Характеристики", section: "attributes", icon: "attributes", roles: [...ROLES] },
   "/admin/collections": { title: "Підбірки", section: "collections", icon: "collections", roles: [...ROLES] },
+  "/admin/banners": { title: "Банери головної", section: "banners", icon: "media", roles: [...ROLES] },
   "/admin/media": { title: "Медіа", section: "media", icon: "media", roles: [...ROLES] },
   "/admin/settings": { title: "Налаштування", section: "settings", icon: "settings", roles: ["owner", "admin"] },
   "/admin/users": { title: "Працівники", section: "users", icon: "user", roles: ["owner", "admin"] },
@@ -41,6 +43,7 @@ const NAV_GROUPS = Object.freeze([
   { label: "Головне", paths: ["/admin"] },
   { label: "Продажі", paths: ["/admin/orders", "/admin/leads", "/admin/customers"] },
   { label: "Каталог", paths: ["/admin/products", "/admin/collections"] },
+  { label: "Сайт", paths: ["/admin/banners"] },
   { label: "Дані", paths: ["/admin/categories", "/admin/brands", "/admin/attributes", "/admin/media"] },
   { label: "Система", paths: ["/admin/settings", "/admin/users"] }
 ]);
@@ -183,6 +186,7 @@ async function route() {
     : path === "/admin/collections" ? () => createCollectionsListView({ api, signal })
     : collectionMatch ? () => createCollectionDetailView({ api, collectionId: decodeURIComponent(collectionMatch[1]), signal })
     : path === "/admin/attributes" ? () => createAttributesListView({ api, signal })
+    : path === "/admin/banners" ? () => createBannersView({ api, signal })
     : attributeMatch ? () => createAttributeDetailView({ api, attributeId: decodeURIComponent(attributeMatch[1]), signal })
     : null;
   if (crmView) {

@@ -171,6 +171,7 @@ function setupHeroSlider() {
   const dots = [...(slider?.querySelectorAll("[data-slide-dot]") || [])];
   const live = slider?.querySelector("[data-slide-live]");
   if (!slider || !track || !slides.length) return;
+  slider.dataset.sliderReady = "true";
 
   let index = 0;
   let timer;
@@ -220,7 +221,7 @@ function setupHeroSlider() {
   const stop = () => window.clearInterval(timer);
   const start = () => {
     stop();
-    if (autoplay && !reducedMotion && !paused) timer = window.setInterval(() => render(index + 1, false), 7000);
+    if (autoplay && !reducedMotion && !paused) timer = window.setInterval(() => (slider.isConnected ? render(index + 1, false) : stop()), 7000);
   };
 
   slider.querySelector("[data-slide-prev]")?.addEventListener("click", () => {
@@ -1062,3 +1063,178 @@ function renderHomepageCatalogFailure() {
   setupReveal();
   setupSignatureMotion();
 })();
+
+// Homepage banners from /admin/banners, served by the public RPC get_homepage_banners.
+// index.html keeps the static slides and tiles as first paint and fallback; the copy saved on
+// the last visit renders straight away and the fresh copy replaces it when it arrives. Every
+// text goes in through textContent and every address through bannerSafeUrl.
+const HOMEPAGE_BANNERS_CACHE = "sofievka.homepageBanners.v1";
+
+function bannerSafeUrl(value) {
+  const url = String(value || "").trim();
+  if (/^https:\/\/[^/\s"'<>\\]+(\/[^\s"'<>\\]*)?$/i.test(url)) return url;
+  if (/^\/([^/\\\s"'<>][^\s"'<>\\]*)?$/.test(url)) return url;
+  if (/^assets\/[^\s"'<>\\]+$/.test(url)) return `/${url}`;
+  return "";
+}
+
+function bannerElement(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function bannerFocus(value) {
+  const focus = Number(value);
+  return Number.isFinite(focus) ? Math.min(100, Math.max(0, Math.round(focus))) : 50;
+}
+
+// The banner image, wrapped in <picture> when a separate phone image is set.
+function bannerImage(banner, className, { eager = false, lazy = !eager, focus = true } = {}) {
+  const image = bannerElement("img", className);
+  image.src = bannerSafeUrl(banner.imageUrl);
+  image.alt = banner.imageAlt || "";
+  if (!banner.imageAlt) image.setAttribute("aria-hidden", "true");
+  if (eager) image.setAttribute("fetchpriority", "high");
+  if (lazy) image.loading = "lazy";
+  if (focus) image.style.objectPosition = `${bannerFocus(banner.imageFocus)}% center`;
+  const mobile = bannerSafeUrl(banner.mobileImageUrl);
+  if (!mobile) return image;
+  const picture = document.createElement("picture");
+  const source = document.createElement("source");
+  source.media = "(max-width: 640px)";
+  source.srcset = mobile.replace(/,/g, "%2C");
+  picture.append(source, image);
+  return picture;
+}
+
+function bannerButtonContent(label) {
+  const arrow = bannerElement("span", "arrow-mark");
+  arrow.setAttribute("aria-hidden", "true");
+  return [label, " ", arrow];
+}
+
+function buildHeroSlide(banner, index, total) {
+  const slide = bannerElement("article", `storefront-slide${index === 0 ? " is-active" : ""}`);
+  slide.dataset.slide = "";
+  slide.setAttribute("aria-label", `Слайд ${index + 1} з ${total}`);
+  const link = bannerElement("a", "storefront-slide__link");
+  link.href = bannerSafeUrl(banner.linkUrl) || "/catalog";
+  const content = bannerElement("div", "storefront-slide__content");
+  const logo = bannerSafeUrl(banner.logoUrl);
+  if (logo) {
+    const brand = bannerElement("img", "storefront-slide__brand storefront-slide__brand--original");
+    brand.src = logo;
+    brand.alt = banner.logoAlt || "";
+    brand.width = 180;
+    brand.height = 72;
+    content.append(brand);
+  }
+  if (banner.kicker) {
+    const kicker = bannerElement("p", "storefront-slide__technical");
+    String(banner.kicker).split("\n").forEach((line, lineIndex) => {
+      if (lineIndex) kicker.append(document.createElement("br"));
+      kicker.append(line);
+    });
+    content.append(kicker);
+  }
+  // The first slide carries the page heading, as in the static markup.
+  content.append(bannerElement(index === 0 ? "h1" : "h2", "", banner.title));
+  if (banner.text) content.append(bannerElement("p", "storefront-slide__lead", banner.text));
+  if (banner.buttonLabel) {
+    const button = bannerElement("span", "button button--primary");
+    button.append(...bannerButtonContent(banner.buttonLabel));
+    content.append(button);
+  }
+  link.append(bannerImage(banner, "storefront-slide__image", { eager: index === 0 }), content);
+  slide.append(link);
+  return slide;
+}
+
+function buildPromoTile(banner) {
+  const product = banner.layout === "product";
+  const tile = bannerElement("article", `storefront-promo storefront-promo--${product ? "water" : "climate"}`);
+  const copy = bannerElement("div", "storefront-promo__copy");
+  if (banner.kicker) copy.append(bannerElement("span", "storefront-promo__brand", banner.kicker));
+  copy.append(bannerElement("h2", "", banner.title));
+  if (banner.text) copy.append(bannerElement("p", "", banner.text));
+  const link = bannerElement("a", "button button--primary storefront-promo__action");
+  link.href = bannerSafeUrl(banner.linkUrl) || "/catalog";
+  link.append(...bannerButtonContent(banner.buttonLabel || "Детальніше"));
+  // The tiles sit on the first screen next to the slider, so their images load right away.
+  const image = bannerImage(banner, "", { focus: !product, lazy: false });
+  tile.append(...(product ? [copy, image, link] : [image, copy, link]));
+  return tile;
+}
+
+function isValidBanner(banner) {
+  return Boolean(banner && typeof banner === "object" && typeof banner.title === "string" && banner.title.trim()
+    && bannerSafeUrl(banner.imageUrl) && bannerSafeUrl(banner.linkUrl));
+}
+
+function applyHomepageBanners(data) {
+  const hero = (Array.isArray(data?.hero) ? data.hero : []).filter(isValidBanner).slice(0, 8);
+  const promo = (Array.isArray(data?.promo) ? data.promo : []).filter(isValidBanner).slice(0, 2);
+  const slider = document.querySelector("[data-slider]");
+  if (slider && hero.length) {
+    // A fresh copy of the section drops the old listeners; setupHeroSlider binds the new one.
+    const wasReady = slider.dataset.sliderReady === "true";
+    const fresh = slider.cloneNode(true);
+    delete fresh.dataset.sliderReady;
+    fresh.classList.remove("is-paused");
+    const track = fresh.querySelector("[data-slider-track]");
+    const dots = fresh.querySelector(".storefront-showcase__dots");
+    const footer = fresh.querySelector(".storefront-showcase__footer");
+    track.style.transform = "";
+    track.replaceChildren(...hero.map((banner, index) => buildHeroSlide(banner, index, hero.length)));
+    dots?.replaceChildren(...hero.map((banner, index) => {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.dataset.slideDot = String(index);
+      dot.setAttribute("role", "tab");
+      dot.setAttribute("aria-selected", String(index === 0));
+      dot.setAttribute("aria-label", `Показати слайд ${index + 1}`);
+      if (index === 0) dot.className = "is-active";
+      return dot;
+    }));
+    if (footer) footer.style.display = hero.length > 1 ? "" : "none";
+    fresh.dataset.sliderAutoplay = hero.length > 1 ? "true" : "false";
+    const liveRegion = fresh.querySelector("[data-slide-live]");
+    if (liveRegion) liveRegion.textContent = "";
+    slider.replaceWith(fresh);
+    if (wasReady) setupHeroSlider();
+  }
+  const promos = document.querySelector(".storefront-promos");
+  if (promos && promo.length) {
+    promos.replaceChildren(...promo.map(buildPromoTile));
+    promos.classList.toggle("storefront-promos--single", promo.length === 1);
+  }
+}
+
+function setupHomepageBanners() {
+  if (!document.querySelector("[data-slider]")) return;
+  let cached = null;
+  try { cached = window.localStorage.getItem(HOMEPAGE_BANNERS_CACHE); } catch { /* storage blocked */ }
+  if (cached) {
+    try { applyHomepageBanners(JSON.parse(cached)); } catch { /* ignore a broken cache */ }
+  }
+  const config = window.SOFIEVKA_CATALOG_CONFIG?.supabase;
+  if (!config?.url || !config?.publishableKey) return;
+  fetch(`${config.url}/rest/v1/rpc/get_homepage_banners`, {
+    method: "POST",
+    headers: { apikey: config.publishableKey, Authorization: `Bearer ${config.publishableKey}`, "Content-Type": "application/json", Accept: "application/json" },
+    body: "{}",
+    signal: AbortSignal.timeout(10000)
+  })
+    .then(response => (response.ok ? response.json() : null))
+    .then(body => {
+      if (!body || typeof body !== "object" || !Array.isArray(body.hero) || !Array.isArray(body.promo)) return;
+      const serialized = JSON.stringify(body);
+      try { window.localStorage.setItem(HOMEPAGE_BANNERS_CACHE, serialized); } catch { /* private mode */ }
+      if (serialized !== cached) applyHomepageBanners(body);
+    })
+    .catch(() => { /* keep the static or cached banners */ });
+}
+
+setupHomepageBanners();

@@ -134,7 +134,7 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
 
   async function uploadAsset(file, { productId, kind = "media" }) {
     if (!(file instanceof File)) throw new AdminApiError("Оберіть файл для завантаження.", { code: "invalid_file" });
-    const bucket = kind === "document" ? "documents" : "product-media";
+    const bucket = kind === "document" ? "documents" : kind === "site" ? "site-media" : "product-media";
     const maximum = kind === "document" ? 25 * 1024 * 1024 : 50 * 1024 * 1024;
     if (!file.size || file.size > maximum) throw new AdminApiError("Файл перевищує дозволений розмір.", { code: "invalid_file_size" });
     const safeName = file.name.toLocaleLowerCase("en-US").replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "asset";
@@ -307,6 +307,17 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     }
   });
 
+  // Homepage banners (hero slides and promo tiles). Images go to the public site-media bucket.
+  const banners = Object.freeze({
+    list: ({ signal } = {}) => rpc("admin_list_banners", {}, signal),
+    save: (id, payload, expectedUpdatedAt) => rpc("admin_save_banner", {
+      banner_id: id || null, payload, expected_updated_at: expectedUpdatedAt || null
+    }),
+    remove: (id, expectedUpdatedAt) => rpc("admin_delete_banner", { banner_id: id, expected_updated_at: expectedUpdatedAt || null }),
+    reorder: (placement, ids) => rpc("admin_reorder_banners", { target_placement: placement, banner_ids: ids }),
+    upload: file => uploadAsset(file, { productId: "banners", kind: "site" })
+  });
+
   async function changePassword(password) {
     await request("/auth/v1/user", { method: "PUT", body: { password } });
   }
@@ -319,6 +330,7 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     settings,
     collections,
     attributes,
+    banners,
     getProfile,
     getDashboard,
     getProductReferenceData,

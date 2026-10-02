@@ -551,11 +551,13 @@
   line-height: 1.28;
 }
 
-.storefront-promo > img {
+.storefront-promo > img,
+.storefront-promo > picture > img {
   position: absolute;
 }
 
-.storefront-promo--water > img {
+.storefront-promo--water > img,
+.storefront-promo--water > picture > img {
   right: -2%;
   bottom: -19%;
   width: 70%;
@@ -564,7 +566,8 @@
   mix-blend-mode: multiply;
 }
 
-.storefront-promo--climate > img {
+.storefront-promo--climate > img,
+.storefront-promo--climate > picture > img {
   inset: 0;
   z-index: -1;
   width: 100%;
@@ -1658,5 +1661,22 @@
   .home-page .home-brands .brand-wall__track {
     animation: none;
     transform: none;
+  }
+}
+
+/* Homepage banners from /admin/banners: one live promo tile takes the whole column. */
+.storefront-promos--single {
+  grid-template-rows: 1fr;
+}
+
+@media (max-width: 900px) {
+  .storefront-promos--single {
+    grid-template: 260px / 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .storefront-promos--single {
+    grid-template: 214px / 1fr;
   }
 }
