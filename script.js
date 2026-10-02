@@ -46,10 +46,20 @@ function setupCatalogMenu() {
   });
 }
 
+// Categories chosen in the admin (homepageOrder) lead the homepage; without a choice the
+// active top-level sections are shown. Only categories with products on sale qualify.
+function storefrontHomepageCategories(catalog) {
+  const chosen = catalog.taxonomy.nodes
+    .filter(category => Number.isFinite(category.homepageOrder) && category.status === "active"
+      && category.visibility === "catalog" && catalog.countForCategory(category.id) > 0)
+    .sort((a, b) => a.homepageOrder - b.homepageOrder);
+  return chosen.length ? chosen : catalog.activeSections;
+}
+
 function storefrontCategoryGroups() {
   const catalog = window.sofievkaCatalog;
   if (!catalog) return [];
-  return catalog.activeSections.map(section => ({
+  return storefrontHomepageCategories(catalog).map(section => ({
     id: section.id,
     title: section.title,
     description: section.menuDescription || section.description,
@@ -72,20 +82,33 @@ function setupStorefrontCategories() {
   if (!navigation || !panel || !title || !list || !allLink) return;
   const groups = storefrontCategoryGroups();
   if (!groups.length) return;
-  navigation.querySelectorAll("[data-storefront-category]").forEach(button => button.remove());
-  groups.forEach(group => {
-    const button = document.createElement("button");
-    button.className = "storefront-category";
-    button.type = "button";
-    button.dataset.storefrontCategory = group.id;
-    button.setAttribute("aria-expanded", "false");
-    button.setAttribute("aria-controls", "storefront-subcategories");
+  navigation.querySelectorAll(".storefront-category").forEach(item => item.remove());
+  // Categories without subcategories link straight to their page; the rest open the panel.
+  // Position classes drive the grid borders, which depend on how many items there are.
+  const count = groups.length;
+  navigation.style.setProperty("--storefront-category-count", String(count));
+  groups.forEach((group, index) => {
+    const item = document.createElement(group.items.length ? "button" : "a");
+    item.className = "storefront-category";
+    if (group.items.length) {
+      item.type = "button";
+      item.dataset.storefrontCategory = group.id;
+      item.setAttribute("aria-expanded", "false");
+      item.setAttribute("aria-controls", "storefront-subcategories");
+    } else {
+      item.href = group.href;
+    }
+    if (index === count - 1) item.classList.add("storefront-category--last");
+    if (index >= count - (count % 3 || 3)) item.classList.add("storefront-category--last-row-3");
+    if (index >= count - (count % 2 || 2)) item.classList.add("storefront-category--last-row-2");
+    if (index % 3 === 2) item.classList.add("storefront-category--row-end-3");
+    if (index % 2 === 1) item.classList.add("storefront-category--row-end-2");
     const strong = document.createElement("strong");
     strong.textContent = group.title;
     const description = document.createElement("span");
     description.textContent = group.description;
-    button.append(strong, description);
-    navigation.insertBefore(button, panel);
+    item.append(strong, description);
+    navigation.insertBefore(item, panel);
   });
   const buttons = [...navigation.querySelectorAll("[data-storefront-category]")];
 

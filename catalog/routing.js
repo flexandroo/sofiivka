@@ -1,7 +1,9 @@
 (function () {
   "use strict";
 
-  const taxonomy = window.sofievkaTaxonomy;
+  // Starts with the bundled taxonomy; installCatalogSnapshot swaps in the live one so categories
+  // created in the admin resolve without a rebuild.
+  let taxonomy = window.sofievkaTaxonomy;
   const sourceMappings = window.sofievkaSourceMappings;
   if (!taxonomy) throw new Error("Catalog taxonomy must be initialized before routing.");
 
@@ -192,8 +194,13 @@
     return resolved;
   }
 
+  function useTaxonomy(next) {
+    if (next?.byId && typeof next.childrenOf === "function") taxonomy = next;
+  }
+
   window.sofievkaCatalogRouting = Object.freeze({
     rootPath,
+    useTaxonomy,
     normalizePathname,
     getCategoryAncestors,
     getCategoryPath,

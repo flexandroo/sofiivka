@@ -1,7 +1,8 @@
 import { icon } from "/admin/admin-icons.mjs";
 
-// Brands and categories (Taxonomy Admin v1). Identity fields (id, slug, parent, brand name)
-// are read-only here: they drive storefront URLs and product cards.
+// Brands and categories. Identity fields (id, slug, parent, brand name) are set once at creation
+// and read-only afterwards: they drive storefront URLs and product cards. Records can be deleted
+// only while nothing references them; the database refuses otherwise.
 
 const BRAND_VISIBILITY = Object.freeze({
   catalog: { label: "У каталозі", tone: "success" },
@@ -26,8 +27,10 @@ const FIELD_LABELS = Object.freeze({
   title: "Назва", short_title: "Коротка назва", description: "Опис", menu_description: "Опис у меню",
   sort_order: "Порядок", status: "Статус", visibility: "Видимість", seo_title: "SEO title",
   seo_description: "SEO description", country: "Країна", website_url: "Сайт", logo_url: "Логотип",
-  featured: "Рекомендований", featured_order: "Порядок серед рекомендованих"
+  featured: "Рекомендований", featured_order: "Порядок серед рекомендованих",
+  created: "Створено", deleted: "Видалено"
 });
+const HOMEPAGE_LIMIT = 8;
 
 // ---------------------------------------------------------------------------
 // Brands
@@ -51,15 +54,32 @@ export async function createBrandsListView({ api, search = location.search, sign
     </tr>`).join("");
   const html = `
     <section class="admin-crm-page">
-      ${pageHead("ДАНІ", "Бренди", `${number(brands.length)} з ${number(result.brands.length)} брендів.${result.canEdit ? "" : " Ваша роль може лише переглядати."}`)}
+      ${pageHead("ДАНІ", "Бренди", `${number(brands.length)} з ${number(result.brands.length)} брендів.${result.canEdit ? "" : " Ваша роль може лише переглядати."}`,
+        createButton("Новий бренд", result.canEdit))}
       ${filterBar(filters, {
         placeholder: "Назва або код бренду",
         selects: [{ name: "visibility", label: "Видимість", all: "Будь-яка", options: BRAND_VISIBILITY }]
       })}
       ${brands.length ? table(["Бренд", "На сайті", "Серій", "Видимість", "Рекомендований", "Країна"], rows, "admin-crm-table--brands")
         : emptyState("Брендів не знайдено", "Змініть пошук або фільтр.")}
+      ${result.canEdit ? createDialog("brand", "Новий бренд", "Адресу сторінки бренду потім змінити не можна, тож перевірте її перед збереженням.", `
+        ${textField("name", "Назва", "", 120, { full: true, required: true })}
+        ${textField("slug", "Адреса сторінки", "", 80, { full: true, placeholder: "заповниться з назви", hint: "Латиниця, цифри й дефіси. Сторінка бренду: /brands/адреса/" })}
+        ${textField("country", "Країна", "", 80)}
+        ${textField("websiteUrl", "Сайт виробника", "", 500, { type: "url", placeholder: "https://" })}`) : ""}
+      <div class="admin-toast" role="status" aria-live="polite" hidden></div>
     </section>`;
-  return { html, bind: container => bindList(container) };
+  return {
+    html,
+    bind: container => {
+      bindList(container);
+      bindCreate(container, {
+        fields: ["name", "slug", "country", "websiteUrl"],
+        create: payload => api.taxonomy.createBrand(payload),
+        target: created => `/admin/brands/${encodeURIComponent(created.brand.id)}`
+      });
+    }
+  };
 }
 
 export async function createBrandDetailView({ api, brandId, signal }) {
@@ -113,6 +133,9 @@ export async function createBrandDetailView({ api, brandId, signal }) {
           ${countList("КАТЕГОРІЇ", "Де представлений", detail.categories, item => `<a href="/admin/categories/${encodeURIComponent(item.id)}" data-admin-link>${escape(item.title)}</a>`)}
           ${countList("СЕРІЇ", "Лінійки бренду", detail.series, item => escape(item.name))}
           ${historyPanel(detail.history)}
+          ${canEdit ? deletePanel("бренд", brand.name, brand.productCount
+            ? `До бренду прив’язано товарів: ${number(brand.productCount)}. Перенесіть їх на інший бренд або приховайте бренд.`
+            : brand.seriesCount ? `У бренду є серії товарів: ${number(brand.seriesCount)}.` : "") : ""}
         </aside>
       </div>
       <div class="admin-toast" role="status" aria-live="polite" hidden></div>
@@ -123,7 +146,9 @@ export async function createBrandDetailView({ api, brandId, signal }) {
       canEdit,
       fields: ["country", "websiteUrl", "logoUrl", "description", "visibility", "featured", "featuredOrder", "seoTitle", "seoDescription"],
       toPatch: patch => ("featured" in patch ? { ...patch, featured: patch.featured === "true" } : patch),
-      save: patch => api.taxonomy.updateBrand(brand.id, patch, brand.updatedAt)
+      save: patch => api.taxonomy.updateBrand(brand.id, patch, brand.updatedAt),
+      remove: () => api.taxonomy.deleteBrand(brand.id, brand.updatedAt),
+      afterRemove: "/admin/brands"
     })
   };
 }
@@ -149,7 +174,7 @@ export async function createCategoriesListView({ api, search = location.search, 
     <tr class="${[category.level === 1 ? "admin-taxonomy-root" : "", matches(category) ? "" : "admin-taxonomy-context"].filter(Boolean).join(" ")}">
       <td><div class="admin-taxonomy-node" style="--level:${category.level - 1}">
         <a class="admin-crm-id" href="/admin/categories/${encodeURIComponent(category.id)}" data-admin-link>${escape(category.title)}</a>
-        <small>${escape(category.id)}${category.childCount ? ` · ${number(category.childCount)} підкат.` : ""}</small></div></td>
+        <small>${escape(category.id)}${category.childCount ? ` · ${number(category.childCount)} підкат.` : ""}${category.homepageOrder !== null && category.homepageOrder !== undefined ? " · на головній" : ""}</small></div></td>
       <td class="admin-crm-num">${number(category.publishedCount)}<small>з ${number(category.productCount)}</small></td>
       <td>${statusBadge(CATEGORY_STATUS, category.status)}</td>
       <td>${statusBadge(CATEGORY_VISIBILITY, category.visibility)}</td>
@@ -158,15 +183,26 @@ export async function createCategoriesListView({ api, search = location.search, 
   const roots = result.categories.filter(category => !category.parentId).length;
   const html = `
     <section class="admin-crm-page">
-      ${pageHead("ДАНІ", "Категорії", `${number(result.categories.length)} категорій у ${number(roots)} розділах.${result.canEdit ? "" : " Ваша роль може лише переглядати."}`)}
+      ${pageHead("ДАНІ", "Категорії", `${number(result.categories.length)} категорій у ${number(roots)} розділах.${result.canEdit ? "" : " Ваша роль може лише переглядати."}`,
+        createButton("Нова категорія", result.canEdit))}
+      ${homepagePanel(result.categories, result.canEdit)}
       ${filterBar(filters, {
         placeholder: "Назва або код категорії",
         selects: [{ name: "status", label: "Статус", all: "Будь-який", options: CATEGORY_STATUS }]
       })}
       ${rows ? table(["Категорія", "Товарів на сайті", "Статус", "Видимість", "Порядок"], rows, "admin-crm-table--categories")
         : emptyState("Категорій не знайдено", "Змініть пошук або фільтр.")}
+      ${result.canEdit ? categoryCreateDialog(result.categories) : ""}
+      <div class="admin-toast" role="status" aria-live="polite" hidden></div>
     </section>`;
-  return { html, bind: container => bindList(container) };
+  return {
+    html,
+    bind: container => {
+      bindList(container);
+      bindHomepage(container, result.categories, ids => api.taxonomy.setHomepageCategories(ids));
+      bindCategoryCreate(container, api);
+    }
+  };
 }
 
 export async function createCategoryDetailView({ api, categoryId, signal }) {
@@ -183,6 +219,7 @@ export async function createCategoryDetailView({ api, categoryId, signal }) {
           <h1>${escape(category.title)}</h1>
           <div class="admin-editor-meta">${statusBadge(CATEGORY_STATUS, category.status)}${statusBadge(CATEGORY_VISIBILITY, category.visibility)}${trail ? `<span>${trail}</span>` : ""}<span>Оновлено ${formatDateTime(category.updatedAt)}</span></div>
         </div>
+        ${canEdit && category.level < 3 ? `<button class="admin-button admin-button--secondary" type="button" data-create-open>Додати підкатегорію</button>` : ""}
       </header>
       <div class="admin-crm-layout">
         <form class="admin-crm-main" data-taxonomy-form>
@@ -220,8 +257,12 @@ export async function createCategoryDetailView({ api, categoryId, signal }) {
           ${countList("ПІДКАТЕГОРІЇ", "Вкладені розділи", detail.children, item => `<a href="/admin/categories/${encodeURIComponent(item.id)}" data-admin-link>${escape(item.title)}</a>`, item => statusBadge(CATEGORY_STATUS, item.status))}
           ${countList("БРЕНДИ", "Товари категорії", detail.brands, item => `<a href="/admin/brands/${encodeURIComponent(item.id)}" data-admin-link>${escape(item.name)}</a>`)}
           ${historyPanel(detail.history)}
+          ${canEdit ? deletePanel("категорію", category.title, detail.children.length
+            ? `У категорії є підкатегорії: ${number(detail.children.length)}. Спершу видаліть або перенесіть їх.`
+            : category.directCount ? `До категорії прив’язано товарів: ${number(category.directCount)}. Перенесіть їх в іншу категорію.` : "") : ""}
         </aside>
       </div>
+      ${canEdit && category.level < 3 ? categoryCreateDialog([], { id: category.id, title: [...detail.path.map(item => item.title), category.title].join(" / ") }) : ""}
       <div class="admin-toast" role="status" aria-live="polite" hidden></div>
     </section>`;
   return {
@@ -230,8 +271,11 @@ export async function createCategoryDetailView({ api, categoryId, signal }) {
       canEdit,
       fields: ["title", "shortTitle", "menuDescription", "description", "status", "visibility", "sortOrder", "seoTitle", "seoDescription"],
       toPatch: patch => patch,
-      save: patch => api.taxonomy.updateCategory(category.id, patch, category.updatedAt)
-    })
+      save: patch => api.taxonomy.updateCategory(category.id, patch, category.updatedAt),
+      remove: () => api.taxonomy.deleteCategory(category.id, category.updatedAt),
+      afterRemove: "/admin/categories",
+      extra: bindCategoryCreate
+    }, api)
   };
 }
 
@@ -294,9 +338,11 @@ function historyPanel(history) {
     </section>`;
 }
 
-function bindEditor(container, { canEdit, fields, toPatch, save }) {
+function bindEditor(container, { canEdit, fields, toPatch, save, remove, afterRemove, extra }, api) {
   const form = container.querySelector("[data-taxonomy-form]");
   if (!form) return;
+  if (canEdit && remove) bindDelete(container, remove, afterRemove);
+  if (canEdit && extra) extra(container, api);
   if (!canEdit) {
     form.querySelectorAll("input, select, textarea").forEach(control => { control.disabled = true; });
     return;
@@ -358,8 +404,222 @@ function showToast(container, message, error = false) {
   toast._timer = setTimeout(() => { toast.hidden = true; }, 5000);
 }
 
-function pageHead(kicker, title, lead) {
-  return `<header class="admin-page-head"><div><p class="admin-kicker">${kicker}</p><h1>${title}</h1><p>${escape(lead)}</p></div></header>`;
+function pageHead(kicker, title, lead, action = "") {
+  return `<header class="admin-page-head"><div><p class="admin-kicker">${kicker}</p><h1>${title}</h1><p>${escape(lead)}</p></div>${action}</header>`;
+}
+
+function createButton(label, canEdit) {
+  return canEdit ? `<button class="admin-button admin-button--primary" type="button" data-create-open>${label}${icon("arrow")}</button>` : "";
+}
+
+// ---------------------------------------------------------------------------
+// Create and delete
+// ---------------------------------------------------------------------------
+function createDialog(kind, title, note, fieldsHtml) {
+  return `<dialog class="admin-dialog admin-create-dialog" data-create-dialog aria-labelledby="create-${kind}-title"><form data-create-form novalidate>
+    <header><p class="admin-kicker">НОВИЙ ЗАПИС</p><h2 id="create-${kind}-title">${title}</h2><p>${escape(note)}</p></header>
+    <div class="admin-form-grid">${fieldsHtml}</div>
+    <p class="admin-feedback admin-feedback--error" data-dialog-error role="alert" hidden></p>
+    <div class="admin-dialog__actions"><button class="admin-button admin-button--ghost" type="button" data-dialog-cancel>Скасувати</button><button class="admin-button admin-button--primary" type="submit">Створити</button></div>
+  </form></dialog>`;
+}
+
+function categoryCreateDialog(categories, fixedParent = null) {
+  const byId = new Map(categories.map(category => [category.id, category]));
+  const parents = treeOrder(categories).filter(category => category.level < 3)
+    .map(category => [category.id, pathLabel(category, byId)]);
+  const parentField = fixedParent
+    ? `<input type="hidden" name="parentId" value="${escape(fixedParent.id)}">${readonlyField("Розміщення", fixedParent.title)}`
+    : `<label class="admin-field admin-field--full"><span>Розміщення</span><select name="parentId">
+        <option value="">Новий розділ верхнього рівня</option>
+        ${parents.map(([id, label]) => `<option value="${escape(id)}">${escape(label)}</option>`).join("")}
+      </select><small>Каталог має три рівні: розділ, група, категорія.</small></label>`;
+  return createDialog("category", fixedParent ? "Нова підкатегорія" : "Нова категорія",
+    "Адресу й розміщення потім змінити не можна: від них залежать посилання. Порожня категорія на сайті не з’явиться, доки в ній немає опублікованих товарів.", `
+      ${parentField}
+      ${textField("title", "Назва", "", 160, { full: true, required: true })}
+      ${textField("slug", "Адреса", "", 80, { placeholder: "заповниться з назви", hint: "Латиниця, цифри й дефіси." })}
+      ${selectField("status", "Статус", CATEGORY_STATUS, "active")}`);
+}
+
+function bindCategoryCreate(container, api) {
+  bindCreate(container, {
+    fields: ["parentId", "title", "slug", "status"],
+    create: payload => api.taxonomy.createCategory(payload),
+    target: created => `/admin/categories/${encodeURIComponent(created.category.id)}`
+  });
+}
+
+function bindCreate(container, { fields, create, target }) {
+  const dialog = container.querySelector("[data-create-dialog]");
+  if (!dialog) return;
+  const form = dialog.querySelector("[data-create-form]");
+  const error = dialog.querySelector("[data-dialog-error]");
+  const submit = form.querySelector('[type="submit"]');
+  container.querySelectorAll("[data-create-open]").forEach(button => button.addEventListener("click", () => {
+    error.hidden = true;
+    dialog.showModal();
+    form.querySelector("input:not([type=hidden])")?.focus();
+  }));
+  dialog.querySelector("[data-dialog-cancel]").addEventListener("click", () => dialog.close());
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    const data = new FormData(form);
+    const payload = Object.fromEntries(fields.map(name => [name, String(data.get(name) ?? "").trim()]).filter(([, value]) => value));
+    submit.disabled = true;
+    submit.textContent = "Створюємо…";
+    try {
+      const created = await create(payload);
+      dialog.close();
+      goTo(target(created));
+    } catch (failure) {
+      error.textContent = failure.message;
+      error.hidden = false;
+      submit.disabled = false;
+      submit.textContent = "Створити";
+    }
+  });
+}
+
+function deletePanel(noun, name, blocker) {
+  return `
+    <section class="admin-panel admin-taxonomy-danger">
+      <header class="admin-panel__head"><div><p class="admin-kicker">ВИДАЛЕННЯ</p><h2>Видалити ${noun}</h2></div></header>
+      <p class="admin-panel-note">${blocker ? escape(blocker) : "Запис зникне з адмінки й каталогу. Історія змін залишиться."}</p>
+      <button class="admin-button admin-button--danger" type="button" data-delete-open ${blocker ? "disabled" : ""}>Видалити</button>
+      <dialog class="admin-dialog" data-delete-dialog><h2>Видалити ${noun} «${escape(name)}»?</h2><p>Це не можна скасувати.</p>
+        <div class="admin-dialog__actions"><button class="admin-button admin-button--ghost" type="button" data-dialog-cancel>Скасувати</button><button class="admin-button admin-button--danger" type="button" data-delete-confirm>Видалити</button></div></dialog>
+    </section>`;
+}
+
+function bindDelete(container, remove, afterRemove) {
+  const dialog = container.querySelector("[data-delete-dialog]");
+  if (!dialog) return;
+  container.querySelector("[data-delete-open]")?.addEventListener("click", () => dialog.showModal());
+  dialog.querySelector("[data-dialog-cancel]").addEventListener("click", () => dialog.close());
+  const confirmButton = dialog.querySelector("[data-delete-confirm]");
+  confirmButton.addEventListener("click", async () => {
+    confirmButton.disabled = true;
+    confirmButton.textContent = "Видаляємо…";
+    try {
+      await remove();
+      dialog.close();
+      goTo(afterRemove, { replace: true });
+    } catch (failure) {
+      dialog.close();
+      showToast(container, failure.message, true);
+      confirmButton.disabled = false;
+      confirmButton.textContent = "Видалити";
+    }
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Homepage categories
+// ---------------------------------------------------------------------------
+function homepagePanel(categories, canEdit) {
+  return `
+    <section class="admin-panel admin-taxonomy-home" data-homepage>
+      <header class="admin-panel__head"><div><p class="admin-kicker">ГОЛОВНА СТОРІНКА</p><h2>Категорії на головній</h2></div>
+        ${canEdit ? `<button class="admin-button admin-button--primary" type="button" data-homepage-save disabled>Зберегти</button>` : ""}</header>
+      <p class="admin-panel-note">Блок «Категорії» поруч із банером, у цьому порядку. До ${HOMEPAGE_LIMIT} позицій, найкраще виглядають 6. Категорії без опублікованих товарів на сайті пропускаються.</p>
+      <ol class="admin-taxonomy-home__list" data-homepage-list></ol>
+      ${canEdit ? `<div class="admin-taxonomy-home__add">
+        <label class="admin-field"><span>Додати категорію</span><select data-homepage-select></select></label>
+        <button class="admin-button admin-button--secondary" type="button" data-homepage-add>Додати</button>
+      </div>` : ""}
+    </section>`;
+}
+
+function bindHomepage(container, categories, save) {
+  const panel = container.querySelector("[data-homepage]");
+  if (!panel) return;
+  const byId = new Map(categories.map(category => [category.id, category]));
+  const initial = categories.filter(category => category.homepageOrder !== null && category.homepageOrder !== undefined)
+    .sort((a, b) => a.homepageOrder - b.homepageOrder).map(category => category.id);
+  let selected = [...initial];
+  const list = panel.querySelector("[data-homepage-list]");
+  const select = panel.querySelector("[data-homepage-select]");
+  const addButton = panel.querySelector("[data-homepage-add]");
+  const saveButton = panel.querySelector("[data-homepage-save]");
+  const canEdit = Boolean(saveButton);
+
+  const element = (tag, attributes = {}, ...children) => {
+    const node = document.createElement(tag);
+    for (const [key, value] of Object.entries(attributes)) {
+      if (value === false || value === null || value === undefined) continue;
+      if (key === "className") node.className = value;
+      else node.setAttribute(key, value === true ? "" : value);
+    }
+    node.append(...children.filter(child => child !== null && child !== undefined));
+    return node;
+  };
+  const iconButton = (label, text, data, disabled) => element("button", { className: "admin-icon-button", type: "button", "aria-label": label, disabled, ...data }, text);
+
+  const render = () => {
+    list.replaceChildren(...(selected.length ? selected.map((id, index) => {
+      const category = byId.get(id);
+      const warning = category.status !== "active" || category.visibility !== "catalog" ? "не активна в каталозі"
+        : !category.publishedCount ? "немає товарів на сайті" : "";
+      return element("li", { className: "admin-taxonomy-home__item" },
+        element("span", { className: "admin-taxonomy-home__position" }, String(index + 1)),
+        element("div", {}, element("strong", {}, category.title),
+          element("small", {}, pathLabel(category, byId, true), warning ? " · " : "",
+            warning ? element("span", { className: "admin-taxonomy-home__warning" }, warning) : null)),
+        canEdit ? element("div", { className: "admin-taxonomy-home__actions" },
+          iconButton("Вище", "↑", { "data-move": "-1", "data-id": id }, index === 0),
+          iconButton("Нижче", "↓", { "data-move": "1", "data-id": id }, index === selected.length - 1),
+          iconButton("Прибрати з головної", "×", { "data-remove": id }, false)) : null);
+    }) : [element("li", { className: "admin-muted" }, "Нічого не вибрано: на головній будуть усі розділи верхнього рівня.")]));
+    if (select) {
+      const options = treeOrder(categories).filter(category => !selected.includes(category.id)
+        && category.status === "active" && category.visibility === "catalog" && category.publishedCount > 0);
+      select.replaceChildren(element("option", { value: "" }, "Оберіть категорію"),
+        ...options.map(category => element("option", { value: category.id }, pathLabel(category, byId))));
+      addButton.disabled = selected.length >= HOMEPAGE_LIMIT;
+      select.disabled = selected.length >= HOMEPAGE_LIMIT;
+    }
+    if (saveButton) saveButton.disabled = !selected.length || JSON.stringify(selected) === JSON.stringify(initial);
+  };
+
+  list.addEventListener("click", event => {
+    const move = event.target.closest("[data-move]");
+    const removeButton = event.target.closest("[data-remove]");
+    if (move) {
+      const index = selected.indexOf(move.dataset.id);
+      const next = index + Number(move.dataset.move);
+      [selected[index], selected[next]] = [selected[next], selected[index]];
+    } else if (removeButton) {
+      selected = selected.filter(id => id !== removeButton.dataset.remove);
+    } else return;
+    render();
+  });
+  addButton?.addEventListener("click", () => {
+    if (!select.value || selected.length >= HOMEPAGE_LIMIT) return;
+    selected.push(select.value);
+    render();
+  });
+  saveButton?.addEventListener("click", async () => {
+    saveButton.disabled = true;
+    saveButton.textContent = "Зберігаємо…";
+    try {
+      await save(selected);
+      showToast(container, "Збережено. Головна покаже нові категорії після оновлення сторінки.");
+      setTimeout(() => goTo(location.pathname + location.search, { replace: true }), 900);
+    } catch (failure) {
+      showToast(container, failure.message, true);
+      saveButton.textContent = "Зберегти";
+      render();
+    }
+  });
+  render();
+}
+
+function pathLabel(category, byId, parentsOnly = false) {
+  const names = [];
+  for (let current = parentsOnly ? byId.get(category.parentId) : category; current; current = byId.get(current.parentId)) names.unshift(current.title);
+  return names.length ? names.join(" / ") : "Розділ верхнього рівня";
 }
 
 function filterBar(filters, { placeholder, selects }) {

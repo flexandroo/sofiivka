@@ -48,13 +48,20 @@ Playwright MCP blocks localhost, so drive the browser from a script).
 
 - Branch `codex/audit-phase-0`: Products Admin v1 (Codex) + CRM v1 and fixes (Claude).
 - All migrations through `20261002000100_taxonomy_admin_v1` are applied on DEV; PROD has none of them.
+  `20261002000200_taxonomy_admin_v2` is on DEV except the two `admin_delete_*` functions, which wait
+  for `/mnt/project-files/sofiivka/dev-apply-taxonomy-admin-v2-delete.sql` in the SQL Editor.
 - The Supabase MCP connector silently times out on SQL with `drop trigger`, `delete from` function
   bodies or trigger loops; apply such migrations through the Supabase SQL Editor instead.
 - CRM: storefront calls `crm_submit_order` / `crm_submit_lead` (anon); staff use `admin_crm_*`
   RPCs (owner/admin/manager). Admin routes `/admin/orders`, `/admin/leads`, `/admin/customers`.
 - Brands/categories admin (`/admin/brands`, `/admin/categories`, `admin/admin-taxonomy.mjs`):
-  content edits patch the active catalog release and bump the cache revision. Identity fields
-  (name, slug, parent) are read-only. Homepage and brands.html still use static `brands-data.js`.
+  content edits patch the active catalog release and bump the cache revision. Create/delete add or
+  drop the release entry; delete is refused while products, series, children or mapping reviews
+  reference the record. Identity fields (name, slug, parent) are set at creation, then read-only.
+  `categories.homepage_order` picks the homepage «Категорії» block (release `homepageOrder`;
+  empty selection falls back to active top-level sections). Storefront routing and the legacy
+  adapter use the live snapshot taxonomy, so admin-created categories resolve without a rebuild.
+  Homepage brand wall and brands.html still use static `brands-data.js`.
 - Admin runs against DEV in Preview and PROD in Production (`admin/admin-env.mjs`).
 - Go-live order: apply all pending migrations to PROD first, then merge to `master` (production
   serves `/admin` and the live checkout as soon as it deploys), then create the PROD owner profile.

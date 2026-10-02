@@ -31,12 +31,13 @@
     let canonicalProducts = snapshotOverride?.products || window.sofievkaCanonicalProducts || [];
     let brands = snapshotOverride?.brands || window.sofievkaBrands || [];
     let products = window.sofievkaNormalizedProducts || [];
+    const taxonomy = snapshotOverride ? createTaxonomy(snapshotOverride.categories) : baseTaxonomy;
+    routing.useTaxonomy?.(taxonomy);
     if (snapshotOverride) {
-      products = window.sofievkaProductLegacyAdapter.installSnapshot(snapshotOverride, options);
+      products = window.sofievkaProductLegacyAdapter.installSnapshot(snapshotOverride, { ...options, taxonomy });
       canonicalProducts = snapshotOverride.products;
       brands = snapshotOverride.brands;
     }
-    const taxonomy = snapshotOverride ? createTaxonomy(snapshotOverride.categories) : baseTaxonomy;
     const attributeDefinitions = snapshotOverride?.attributeDefinitions || attributeSchema.definitions;
     const categoryCounts = Object.freeze({ ...(snapshotOverride?.categoryCounts || {}) });
     const brandCounts = Object.freeze({ ...(snapshotOverride?.brandCounts || {}) });

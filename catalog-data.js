@@ -1283,7 +1283,7 @@
       throw new Error("LegacyAdapter received an invalid CatalogSnapshot.");
     }
     const adapter = createLegacyAdapter({
-      taxonomy: window.sofievkaTaxonomy,
+      taxonomy: options.taxonomy || window.sofievkaTaxonomy,
       brands: snapshot.brands,
       rawCatalog: options.useRawCatalog === false ? null : window.sofievkaRawSupplierCatalog
     });
@@ -1313,7 +1313,9 @@
 (function () {
   "use strict";
 
-  const taxonomy = window.sofievkaTaxonomy;
+  // Starts with the bundled taxonomy; installCatalogSnapshot swaps in the live one so categories
+  // created in the admin resolve without a rebuild.
+  let taxonomy = window.sofievkaTaxonomy;
   const sourceMappings = window.sofievkaSourceMappings;
   if (!taxonomy) throw new Error("Catalog taxonomy must be initialized before routing.");
 
@@ -1504,8 +1506,13 @@
     return resolved;
   }
 
+  function useTaxonomy(next) {
+    if (next?.byId && typeof next.childrenOf === "function") taxonomy = next;
+  }
+
   window.sofievkaCatalogRouting = Object.freeze({
     rootPath,
+    useTaxonomy,
     normalizePathname,
     getCategoryAncestors,
     getCategoryPath,
@@ -1547,12 +1554,13 @@
     let canonicalProducts = snapshotOverride?.products || window.sofievkaCanonicalProducts || [];
     let brands = snapshotOverride?.brands || window.sofievkaBrands || [];
     let products = window.sofievkaNormalizedProducts || [];
+    const taxonomy = snapshotOverride ? createTaxonomy(snapshotOverride.categories) : baseTaxonomy;
+    routing.useTaxonomy?.(taxonomy);
     if (snapshotOverride) {
-      products = window.sofievkaProductLegacyAdapter.installSnapshot(snapshotOverride, options);
+      products = window.sofievkaProductLegacyAdapter.installSnapshot(snapshotOverride, { ...options, taxonomy });
       canonicalProducts = snapshotOverride.products;
       brands = snapshotOverride.brands;
     }
-    const taxonomy = snapshotOverride ? createTaxonomy(snapshotOverride.categories) : baseTaxonomy;
     const attributeDefinitions = snapshotOverride?.attributeDefinitions || attributeSchema.definitions;
     const categoryCounts = Object.freeze({ ...(snapshotOverride?.categoryCounts || {}) });
     const brandCounts = Object.freeze({ ...(snapshotOverride?.brandCounts || {}) });

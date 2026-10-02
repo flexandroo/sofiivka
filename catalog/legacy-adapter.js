@@ -85,7 +85,7 @@
       throw new Error("LegacyAdapter received an invalid CatalogSnapshot.");
     }
     const adapter = createLegacyAdapter({
-      taxonomy: window.sofievkaTaxonomy,
+      taxonomy: options.taxonomy || window.sofievkaTaxonomy,
       brands: snapshot.brands,
       rawCatalog: options.useRawCatalog === false ? null : window.sofievkaRawSupplierCatalog
     });

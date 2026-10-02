@@ -223,7 +223,12 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     getCategory: (id, { signal } = {}) => rpc("admin_get_category", { category_id: String(id || "") }, signal),
     updateCategory: (id, patch, expectedUpdatedAt) => rpc("admin_update_category", {
       category_id: String(id), patch, expected_updated_at: expectedUpdatedAt || null
-    })
+    }),
+    createBrand: payload => rpc("admin_create_brand", { payload }),
+    deleteBrand: (id, expectedUpdatedAt) => rpc("admin_delete_brand", { brand_id: String(id), expected_updated_at: expectedUpdatedAt || null }),
+    createCategory: payload => rpc("admin_create_category", { payload }),
+    deleteCategory: (id, expectedUpdatedAt) => rpc("admin_delete_category", { category_id: String(id), expected_updated_at: expectedUpdatedAt || null }),
+    setHomepageCategories: ids => rpc("admin_set_homepage_categories", { category_ids: ids })
   });
 
   return Object.freeze({
