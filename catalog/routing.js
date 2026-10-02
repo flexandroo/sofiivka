@@ -44,7 +44,32 @@
     "/catalog/water-treatment/complex-treatment": "complex-treatment",
     "/catalog/water-treatment/water-softening": "water-softening",
     "/catalog/water-treatment/chlorine-odor-removal": "chlorine-odor-removal",
-    "/catalog/water-treatment/mechanical-treatment": "mechanical-treatment"
+    "/catalog/water-treatment/mechanical-treatment": "mechanical-treatment",
+    // Catalogue structure of 2026-10-02: every pump moved under water-supply, single-child water
+    // treatment groups were flattened. The old addresses keep resolving to the same categories.
+    "/catalog/heating/circulation-pumps": "water-supply",
+    "/catalog/heating/circulation-pumps/system-circulation": "system-circulation-pumps",
+    "/catalog/heating/circulation-pumps/dhw-recirculation": "dhw-circulation-pumps",
+    "/catalog/water-supply/water-pumps": "water-supply",
+    "/catalog/water-supply/water-pumps/borehole-pumps": "borehole-pumps",
+    "/catalog/water-supply/water-pumps/surface-pumps": "surface-pumps",
+    "/catalog/water-supply/water-pumps/multistage-pumps": "multistage-pumps",
+    "/catalog/water-supply/water-pumps/pressure-boosting": "pressure-boosting",
+    "/catalog/water-supply/water-pumps/drainage-pumps": "drainage-pumps",
+    "/catalog/water-supply/water-pumps/sewage-pumps": "sewage-pumps",
+    "/catalog/water-supply/water-pumps/sewage-lifting-units": "sewage-lifting-units",
+    "/catalog/water-supply/water-pumps/pool-pumps-filtration": "pool-pumps-filtration",
+    "/catalog/water-supply/components": "water-supply",
+    "/catalog/water-supply/components/pressure-tanks": "pressure-tanks",
+    "/catalog/water-supply/components/pump-automation": "pump-automation",
+    "/catalog/water-supply/components/pump-accessories": "pump-accessories",
+    "/catalog/water-supply/components/pump-services": "pump-services",
+    "/catalog/water-treatment/replacement-elements": "drinking-water-systems",
+    "/catalog/water-treatment/replacement-elements/drinking-system-cartridges": "drinking-system-cartridges",
+    "/catalog/water-treatment/materials-reagents": "whole-house-treatment",
+    "/catalog/water-treatment/materials-reagents/filter-media": "filter-media",
+    "/catalog/water-treatment/disinfection": "uv-disinfection",
+    "/catalog/water-treatment/disinfection/uv-c-lamps": "uv-disinfection"
   });
 
   function normalizePathname(pathname = rootPath) {

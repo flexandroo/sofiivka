@@ -67,7 +67,7 @@ function storefrontCategoryGroups() {
     items: catalog.availableCategories(section.id).map(category => ({
       title: category.title,
       href: catalog.getCategoryPath(category.id),
-      count: catalog.productsForCategory(category.id).length
+      count: catalog.countForCategory(category.id)
     }))
   }));
 }
@@ -308,7 +308,7 @@ let catalogProducts = Array.isArray(window.sofievkaCatalog?.catalogProducts)
 
 const searchItems = [
   { name: "Газові котли", meta: "Опалення", href: "/catalog/heating/heat-generation/gas-boilers" },
-  { name: "Циркуляційні насоси", meta: "Насоси", href: "/catalog/heating/circulation-pumps" },
+  { name: "Циркуляційні насоси", meta: "Насоси", href: "/catalog/water-supply/system-circulation" },
   { name: "Водоочищення", meta: "Фільтри та системи", href: "/catalog/water-treatment" },
   { name: "Розумний будинок", meta: "Автоматизація", href: "/catalog/smart-home" },
   { name: "Кондиціонери", meta: "Клімат", href: "/catalog/climate" },
@@ -660,16 +660,19 @@ function setupSignatureMotion() {
 
 // Brands come from the active catalogue (Supabase release once it has loaded, edited in the admin);
 // the static registry only fills presentation details the database does not hold (logo theme).
+// Brands without published products stay hidden until their products appear.
 function catalogBrandList() {
   const registry = Array.isArray(window.sofievkaBrandRegistry) ? window.sofievkaBrandRegistry : [];
   const live = Array.isArray(window.sofievkaBrands) ? window.sofievkaBrands : registry;
   const staticBySlug = new Map(registry.map(brand => [brand.slug, brand]));
+  const catalog = window.sofievkaCatalog;
+  const hasProducts = brand => typeof catalog?.countForBrand !== "function" || catalog.countForBrand(brand.id || brand.slug) > 0;
   return live
     .map(brand => {
       const fallback = staticBySlug.get(brand.slug) || {};
       return { ...fallback, ...brand, logo: brand.logo || fallback.logo || "", description: brand.description || fallback.description || "" };
     })
-    .filter(brand => brand.type === "catalog" && brand.visibility !== "hidden");
+    .filter(brand => brand.type === "catalog" && brand.visibility !== "hidden" && hasProducts(brand));
 }
 
 function featuredCatalogBrands() {

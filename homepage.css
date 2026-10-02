@@ -180,6 +180,8 @@
   border: 1px solid var(--home-border);
   background: #fff;
   box-shadow: 12px 18px 36px rgba(22, 22, 20, .14);
+  display: flex;
+  flex-direction: column;
 }
 
 .storefront-subcategories[hidden] {
@@ -225,9 +227,15 @@
   outline: none;
 }
 
+/* Long sections scroll inside the panel so "all products" stays within the showcase height. */
 .storefront-subcategories__list {
   display: grid;
+  flex: 1 1 auto;
+  align-content: start;
+  min-height: 0;
   margin-top: 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .storefront-subcategories__list a {
@@ -246,6 +254,8 @@
 
 .storefront-subcategories__all {
   display: inline-flex;
+  flex: none;
+  align-self: flex-start;
   align-items: center;
   gap: 10px;
   margin-top: 20px;
