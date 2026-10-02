@@ -11,3 +11,5 @@ assets/images/*.png
 data/*.xml
 scripts/*
 !scripts/build-static-site.mjs
+!scripts/generate-sitemap.mjs
+!scripts/catalog-db-utils.mjs

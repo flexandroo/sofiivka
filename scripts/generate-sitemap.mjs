@@ -135,7 +135,13 @@ export async function writeSeoFiles({ root, outputDirectory, config, env = proce
     }
     try { settings = await rpc(config.supabase, "get_site_settings", {}); } catch (error) { log(`[sitemap] get_site_settings: ${error.message}`); }
   }
-  if (!catalog) catalog = await localCatalog(root);
+  if (!catalog) {
+    try { catalog = await localCatalog(root); } catch (error) {
+      log(`[sitemap] bundled catalogue unavailable (${error.message}); sitemap lists static pages only.`);
+      catalog = {};
+      catalogSource = "none";
+    }
+  }
   const paths = [...await staticPagePaths(root), ...catalogPaths(catalog)];
   await fs.writeFile(path.join(outputDirectory, "sitemap.xml"), renderSitemap(siteUrl, paths), "utf8");
   await fs.writeFile(path.join(outputDirectory, "robots.txt"), renderRobots(siteUrl, { indexable }), "utf8");
