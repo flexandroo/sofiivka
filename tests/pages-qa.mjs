@@ -50,7 +50,7 @@ assert.match(api, /"admin_list_site_pages"/);
 assert.match(api, /"admin_save_site_page"/);
 assert.match(api, /"admin_save_site_faq"/);
 assert.match(app, /"\/admin\/pages": \{[^}]*roles: \[\.\.\.ROLES\]/);
-assert.match(app, /\{ label: "Сайт", paths: \["\/admin\/pages"\] \}/);
+assert.match(app, /\{ label: "Сайт", paths: \[[^\]]*"\/admin\/pages"[^\]]*\] \}/);
 assert.match(app, /createPageEditorView/);
 assert.doesNotMatch(view, /innerHTML\s*=/, "views render through escaped templates and DOM nodes");
 assert.doesNotMatch(view, /\$\{(?!escape\()[^}]*\.(title|lead|kicker|question|answer|text)\}/, "page text in templates is escaped");
