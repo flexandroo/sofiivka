@@ -116,6 +116,13 @@ export class LocalCatalogDataSource extends CatalogDataSource {
     return Object.freeze({ version: snapshot.version, product, relatedProducts: Object.freeze(relatedProducts) });
   }
 
+  async getProductBySlug(slug) {
+    const value = String(slug || "").trim().toLowerCase();
+    const snapshot = await this.loadCatalogSnapshot();
+    const product = snapshot.products.find(item => item.slug === value);
+    return product ? this.getProductById(product.id) : null;
+  }
+
   async getProductsByIds(legacyIds = []) {
     const ids = [...new Set((Array.isArray(legacyIds) ? legacyIds : []).map(String).map(value => value.trim()).filter(Boolean))].slice(0, 96);
     const snapshot = await this.loadCatalogSnapshot();

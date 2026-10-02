@@ -1620,6 +1620,7 @@
     function sectionUrl(sectionId = "all") { return sectionId === "all" ? routing.rootPath : routing.getCategoryPath(sectionId); }
     function categoryUrl(categoryId) { return routing.getCategoryPath(categoryId); }
     function brandUrl(brandId) { return `/brands/${encodeURIComponent(brandId)}`; }
+    function productUrl(product) { return product?.slug ? `/product/${encodeURIComponent(product.slug)}` : `/product?id=${encodeURIComponent(product?.id || "")}`; }
     function descendantIds(categoryId) { return new Set([categoryId, ...taxonomy.descendantsOf(categoryId).map(category => category.id)]); }
     function productsForSection(sectionId) { return sectionId === "all" ? [...catalogProducts] : catalogProducts.filter(product => product.sectionId === sectionId); }
     function productsForCategory(categoryId) {
@@ -1703,7 +1704,7 @@
       sectionUrl, categoryUrl,
       getCategoryPath: routing.getCategoryPath,
       getCategoryAncestors: routing.getCategoryAncestors,
-      brandUrl, productsForSection, productsForCategory, countForSection, countForCategory, countForBrand, availableCategories,
+      brandUrl, productUrl, productsForSection, productsForCategory, countForSection, countForCategory, countForBrand, availableCategories,
       resolveRoute, valueLabel, filterValue, compareProductsByPrice
     });
     window.sofievkaCatalog = catalog;

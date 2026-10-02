@@ -34,7 +34,7 @@ const FIELD_LABELS = Object.freeze({
 });
 const EDITABLE = Object.freeze(["placement", "layout", "imageUrl", "mobileImageUrl", "imageAlt", "imageFocus", "logoUrl", "logoAlt",
   "kicker", "title", "text", "buttonLabel", "linkUrl", "active", "dateFrom", "dateTo"]);
-const URL_HINT = "https://… або шлях сайту: /catalog/heating, /product.html?id=…, assets/images/…";
+const URL_HINT = "https://… або шлях сайту: /catalog/heating, /product/<назва-товару>, assets/images/…";
 
 export async function createBannersView({ api, signal }) {
   const data = await api.banners.list({ signal });

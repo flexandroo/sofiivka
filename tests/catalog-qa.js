@@ -340,7 +340,7 @@ assert.equal(unmappedAttributeProducts, 3096, "unmapped attribute debt changed u
 const shellSource = fs.readFileSync(path.join(projectRoot, "page-shell.js"), "utf8");
 const uiSource = fs.readFileSync(path.join(projectRoot, "catalog-ui.js"), "utf8");
 const pagesCss = fs.readFileSync(path.join(projectRoot, "pages.css"), "utf8");
-assert.ok(shellSource.includes('return `/product?id=${encodeURIComponent(product.id)}`;'), "product links must remain shareable and deterministic");
+assert.ok(shellSource.includes('function productUrl(product) { return product?.slug ? `/product/${encodeURIComponent(product.slug)}` : `/product?id=${encodeURIComponent(product.id)}`; }'), "product links must remain shareable and deterministic");
 assert.ok(!/function header\s*\(/.test(shellSource), "dead legacy header renderer remains");
 assert.ok(!/renderProductExtended|renderCategoryExtended/.test(shellSource), "dead PDP/category renderer remains");
 assert.ok(!/catalog\.html\?category=/.test(shellSource + uiSource), "active legacy category link remains");

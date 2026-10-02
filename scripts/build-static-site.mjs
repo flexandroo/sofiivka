@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { writeSeoFiles } from "./generate-sitemap.mjs";
+import { resolveSiteUrl, writeSeoFiles } from "./generate-sitemap.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputArgument = process.argv.find(argument => argument.startsWith("--output-dir="))?.split("=").slice(1).join("=") || "dist";
@@ -75,16 +75,38 @@ await fs.writeFile(runtimeConfigFile, `window.SOFIEVKA_CATALOG_CONFIG=Object.fre
 
 let htmlFiles = 0;
 let removedFeedTags = 0;
+const siteUrl = resolveSiteUrl();
+// Pages whose content depends on the address (one template for many products, brands, posts, catalogue
+// sections) or that are private get the site-wide preview; the rest get their own title, description and URL.
+const templatePages = new Set(["404", "account", "brand", "cart", "catalog", "checkout", "compare", "favorites", "post", "product", "search"]);
+const siteTitle = "ТД «Софіївка» — опалення, водопостачання, водопідготовка";
+const attribute = value => String(value).replace(/&(?!#?\w+;)/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 for (const entry of await fs.readdir(outputDirectory, { withFileTypes: true })) {
   if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== ".html") continue;
   const filePath = path.join(outputDirectory, entry.name);
   let html = await fs.readFile(filePath, "utf8");
   if (!/catalog-runtime-config\.js/i.test(html)) html = html.replace(/<head>/i, '<head><script src="/catalog-runtime-config.js"></script>');
   // Shop settings render synchronously (defaults + cached copy) before the deferred page scripts.
-  if (!/site-settings\.js/i.test(html)) html = html.replace(/<script src="\/catalog-runtime-config\.js"><\/script>/i, match => `${match}<script src="/site-settings.js?v=20261002-phone-1"></script>`);
+  if (!/site-settings\.js/i.test(html)) html = html.replace(/<script src="\/catalog-runtime-config\.js"><\/script>/i, match => `${match}<script src="/site-settings.js?v=20261002-stage4-1"></script>`);
   if (!/crm-client\.js/i.test(html)) html = html.replace(/<\/head>/i, '<script src="/crm-client.js?v=20261001-crm-1" defer></script></head>');
   // Customer accounts: header sign-in state on every page, signed-in checkout, /account.
   if (!/customer-account\.js/i.test(html)) html = html.replace(/<\/head>/i, '<script src="/customer-account.js?v=20261002-account-1" defer></script></head>');
+  // Icons, link previews (Open Graph) and schema.org data for search engines.
+  if (!/rel=["']icon["']/i.test(html)) html = html.replace(/<\/head>/i, '<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"><meta name="theme-color" content="#202020"></head>');
+  if (!/property=["']og:/i.test(html)) {
+    const page = entry.name.slice(0, -".html".length);
+    const isTemplate = templatePages.has(page);
+    const title = isTemplate ? siteTitle : (html.match(/<title>([^<]*)<\/title>/i)?.[1] || siteTitle);
+    const description = html.match(/<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i)?.[1] || "";
+    const tags = [
+      ["og:site_name", "ТД «Софіївка»"], ["og:locale", "uk_UA"], ["og:type", "website"], ["og:title", title],
+      ...(description ? [["og:description", description]] : []),
+      ...(isTemplate ? [] : [["og:url", `${siteUrl}${page === "index" ? "/" : `/${page}`}`]]),
+      ["og:image", `${siteUrl}/assets/og-image.jpg`], ["og:image:width", "1200"], ["og:image:height", "630"]
+    ];
+    html = html.replace(/<\/head>/i, `${tags.map(([property, content]) => `<meta property="${property}" content="${attribute(content)}">`).join("")}<meta name="twitter:card" content="summary_large_image"></head>`);
+  }
+  if (!/seo-schema\.js/i.test(html)) html = html.replace(/<\/head>/i, '<script src="/seo-schema.js?v=20261002-stage4-1" defer></script></head>');
   if (source === "supabase") {
     html = html.replace(supplierFeedPattern, match => {
       removedFeedTags += 1;

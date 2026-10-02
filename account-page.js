@@ -22,7 +22,7 @@
     let notice = null;
 
     if (!api || !api.available) {
-      container.innerHTML = `<div class="empty-state"><h2>Кабінет тимчасово недоступний</h2><p>Онлайн-кабінет зараз не підключений. Щодо замовлень зателефонуйте нам або напишіть — менеджер допоможе.</p><a class="button button--primary" href="/contact.html">Контакти</a></div>`;
+      container.innerHTML = `<div class="empty-state"><h2>Кабінет тимчасово недоступний</h2><p>Онлайн-кабінет зараз не підключений. Щодо замовлень зателефонуйте нам або напишіть — менеджер допоможе.</p><a class="button button--primary" href="/contact">Контакти</a></div>`;
       return;
     }
 
@@ -305,7 +305,7 @@
         try { localStorage.setItem(CART_KEY, JSON.stringify(current)); } catch { /* storage unavailable */ }
         helpers.updateCounts?.();
         const skipped = order.items.length - repeatable.length;
-        notice = { html: `<strong>Додано до кошика: ${esc(positionsLabel(repeatable.length))}.</strong>${skipped ? ` ${skipped} поз. більше не продається.` : ""} Ціни й наявність перевіримо під час оформлення. <a href="/cart.html">Перейти до кошика →</a>` };
+        notice = { html: `<strong>Додано до кошика: ${esc(positionsLabel(repeatable.length))}.</strong>${skipped ? ` ${skipped} поз. більше не продається.` : ""} Ціни й наявність перевіримо під час оформлення. <a href="/cart">Перейти до кошика →</a>` };
         toast("Товари додано до кошика");
         render();
       });

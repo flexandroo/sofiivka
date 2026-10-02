@@ -68,6 +68,7 @@
     { "source": "/post", "destination": "/post.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/product", "destination": "/product.html" },
+    { "source": "/product/:slug", "destination": "/product.html" },
     { "source": "/returns", "destination": "/returns.html" },
     { "source": "/search", "destination": "/search.html" },
     { "source": "/service-center", "destination": "/service-center.html" },

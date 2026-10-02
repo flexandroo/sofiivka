@@ -32,17 +32,18 @@ export async function run(db) {
   await db.query(`insert into public.admin_profiles (user_id, name, role) values ($1, 'Власник', 'owner'), ($2, 'Менеджер', 'manager')`,
     [STAFF.owner, STAFF.manager]);
 
-  // 1. Seeds are public and equal the menus the storefront showed before; every older key still public/private as before.
+  // 1. Seeds are public and equal the menus the storefront showed before (links made clean by 20261002001900);
+  //    every older key still public/private as before.
   let settings = await publicSettings(db);
   assert.deepEqual(settings.menus.header.map(item => [item.label, item.href]), [
-    ["Про нас", "/about.html"], ["Рішення", "/solutions.html"], ["Монтаж", "/installation.html"],
-    ["Сервіс", "/service-center.html"], ["Доставка й оплата", "/delivery.html"], ["Контакти", "/contact.html"]
+    ["Про нас", "/about"], ["Рішення", "/solutions"], ["Монтаж", "/installation"],
+    ["Сервіс", "/service-center"], ["Доставка й оплата", "/delivery"], ["Контакти", "/contact"]
   ]);
   assert.deepEqual(settings.menus.footer.map(column => [column.title, column.links.length]), [["Послуги", 4], ["Покупцям", 5], ["Компанія", 5]]);
   assert.deepEqual(settings.cookies, {
     enabled: false,
     text: "Ми використовуємо cookie, щоб сайт працював, а з вашої згоди — ще й для аналітики та реклами.",
-    privacyHref: "/privacy.html"
+    privacyHref: "/privacy"
   });
   for (const key of ["stores", "checkout", "social", "company", "integrations", "seo", "menus", "cookies"]) assert.ok(key in settings, `${key} is public`);
   assert.equal("notifications" in settings, false, "notification recipients stay private");

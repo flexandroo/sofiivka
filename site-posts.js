@@ -167,7 +167,7 @@
     box.append(element("h2", "", kind === "case" ? "Кейси готуються" : "Матеріали готуються"));
     box.append(element("p", "", KINDS[kind].empty));
     const link = element("a", "button button--secondary", "Поставити запитання");
-    link.href = "/contact.html";
+    link.href = "/contact";
     box.append(link);
     return wrap;
   }

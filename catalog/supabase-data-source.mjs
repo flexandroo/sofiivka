@@ -56,6 +56,18 @@ export class SupabaseCatalogDataSource extends CatalogDataSource {
     });
   }
 
+  async getProductBySlug(slug, options = {}) {
+    const value = String(slug || "").trim().toLowerCase();
+    if (!value) throw new TypeError("A product slug is required");
+    const result = await this.#read("getProductBySlug", "get_catalog_product_by_slug", { product_slug: value }, options);
+    if (!result) return null;
+    return Object.freeze({
+      ...result,
+      product: restoreProductMap(result.product),
+      relatedProducts: Object.freeze((result.relatedProducts || []).map(freezeCard))
+    });
+  }
+
   async getProductsByIds(legacyIds = [], options = {}) {
     const ids = [...new Set((Array.isArray(legacyIds) ? legacyIds : []).map(String).map(value => value.trim()).filter(Boolean))].slice(0, 96);
     if (!ids.length) return Object.freeze({ version: this.#catalogVersion || null, total: 0, products: Object.freeze([]) });

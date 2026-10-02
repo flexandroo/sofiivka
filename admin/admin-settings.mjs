@@ -264,7 +264,7 @@ function cookiesForm(canEdit, { value, updatedAt }) {
         <header class="admin-panel__head"><div><p class="admin-kicker">COOKIE</p><h2>Згода на cookie</h2></div></header>
         <div class="admin-form-grid">
           ${checkbox("enabled", "Показувати банер згоди", value?.enabled === true)}
-          ${textField("privacyHref", "Посилання «Детальніше»", value?.privacyHref, 300, { placeholder: "/privacy.html", hint: "Сторінка сайту (/privacy.html) або https://. Порожнє поле: без посилання." })}
+          ${textField("privacyHref", "Посилання «Детальніше»", value?.privacyHref, 300, { placeholder: "/privacy", hint: "Сторінка сайту (/privacy) або https://. Порожнє поле: без посилання." })}
           <label class="admin-field admin-field--full"><span>Текст банера</span><textarea name="text" maxlength="400" rows="3" required>${escape(value?.text ?? "")}</textarea></label>
         </div>
         <p class="admin-panel-note">Коли банер увімкнено, Google Analytics, Tag Manager і Meta Pixel з розділу «Інтеграції» завантажуються лише після «Прийняти всі» (Google Consent Mode: до згоди все заборонено). «Лише необхідні» не завантажує їх зовсім. Вибір зберігається в браузері відвідувача; змінити його можна посиланням «Cookie» внизу сайту.</p>

@@ -30,8 +30,11 @@ const body = sql => sql.slice(sql.indexOf("  if target_key = 'company' then"), s
 assert.ok(body(latest).length > 1000 && migration.includes(body(latest)), "_settings_clean body copied verbatim from 1300");
 
 const seed = name => JSON.parse(new RegExp(`\\('${name}', \\$json\\$([\\s\\S]*?)\\$json\\$\\)`).exec(migration)[1]);
-const seedMenus = seed("menus");
-const seedCookies = seed("cookies");
+// 20261002001900 rewrites the seeded /page.html links to clean addresses (/page); the runtime defaults follow it.
+const cleanLinks = value => JSON.parse(JSON.stringify(value).replace(/"(\/[a-z-]+)\.html"/g, '"$1"'));
+assert.match(read("supabase/migrations/20261002001900_product_slugs_v1.sql"), /where key in \('menus', 'cookies'\)/);
+const seedMenus = cleanLinks(seed("menus"));
+const seedCookies = cleanLinks(seed("cookies"));
 
 // ---------------------------------------------------------------------------
 // Storefront runtime in a stubbed browser
@@ -204,6 +207,6 @@ assert.match(styles, /\.footer__menu \{\s*display: contents;/);
 assert.match(styles, /\.cookie-consent \{\s*position: fixed;/, "banner overlays the page (no layout shift)");
 assert.match(styles, /\.site-nav__group:focus-within \.site-nav__sub/, "submenu opens for keyboard users");
 assert.match(read("admin/admin.css"), /\.admin-menu-row \{/);
-assert.match(read("scripts/build-static-site.mjs"), /site-settings\.js\?v=20261002-phone-1/);
+assert.match(read("scripts/build-static-site.mjs"), /site-settings\.js\?v=20261002-stage4-1/);
 
 console.log(JSON.stringify({ status: "ok", suite: "menus-qa" }));

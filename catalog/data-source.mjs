@@ -27,6 +27,10 @@ export class CatalogDataSource {
     throw new Error("CatalogDataSource.getProductById() must be implemented");
   }
 
+  async getProductBySlug(_slug) {
+    throw new Error("CatalogDataSource.getProductBySlug() must be implemented");
+  }
+
   async getProductsByIds(_legacyIds) {
     throw new Error("CatalogDataSource.getProductsByIds() must be implemented");
   }

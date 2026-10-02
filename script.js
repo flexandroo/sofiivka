@@ -298,6 +298,10 @@ function setupHeroSlider() {
   start();
 }
 
+function productHref(product) {
+  return window.sofievkaCatalog?.productUrl?.(product) || `/product?id=${encodeURIComponent(product.id)}`;
+}
+
 let catalogProducts = Array.isArray(window.sofievkaCatalog?.catalogProducts)
   ? window.sofievkaCatalog.catalogProducts
   : [
@@ -313,12 +317,12 @@ const searchItems = [
   { name: "Каналізація та дренаж", meta: "Насоси", href: "/catalog/sewerage" },
   { name: "Розумний будинок", meta: "Автоматизація", href: "/catalog/smart-home" },
   { name: "Кондиціонери", meta: "Клімат", href: "/catalog/climate" },
-  { name: "Монтаж і сервіс", meta: "Послуги", href: "services.html" },
-  { name: "Бренди", meta: "Виробники", href: "brands.html" }
+  { name: "Монтаж і сервіс", meta: "Послуги", href: "/services" },
+  { name: "Бренди", meta: "Виробники", href: "/brands" }
 ].concat(catalogProducts.map(product => ({
   name: product.title,
   meta: `${product.type} · ${product.sku}`,
-  href: `product.html?id=${encodeURIComponent(product.id)}`
+  href: productHref(product)
 })));
 
 function setupSearch() {
@@ -473,10 +477,10 @@ function createProductCard(product, favoriteIds) {
   const mediaFit = homepageProductMediaFit[product.id];
   if (mediaFit) card.dataset.mediaFit = mediaFit;
   card.innerHTML = `
-    <a class="product-card__image" href="product.html?id=${encodeURIComponent(product.id)}"><img src="${escapeMarkup(product.image || product.images?.[0] || "")}" width="1536" height="1536" loading="lazy" alt="${escapeMarkup(productName)}"></a>
+    <a class="product-card__image" href="${productHref(product)}"><img src="${escapeMarkup(product.image || product.images?.[0] || "")}" width="1536" height="1536" loading="lazy" alt="${escapeMarkup(productName)}"></a>
     <span class="product-card__status product-card__status--${available ? "available" : "unavailable"}">${escapeMarkup(product.availabilityLabel || (available ? "В наявності" : "Немає в наявності"))}</span>
     <span class="product-card__brand">${escapeMarkup(product.brand)}</span>
-    <h3><a href="product.html?id=${encodeURIComponent(product.id)}">${escapeMarkup(productName)}</a></h3>
+    <h3><a href="${productHref(product)}">${escapeMarkup(productName)}</a></h3>
     <span class="product-card__code">${escapeMarkup(product.code || product.sku || product.id)}</span>
     <ul class="product-card__specs" aria-label="Дані товару"><li>${escapeMarkup(product.type || product.normalizedAttributes?.productType || "Інженерне обладнання")}</li></ul>
     <div class="product-card__price-group">${oldPrice > price ? `<del class="product-card__old-price">${money(oldPrice)}</del>` : ""}<strong class="product-card__price">${money(price)}</strong></div>
@@ -579,8 +583,8 @@ function setupProducts() {
 }
 
 function setupHeaderActions() {
-  document.querySelector("[data-favorites]")?.addEventListener("click", () => { window.location.href = "favorites.html"; });
-  document.querySelector("[data-cart]")?.addEventListener("click", () => { window.location.href = "cart.html"; });
+  document.querySelector("[data-favorites]")?.addEventListener("click", () => { window.location.href = "/favorites"; });
+  document.querySelector("[data-cart]")?.addEventListener("click", () => { window.location.href = "/cart"; });
 }
 
 function setupReveal() {
@@ -721,7 +725,7 @@ function createLogoCell(brand, linkToDirectory = false, decorativeDuplicate = fa
   } else {
     cell.setAttribute("aria-label", brand.name);
   }
-  if (linkToDirectory) cell.href = brand.futurePath ? brand.futurePath.replace(/\/$/, "") : "brands.html";
+  if (linkToDirectory) cell.href = brand.futurePath ? brand.futurePath.replace(/\/$/, "") : "/brands";
   cell.append(createBrandMedia(brand, cell));
   return cell;
 }

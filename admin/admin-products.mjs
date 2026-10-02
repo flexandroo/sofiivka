@@ -86,7 +86,7 @@ export async function createProductEditorView({ api, profile, navigate, legacyId
           <div class="admin-editor-meta"><span class="admin-status" data-status="${escape(product.publicationStatus)}">${PUBLICATION[product.publicationStatus]}</span><span>Оновлено ${formatDateTime(product.updatedAt)}</span></div>
         </div>
         <div class="admin-editor-head__actions">
-          <a class="admin-button admin-button--secondary" href="/product?id=${encodeURIComponent(product.legacyId)}" target="_blank" rel="noreferrer">Переглянути${icon("external")}</a>
+          <a class="admin-button admin-button--secondary" href="${product.slug && product.publicationStatus === "published" ? `/product/${encodeURIComponent(product.slug)}` : `/product?id=${encodeURIComponent(product.legacyId)}`}" target="_blank" rel="noreferrer">Переглянути${icon("external")}</a>
           <button class="admin-button admin-button--secondary" type="button" disabled title="Дублювання заплановане після v1">Дублювати</button>
           <button class="admin-button admin-button--danger" type="button" data-archive-product ${canCore && product.publicationStatus !== "archived" ? "" : "disabled"}>В архів</button>
         </div>
@@ -260,7 +260,7 @@ function renderCorePanel(product, references, enabled) {
     <div class="admin-form-grid">
       ${field("Назва", "title", product.title, { full: true, disabled, required: true })}${field("Коротка назва", "shortTitle", product.shortTitle, { full: true, disabled, required: true })}
       ${field("SKU", "sku", product.sku, { disabled, required: true })}${field("Модель", "model", product.model, { disabled, required: true })}
-      ${field("Slug", "slug", product.slug, { full: true, disabled, required: true, help: "Legacy ID не залежить від slug і не змінюється." })}
+      ${field("Slug", "slug", product.slug, { full: true, disabled, required: true, help: "Адреса товару на сайті: /product/<slug>. Лише латинські літери, цифри й дефіси. Legacy ID не залежить від slug і не змінюється." })}
       ${selectField("Бренд", "brandId", product.brandId, references.brands.map(item => [item.id, item.name]), disabled)}
       ${selectField("Категорія", "categoryId", product.categoryId, references.categories.map(item => [item.id, item.path]), disabled)}
       ${selectField("Серія", "seriesId", product.seriesId || "", [["", "Без серії"], ...references.series.filter(item => item.brandId === product.brandId).map(item => [item.id, item.name])], disabled)}
@@ -359,7 +359,7 @@ function renderSeoPanel(product, enabled) {
   return `<section id="panel-seo" class="admin-editor-panel" data-editor-panel="seo" role="tabpanel" aria-labelledby="tab-seo" hidden>
     <header><div><p class="admin-kicker">ПОШУКОВА ВИДИМІСТЬ</p><h2>SEO</h2></div><span>${enabled ? "Редагування дозволено" : "Лише перегляд"}</span></header>
     <div class="admin-form-stack">${field("SEO title", "seoTitle", product.seoTitle || "", { full: true, disabled, maxlength: 160 })}${textareaField("SEO description", "seoDescription", product.seoDescription || "", disabled, 5)}</div>
-    <div class="admin-serp-preview"><small>Попередній перегляд</small><strong data-seo-preview-title>${escape(product.seoTitle || product.title)}</strong><span>sofievka.vercel.app/product?id=${escape(product.legacyId)}</span><p data-seo-preview-description>${escape(product.seoDescription || product.shortDescription || product.description || "Опис формується з картки товару.")}</p></div>
+    <div class="admin-serp-preview"><small>Попередній перегляд</small><strong data-seo-preview-title>${escape(product.seoTitle || product.title)}</strong><span>sofievka.vercel.app/product/${escape(product.slug || product.legacyId)}</span><p data-seo-preview-description>${escape(product.seoDescription || product.shortDescription || product.description || "Опис формується з картки товару.")}</p></div>
   </section>`;
 }
 

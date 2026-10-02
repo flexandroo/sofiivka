@@ -54,7 +54,7 @@ window.sofievkaCatalogUIReady = (async function () {
     const compareActive = containsProduct(options.compareIds, product.id);
     const cartQuantity = Number(options.cart?.[product.id] || 0);
     const title = product.title || product.shortTitle || product.model || "Товар";
-    const productHref = preserveDataSource(`/product?id=${encodeURIComponent(product.id)}`);
+    const productHref = preserveDataSource(catalog.productUrl(product));
     const brandHref = preserveDataSource(catalog.brandUrl(product.brandId || catalog.slugify(product.brand || "")));
     const status = product.inventory?.status || product.stockStatus || product.availability || "unknown";
     const inStock = status === "in_stock";
@@ -73,7 +73,7 @@ window.sofievkaCatalogUIReady = (async function () {
       : "";
     const primaryAction = inStock && hasPrice
       ? `<button class="product-card__buy${cartQuantity ? " is-in-cart" : ""}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${escapeHtml(cartQuantity ? `У кошику ${cartQuantity} шт. Додати ще` : `Додати ${title} до кошика`)}">${cartQuantity ? `У кошику · ${cartQuantity}` : "До кошика"}</button>`
-      : `<a class="product-card__buy product-card__buy--consult" href="/contact.html?product=${encodeURIComponent(product.sku || product.id)}">${hasPrice ? "Уточнити наявність" : "Запитати ціну"}</a>`;
+      : `<a class="product-card__buy product-card__buy--consult" href="/contact?product=${encodeURIComponent(product.sku || product.id)}">${hasPrice ? "Уточнити наявність" : "Запитати ціну"}</a>`;
     // Without a price the card says it once, on the button; an unknown stock status is not repeated either.
     const statusMarkup = hasPrice || status === "in_stock" || status === "out_of_stock"
       ? `<span class="product-card__status product-card__status--${inStock ? "available" : status === "out_of_stock" ? "unavailable" : "pending"}"><i aria-hidden="true"></i>${escapeHtml(statusLabel)}</span>`
@@ -262,7 +262,7 @@ window.sofievkaCatalogUIReady = (async function () {
     applyMetadata(ctx, false);
     if (ctx.notFound || (ctx.isBrand && !ctx.brand)) return introMarkup(ctx, 0);
     if (ctx.currentCategory?.status === "future") return `${introMarkup(ctx, 0)}<section class="catalog-workspace catalog-workspace--state"><div class="container"><div class="catalog-state"><p class="page-kicker">Асортимент готується</p><h2>Розділ готується до наповнення</h2><p>Тут з’являться товари після перевірки категорій, характеристик і доступності.</p><a class="button button--secondary" href="/catalog">Перейти до каталогу</a></div></div></section>`;
-    if (ctx.currentCategory?.visibility === "service") return `${introMarkup(ctx, 0)}<section class="catalog-workspace catalog-workspace--state"><div class="container"><div class="catalog-state"><p class="page-kicker">Сервісна послуга</p><h2>Пусконалагодження не є товаром каталогу</h2><p>Умови, виїзд і вартість погоджуються сервісним центром після перевірки обладнання та об’єкта.</p><a class="button button--primary" href="/service-center.html">Звернутися до сервісного центру</a></div></div></section>`;
+    if (ctx.currentCategory?.visibility === "service") return `${introMarkup(ctx, 0)}<section class="catalog-workspace catalog-workspace--state"><div class="container"><div class="catalog-state"><p class="page-kicker">Сервісна послуга</p><h2>Пусконалагодження не є товаром каталогу</h2><p>Умови, виїзд і вартість погоджуються сервісним центром після перевірки обладнання та об’єкта.</p><a class="button button--primary" href="/service-center">Звернутися до сервісного центру</a></div></div></section>`;
     const skeletons = Array.from({ length: 6 }, () => `<div class="product-skeleton" aria-hidden="true"><i></i><b></b><span></span><span></span></div>`).join("");
     return `${introMarkup(ctx, total)}<section class="catalog-workspace"><div class="container">${selectorMarkup(ctx)}${subcategoryMarkup(ctx)}<div class="catalog-mobile-tools"><button class="button button--secondary mobile-filter-button" type="button" data-filter-toggle aria-expanded="false">Фільтри</button><span data-mobile-result-count>${countLabel(total)}</span></div><div class="catalog-layout"><div class="catalog-filter-backdrop" data-filter-backdrop hidden></div><aside class="catalog-filter" data-filter aria-label="Фільтри каталогу"><div class="catalog-filter__head"><div><span>Параметри вибору</span><h2>Фільтри</h2></div><button type="button" data-filter-close aria-label="Закрити фільтри">Закрити</button></div><div data-facet-root></div><div class="catalog-filter__footer"><button class="button button--primary" type="button" data-filter-apply>Показати <span data-drawer-count>${total}</span> товарів</button></div></aside><div class="catalog-results"><div class="catalog-toolbar"><div><p><strong data-result-count>${total}</strong> <span data-result-label>${countLabel(total).replace(/^\d+\s+/, "")}</span></p><div class="active-filters" data-active-filters></div></div><label>Сортування<select data-catalog-sort><option value="default">За замовчуванням</option><option value="price-asc">За ціною ↑</option><option value="price-desc">За ціною ↓</option></select></label></div><div class="catalog-products is-loading" data-catalog-products>${skeletons}</div><div class="catalog-more"><button class="button button--secondary" type="button" data-load-more>Показати ще</button></div></div></div></div></section><section class="catalog-seo"><div class="container"><h2>${escapeHtml(ctx.currentCategory?.name || ctx.section.name)}: підбір за технічними параметрами</h2><p>${escapeHtml(ctx.currentCategory?.description || ctx.section.description)} Фільтри каталогу показують лише характеристики, наявні в поточному наборі товарів. Для остаточного підбору перевірте робочу точку, приєднання та умови монтажу.</p></div></section>`;
   }
@@ -825,7 +825,7 @@ window.sofievkaCatalogUIReady = (async function () {
       if (currentRequest !== request) return;
       let index = 0;
       const blocks = [];
-      const productGroup = group("Товари", "product", found.products, index, product => ({ href: preserveDataSource(`/product?id=${encodeURIComponent(product.id)}`), title: product.title, meta: `${product.brand} · Код ${product.sku}`, image: product.image || product.images?.[0] || "" }));
+      const productGroup = group("Товари", "product", found.products, index, product => ({ href: preserveDataSource(catalog.productUrl(product)), title: product.title, meta: `${product.brand} · Код ${product.sku}`, image: product.image || product.images?.[0] || "" }));
       blocks.push(productGroup.html); index = productGroup.next;
       const categoryGroup = group("Категорії", "category", found.categories, index, hit => ({ href: hit.href || catalog.categoryUrl(hit.entity.id), title: hit.entity.title, meta: countLabel(hit.count) }));
       blocks.push(categoryGroup.html); index = categoryGroup.next;

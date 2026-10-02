@@ -3,7 +3,7 @@ import { icon } from "/admin/admin-icons.mjs";
 // Header and footer menus of the storefront: the site_settings section 'menus', saved through
 // admin_update_settings with the section's updatedAt as the optimistic lock. The storefront
 // (site-settings.js) renders them in page-shell pages and the homepage footer; the built-in menus
-// stay as the first paint. Links: a site path (/delivery.html, /catalog/heating) or https://.
+// stay as the first paint. Links: a site path (/delivery, /catalog/heating) or https://.
 
 const LIMITS = Object.freeze({ header: 10, children: 10, columns: 3, links: 12, label: 40, childLabel: 60, title: 40, href: 300 });
 // Same rule as public._settings_href and site-settings.js.
@@ -80,7 +80,7 @@ function rowFields(item, maxLabel, labelText) {
   return `
     <div class="admin-menu-row">
       <label class="admin-field"><span>${labelText}</span><input name="label" value="${escape(item.label)}" maxlength="${maxLabel}" required></label>
-      <label class="admin-field"><span>Посилання</span><input name="href" value="${escape(item.href)}" maxlength="${LIMITS.href}" required placeholder="/delivery.html" spellcheck="false" autocomplete="off" title="${escape(HREF_HINT)}"></label>
+      <label class="admin-field"><span>Посилання</span><input name="href" value="${escape(item.href)}" maxlength="${LIMITS.href}" required placeholder="/delivery" spellcheck="false" autocomplete="off" title="${escape(HREF_HINT)}"></label>
       ${rowActions("")}
     </div>`;
 }

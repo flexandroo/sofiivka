@@ -47,37 +47,37 @@
     // (page-shell.js, index.html). The footer column «Каталог» is built from the catalogue.
     menus: {
       header: [
-        { label: "Про нас", href: "/about.html", children: [] },
-        { label: "Рішення", href: "/solutions.html", children: [] },
-        { label: "Монтаж", href: "/installation.html", children: [] },
-        { label: "Сервіс", href: "/service-center.html", children: [] },
-        { label: "Доставка й оплата", href: "/delivery.html", children: [] },
-        { label: "Контакти", href: "/contact.html", children: [] }
+        { label: "Про нас", href: "/about", children: [] },
+        { label: "Рішення", href: "/solutions", children: [] },
+        { label: "Монтаж", href: "/installation", children: [] },
+        { label: "Сервіс", href: "/service-center", children: [] },
+        { label: "Доставка й оплата", href: "/delivery", children: [] },
+        { label: "Контакти", href: "/contact", children: [] }
       ],
       footer: [
         { title: "Послуги", links: [
-          { label: "Монтаж", href: "/installation.html" },
-          { label: "Сервісний центр", href: "/service-center.html" },
-          { label: "Комплексні рішення", href: "/solutions.html" },
-          { label: "Для монтажників", href: "/partnership.html" }
+          { label: "Монтаж", href: "/installation" },
+          { label: "Сервісний центр", href: "/service-center" },
+          { label: "Комплексні рішення", href: "/solutions" },
+          { label: "Для монтажників", href: "/partnership" }
         ] },
         { title: "Покупцям", links: [
-          { label: "Доставка", href: "/delivery.html" },
-          { label: "Оплата", href: "/payment.html" },
-          { label: "Гарантія", href: "/warranty.html" },
-          { label: "Обмін і повернення", href: "/returns.html" },
-          { label: "Особистий кабінет", href: "/account.html" }
+          { label: "Доставка", href: "/delivery" },
+          { label: "Оплата", href: "/payment" },
+          { label: "Гарантія", href: "/warranty" },
+          { label: "Обмін і повернення", href: "/returns" },
+          { label: "Особистий кабінет", href: "/account" }
         ] },
         { title: "Компанія", links: [
-          { label: "Про нас", href: "/about.html" },
+          { label: "Про нас", href: "/about" },
           { label: "Бренди", href: "/brands" },
-          { label: "Контакти та графік", href: "/contact.html" },
-          { label: "Надіслати специфікацію", href: "/partnership.html" },
-          { label: "Часті запитання", href: "/faq.html" }
+          { label: "Контакти та графік", href: "/contact" },
+          { label: "Надіслати специфікацію", href: "/partnership" },
+          { label: "Часті запитання", href: "/faq" }
         ] }
       ]
     },
-    cookies: { enabled: false, text: "Ми використовуємо cookie, щоб сайт працював, а з вашої згоди — ще й для аналітики та реклами.", privacyHref: "/privacy.html" }
+    cookies: { enabled: false, text: "Ми використовуємо cookie, щоб сайт працював, а з вашої згоди — ще й для аналітики та реклами.", privacyHref: "/privacy" }
   });
   const CACHE_KEY = "sofievka.siteSettings.v1";
   const CONSENT_KEY = "sofievka.cookieConsent.v1";

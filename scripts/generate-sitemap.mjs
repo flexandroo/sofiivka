@@ -42,8 +42,9 @@ export function renderRobots(siteUrl, { indexable = true } = {}) {
   return ["User-agent: *", "Allow: /", ...ROBOTS_DISALLOW.map(item => `Disallow: ${item}`), "", `Sitemap: ${siteUrl}/sitemap.xml`, ""].join("\n");
 }
 
-// Category, brand and product URLs from a catalogue bootstrap (categories, brands, counts) + product ids.
-export function catalogPaths({ categories = [], brands = [], categoryCounts = null, brandCounts = null, productIds = [] }) {
+// Category, brand and product URLs from a catalogue bootstrap (categories, brands, counts) + products ({ id, slug }).
+// Products with a slug get /product/<slug>; bare ids (productIds) fall back to /product?id=<id>.
+export function catalogPaths({ categories = [], brands = [], categoryCounts = null, brandCounts = null, products = [], productIds = [] }) {
   const byId = new Map(categories.map(category => [category.id, category]));
   const visible = category => category && category.status === "active" && (category.visibility || "catalog") === "catalog";
   const chain = category => {
@@ -65,6 +66,10 @@ export function catalogPaths({ categories = [], brands = [], categoryCounts = nu
     if ((brand.visibility || "catalog") !== "catalog") continue;
     if (brandCounts && !(Number(brandCounts[brand.id]) > 0)) continue;
     paths.push(`/brands/${encodeURIComponent(brand.id)}`);
+  }
+  for (const product of products) {
+    if (product?.slug) paths.push(`/product/${encodeURIComponent(product.slug)}`);
+    else if (product?.id) paths.push(`/product?id=${encodeURIComponent(product.id)}`);
   }
   for (const id of productIds) if (id) paths.push(`/product?id=${encodeURIComponent(id)}`);
   return paths;
@@ -97,13 +102,13 @@ async function rpc(supabase, name, body) {
 async function supabaseCatalog(supabase) {
   const bootstrap = await rpc(supabase, "get_catalog_bootstrap", {});
   if (!bootstrap?.categories) throw new Error("get_catalog_bootstrap returned no release");
-  const productIds = [];
+  const products = [];
   for (let page = 1; page <= MAX_PRODUCT_PAGES; page += 1) {
     const result = await rpc(supabase, "get_catalog_products", { page_number: page, page_size: PAGE_SIZE });
-    productIds.push(...(result?.products || []).map(product => product.id));
+    products.push(...(result?.products || []).map(product => ({ id: product.id, slug: product.slug })));
     if (!result?.hasMore) break;
   }
-  return { ...bootstrap, productIds };
+  return { ...bootstrap, products };
 }
 
 // Published blog articles and cases (get_site_posts); anything unexpected is skipped, never thrown.
@@ -144,7 +149,7 @@ async function localCatalog(root) {
   }
   const brandCounts = {};
   for (const product of published) brandCounts[product.brandId] = (brandCounts[product.brandId] || 0) + 1;
-  return { categories: snapshot.categories, brands: snapshot.brands, categoryCounts, brandCounts, productIds: published.map(product => product.id) };
+  return { categories: snapshot.categories, brands: snapshot.brands, categoryCounts, brandCounts, products: published.map(product => ({ id: product.id, slug: product.slug })) };
 }
 
 export async function writeSeoFiles({ root, outputDirectory, config, env = process.env, log = console.warn }) {
