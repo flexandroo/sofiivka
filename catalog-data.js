@@ -1323,7 +1323,6 @@
   const legacySectionAliases = Object.freeze({
     "/heating": "heating",
     "/water-supply": "water-supply",
-    "/plumbing": "plumbing",
     "/climate": "climate"
   });
   const legacyQuerySections = Object.freeze({
@@ -1331,7 +1330,6 @@
     water: "water-supply",
     treatment: "water-treatment",
     automation: "smart-home",
-    plumbing: "plumbing",
     climate: "climate"
   });
   const legacyCategoryPaths = Object.freeze({
@@ -1359,7 +1357,7 @@
     "/catalog/water-treatment/mechanical-treatment": "mechanical-treatment",
     // Catalogue structure of 2026-10-02: every pump moved under water-supply, single-child water
     // treatment groups were flattened. The old addresses keep resolving to the same categories.
-    "/catalog/heating/circulation-pumps": "water-supply",
+    "/catalog/heating/circulation-pumps": "system-circulation-pumps",
     "/catalog/heating/circulation-pumps/system-circulation": "system-circulation-pumps",
     "/catalog/heating/circulation-pumps/dhw-recirculation": "dhw-circulation-pumps",
     "/catalog/water-supply/water-pumps": "water-supply",
@@ -1381,7 +1379,13 @@
     "/catalog/water-treatment/materials-reagents": "whole-house-treatment",
     "/catalog/water-treatment/materials-reagents/filter-media": "filter-media",
     "/catalog/water-treatment/disinfection": "uv-disinfection",
-    "/catalog/water-treatment/disinfection/uv-c-lamps": "uv-disinfection"
+    "/catalog/water-treatment/disinfection/uv-c-lamps": "uv-disinfection",
+    // Sections v2 of 2026-10-02: heating circulation pumps back under heating, sewage and drainage
+    // in their own section. Addresses from structure A keep resolving.
+    "/catalog/water-supply/system-circulation": "system-circulation-pumps",
+    "/catalog/water-supply/drainage-pumps": "drainage-pumps",
+    "/catalog/water-supply/sewage-pumps": "sewage-pumps",
+    "/catalog/water-supply/sewage-lifting-units": "sewage-lifting-units"
   });
 
   function normalizePathname(pathname = rootPath) {

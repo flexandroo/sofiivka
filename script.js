@@ -308,8 +308,9 @@ let catalogProducts = Array.isArray(window.sofievkaCatalog?.catalogProducts)
 
 const searchItems = [
   { name: "Газові котли", meta: "Опалення", href: "/catalog/heating/heat-generation/gas-boilers" },
-  { name: "Циркуляційні насоси", meta: "Насоси", href: "/catalog/water-supply/system-circulation" },
-  { name: "Водоочищення", meta: "Фільтри та системи", href: "/catalog/water-treatment" },
+  { name: "Циркуляційні насоси", meta: "Опалення", href: "/catalog/heating/system-circulation" },
+  { name: "Водопідготовка та очистка", meta: "Фільтри та системи", href: "/catalog/water-treatment" },
+  { name: "Каналізація та дренаж", meta: "Насоси", href: "/catalog/sewerage" },
   { name: "Розумний будинок", meta: "Автоматизація", href: "/catalog/smart-home" },
   { name: "Кондиціонери", meta: "Клімат", href: "/catalog/climate" },
   { name: "Монтаж і сервіс", meta: "Послуги", href: "services.html" },
@@ -463,7 +464,7 @@ function createProductCard(product, favoriteIds) {
   const available = product.availability === "in_stock" || product.inventory?.status === "in_stock" || product.availabilityLabel === "В наявності";
   const price = Number(product.pricing?.amount ?? product.price);
   const oldPrice = Number(product.pricing?.oldAmount ?? product.oldPrice ?? 0);
-  const money = amount => `${new Intl.NumberFormat("uk-UA").format(amount)} грн`;
+  const money = amount => `${new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 0 }).format(Math.round(Number(amount) || 0))} грн`;
   const escapeMarkup = value => String(value ?? "").replace(/[&<>'"]/g, character => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
   })[character]);

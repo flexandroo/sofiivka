@@ -16,7 +16,7 @@ window.sofievkaCatalogUIReady = (async function () {
     return `${url.pathname}${url.search}${url.hash}`;
   };
   const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
-  const money = value => `${new Intl.NumberFormat("uk-UA").format(Number(value) || 0)} грн`;
+  const money = value => `${new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 0 }).format(Math.round(Number(value) || 0))} грн`;
   const countLabel = count => {
     const value = Math.abs(Number(count) || 0);
     const ending = value % 10 === 1 && value % 100 !== 11 ? "товар" : [2, 3, 4].includes(value % 10) && ![12, 13, 14].includes(value % 100) ? "товари" : "товарів";
