@@ -17,6 +17,7 @@ import { createAttributesListView, createAttributeDetailView } from "/admin/admi
 import { createPriceImportView } from "/admin/admin-prices.mjs";
 import { createPagesListView, createPageEditorView } from "/admin/admin-pages.mjs";
 import { createBannersView } from "/admin/admin-banners.mjs";
+import { createMenusView } from "/admin/admin-menus.mjs";
 
 const ROLES = new Set(["owner", "admin", "manager", "content_manager"]);
 const ROLE_LABELS = Object.freeze({
@@ -38,6 +39,7 @@ const ROUTES = Object.freeze({
   "/admin/banners": { title: "Банери головної", section: "banners", icon: "media", roles: [...ROLES] },
   "/admin/media": { title: "Медіа", section: "media", icon: "media", roles: [...ROLES] },
   "/admin/pages": { title: "Сторінки", section: "pages", icon: "pages", roles: [...ROLES] },
+  "/admin/menus": { title: "Меню сайту", section: "menus", icon: "menu", roles: ["owner", "admin"] },
   "/admin/settings": { title: "Налаштування", section: "settings", icon: "settings", roles: ["owner", "admin"] },
   "/admin/users": { title: "Працівники", section: "users", icon: "user", roles: ["owner", "admin"] },
   "/admin/account": { title: "Мій обліковий запис", section: "account", icon: "lock", roles: [...ROLES] }
@@ -46,7 +48,7 @@ const NAV_GROUPS = Object.freeze([
   { label: "Головне", paths: ["/admin"] },
   { label: "Продажі", paths: ["/admin/orders", "/admin/leads", "/admin/customers"] },
   { label: "Каталог", paths: ["/admin/products", "/admin/collections"] },
-  { label: "Сайт", paths: ["/admin/banners", "/admin/pages"] },
+  { label: "Сайт", paths: ["/admin/banners", "/admin/pages", "/admin/menus"] },
   { label: "Дані", paths: ["/admin/categories", "/admin/brands", "/admin/attributes", "/admin/media"] },
   { label: "Система", paths: ["/admin/settings", "/admin/users"] }
 ]);
@@ -197,6 +199,7 @@ async function route() {
     : attributeMatch ? () => createAttributeDetailView({ api, attributeId: decodeURIComponent(attributeMatch[1]), signal })
     : priceImport ? () => createPriceImportView({ api, search: location.search, signal })
     : path === "/admin/pages" ? () => createPagesListView({ api, signal })
+    : path === "/admin/menus" ? () => createMenusView({ api, signal })
     : pageMatch ? () => createPageEditorView({ api, slug: pageMatch[1], signal })
     : null;
   if (crmView) {

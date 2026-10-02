@@ -2707,6 +2707,32 @@ img.admin-taxonomy-logo { padding: 4px; }
 }
 .admin-settings .admin-panel-note:has(svg) { display: flex; align-items: center; gap: 8px; }
 
+/* Site menus (/admin/menus) */
+.admin-menus-form { display: grid; gap: 22px; }
+.admin-menus-form > .admin-panel { margin: 0; }
+.admin-menus-form > .admin-crm-form-actions { justify-content: space-between; align-items: center; border-top: 0; }
+.admin-menu-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.admin-menu-item { padding: 16px 20px; border-bottom: 1px solid var(--divider); }
+.admin-menu-item:last-child { border-bottom: 0; }
+.admin-menu-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto; align-items: end; gap: 12px; }
+.admin-menu-row .admin-field + .admin-field { margin-top: 0; }
+.admin-menu-row .admin-field input { min-height: 44px; padding-block: 9px; }
+.admin-menu-row__actions { display: flex; gap: 4px; padding-bottom: 2px; }
+.admin-menu-row__actions .admin-button { min-height: 40px; padding-inline: 10px; }
+.admin-menu-children { display: grid; gap: 10px; margin: 10px 0 0; padding: 0 0 0 22px; border-left: 2px solid var(--divider); list-style: none; }
+.admin-menu-children:empty { display: none; }
+.admin-menu-children .admin-field > span { font-weight: 600; }
+.admin-menu-item__foot { margin-top: 8px; padding-left: 22px; }
+.admin-menu-item__foot .admin-button { min-height: 36px; padding-inline: 10px; }
+.admin-menu-empty { margin: 0; padding: 16px 20px; color: var(--text-subtle); font-size: 13px; }
+@media (max-width: 760px) {
+  .admin-menu-item { padding: 14px 16px; }
+  .admin-menu-row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .admin-menu-row__actions { justify-content: flex-end; }
+  .admin-menu-children { padding-left: 12px; }
+  .admin-menu-item__foot { padding-left: 12px; }
+}
+
 /* Collections */
 .admin-collection-items__save { display: flex; gap: 8px; }
 .admin-collection-items__summary { margin: 0; padding: 12px 20px 2px; color: var(--text-secondary); font-size: 13px; font-weight: 650; }
