@@ -252,7 +252,9 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     get: ({ signal } = {}) => rpc("admin_get_settings", {}, signal),
     update: (section, value, expectedUpdatedAt) => rpc("admin_update_settings", {
       section, value, expected_updated_at: expectedUpdatedAt || null
-    })
+    }),
+    notificationsStatus: ({ signal } = {}) => rpc("admin_notifications_status", {}, signal),
+    sendTestNotification: () => rpc("admin_notifications_send_test", {})
   });
 
   // Collections (homepage blocks and other product selections)

@@ -75,7 +75,7 @@ export async function createSettingsView({ api, signal }) {
           ${checkbox("notifyOrders", "Повідомляти про замовлення", notifications.value?.notifyOrders !== false)}
           ${checkbox("notifyLeads", "Повідомляти про заявки на дзвінок", notifications.value?.notifyLeads !== false)}
         </div>
-        <p class="admin-panel-note">${icon("warning")} Отримувачі зберігаються, але відправку ще не підключено: потрібен Telegram-бот або поштовий сервіс.</p>
+        <div class="admin-notify-status" data-notify-status><p class="admin-panel-note">Перевіряємо стан відправки…</p></div>
         ${saveBar(canEdit, notifications.updatedAt)}
       </form>
       <div class="admin-toast" role="status" aria-live="polite" hidden></div>
@@ -109,6 +109,7 @@ function storeFieldset(store, isNew) {
 }
 
 function bindSettings(container, { api, canEdit, sections }) {
+  bindNotificationStatus(container, { api, canEdit });
   const forms = [...container.querySelectorAll("[data-settings-form]")];
   if (!canEdit) {
     forms.forEach(form => form.querySelectorAll("input, select, textarea, button").forEach(control => { control.disabled = true; }));
@@ -248,4 +249,69 @@ function formatDateTime(value) {
 
 function escape(value) {
   return String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
+}
+
+// Notification delivery: real status from admin_notifications_status, recent log and a test message.
+const NOTIFY_STATUS = Object.freeze({
+  queued: ["У черзі", "info"], sent: ["Надіслано", "success"], skipped: ["Пропущено", "warning"], error: ["Помилка", "danger"]
+});
+const NOTIFY_KIND = Object.freeze({ order: "Замовлення", lead: "Заявка", test: "Тест" });
+
+function bindNotificationStatus(container, { api, canEdit }) {
+  const box = container.querySelector("[data-notify-status]");
+  if (!box || !api.settings.notificationsStatus) return;
+  if (!canEdit) {
+    box.replaceChildren();
+    box.insertAdjacentHTML("beforeend", `<p class="admin-panel-note">Стан відправки бачать власник і адміністратор.</p>`);
+    return;
+  }
+  let timer = null;
+  const render = status => {
+    const log = status.log || [];
+    const missing = [
+      status.pgNet ? "" : "розширення pg_net",
+      status.functionUrlSet ? "" : "адреса функції crm-notify",
+      status.secretSet ? "" : "секрет CRM_NOTIFY_SECRET"
+    ].filter(Boolean);
+    box.replaceChildren();
+    box.insertAdjacentHTML("beforeend", `
+      <div class="admin-notify-status__head">
+        <p>${status.configured
+          ? `<span class="admin-status admin-status--success">${icon("check")} Підключено</span> Сповіщення йдуть у Telegram через функцію crm-notify. Тест іде на збережені chat id. Email поки не надсилається.`
+          : `<span class="admin-status admin-status--warning">${icon("warning")} Не підключено</span> Отримувачі зберігаються, але відправки немає. Бракує: ${escape(missing.join(", "))}. Інструкція: docs/notifications-setup.md.`}</p>
+        <button class="admin-button admin-button--secondary" type="button" data-notify-test ${status.configured ? "" : "disabled"}>Надіслати тестове повідомлення</button>
+      </div>
+      ${log.length ? `<table class="admin-crm-table admin-notify-log"><thead><tr><th>Час</th><th>Подія</th><th>Стан</th><th>Пояснення</th></tr></thead><tbody>
+        ${log.slice(0, 8).map(entry => {
+          const [label, tone] = NOTIFY_STATUS[entry.status] || [entry.status, "info"];
+          return `<tr><td>${escape(formatDateTime(entry.createdAt))}</td>
+            <td>${escape(NOTIFY_KIND[entry.kind] || entry.kind)}${entry.number ? ` №${escape(entry.number)}` : ""}</td>
+            <td><span class="admin-status admin-status--${tone}">${escape(label)}</span></td>
+            <td>${escape(entry.reason || "")}</td></tr>`;
+        }).join("")}</tbody></table>` : `<p class="admin-notify-status__empty">Сповіщень ще не було.</p>`}`);
+    box.querySelector("[data-notify-test]")?.addEventListener("click", sendTest);
+  };
+  const load = () => api.settings.notificationsStatus()
+    .then(render)
+    .catch(error => {
+      box.replaceChildren();
+      box.insertAdjacentHTML("beforeend", `<p class="admin-panel-note">Не вдалося перевірити стан відправки: ${escape(error.message)}</p>`);
+    });
+  async function sendTest(event) {
+    const button = event.currentTarget;
+    button.disabled = true;
+    button.textContent = "Надсилаємо…";
+    try {
+      const result = await api.settings.sendTestNotification();
+      showToast(container, result?.status === "queued"
+        ? "Тестове повідомлення в черзі. Результат з’явиться в журналі за кілька секунд."
+        : `Не надіслано: ${result?.reason || "невідома причина"}`, result?.status !== "queued");
+    } catch (error) {
+      showToast(container, error.message, true);
+    }
+    await load();
+    clearTimeout(timer);
+    timer = setTimeout(() => { if (box.isConnected) load(); }, 4000);
+  }
+  load();
 }
