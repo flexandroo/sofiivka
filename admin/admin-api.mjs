@@ -257,6 +257,16 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     sendTestNotification: () => rpc("admin_notifications_send_test", {})
   });
 
+  // Information pages and FAQ (/admin/pages)
+  const pages = Object.freeze({
+    list: ({ signal } = {}) => rpc("admin_list_site_pages", {}, signal),
+    get: (slug, { signal } = {}) => rpc("admin_get_site_page", { page_slug: String(slug || "") }, signal),
+    save: (slug, payload, expectedUpdatedAt) => rpc("admin_save_site_page", {
+      page_slug: String(slug), payload, expected_updated_at: expectedUpdatedAt || null
+    }),
+    saveFaq: (items, expectedUpdatedAt) => rpc("admin_save_site_faq", { items, expected_updated_at: expectedUpdatedAt || null })
+  });
+
   // Collections (homepage blocks and other product selections)
   const collections = Object.freeze({
     list: ({ signal } = {}) => rpc("admin_list_collections", {}, signal),
@@ -329,6 +339,7 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     changePassword,
     taxonomy,
     settings,
+    pages,
     collections,
     attributes,
     getProfile,
