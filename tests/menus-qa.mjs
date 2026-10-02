@@ -204,6 +204,6 @@ assert.match(styles, /\.footer__menu \{\s*display: contents;/);
 assert.match(styles, /\.cookie-consent \{\s*position: fixed;/, "banner overlays the page (no layout shift)");
 assert.match(styles, /\.site-nav__group:focus-within \.site-nav__sub/, "submenu opens for keyboard users");
 assert.match(read("admin/admin.css"), /\.admin-menu-row \{/);
-assert.match(read("scripts/build-static-site.mjs"), /site-settings\.js\?v=20261002-menus-1/);
+assert.match(read("scripts/build-static-site.mjs"), /site-settings\.js\?v=20261002-phone-1/);
 
 console.log(JSON.stringify({ status: "ok", suite: "menus-qa" }));

@@ -1163,7 +1163,7 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-rows: none;
     grid-auto-rows: minmax(58px, auto);
-    order: 4;
+    order: 2;
     padding: 0;
   }
 
@@ -1227,11 +1227,11 @@
   }
 
   .home-products--popular {
-    order: 2;
+    order: 3;
   }
 
   .home-products--sale {
-    order: 3;
+    order: 4;
   }
 
   .home-contact__grid {

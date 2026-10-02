@@ -107,7 +107,7 @@
       if (!window.sofievkaCatalog) await loadScript("/catalog-data.js?v=20261002-sections-2");
       if (window.sofievkaCatalogDataReady) await window.sofievkaCatalogDataReady;
       await prepareScopedPage(page);
-      if (!window.sofievkaCatalogUI) await loadScript("/catalog-ui.js?v=20261002-stage1-1");
+      if (!window.sofievkaCatalogUI) await loadScript("/catalog-ui.js?v=20261002-stage2-1");
       if (window.sofievkaCatalogUIReady) await window.sofievkaCatalogUIReady;
       CATALOG = window.sofievkaCatalog || CATALOG;
       PRODUCTS = Array.isArray(CATALOG?.catalogProducts) && CATALOG.catalogProducts.length ? CATALOG.catalogProducts : (Array.isArray(CATALOG?.products) && CATALOG.products.length ? CATALOG.products : PRODUCTS);

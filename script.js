@@ -973,6 +973,20 @@ function setupBrandDirectory() {
     grouped.get(letter).push(brand);
   });
 
+  // A short list reads better as one grid: no letter headings and no alphabet bar.
+  const brandCount = [...grouped.values()].reduce((sum, list) => sum + list.length, 0);
+  if (brandCount <= 24) {
+    const group = document.createElement("section");
+    group.className = "brand-letter-group brand-letter-group--flat";
+    const grid = document.createElement("div");
+    grid.className = "brand-directory-grid brand-directory-grid--flat";
+    grid.replaceChildren(...[...grouped.values()].flat().map(createDirectoryCard));
+    group.append(grid);
+    groupsRoot.append(group);
+    alphabet.hidden = true;
+    grouped.clear();
+  }
+
   grouped.forEach((groupBrands, letter) => {
     if (!groupBrands.length) return;
     const group = document.createElement("section");

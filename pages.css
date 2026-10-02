@@ -18,6 +18,8 @@
 .page-section { padding: var(--section-space) 0; }
 .page-section--white { background: var(--surface); }
 .page-section--compact { padding: clamp(48px, 6vw, 84px) 0; }
+/* The first block under a page header starts close to it instead of a full section gap. */
+.page-hero + .page-section, .search-page-hero + .page-section { padding-top: clamp(32px, 4vw, 56px); }
 .page-heading { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 520px); gap: 32px; align-items: end; margin-bottom: clamp(28px, 4vw, 52px); }
 .page-heading h2 { font-size: clamp(30px, 4vw, 50px); line-height: 1.08; letter-spacing: -.035em; }
 .page-heading p { color: var(--text-secondary); }

@@ -421,6 +421,24 @@
     mapRoute
   });
 
+  // One phone format for every form: +38 (0XX) XXX XX XX, typed digits only.
+  function formatPhone(value) {
+    const raw = String(value || "");
+    let digits = raw.replace(/\D/g, "");
+    if (/^\+?3?8?$/.test(raw.trim())) return raw;
+    if (raw.trim().startsWith("+38") || digits.startsWith("380")) digits = digits.slice(2);
+    if (digits && !digits.startsWith("0")) digits = `0${digits}`;
+    digits = digits.slice(0, 10);
+    if (!digits) return "";
+    const parts = [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 8), digits.slice(8, 10)];
+    return `+38 (${parts[0]}${parts[0].length === 3 ? ")" : ""}${parts[1] ? ` ${parts[1]}` : ""}${parts[2] ? ` ${parts[2]}` : ""}${parts[3] ? ` ${parts[3]}` : ""}`;
+  }
+  document.addEventListener("input", event => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || input.type !== "tel" || event.inputType?.startsWith("delete")) return;
+    input.value = formatPhone(input.value);
+  });
+
   // Tags start right away from the cached copy; title/description, menus and the banner wait for the DOM.
   applyIntegrations();
   const ready = () => { applySeo(); applyHooks(); renderConsentBanner(false); };

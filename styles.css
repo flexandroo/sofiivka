@@ -3667,3 +3667,11 @@ ul {
 
 .home-contact__status { margin: 12px 0 0; font-size: 14px; color: var(--text-secondary); }
 .home-contact__status:empty { display: none; }
+
+/* /brands with a short list: one grid, four cards per row. */
+.brand-letter-group--flat { grid-template-columns: 1fr; }
+.brand-directory-grid--flat { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1180px) { .brand-directory-grid--flat { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 900px) { .brand-directory-grid--flat { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .brand-directory-grid--flat { grid-template-columns: 1fr; } }
+.brand-alphabet[hidden], .brand-search-status:empty { display: none; }

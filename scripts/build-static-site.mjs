@@ -81,7 +81,7 @@ for (const entry of await fs.readdir(outputDirectory, { withFileTypes: true })) 
   let html = await fs.readFile(filePath, "utf8");
   if (!/catalog-runtime-config\.js/i.test(html)) html = html.replace(/<head>/i, '<head><script src="/catalog-runtime-config.js"></script>');
   // Shop settings render synchronously (defaults + cached copy) before the deferred page scripts.
-  if (!/site-settings\.js/i.test(html)) html = html.replace(/<script src="\/catalog-runtime-config\.js"><\/script>/i, match => `${match}<script src="/site-settings.js?v=20261002-menus-1"></script>`);
+  if (!/site-settings\.js/i.test(html)) html = html.replace(/<script src="\/catalog-runtime-config\.js"><\/script>/i, match => `${match}<script src="/site-settings.js?v=20261002-phone-1"></script>`);
   if (!/crm-client\.js/i.test(html)) html = html.replace(/<\/head>/i, '<script src="/crm-client.js?v=20261001-crm-1" defer></script></head>');
   // Customer accounts: header sign-in state on every page, signed-in checkout, /account.
   if (!/customer-account\.js/i.test(html)) html = html.replace(/<\/head>/i, '<script src="/customer-account.js?v=20261002-account-1" defer></script></head>');
