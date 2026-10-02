@@ -231,9 +231,17 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     setHomepageCategories: ids => rpc("admin_set_homepage_categories", { category_ids: ids })
   });
 
+  const settings = Object.freeze({
+    get: ({ signal } = {}) => rpc("admin_get_settings", {}, signal),
+    update: (section, value, expectedUpdatedAt) => rpc("admin_update_settings", {
+      section, value, expected_updated_at: expectedUpdatedAt || null
+    })
+  });
+
   return Object.freeze({
     crm,
     taxonomy,
+    settings,
     getProfile,
     getDashboard,
     getProductReferenceData,

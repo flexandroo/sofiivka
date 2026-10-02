@@ -97,6 +97,7 @@
       : PAGES[page]();
     root.innerHTML = headerExtended() + `<main id="main" class="page-main">${pageContent}</main>` + footerExtended() + `<div class="toast" data-page-toast role="status" aria-live="polite"></div>`;
     window.sofievkaCatalogUI?.trackProductImages(root);
+    window.sofievkaSiteSettings?.applyHooks(root);
     bindGlobal();
     await bindExtendedPage(page);
   };
@@ -178,7 +179,30 @@
 
   function renderServices() { return hero("Монтаж і сервіс", "Від підбору до стабільної роботи", "Один контекст для консультації, доставки, монтажу, запуску та подальшого обслуговування.") + `<section class="page-section"><div class="container"><div class="process-list"><article><span>01</span><h3>Підбір</h3><p>Перевіряємо потужність, напір, монтажні умови й сумісність.</p></article><article><span>02</span><h3>Доставка</h3><p>Узгоджуємо склад, комплектацію, спосіб та строк отримання.</p></article><article><span>03</span><h3>Монтаж і запуск</h3><p>Обсяг робіт і відповідальність сторін фіксуємо до початку.</p></article><article><span>04</span><h3>Сервіс</h3><p>Діагностика, планове обслуговування та гарантійні звернення.</p></article></div></div></section><section class="page-section page-section--white"><div class="container"><div class="page-heading"><h2>Що підготувати для оцінки</h2><p>Чим точніші вихідні дані, тим менше ризику переробок і незапланованих витрат.</p></div><div class="info-grid"><article><img src="/assets/icons/icon-engineer.svg" alt=""><h3>Опис об'єкта</h3><p>Тип приміщення, площа, етап будівництва та бажаний результат.</p></article><article><img src="/assets/icons/icon-installation.svg" alt=""><h3>Фото або проєкт</h3><p>Існуюча система, вузли підключення та доступне місце.</p></article><article><img src="/assets/icons/icon-service.svg" alt=""><h3>Модель обладнання</h3><p>Для сервісу — шильдик, серійний номер та опис симптомів.</p></article></div></div></section><section class="page-section"><div class="container"><div class="aside-card" style="position:static;display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center"><div><h2>Обговоримо ваш об'єкт</h2><p>Залиште контакти або зателефонуйте. Менеджер уточнить дані й наступний крок.</p></div><a class="button button--primary" href="/contact.html">Зв'язатися</a></div></div></section>`; }
 
-  function renderContact() { return hero("Контакти", "Поговоріть із фахівцем", "Допоможемо знайти товар за кодом, перевірити сумісність або підготувати комплектацію.", true) + `<section class="page-section"><div class="container"><div class="contact-grid"><div><dl class="contact-details"><div><dt>Телефони</dt><dd><a href="tel:+380501234567">+38 (050) 123 45 67</a><br><a href="tel:+380671234567">+38 (067) 123 45 67</a></dd></div><div><dt>Email</dt><dd><a href="mailto:info@sofievka.ua">info@sofievka.ua</a></dd></div><div><dt>Графік</dt><dd>Пн–Пт: 9:00–18:00<br>Сб: 9:00–15:00</dd></div><div><dt>Адреса</dt><dd>м. Софіївка, вул. Соборна, 45<br>ТЦ «Софіївський», 1 поверх</dd></div></dl></div><div class="contact-map"><p class="page-kicker">Магазин і консультація</p><h2>Перед візитом уточніть наявність конкретної моделі</h2><p>Менеджер перевірить склад і підготує товар або консультацію до вашого приїзду.</p><a class="button button--primary" href="https://maps.google.com/?q=Софіївка+вул.+Соборна+45" target="_blank" rel="noreferrer">Прокласти маршрут</a></div></div></div></section>`; }
+  // Stores and contacts come from the shop settings (site-settings.js, edited in /admin/settings).
+  function siteSettings() { return window.sofievkaSiteSettings?.current || null; }
+  function contactStoresMarkup() {
+    const settings = siteSettings();
+    if (!settings) return "";
+    return settings.stores.map(store => `<section class="contact-store"><h2>${escapeHtml(store.title || store.city)}</h2><dl class="contact-details">
+      ${store.phones.length ? `<div><dt>Телефон</dt><dd>${store.phones.map(phone => `<a href="${window.sofievkaSiteSettings.phoneHref(phone)}">${escapeHtml(phone)}</a>`).join("<br>")}</dd></div>` : ""}
+      ${store.email ? `<div><dt>Email</dt><dd><a href="mailto:${escapeHtml(store.email)}">${escapeHtml(store.email)}</a></dd></div>` : ""}
+      ${store.hours.length ? `<div><dt>Графік</dt><dd>${store.hours.map(escapeHtml).join("<br>")}</dd></div>` : ""}
+      <div><dt>Адреса</dt><dd>${escapeHtml(store.address)}</dd></div></dl></section>`).join("");
+  }
+  function contactRoutesMarkup() {
+    const settings = siteSettings();
+    if (!settings) return "";
+    return settings.stores.map(store => `<a class="button button--primary" href="${escapeHtml(window.sofievkaSiteSettings.mapRoute(store.mapQuery || store.address))}" target="_blank" rel="noreferrer">Маршрут: ${escapeHtml(store.city || store.title)}</a>`).join("");
+  }
+  function refreshSiteSettingsBlocks() {
+    document.querySelectorAll("[data-site-stores]").forEach(node => { node.innerHTML = contactStoresMarkup(); });
+    document.querySelectorAll("[data-site-routes]").forEach(node => { node.innerHTML = contactRoutesMarkup(); });
+    window.sofievkaSiteSettings?.applyHooks();
+  }
+  window.sofievkaSiteSettings?.onChange(refreshSiteSettingsBlocks);
+
+  function renderContact() { return hero("Контакти", "Поговоріть із фахівцем", "Допоможемо знайти товар за кодом, перевірити сумісність або підготувати комплектацію.", true) + `<section class="page-section"><div class="container"><div class="contact-grid"><div><div data-site-stores>${contactStoresMarkup()}</div></div><div class="contact-map"><p class="page-kicker">Магазин і консультація</p><h2>Перед візитом уточніть наявність конкретної моделі</h2><p>Менеджер перевірить склад і підготує товар або консультацію до вашого приїзду.</p><div class="contact-routes" data-site-routes>${contactRoutesMarkup()}</div></div></div></div></section>`; }
 
   function renderArticle(title, kicker, content, asideTitle, asideText) { return hero(kicker, title, "Практична інформація до покупки та після отримання замовлення.", true) + `<section class="page-section page-section--white"><div class="container content-layout"><article class="prose">${content}</article><aside class="aside-card"><h2>${asideTitle}</h2><p>${asideText}</p><a class="button button--secondary" href="/contact.html">Зв'язатися з нами</a><div class="link-list"><a href="/delivery.html">Доставка й оплата <span>→</span></a><a href="/warranty.html">Гарантія <span>→</span></a><a href="/returns.html">Повернення <span>→</span></a></div></aside></div></section>`; }
   function deliveryContent(){ return `<h2>Як отримати замовлення</h2><p>Доступні відправлення перевізником по Україні та самовивіз після підтвердження готовності. Спосіб отримання залежить від габаритів, ваги, складу відвантаження та особливостей конкретного обладнання.</p><h2>Підтвердження строку</h2><ol><li>Менеджер перевіряє фактичну наявність усіх позицій.</li><li>Узгоджує місце отримання та орієнтовний строк.</li><li>Для комплектів перевіряє, що замовлення можна відправити без втрати потрібних компонентів.</li></ol><h2>Оплата</h2><p>Доступні способи оплати та потребу в передоплаті менеджер повідомляє до підтвердження замовлення. Для юридичних осіб готується рахунок і комплект супровідних документів.</p><h2>Перевірка при отриманні</h2><p>Огляньте упаковку, комплектацію та відсутність видимих пошкоджень у присутності представника перевізника. Якщо є проблема, зафіксуйте її до завершення отримання та зв'яжіться з магазином.</p>`; }
@@ -223,6 +247,10 @@
     const lines=Object.entries(value).filter(([id,q])=>q>0 && productById(id));
     const totals=cartTotals(lines);
     const online=Boolean(window.sofievkaCrm?.available);
+    const settings=siteSettings()||window.sofievkaSiteSettings?.defaults;
+    const checkoutSettings=settings.checkout;
+    const deliveryMethods=checkoutSettings.deliveryMethods.filter(method=>method.enabled!==false&&["carrier","pickup"].includes(method.id));
+    const pickupStores=deliveryMethods.some(method=>method.id==="pickup")?settings.stores.filter(store=>store.pickup!==false):[];
     if(!lines.length) return hero("Оформлення","Оформлення замовлення","Додайте товари до кошика, щоб оформити замовлення.",true)+`<section class="page-section"><div class="container">${cartMarkup([])}</div></section>`;
     return hero("Оформлення","Оформлення замовлення","Залиште контакти — менеджер перевірить наявність, уточнить доставку й підтвердить замовлення. Оплата після підтвердження.",true)+`<section class="page-section"><div class="container checkout-layout"><form class="checkout-form" data-checkout novalidate>
       ${online?"":`<div class="notice"><strong>Онлайн-оформлення тимчасово недоступне.</strong> Зателефонуйте нам — менеджер оформить замовлення.</div>`}
@@ -233,13 +261,14 @@
         <label class="field field--full"><span>Email <small>(необов'язково)</small></span><input name="email" type="email" autocomplete="email" maxlength="254"></label>
       </div></section>
       <section class="form-section"><h2>2. Отримання</h2><div class="choice-list">
-        <label class="choice"><input type="radio" name="delivery" value="carrier" checked><span><strong>Доставка перевізником по Україні</strong><small>Нова пошта або інший перевізник — погодимо під час підтвердження.</small></span></label>
-        <label class="choice"><input type="radio" name="delivery" value="pickup"><span><strong>Самовивіз з магазину</strong><small>Після підтвердження готовності замовлення.</small></span></label>
+        ${deliveryMethods.map((method,index)=>`<label class="choice"><input type="radio" name="delivery" value="${escapeHtml(method.id)}" ${index===0?"checked":""}><span><strong>${escapeHtml(method.title)}</strong><small>${escapeHtml(method.description||"")}</small></span></label>`).join("")}
       </div><div class="form-grid" data-carrier-fields style="margin-top:18px">
         <label class="field"><span>Місто</span><input name="city" autocomplete="address-level2" maxlength="120"></label>
         <label class="field"><span>Відділення або адреса</span><input name="deliveryPoint" maxlength="240"></label>
-      </div></section>
-      <section class="form-section"><h2>3. Оплата</h2><div class="choice-list"><label class="choice"><input type="radio" name="payment" value="confirm" checked><span><strong>Після підтвердження менеджером</strong><small>Рахунок, оплата на картку або при отриманні — залежно від товару та доставки.</small></span></label></div>
+      </div>${pickupStores.length?`<div class="form-grid" data-pickup-fields style="margin-top:18px" hidden>
+        <label class="field field--full"><span>Магазин самовивозу</span><select name="pickupStore">${pickupStores.map(store=>`<option value="${escapeHtml(store.city||store.title)}">${escapeHtml(`${store.city||store.title} — ${store.address}`)}</option>`).join("")}</select></label>
+      </div>`:""}</section>
+      <section class="form-section"><h2>3. Оплата</h2><div class="choice-list"><label class="choice"><input type="radio" name="payment" value="confirm" checked><span><strong>${escapeHtml(checkoutSettings.paymentTitle)}</strong><small>${escapeHtml(checkoutSettings.paymentDescription)}</small></span></label></div>
         <label class="field" style="margin-top:18px"><span>Коментар</span><textarea name="comment" maxlength="4000" placeholder="Питання щодо сумісності, доставки або документів"></textarea></label>
       </section>
       <label class="checkout-hp" aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden">Website<input name="website" tabindex="-1" autocomplete="off"></label>
@@ -255,7 +284,8 @@
     const form=document.querySelector("[data-checkout]");
     if(!form) return;
     const carrierFields=form.querySelector("[data-carrier-fields]");
-    const syncDelivery=()=>{ if(carrierFields) carrierFields.hidden=form.querySelector('input[name="delivery"]:checked')?.value!=="carrier"; };
+    const pickupFields=form.querySelector("[data-pickup-fields]");
+    const syncDelivery=()=>{ const method=form.querySelector('input[name="delivery"]:checked')?.value; if(carrierFields) carrierFields.hidden=method!=="carrier"; if(pickupFields) pickupFields.hidden=method!=="pickup"; };
     form.querySelectorAll('input[name="delivery"]').forEach(input=>input.addEventListener("change",syncDelivery));
     syncDelivery();
     const errorBox=form.querySelector("[data-checkout-error]");
@@ -274,7 +304,7 @@
       try{
         const result=await window.sofievkaCrm.submitOrder({
           name:data.get("name"), phone:data.get("phone"), email:data.get("email"),
-          delivery:data.get("delivery"), city:data.get("city"), deliveryPoint:data.get("deliveryPoint"),
+          delivery:data.get("delivery"), city:data.get("city"), deliveryPoint:data.get("deliveryPoint"), pickupStore:data.get("pickupStore"),
           comment:data.get("comment"), website:data.get("website"), items
         });
         saveCart({});
@@ -942,7 +972,7 @@
   }
 
   function renderContactExtended() {
-    return hero("Контакти", "Поговоріть із фахівцем", "Знайдемо товар за кодом, перевіримо базову сумісність або приймемо специфікацію на прорахунок.", true) + `<section class="page-section"><div class="container contact-grid"><div><dl class="contact-details"><div><dt>Телефони</dt><dd><a href="tel:+380501234567">+38 (050) 123 45 67</a><br><a href="tel:+380671234567">+38 (067) 123 45 67</a></dd></div><div><dt>Email</dt><dd><a href="mailto:info@sofievka.ua">info@sofievka.ua</a><br><a href="mailto:partner@sofievka.ua">partner@sofievka.ua</a></dd></div><div><dt>Графік</dt><dd>Пн–Пт: 9:00–18:00<br>Сб: 9:00–15:00</dd></div><div><dt>Адреса макета</dt><dd>м. Софіївка, вул. Соборна, 45<br><small>Підтвердити перед публічним запуском</small></dd></div></dl><div class="contact-purpose"><h2>Що вказати у зверненні</h2><ul><li>Назву або код товару.</li><li>Тип об'єкта й коротку задачу.</li><li>Фото, схему або специфікацію.</li><li>Місто й бажаний строк.</li></ul></div></div><div class="contact-map"><p class="page-kicker">Магазин і консультація</p><h2>Перед візитом уточніть наявність моделі</h2><p>Менеджер перевірить склад і підготує товар або консультацію до вашого приїзду.</p><a class="button button--primary" href="https://maps.google.com/?q=Софіївка+вул.+Соборна+45" target="_blank" rel="noreferrer">Прокласти маршрут</a></div></div></section><section class="page-section page-section--white" id="contact-form"><div class="container"><form class="checkout-form lead-form" data-lead-form="contact" novalidate><section class="form-section"><h2>Написати нам</h2><p>Опишіть задачу або вкажіть код товару — відповімо телефоном або листом.</p>${leadFormFields({ messageLabel: "Ваш запит", submitLabel: "Надіслати звернення" })}</section></form></div></section>`;
+    return hero("Контакти", "Поговоріть із фахівцем", "Знайдемо товар за кодом, перевіримо базову сумісність або приймемо специфікацію на прорахунок.", true) + `<section class="page-section"><div class="container contact-grid"><div><div data-site-stores>${contactStoresMarkup()}</div><div class="contact-purpose"><h2>Що вказати у зверненні</h2><ul><li>Назву або код товару.</li><li>Тип об'єкта й коротку задачу.</li><li>Фото, схему або специфікацію.</li><li>Місто й бажаний строк.</li></ul></div></div><div class="contact-map"><p class="page-kicker">Магазин і консультація</p><h2>Перед візитом уточніть наявність моделі</h2><p>Менеджер перевірить склад і підготує товар або консультацію до вашого приїзду.</p><div class="contact-routes" data-site-routes>${contactRoutesMarkup()}</div></div></div></section><section class="page-section page-section--white" id="contact-form"><div class="container"><form class="checkout-form lead-form" data-lead-form="contact" novalidate><section class="form-section"><h2>Написати нам</h2><p>Опишіть задачу або вкажіть код товару — відповімо телефоном або листом.</p>${leadFormFields({ messageLabel: "Ваш запит", submitLabel: "Надіслати звернення" })}</section></form></div></section>`;
   }
 
   function renderBlogExtended() {

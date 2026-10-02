@@ -114,6 +114,9 @@
 .contact-details dd { font-size: 18px; font-weight: 600; }
 .contact-map { min-height: 420px; display: grid; align-content: end; background: var(--graphite) !important; color: #fff; }
 .contact-map p { max-width: 430px; margin: 14px 0 24px; color: rgba(255,255,255,.7); }
+.contact-store + .contact-store { margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--divider); }
+.contact-store h2 { margin-bottom: 20px; font-size: 22px; }
+.contact-routes { display: flex; flex-wrap: wrap; gap: 12px; }
 
 .faq-list { border-top: 1px solid var(--divider); }
 .faq-item { border-bottom: 1px solid var(--divider); }

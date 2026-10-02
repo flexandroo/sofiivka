@@ -10,6 +10,7 @@ import {
 import {
   createBrandsListView, createBrandDetailView, createCategoriesListView, createCategoryDetailView
 } from "/admin/admin-taxonomy.mjs";
+import { createSettingsView } from "/admin/admin-settings.mjs";
 
 const ROLES = new Set(["owner", "admin", "manager", "content_manager"]);
 const ROLE_LABELS = Object.freeze({
@@ -58,11 +59,6 @@ const PLACEHOLDERS = Object.freeze({
     eyebrow: "13 006 медіазаписів",
     lead: "Медіа залишаються в поточному джерелі; перенесення в Storage не входить у цей етап.",
     rows: [["Зображення", "Primary, gallery, dimension і alt text"], ["Документи", "3 885 інструкцій та технічних файлів"], ["Майбутнє завантаження", "Лише через server-authorized signed flow"]]
-  },
-  settings: {
-    eyebrow: "Owner / admin",
-    lead: "Системні налаштування поки доступні лише як захищений маршрут.",
-    rows: [["Доступ", "Профілі, ролі та active state"], ["Середовище", "Preview → DEV, сайт → PROD"], ["Безпека", "Publishable key у browser, жодного service role"]]
   }
 });
 
@@ -176,6 +172,7 @@ async function route() {
     : brandMatch ? () => createBrandDetailView({ api, brandId: decodeURIComponent(brandMatch[1]), signal })
     : path === "/admin/categories" ? () => createCategoriesListView({ api, signal })
     : categoryMatch ? () => createCategoryDetailView({ api, categoryId: decodeURIComponent(categoryMatch[1]), signal })
+    : path === "/admin/settings" ? () => createSettingsView({ api, signal })
     : null;
   if (crmView) {
     try {

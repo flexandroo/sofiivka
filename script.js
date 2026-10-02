@@ -783,35 +783,27 @@ function setupHomepageBrands() {
   wall.replaceChildren(track);
 }
 
-const homepageStoreLocations = {
-  kyiv: {
-    name: "Київ",
-    kicker: "Магазин у Києві",
-    address: "с. Софіївська Борщагівка, вул. Київська, 3",
-    phone: "+38 (050) 358-22-84",
-    phoneHref: "tel:+380503582284",
-    email: "sofievkakyiv@ukr.net",
-    hours: ["Пн–Пт 9:00–18:00", "Сб 9:00–14:00"],
-    mapQuery: "с. Софіївська Борщагівка, вул. Київська, 3"
-  },
-  zhytomyr: {
-    name: "Житомир",
-    kicker: "Магазин у Житомирі",
-    address: "м. Житомир, проспект Незалежності, 79",
-    phone: "+38 (067) 726-00-00",
-    phoneHref: "tel:+380677260000",
-    email: "sofievka.zt.ua@gmail.com",
-    hours: ["Пн–Пт 8:30–17:00", "Сб 8:30–14:00"],
-    mapQuery: "Житомир, проспект Незалежності, 79"
-  }
-};
+// Stores come from the shop settings (site-settings.js, edited in /admin/settings).
+function homepageStoreLocations() {
+  const settings = window.sofievkaSiteSettings?.current;
+  if (!settings) return {};
+  return Object.fromEntries(settings.stores.map(store => [store.id, {
+    name: store.city,
+    kicker: store.title,
+    address: store.address,
+    phone: store.phones[0] || "",
+    phoneHref: window.sofievkaSiteSettings.phoneHref(store.phones[0]),
+    email: store.email,
+    hours: store.hours,
+    mapQuery: store.mapQuery || store.address
+  }]));
+}
 
 function setupHomepageContact() {
   const form = document.querySelector("[data-home-contact-form]");
   if (!form) return;
 
   const storeInput = form.querySelector("[data-home-contact-store]");
-  const storeButtons = [...document.querySelectorAll("[data-store-location]")];
   const map = document.querySelector(".home-contact__map iframe");
   const kicker = document.querySelector("[data-store-kicker]");
   const address = document.querySelector("[data-store-address]");
@@ -820,9 +812,28 @@ function setupHomepageContact() {
   const email = document.querySelector("[data-store-email]");
   const hours = document.querySelector("[data-store-hours]");
 
+  let stores = homepageStoreLocations();
+  let activeStore = Object.keys(stores)[0];
+  const switcher = document.querySelector(".home-contact__store-switcher");
+  const renderSwitcher = () => {
+    if (!switcher) return;
+    switcher.replaceChildren(...Object.entries(stores).map(([key, store]) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.storeLocation = key;
+      button.setAttribute("aria-pressed", String(key === activeStore));
+      button.textContent = store.name;
+      button.addEventListener("click", () => selectStore(key));
+      return button;
+    }));
+    switcher.hidden = Object.keys(stores).length < 2;
+  };
+
   const selectStore = key => {
-    const store = homepageStoreLocations[key];
+    const store = stores[key];
     if (!store) return;
+    activeStore = key;
+    const storeButtons = [...document.querySelectorAll("[data-store-location]")];
 
     storeButtons.forEach(button => {
       button.setAttribute("aria-pressed", String(button.dataset.storeLocation === key));
@@ -857,11 +868,14 @@ function setupHomepageContact() {
     form.action = `mailto:${store.email}`;
   };
 
-  storeButtons.forEach(button => {
-    button.addEventListener("click", () => selectStore(button.dataset.storeLocation));
+  renderSwitcher();
+  selectStore(activeStore);
+  window.sofievkaSiteSettings?.onChange(() => {
+    stores = homepageStoreLocations();
+    if (!stores[activeStore]) activeStore = Object.keys(stores)[0];
+    renderSwitcher();
+    selectStore(activeStore);
   });
-
-  selectStore("kyiv");
   // Without the CRM (local builds) the form falls back to a prepared email.
   if (!window.sofievkaCrm?.available) {
     const note = form.querySelector("[data-home-contact-note]");
