@@ -11,6 +11,7 @@ import {
   createBrandsListView, createBrandDetailView, createCategoriesListView, createCategoryDetailView
 } from "/admin/admin-taxonomy.mjs";
 import { createSettingsView } from "/admin/admin-settings.mjs";
+import { createStaffView, createAccountView } from "/admin/admin-staff.mjs";
 import { createCollectionsListView, createCollectionDetailView } from "/admin/admin-collections.mjs";
 import { createAttributesListView, createAttributeDetailView } from "/admin/admin-attributes.mjs";
 
@@ -32,14 +33,16 @@ const ROUTES = Object.freeze({
   "/admin/attributes": { title: "Характеристики", section: "attributes", icon: "attributes", roles: [...ROLES] },
   "/admin/collections": { title: "Підбірки", section: "collections", icon: "collections", roles: [...ROLES] },
   "/admin/media": { title: "Медіа", section: "media", icon: "media", roles: [...ROLES] },
-  "/admin/settings": { title: "Налаштування", section: "settings", icon: "settings", roles: ["owner", "admin"] }
+  "/admin/settings": { title: "Налаштування", section: "settings", icon: "settings", roles: ["owner", "admin"] },
+  "/admin/users": { title: "Працівники", section: "users", icon: "user", roles: ["owner", "admin"] },
+  "/admin/account": { title: "Мій обліковий запис", section: "account", icon: "lock", roles: [...ROLES] }
 });
 const NAV_GROUPS = Object.freeze([
   { label: "Головне", paths: ["/admin"] },
   { label: "Продажі", paths: ["/admin/orders", "/admin/leads", "/admin/customers"] },
   { label: "Каталог", paths: ["/admin/products", "/admin/collections"] },
   { label: "Дані", paths: ["/admin/categories", "/admin/brands", "/admin/attributes", "/admin/media"] },
-  { label: "Система", paths: ["/admin/settings"] }
+  { label: "Система", paths: ["/admin/settings", "/admin/users"] }
 ]);
 const PLACEHOLDERS = Object.freeze({
   products: {
@@ -175,6 +178,8 @@ async function route() {
     : path === "/admin/categories" ? () => createCategoriesListView({ api, signal })
     : categoryMatch ? () => createCategoryDetailView({ api, categoryId: decodeURIComponent(categoryMatch[1]), signal })
     : path === "/admin/settings" ? () => createSettingsView({ api, signal })
+    : path === "/admin/users" ? () => createStaffView({ api, signal })
+    : path === "/admin/account" ? async () => createAccountView({ api, profile: activeProfile, email: activeSession?.user?.email })
     : path === "/admin/collections" ? () => createCollectionsListView({ api, signal })
     : collectionMatch ? () => createCollectionDetailView({ api, collectionId: decodeURIComponent(collectionMatch[1]), signal })
     : path === "/admin/attributes" ? () => createAttributesListView({ api, signal })
@@ -309,10 +314,10 @@ function renderShell(definition, content) {
         </div>
         <nav class="admin-nav">${renderNavigation(definition.section)}</nav>
         <footer class="admin-sidebar__footer">
-          <div class="admin-user">
+          <a class="admin-user" href="/admin/account" data-admin-link title="Мій обліковий запис">
             <span class="admin-user__avatar" aria-hidden="true">${initials(activeProfile.name)}</span>
             <span><strong>${escapeHtml(activeProfile.name)}</strong><small>${escapeHtml(ROLE_LABELS[activeProfile.role])}</small></span>
-          </div>
+          </a>
           <button class="admin-logout" type="button" data-logout>${icon("logout")}<span>Вийти</span></button>
         </footer>
       </aside>

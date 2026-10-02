@@ -27,6 +27,8 @@ for (const user of USERS) {
   await db.query("insert into auth.users (id, email) values ($1, $2)", [user.id, user.email]);
   await db.query("insert into public.admin_profiles (user_id, name, role) values ($1, $2, $3)", [user.id, user.name, user.role]);
 }
+// An account without a staff profile, for the "add staff" flow.
+await db.query("insert into auth.users (id, email) values ('00000000-0000-4000-8000-0000000000a4', 'candidate@qa.test')");
 
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css",
   ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp",

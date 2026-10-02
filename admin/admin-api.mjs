@@ -287,8 +287,34 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     })
   });
 
+  // Staff: profiles through RPC; a brand-new account goes through the admin-staff edge function.
+  const staff = Object.freeze({
+    list: ({ signal } = {}) => rpc("admin_list_staff", {}, signal),
+    update: (userId, patch, expectedUpdatedAt) => rpc("admin_update_staff", {
+      target_user_id: userId, patch, expected_updated_at: expectedUpdatedAt || null
+    }),
+    async add({ email, name, role }) {
+      const result = await rpc("admin_add_staff", { email, name, role });
+      if (result?.status !== "needs_account") return result;
+      const response = await request("/functions/v1/admin-staff", { method: "POST", body: { email, name, role } })
+        .catch(error => {
+          if (error.code === "network_error" || error.status === 404) {
+            throw new AdminApiError("У цього email ще немає облікового запису, а сервіс створення облікових записів не підключено. Створіть користувача в Supabase → Authentication і спробуйте ще раз.", { code: "staff_function_missing" });
+          }
+          throw error;
+        });
+      return response.json();
+    }
+  });
+
+  async function changePassword(password) {
+    await request("/auth/v1/user", { method: "PUT", body: { password } });
+  }
+
   return Object.freeze({
     crm,
+    staff,
+    changePassword,
     taxonomy,
     settings,
     collections,

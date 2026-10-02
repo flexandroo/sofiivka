@@ -281,7 +281,7 @@ ol {
 }
 
 .admin-nav__group + .admin-nav__group {
-  margin-top: 26px;
+  margin-top: 18px;
 }
 
 .admin-nav__group h2 {
@@ -296,7 +296,7 @@ ol {
 .admin-nav__group a {
   position: relative;
   display: flex;
-  min-height: 42px;
+  min-height: 38px;
   align-items: center;
   gap: 12px;
   padding: 0 10px;
@@ -2706,6 +2706,7 @@ img.admin-taxonomy-logo { padding: 4px; }
   .admin-settings .admin-form-grid { grid-template-columns: minmax(0, 1fr); }
 }
 .admin-settings .admin-panel-note:has(svg) { display: flex; align-items: center; gap: 8px; }
+
 /* Collections */
 .admin-collection-items__save { display: flex; gap: 8px; }
 .admin-collection-items__summary { margin: 0; padding: 12px 20px 2px; color: var(--text-secondary); font-size: 13px; font-weight: 650; }
@@ -2756,6 +2757,8 @@ img.admin-collection-item__thumb { padding: 3px; background: var(--surface); }
   .admin-collection-item--hit { grid-template-columns: 48px minmax(0, 1fr); }
   .admin-collection-item--hit > .admin-button { grid-column: 2; justify-self: start; }
   .admin-crm-table--collections td:last-child { display: none; }
+}
+
 /* Characteristics and category filters */
 /* The shared filter bar's auto-fit track list is invalid next to an `auto` track, so it falls back
    to one column; this page knows its two selects and spells the columns out. */
@@ -2797,6 +2800,8 @@ img.admin-collection-item__thumb { padding: 3px; background: var(--surface); }
   .admin-attribute-option > small { grid-column: 1; padding: 0; text-align: left; }
   .admin-attribute-option .admin-icon-button { grid-column: 2; grid-row: 1; }
   .admin-crm-table--attributes td:last-child { display: none; }
+}
+
 /* CRM orders v2: line editor, manual order, export, print */
 .admin-crm-head-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .admin-crm-hint { color: var(--text-subtle); font-size: 11px; line-height: 1.5; }
@@ -3004,4 +3009,36 @@ img.admin-collection-item__thumb { padding: 3px; background: var(--surface); }
   .admin-print-placeholder { background: none; color: #111; }
   .admin-print-parties { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-print-sheet__footer { grid-template-columns: repeat(2, minmax(0, 1fr)); break-inside: avoid; }
+}
+
+/* Staff */
+a.admin-user { color: inherit; text-decoration: none; border-radius: var(--radius-control); }
+a.admin-user:hover strong { text-decoration: underline; }
+.admin-staff { display: grid; gap: 22px; }
+.admin-staff > .admin-panel { margin: 0; }
+.admin-staff-add { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) auto; align-items: end; }
+.admin-staff .admin-form-grid .admin-field + .admin-field { margin-top: 0; }
+.admin-staff-add__submit .admin-button { min-height: 44px; }
+.admin-staff-table td { vertical-align: middle; }
+.admin-staff-table input.admin-staff-name,
+.admin-staff-table select { width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid var(--divider); border-radius: var(--radius-control); background: var(--surface); }
+.admin-staff-table input:disabled,
+.admin-staff-table select:disabled { background: var(--surface-soft); color: var(--text-secondary); }
+.admin-staff-table td small { display: block; margin-top: 4px; color: var(--text-subtle); font-size: 12px; overflow-wrap: anywhere; }
+.admin-staff-table tr.is-muted td { color: var(--text-subtle); }
+.admin-staff-toggle { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.admin-staff-toggle input { width: 18px; height: 18px; }
+.admin-staff-password { margin: 0 20px 20px; padding: 16px; border: 1px solid var(--divider); border-radius: var(--radius-control); background: #fffcf0; }
+.admin-staff-password p { margin: 8px 0; }
+.admin-staff-password code { display: inline-block; padding: 6px 10px; border-radius: var(--radius-control); background: var(--surface); font-size: 18px; letter-spacing: .04em; user-select: all; }
+.admin-staff-roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; margin: 0; padding: 4px 20px 16px; }
+.admin-staff-roles > div { padding: 12px 0; border-bottom: 1px solid var(--divider); }
+.admin-staff-roles dt { font-weight: 700; }
+.admin-staff-roles dd { margin: 4px 0 0; color: var(--text-secondary); }
+@media (max-width: 760px) {
+  .admin-staff-add, .admin-staff-roles { grid-template-columns: minmax(0, 1fr); }
+  .admin-staff-table thead { display: none; }
+  .admin-staff-table, .admin-staff-table tbody, .admin-staff-table tr, .admin-staff-table td { display: block; width: 100%; }
+  .admin-staff-table tr { padding: 12px 0; border-bottom: 1px solid var(--divider); }
+  .admin-staff-table td { padding: 4px 20px; border: 0; }
 }
