@@ -52,9 +52,10 @@ export async function run(db) {
   assert.equal(shown.hero[0].imageUrl, "assets/images/home-hero-termojet-pumps-v1.jpg");
   assert.equal(shown.hero[0].kicker, "Насосне обладнання\nдля систем опалення");
   assert.equal(shown.hero[0].logoUrl, "assets/brands/termojet.png");
-  assert.equal(shown.hero[1].linkUrl, "/search.html?q=Ecosoft");
+  assert.equal(shown.hero[1].linkUrl, "/search?q=Ecosoft", "seed links made clean by 20261002002000");
   assert.equal(shown.promo[0].layout, "product");
-  assert.equal(shown.promo[0].linkUrl, "/product.html?id=MO650MECOSTD");
+  assert.match(shown.promo[0].linkUrl, /^\/product(\/[a-z0-9-]+|\?id=MO650MECOSTD)$/);
+  assert.equal(shown.promo[1].linkUrl, "/catalog/climate");
   assert.equal(shown.promo[1].imageAlt, "");
   assert.equal("updatedAt" in shown.hero[0], false, "public shape has no staff fields");
 

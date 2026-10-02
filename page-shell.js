@@ -988,24 +988,33 @@
   }
 
   // schema.org Product for search engines (seo-schema.js puts it into the page). Offer only when the price is known.
+  // In Supabase mode the page product is the raw RPC shape (pricing.amount, brandId, inventory.status), so every
+  // field falls back to the adapted catalog product, the taxonomy and the PDP view the page itself shows.
   function productSchema(product, view, path) {
     const url = `${location.origin}${path}`;
-    const price = linePrice(product);
-    const availability = { in_stock: "InStock", out_of_stock: "OutOfStock", preorder: "PreOrder", discontinued: "Discontinued" }[product.availability];
-    const description = String(product.seo?.description || product.seoDescription || product.shortDescription || "").replace(/\s+/g, " ").trim();
+    const adapted = CATALOG?.catalogProducts?.find(item => item.id === product.id) || {};
+    const pick = (...values) => values.find(value => value !== undefined && value !== null && String(value).trim() !== "");
+    const positive = value => Number(value) > 0 ? Number(value) : undefined;
+    const price = pick(positive(view.purchase?.amount), positive(product.price), positive(product.pricing?.amount), positive(adapted.price));
+    const status = pick(view.purchase?.status, product.availability, product.inventory?.status, adapted.availability);
+    const availability = { in_stock: "InStock", out_of_stock: "OutOfStock", preorder: "PreOrder", discontinued: "Discontinued" }[status];
+    const brand = pick(product.brand, adapted.brand, CATALOG?.brands?.find?.(item => item.id === product.brandId)?.name);
+    const category = pick(product.primaryCategoryName, adapted.primaryCategoryName, CATALOG?.categoryById?.[product.primaryCategoryId]?.title);
+    const description = String(pick(product.seo?.description, adapted.seo?.description, product.seoDescription, product.shortDescription, adapted.shortDescription, view.summary, view.description) || "").replace(/\s+/g, " ").trim();
     const images = (view.images || []).slice(0, 6).map(image => new URL(image, location.origin).href);
+    const model = pick(product.model, adapted.model);
     return {
       "@context": "https://schema.org",
       "@type": "Product",
       name: product.title,
       url,
       sku: product.sku || undefined,
-      mpn: product.model && product.model !== product.title && product.model.length <= 70 ? product.model : undefined,
+      mpn: model && model !== product.title && model.length <= 70 ? model : undefined,
       ...(images.length ? { image: images } : {}),
       ...(description ? { description: decodeEntities(description).slice(0, 500) } : {}),
-      ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),
-      ...(product.primaryCategoryName ? { category: product.primaryCategoryName } : {}),
-      ...(price ? { offers: { "@type": "Offer", url, price: String(price), priceCurrency: product.currency || "UAH", itemCondition: "https://schema.org/NewCondition", ...(availability ? { availability: `https://schema.org/${availability}` } : {}), seller: { "@type": "Organization", name: "Торговий дім «Софіївка»" } } } : {})
+      ...(brand ? { brand: { "@type": "Brand", name: brand } } : {}),
+      ...(category ? { category } : {}),
+      ...(price ? { offers: { "@type": "Offer", url, price: String(price), priceCurrency: pick(product.currency, product.pricing?.currency, adapted.currency) || "UAH", itemCondition: "https://schema.org/NewCondition", ...(availability ? { availability: `https://schema.org/${availability}` } : {}), seller: { "@type": "Organization", name: "Торговий дім «Софіївка»" } } } : {})
     };
   }
 

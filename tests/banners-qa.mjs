@@ -42,10 +42,13 @@ assert.doesNotMatch(migration, /^begin;|^commit;/m);
 // Seed mirrors index.html.
 for (const text of ["Насоси для стабільної роботи системи", "Чиста вода для щоденного використання", "Автоматика, що керує комфортом",
   "Чиста вода у вашому домі", "Комфорт у будь-який сезон", "assets/images/home-hero-termojet-pumps-v1.jpg",
-  "assets/products/ecosoft/mo650mecostd/01.webp", "assets/images/hero-climate.webp", "MO650MECOSTD"]) {
+  "assets/products/ecosoft/mo650mecostd/01.webp", "assets/images/hero-climate.webp"]) {
   assert.ok(migration.includes(text), `seed has ${text}`);
   assert.ok(index.includes(text), `index.html still has ${text}`);
 }
+// The promo product (MO650MECOSTD in the seed) is linked by its slug since 20261002002000.
+assert.ok(migration.includes("MO650MECOSTD"));
+assert.match(index, /href="\/product\/filtr-zvorotnoho-osmosu-ecosoft-standard-z-mineralizatorom"/);
 
 // Admin wiring.
 assert.match(app, /import \{ createBannersView \} from "\/admin\/admin-banners\.mjs"/);
