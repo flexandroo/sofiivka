@@ -46,22 +46,29 @@ Playwright MCP blocks localhost, so drive the browser from a script).
 
 ## Admin and CRM status (2026-10-02)
 
-- Branch `codex/audit-phase-0`: Products Admin v1 (Codex) + CRM v1 and fixes (Claude).
-- All migrations through `20261002000100_taxonomy_admin_v1` are applied on DEV; PROD has none of them.
-  `20261002000200_taxonomy_admin_v2` is on DEV except the two `admin_delete_*` functions, which wait
-  for `/mnt/project-files/sofiivka/dev-apply-taxonomy-admin-v2-delete.sql` in the SQL Editor.
+- Branch `codex/audit-phase-0`: Products Admin v1 (Codex) + CRM + every admin section from the
+  2026-10-02 audit (Claude). PROD has none of the admin/CRM migrations.
+- DEV has everything through `20261002000100`, plus parts applied through the connector:
+  `0200` (all but the delete functions), `0300` (all but `crm_submit_order`), `0800` (staff).
+  Everything else (`0200`/`0300` remainders, `0500`–`0700`, `0900`–`1400`) is in one transaction in
+  `/mnt/project-files/sofiivka/dev-apply-all-pending-2026-10-02.sql` for the SQL Editor (verified on
+  PGlite against an emulated DEV). Until it runs, the new admin sections fail on DEV with "function not found".
 - The Supabase MCP connector silently times out on SQL with `drop trigger`, `delete from` function
   bodies or trigger loops; apply such migrations through the Supabase SQL Editor instead.
-- CRM: storefront calls `crm_submit_order` / `crm_submit_lead` (anon); staff use `admin_crm_*`
-  RPCs (owner/admin/manager). Admin routes `/admin/orders`, `/admin/leads`, `/admin/customers`.
-- Brands/categories admin (`/admin/brands`, `/admin/categories`, `admin/admin-taxonomy.mjs`):
-  content edits patch the active catalog release and bump the cache revision. Create/delete add or
-  drop the release entry; delete is refused while products, series, children or mapping reviews
-  reference the record. Identity fields (name, slug, parent) are set at creation, then read-only.
-  `categories.homepage_order` picks the homepage «Категорії» block (release `homepageOrder`;
-  empty selection falls back to active top-level sections). Storefront routing and the legacy
-  adapter use the live snapshot taxonomy, so admin-created categories resolve without a rebuild.
-  Homepage brand wall and brands.html still use static `brands-data.js`.
+- Edge functions on DEV: `admin-staff` (creates Auth accounts for new staff; verify_jwt on) and
+  `crm-notify` (Telegram; verify_jwt off, own secret header). `crm-notify` needs secrets
+  `TELEGRAM_BOT_TOKEN`, `CRM_NOTIFY_SECRET` and the `crm_notify_config` row (docs/notifications-setup.md).
+- Admin sections: orders (edit lines, manual orders, print, CSV), leads, customers, products (+ price
+  CSV/XLSX import at `/admin/products/import`, related products tab), collections (homepage hits/sale),
+  banners, pages + FAQ, categories (+ per-category filters), brands (+ series), attributes, settings
+  (stores, checkout, social, company, notifications, integrations, page SEO), users, account.
+  Still a stub: media. Not built: blog/cases, customer accounts.
+- Storefront reads at runtime: `get_site_settings` (site-settings.js), `get_homepage_banners`,
+  `get_site_page`/`get_site_faq` (site-pages.js); static markup stays as first paint/fallback.
+  Homepage brand wall and /brands read the live release brands merged with `brands-data.js`.
+  sitemap.xml/robots.txt are generated at build (scripts/generate-sitemap.mjs).
+- `taxonomy_admin_audit.entity_type` is extended by several migrations; any new one must keep all
+  values ('brand','category','homepage','collection','attribute','series').
 - Admin runs against DEV in Preview and PROD in Production (`admin/admin-env.mjs`).
 - Go-live order: apply all pending migrations to PROD first, then merge to `master` (production
   serves `/admin` and the live checkout as soon as it deploys), then create the PROD owner profile.
