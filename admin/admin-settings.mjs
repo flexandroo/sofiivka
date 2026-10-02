@@ -9,6 +9,11 @@ const SOCIAL = Object.freeze([
 ]);
 const DELIVERY_LABELS = Object.freeze({ carrier: "Доставка перевізником", pickup: "Самовивіз" });
 const MAX_STORES = 10;
+const MAX_SEO_PAGES = 60;
+// Static storefront pages whose title/description can be overridden (catalogue, product and brand
+// pages take theirs from the catalogue cards).
+const SEO_PATHS = Object.freeze(["/", "/about", "/brands", "/blog", "/buyers", "/contact", "/delivery", "/faq", "/installation",
+  "/partnership", "/payment", "/portfolio", "/privacy", "/returns", "/service-center", "/services", "/solutions", "/terms", "/warranty"]);
 
 export async function createSettingsView({ api, signal }) {
   const { canEdit, sections } = await api.settings.get({ signal });
@@ -18,6 +23,8 @@ export async function createSettingsView({ api, signal }) {
   const social = section("social");
   const company = section("company");
   const notifications = section("notifications");
+  const integrations = section("integrations");
+  const seo = section("seo");
 
   const html = `
     <section class="admin-crm-page admin-settings" data-settings>
@@ -78,6 +85,8 @@ export async function createSettingsView({ api, signal }) {
         <p class="admin-panel-note">${icon("warning")} Отримувачі зберігаються, але відправку ще не підключено: потрібен Telegram-бот або поштовий сервіс.</p>
         ${saveBar(canEdit, notifications.updatedAt)}
       </form>
+${sections?.integrations ? integrationsForm(canEdit, integrations) : ""}
+${sections?.seo ? seoForm(canEdit, seo) : ""}
       <div class="admin-toast" role="status" aria-live="polite" hidden></div>
     </section>`;
 
@@ -116,6 +125,8 @@ function bindSettings(container, { api, canEdit, sections }) {
     return;
   }
   bindStores(container.querySelector('[data-settings-form="stores"]'));
+  const seoForm = container.querySelector('[data-settings-form="seo"]');
+  if (seoForm) bindSeoPages(seoForm);
   for (const form of forms) {
     const key = form.dataset.settingsForm;
     const saveButton = form.querySelector('[type="submit"]');
@@ -205,8 +216,82 @@ const READERS = Object.freeze({
     telegramChatIds: lines(field(form, "telegramChatIds")?.value),
     notifyOrders: checked(form, "notifyOrders"),
     notifyLeads: checked(form, "notifyLeads")
+  }),
+  integrations: form => ({
+    ga4MeasurementId: text(form, "ga4MeasurementId").toUpperCase(),
+    gtmContainerId: text(form, "gtmContainerId").toUpperCase(),
+    metaPixelId: text(form, "metaPixelId"),
+    // Accept the whole <meta name="google-site-verification" content="…"> tag as pasted from Google.
+    searchConsoleToken: (/content=["']([^"']+)["']/i.exec(text(form, "searchConsoleToken"))?.[1] || text(form, "searchConsoleToken")).trim()
+  }),
+  seo: form => ({
+    pages: [...form.querySelectorAll("[data-seo-list] [data-seo-page]")].map(item => ({
+      path: text(item, "path"),
+      title: text(item, "title"),
+      description: text(item, "description")
+    }))
   })
 });
+
+function integrationsForm(canEdit, { value, updatedAt }) {
+  return `
+      <form class="admin-panel" data-settings-form="integrations">
+        <header class="admin-panel__head"><div><p class="admin-kicker">ІНТЕГРАЦІЇ</p><h2>Аналітика й Search Console</h2></div></header>
+        <div class="admin-form-grid">
+          ${textField("ga4MeasurementId", "Google Analytics 4", value?.ga4MeasurementId, 20, { placeholder: "G-XXXXXXXXXX", hint: "Admin → Data streams → Measurement ID." })}
+          ${textField("gtmContainerId", "Google Tag Manager", value?.gtmContainerId, 20, { placeholder: "GTM-XXXXXXX", hint: "Якщо GA4 вже налаштовано в GTM, поле GA4 залиште порожнім." })}
+          ${textField("metaPixelId", "Meta Pixel", value?.metaPixelId, 20, { placeholder: "123456789012345", hint: "Лише цифри ідентифікатора пікселя." })}
+          ${textField("searchConsoleToken", "Google Search Console", value?.searchConsoleToken, 300, { placeholder: "значення content", hint: "Метод «HTML-тег»: можна вставити весь мета-тег." })}
+        </div>
+        <p class="admin-panel-note">Порожні поля нічого не підключають. Код Search Console потрапляє в HTML головної сторінки під час наступного деплою сайту; після нього натисніть «Підтвердити» в Search Console.</p>
+        ${saveBar(canEdit, updatedAt)}
+      </form>`;
+}
+
+function seoForm(canEdit, { value, updatedAt }) {
+  return `
+      <form class="admin-panel" data-settings-form="seo">
+        <header class="admin-panel__head"><div><p class="admin-kicker">SEO</p><h2>Заголовки й описи сторінок</h2></div>
+          ${canEdit ? `<button class="admin-button admin-button--secondary" type="button" data-seo-add>Додати сторінку</button>` : ""}</header>
+        <p class="admin-panel-note">Для інформаційних сторінок сайту. Порожнє поле залишає текст зі сторінки. Каталог, товари й бренди мають власні SEO-поля в картках.</p>
+        <div data-seo-list>${(value?.pages || []).map(page => seoFieldset(page)).join("")}</div>
+        <template data-seo-template>${seoFieldset({})}</template>
+        <datalist id="settings-seo-paths">${SEO_PATHS.map(path => `<option value="${path}"></option>`).join("")}</datalist>
+        ${saveBar(canEdit, updatedAt)}
+      </form>`;
+}
+
+function seoFieldset(page) {
+  return `
+    <fieldset class="admin-settings-group" data-seo-page>
+      <legend>${page.path ? escape(page.path) : "Нова сторінка"}</legend>
+      <div class="admin-form-grid">
+        <label class="admin-field"><span>Адреса</span><input name="path" value="${escape(page.path || "")}" maxlength="60" required list="settings-seo-paths" placeholder="/delivery" pattern="/([a-z0-9]+(-[a-z0-9]+)*)?"></label>
+        ${textField("title", "Заголовок (title)", page.title, 120, { hint: "До 60 символів видно в пошуку." })}
+        ${textField("description", "Опис (meta description)", page.description, 320, { full: true, hint: "Рекомендовано 120–160 символів." })}
+      </div>
+      <footer class="admin-settings-store-actions"><button class="admin-button admin-button--ghost admin-settings-remove" type="button" data-seo-remove>Прибрати</button></footer>
+    </fieldset>`;
+}
+
+function bindSeoPages(form) {
+  const list = form.querySelector("[data-seo-list]");
+  const addButton = form.querySelector("[data-seo-add]");
+  const changed = () => {
+    addButton.disabled = list.querySelectorAll("[data-seo-page]").length >= MAX_SEO_PAGES;
+    form.dispatchEvent(new CustomEvent("settings:changed"));
+  };
+  addButton.addEventListener("click", () => {
+    const fieldset = form.querySelector("[data-seo-template]").content.firstElementChild.cloneNode(true);
+    list.append(fieldset);
+    changed();
+    fieldset.querySelector("input")?.focus();
+  });
+  list.addEventListener("click", event => {
+    if (event.target.closest("[data-seo-remove]")) { event.target.closest("[data-seo-page]").remove(); changed(); }
+  });
+  changed();
+}
 
 function saveBar(canEdit, updatedAt) {
   if (!canEdit) return `<p class="admin-panel-note">Змінювати налаштування можуть власник і адміністратор.</p>`;

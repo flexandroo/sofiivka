@@ -1,3 +1,11 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+Disallow: /search
+Disallow: /compare
+Disallow: /favorites
 
+Sitemap: https://sofievka.vercel.app/sitemap.xml

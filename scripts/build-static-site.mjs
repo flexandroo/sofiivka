@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { writeSeoFiles } from "./generate-sitemap.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputArgument = process.argv.find(argument => argument.startsWith("--output-dir="))?.split("=").slice(1).join("=") || "dist";
@@ -80,7 +81,7 @@ for (const entry of await fs.readdir(outputDirectory, { withFileTypes: true })) 
   let html = await fs.readFile(filePath, "utf8");
   if (!/catalog-runtime-config\.js/i.test(html)) html = html.replace(/<head>/i, '<head><script src="/catalog-runtime-config.js"></script>');
   // Shop settings render synchronously (defaults + cached copy) before the deferred page scripts.
-  if (!/site-settings\.js/i.test(html)) html = html.replace(/<script src="\/catalog-runtime-config\.js"><\/script>/i, match => `${match}<script src="/site-settings.js?v=20261002-settings-1"></script>`);
+  if (!/site-settings\.js/i.test(html)) html = html.replace(/<script src="\/catalog-runtime-config\.js"><\/script>/i, match => `${match}<script src="/site-settings.js?v=20261002-seo-1"></script>`);
   if (!/crm-client\.js/i.test(html)) html = html.replace(/<\/head>/i, '<script src="/crm-client.js?v=20261001-crm-1" defer></script></head>');
   if (source === "supabase") {
     html = html.replace(supplierFeedPattern, match => {
@@ -92,6 +93,8 @@ for (const entry of await fs.readdir(outputDirectory, { withFileTypes: true })) 
   htmlFiles += 1;
 }
 
+const seo = await writeSeoFiles({ root, outputDirectory, config });
+
 const manifest = {
   version: "sofievka-controlled-cutover-v1",
   source,
@@ -100,7 +103,8 @@ const manifest = {
   htmlFiles,
   removedFeedTags,
   supplierFeedFilesIncluded: source === "local",
-  assetsIncluded: !skipAssets
+  assetsIncluded: !skipAssets,
+  sitemap: seo
 };
 await fs.writeFile(path.join(outputDirectory, "catalog-build-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
 console.log(JSON.stringify(manifest));

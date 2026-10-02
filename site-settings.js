@@ -39,7 +39,9 @@
       paymentTitle: "Після підтвердження менеджером",
       paymentDescription: "Рахунок, оплата на картку або при отриманні — залежно від товару та доставки."
     },
-    social: { instagram: "", facebook: "", youtube: "", telegram: "", viber: "" }
+    social: { instagram: "", facebook: "", youtube: "", telegram: "", viber: "" },
+    integrations: { ga4MeasurementId: "", gtmContainerId: "", metaPixelId: "", searchConsoleToken: "" },
+    seo: { pages: [] }
   });
   const CACHE_KEY = "sofievka.siteSettings.v1";
   const listeners = new Set();
@@ -56,7 +58,9 @@
       stores: stores.map(store => ({ ...store, phones: Array.isArray(store.phones) ? store.phones : [], hours: Array.isArray(store.hours) ? store.hours : [] })),
       checkout: { ...DEFAULTS.checkout, ...(source.checkout || {}),
         deliveryMethods: Array.isArray(source.checkout?.deliveryMethods) && source.checkout.deliveryMethods.length ? source.checkout.deliveryMethods : DEFAULTS.checkout.deliveryMethods },
-      social: { ...DEFAULTS.social, ...(source.social || {}) }
+      social: { ...DEFAULTS.social, ...(source.social || {}) },
+      integrations: { ...DEFAULTS.integrations, ...(source.integrations || {}) },
+      seo: { pages: Array.isArray(source.seo?.pages) ? source.seo.pages : [] }
     });
   }
 
@@ -104,8 +108,76 @@
     });
   }
 
+  // Analytics and verification tags from /admin/settings → Інтеграції. Nothing loads while the ids
+  // are empty; each id loads once per page. Ids are re-checked here because the cache is client-side.
+  const loadedTags = new Set();
+  function addScript(src) {
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = src;
+    document.head.append(script);
+  }
+  function applyIntegrations() {
+    const { ga4MeasurementId: ga4, gtmContainerId: gtm, metaPixelId: pixel, searchConsoleToken: token } = current.integrations;
+    const once = (key, valid, load) => { if (valid && !loadedTags.has(key)) { loadedTags.add(key); load(); } };
+    once(`gtm:${gtm}`, /^GTM-[A-Z0-9]{4,12}$/.test(gtm || ""), () => {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
+      addScript(`https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(gtm)}`);
+    });
+    once(`ga4:${ga4}`, /^G-[A-Z0-9]{4,16}$/.test(ga4 || ""), () => {
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = window.gtag || function gtag() { window.dataLayer.push(arguments); };
+      window.gtag("js", new Date());
+      window.gtag("config", ga4);
+      addScript(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ga4)}`);
+    });
+    once(`pixel:${pixel}`, /^\d{6,20}$/.test(pixel || ""), () => {
+      if (!window.fbq) {
+        const fbq = function () { fbq.callMethod ? fbq.callMethod.apply(fbq, arguments) : fbq.queue.push(arguments); };
+        Object.assign(fbq, { push: fbq, loaded: true, version: "2.0", queue: [] });
+        window.fbq = fbq;
+        window._fbq = window._fbq || fbq;
+        addScript("https://connect.facebook.net/en_US/fbevents.js");
+      }
+      window.fbq("init", pixel);
+      window.fbq("track", "PageView");
+    });
+    once(`gsc:${token}`, /^[A-Za-z0-9_-]{10,100}$/.test(token || "") && !document.querySelector(`meta[name="google-site-verification"][content="${token}"]`), () => {
+      const meta = document.createElement("meta");
+      meta.name = "google-site-verification";
+      meta.content = token;
+      document.head.append(meta);
+    });
+  }
+
+  // Title/description overrides for static pages (Налаштування → SEO сторінок); the HTML keeps the defaults.
+  const pagePath = () => {
+    const value = location.pathname.toLowerCase().replace(/\.html$/, "").replace(/(.)\/+$/, "$1");
+    return value === "/index" ? "/" : value;
+  };
+  function applySeo() {
+    const page = current.seo.pages.find(item => item && item.path === pagePath());
+    if (!page) return;
+    const setMeta = (selector, attribute, name, value) => {
+      let meta = document.head.querySelector(selector);
+      if (!meta) { meta = document.createElement("meta"); meta.setAttribute(attribute, name); document.head.append(meta); }
+      meta.setAttribute("content", value);
+    };
+    if (page.title) {
+      document.title = page.title;
+      if (document.head.querySelector('meta[property="og:title"]')) setMeta('meta[property="og:title"]', "property", "og:title", page.title);
+    }
+    if (page.description) {
+      setMeta('meta[name="description"]', "name", "description", page.description);
+      if (document.head.querySelector('meta[property="og:description"]')) setMeta('meta[property="og:description"]', "property", "og:description", page.description);
+    }
+  }
+
   function update(next) {
     current = normalize(next);
+    applyIntegrations();
+    if (document.readyState !== "loading") applySeo();
     applyHooks();
     listeners.forEach(listener => { try { listener(current); } catch (error) { console.error(error); } });
   }
@@ -143,6 +215,8 @@
     mapRoute
   });
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => applyHooks());
-  else applyHooks();
+  // Tags start right away from the cached copy; title/description wait for the parsed <head>.
+  applyIntegrations();
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { applySeo(); applyHooks(); });
+  else { applySeo(); applyHooks(); }
 })();
