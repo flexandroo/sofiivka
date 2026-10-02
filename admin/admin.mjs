@@ -453,6 +453,7 @@ function renderAccessDenied(profile) {
         <p class="admin-kicker">ДОСТУП ОБМЕЖЕНО</p>
         <h1>${profile?.active === false ? "Профіль деактивовано" : "Адміністративний профіль не знайдено"}</h1>
         <p>Обліковий запис авторизовано, але для роботи потрібен активний <code>admin_profile</code> з дозволеною роллю.</p>
+        ${profile ? "" : `<p>Обліковий запис покупця (особистий кабінет на сайті) не дає доступу до адміністрування.</p>`}
         <p class="admin-access__account">${escapeHtml(activeSession?.user?.email || "Поточний користувач")}</p>
         <button class="admin-button admin-button--primary" type="button" data-logout>Вийти та змінити обліковий запис</button>
       </section>

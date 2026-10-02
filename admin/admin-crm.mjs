@@ -896,7 +896,7 @@ export async function createCustomersListView({ api, search = location.search, s
   const result = await api.crm.listCustomers(filters, { signal });
   const rows = result.customers.map(customer => `
     <tr>
-      <td><a class="admin-crm-id" href="/admin/customers/${customer.id}" data-admin-link>${escape(customer.name || "Без імені")}</a><small>${escape([customer.company, customer.city].filter(Boolean).join(" · "))}</small></td>
+      <td><a class="admin-crm-id" href="/admin/customers/${customer.id}" data-admin-link>${escape(customer.name || "Без імені")}</a>${customer.hasAccount ? ` ${accountBadge()}` : ""}<small>${escape([customer.company, customer.city].filter(Boolean).join(" · "))}</small></td>
       <td>${phoneLink(customer.phone)}${customer.email ? `<small>${escape(customer.email)}</small>` : ""}</td>
       <td class="admin-crm-num">${number(customer.ordersCount)}</td>
       <td class="admin-crm-num">${number(customer.leadsCount)}</td>
@@ -939,7 +939,7 @@ export async function createCustomerDetailView({ api, customerId, signal }) {
           <a href="/admin/customers" data-admin-link class="admin-back-link">← Усі клієнти</a>
           <p class="admin-kicker">КЛІЄНТ З ${formatDate(customer.createdAt)}</p>
           <h1>${escape(customer.name || "Без імені")}</h1>
-          <div class="admin-editor-meta"><span>${phoneLink(customer.phone)}</span><span>${number(customer.ordersCount)} замовл. · ${number(customer.leadsCount)} заявок · ${Number(customer.ordersTotal) ? money(customer.ordersTotal) : "0 грн"}</span></div>
+          <div class="admin-editor-meta"><span>${phoneLink(customer.phone)}</span><span>${number(customer.ordersCount)} замовл. · ${number(customer.leadsCount)} заявок · ${Number(customer.ordersTotal) ? money(customer.ordersTotal) : "0 грн"}</span>${customer.hasAccount ? `<span>${accountBadge()} з ${formatDate(customer.accountSince)}</span>` : `<span class="admin-muted">Без кабінету на сайті</span>`}</div>
         </div>
         <div class="admin-editor-head__actions"><a class="admin-button admin-button--secondary" href="/admin/orders/new?customer=${encodeURIComponent(customer.id)}" data-admin-link>${icon("plus")}Нове замовлення</a></div>
       </header>
@@ -1059,6 +1059,11 @@ function notFound(title, href, label) {
     html: `<section class="admin-state-panel" role="alert">${icon("warning")}<div><p class="admin-kicker">404</p><h1>${escape(title)}</h1><p>Можливо, посилання застаріло.</p></div><a class="admin-button admin-button--secondary" href="${href}" data-admin-link>${label}</a></section>`,
     bind() {}
   };
+}
+
+// The customer registered on the storefront (customer_profiles linked to this CRM card).
+function accountBadge() {
+  return `<span class="admin-status admin-status--info" title="Клієнт зареєстрований на сайті й бачить свої замовлення в особистому кабінеті">Кабінет</span>`;
 }
 
 function statusBadge(map, value) {

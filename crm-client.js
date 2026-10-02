@@ -1,6 +1,8 @@
 /* Storefront → CRM submissions.
  * Uses only the browser-safe publishable key and two public RPCs:
  *   crm_submit_order, crm_submit_lead.
+ * A signed-in customer's order is sent with their access token (customer-account.js) so it lands in the
+ * account history; if that token is rejected the order is sent anonymously instead of failing.
  * The server recalculates prices and validates everything; the browser sends ids and quantities only. */
 (function () {
   "use strict";
@@ -16,7 +18,7 @@
     }
   }
 
-  async function call(name, payload) {
+  async function call(name, payload, accessToken) {
     if (!supabase || !supabase.url || !supabase.publishableKey) {
       throw new CrmSubmitError("Онлайн-відправлення зараз недоступне. Зателефонуйте нам, будь ласка.", "unavailable");
     }
@@ -26,7 +28,7 @@
         method: "POST",
         headers: {
           apikey: supabase.publishableKey,
-          Authorization: `Bearer ${supabase.publishableKey}`,
+          Authorization: `Bearer ${accessToken || supabase.publishableKey}`,
           "Content-Type": "application/json",
           Accept: "application/json"
         },
@@ -36,6 +38,8 @@
     } catch {
       throw new CrmSubmitError("Немає з’єднання. Перевірте інтернет і спробуйте ще раз.", "network");
     }
+    // A rejected customer token (expired, signed out elsewhere) never blocks checkout: the request did not run.
+    if (accessToken && response.status === 401) return call(name, payload, null);
     const body = await response.json().catch(() => null);
     if (!response.ok) {
       // Validation messages from the database are written for customers (Ukrainian, no internals).
@@ -48,7 +52,11 @@
   window.sofievkaCrm = Object.freeze({
     available: Boolean(supabase),
     CrmSubmitError,
-    submitOrder: payload => call("crm_submit_order", payload),
+    submitOrder: async payload => {
+      const account = window.sofievkaAccount;
+      const accessToken = account && account.currentUser() ? await account.getFreshAccessToken().catch(() => null) : null;
+      return call("crm_submit_order", payload, accessToken);
+    },
     submitLead: payload => call("crm_submit_lead", payload),
     // "КОД 10 примітка" → { code, quantity, note }; one position per line.
     parseSpecLines(text) {

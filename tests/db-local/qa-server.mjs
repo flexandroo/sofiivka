@@ -1,5 +1,6 @@
 // Local end-to-end QA server: the built site + a tiny Supabase look-alike backed by PGlite.
 // It is for browser QA only (never deployed): fake auth accepts the QA password for seeded QA users.
+// Storefront customer: customer@qa.test (same QA password); /auth/v1/signup creates confirmed customers.
 //
 //   node scripts/build-static-site.mjs --output-dir=dist
 //   node tests/db-local/qa-server.mjs --port=4300
@@ -7,6 +8,7 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import crypto from "node:crypto";
 import { createDatabase } from "./database.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -29,6 +31,16 @@ for (const user of USERS) {
 }
 // An account without a staff profile, for the "add staff" flow.
 await db.query("insert into auth.users (id, email) values ('00000000-0000-4000-8000-0000000000a4', 'candidate@qa.test')");
+// Storefront customers (no admin profile). QA sign-up confirms the email immediately.
+const CUSTOMERS = new Map(); // email -> { id, email, password }
+async function addCustomer(email, password, name = "") {
+  const id = crypto.randomUUID();
+  await db.query("insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) values ($1, $2, now(), $3)", [id, email, JSON.stringify({ name })]);
+  const user = { id, email, password };
+  CUSTOMERS.set(email, user);
+  return user;
+}
+await addCustomer("customer@qa.test", QA_PASSWORD, "Покупець QA");
 
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css",
   ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp",
@@ -37,7 +49,7 @@ const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".
 function send(response, status, body, headers = {}) {
   const payload = body === undefined ? "" : typeof body === "string" ? body : JSON.stringify(body);
   response.writeHead(status, { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*",
-    "Access-Control-Allow-Methods": "GET,POST,HEAD,OPTIONS", "Access-Control-Expose-Headers": "content-range",
+    "Access-Control-Allow-Methods": "GET,POST,PUT,HEAD,OPTIONS", "Access-Control-Expose-Headers": "content-range",
     ...(typeof body === "object" ? { "Content-Type": "application/json" } : {}), ...headers });
   response.end(payload);
 }
@@ -52,7 +64,7 @@ async function readJson(request) {
 function caller(request) {
   const token = String(request.headers.authorization || "").replace(/^Bearer\s+/i, "");
   if (token.startsWith("qa.")) {
-    const user = USERS.find(item => item.id === token.slice(3));
+    const user = USERS.find(item => item.id === token.slice(3)) || [...CUSTOMERS.values()].find(item => item.id === token.slice(3));
     return user ? { role: "authenticated", user } : null;
   }
   return token === PUBLISHABLE ? { role: "anon", user: null } : null;
@@ -75,14 +87,34 @@ function session(user) {
 async function handleAuth(request, response, url) {
   if (url.pathname === "/auth/v1/token") {
     const body = await readJson(request);
+    const customers = [...CUSTOMERS.values()];
     const user = url.searchParams.get("grant_type") === "refresh_token"
-      ? USERS.find(item => body.refresh_token === `qa-refresh.${item.id}`)
-      : USERS.find(item => item.email === String(body.email).toLowerCase() && body.password === QA_PASSWORD);
+      ? [...USERS, ...customers].find(item => body.refresh_token === `qa-refresh.${item.id}`)
+      : USERS.find(item => item.email === String(body.email).toLowerCase() && body.password === QA_PASSWORD)
+        || customers.find(item => item.email === String(body.email).toLowerCase() && body.password === item.password);
     return user ? send(response, 200, session(user)) : send(response, 400, { error_code: "invalid_credentials", msg: "Invalid login" });
   }
+  if (url.pathname === "/auth/v1/signup" && request.method === "POST") {
+    const body = await readJson(request);
+    const email = String(body.email || "").toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return send(response, 400, { error_code: "email_address_invalid", msg: "invalid email" });
+    if (String(body.password || "").length < 8) return send(response, 422, { error_code: "weak_password", msg: "weak" });
+    if (CUSTOMERS.has(email) || USERS.some(item => item.email === email)) return send(response, 422, { error_code: "user_already_exists", msg: "exists" });
+    return send(response, 200, session(await addCustomer(email, String(body.password), body.data?.name || "")));
+  }
+  if (url.pathname === "/auth/v1/recover" && request.method === "POST") return send(response, 200, {});
   if (url.pathname === "/auth/v1/user") {
     const who = caller(request);
-    return who?.user ? send(response, 200, { id: who.user.id, email: who.user.email }) : send(response, 401, { msg: "invalid" });
+    if (!who?.user) return send(response, 401, { msg: "invalid" });
+    if (request.method === "PUT") {
+      const body = await readJson(request);
+      const customer = CUSTOMERS.get(who.user.email);
+      if (customer && body.password) {
+        if (String(body.password).length < 8) return send(response, 422, { error_code: "weak_password", msg: "weak" });
+        customer.password = String(body.password);
+      }
+    }
+    return send(response, 200, { id: who.user.id, email: who.user.email });
   }
   if (url.pathname === "/auth/v1/logout") return send(response, 204);
   return send(response, 404, { msg: "not found" });
