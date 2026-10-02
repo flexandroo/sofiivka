@@ -7,6 +7,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = relative => fs.readFileSync(path.join(root, relative), "utf8");
 
 const migration = read("supabase/migrations/20261001000200_crm_v1.sql");
+const ordersV2 = read("supabase/migrations/20261002000700_crm_orders_v2.sql");
+const css = read("admin/admin.css");
+const packageJson = JSON.parse(read("package.json"));
 const consistency = read("supabase/migrations/20261001000100_admin_write_consistency.sql");
 const api = read("admin/admin-api.mjs");
 const app = read("admin/admin.mjs");
@@ -44,6 +47,49 @@ assert.match(crm, /expected_updated_at|updatedAt/);
 assert.doesNotMatch(app, /assertDevRuntime|DEV_PROJECT_REF/);
 assert.match(env, /fkjarsouuchjiedrrblc/);
 assert.match(env, /isProduction && runtime\.environment !== "production"/);
+
+// Orders v2: line editing, manual orders, export, print.
+for (const signature of ["admin_crm_update_order_items(bigint, jsonb, timestamptz)", "admin_crm_create_order(jsonb)",
+  "admin_crm_search_products(text, integer)", "admin_crm_export_orders(text, public.crm_order_status, integer, integer)",
+  "admin_crm_export_customers(text, integer, integer)", "admin_crm_get_order(bigint)"]) {
+  assert.ok(ordersV2.includes(`'public.${signature}'`), `${signature} is granted to authenticated only`);
+}
+assert.match(ordersV2, /revoke all on function %s from public, anon/);
+assert.match(ordersV2, /grant execute on function %s to authenticated/);
+for (const helper of ["_crm_parse_quantity(jsonb)", "_crm_parse_amount(jsonb)", "_crm_resolve_order_lines(uuid, jsonb)",
+  "_crm_order_lines_json(uuid)", "_crm_order_lines_diff(jsonb, jsonb)", "_crm_write_order_lines(uuid, jsonb)"]) {
+  assert.ok(ordersV2.includes(`revoke all on function public.${helper} from public, anon, authenticated`), `${helper} is internal`);
+}
+const v2Functions = ordersV2.split(/create or replace function /).slice(1);
+for (const body of v2Functions) {
+  assert.match(body, /set search_path = ''/, `${body.slice(0, 40)} pins search_path`);
+  if (body.startsWith("public.admin_crm_")) {
+    assert.match(body, /security definer/, `${body.slice(0, 40)} is security definer`);
+    assert.match(body, /_crm_require_staff\(\)/, `${body.slice(0, 40)} checks the CRM role`);
+  }
+}
+assert.match(ordersV2, /round\(\(entry\.line ->> 'unit_amount'\)::numeric \* \(entry\.line ->> 'quantity'\)::integer, 2\)/, "line totals are computed on the server");
+assert.match(ordersV2, /expected_updated_at is not null and target\.updated_at <> expected_updated_at/, "optimistic concurrency for line edits");
+assert.match(ordersV2, /'manual'/, "manual orders are marked as such");
+assert.match(ordersV2, /'Склад замовлення змінено'/, "line edits are audited");
+assert.match(ordersV2, /least\(coalesce\(page_size, 500\), 1000\)/, "export pages are capped");
+assert.doesNotMatch(ordersV2, /create or replace function public\.crm_submit_order/, "storefront checkout is untouched");
+assert.doesNotMatch(ordersV2, /^begin;|^commit;|create trigger/m);
+for (const method of ["updateOrderItems", "createOrder", "searchProducts", "exportOrders", "exportCustomers"]) assert.match(api, new RegExp(`${method}:`));
+for (const rpc of ["admin_crm_update_order_items", "admin_crm_create_order", "admin_crm_search_products", "admin_crm_export_orders", "admin_crm_export_customers"]) {
+  assert.match(api, new RegExp(`"${rpc}"`), `${rpc} is exposed by the admin API`);
+}
+assert.ok(app.includes('"/admin/orders/new"'), "manual order route");
+assert.match(app, /\\\/print\$/, "print route");
+assert.match(crm, /\\uFEFF/, "CSV starts with a UTF-8 BOM");
+assert.match(crm, /join\(";"\)/, "CSV uses a semicolon separator");
+assert.match(crm, /\[=\+\\-@/, "CSV guards against formula injection");
+assert.match(crm, /\[ЗАПОВНИТИ/, "seller requisites are explicit placeholders");
+assert.doesNotMatch(crm, /UA\d{27}/, "no invented IBAN");
+assert.match(crm, /Магазин самовивозу/, "pickup store label");
+assert.match(css, /@media print/);
+assert.match(css, /@page \{ size: A4/);
+assert.match(packageJson.scripts["db:local:test"], /crm-v2-scenarios\.mjs/);
 
 // Storefront.
 assert.match(client, /crm_submit_order/);
