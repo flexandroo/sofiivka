@@ -119,6 +119,7 @@
     root.innerHTML = headerExtended() + `<main id="main" class="page-main">${pageContent}</main>` + footerExtended() + `<div class="toast" data-page-toast role="status" aria-live="polite"></div>`;
     window.sofievkaCatalogUI?.trackProductImages(root);
     window.sofievkaSiteSettings?.applyHooks(root);
+    window.sofievkaAccount?.decorateHeader(root);
     if (sitePages && !(catalogLoadError && window.sofievkaCatalogRemoteRequested)) sitePages.then(api => api?.apply(page, root)).catch(error => console.error("Page texts failed to load", error));
     if (sitePosts && !(catalogLoadError && window.sofievkaCatalogRemoteRequested)) sitePosts.then(api => api?.apply(page, root)).catch(error => console.error("Posts failed to load", error));
     bindGlobal();
@@ -278,6 +279,7 @@
     return hero("Оформлення","Оформлення замовлення","Залиште контакти — менеджер перевірить наявність, уточнить доставку й підтвердить замовлення. Оплата після підтвердження.",true)+`<section class="page-section"><div class="container checkout-layout"><form class="checkout-form" data-checkout novalidate>
       ${online?"":`<div class="notice"><strong>Онлайн-оформлення тимчасово недоступне.</strong> Зателефонуйте нам — менеджер оформить замовлення.</div>`}
       <div class="notice notice--error" data-checkout-error role="alert" hidden></div>
+      <p class="checkout-account" data-checkout-account hidden></p>
       <section class="form-section"><h2>1. Контактні дані</h2><div class="form-grid">
         <label class="field"><span>Ім'я та прізвище</span><input name="name" autocomplete="name" required minlength="2" maxlength="160"></label>
         <label class="field"><span>Телефон</span><input name="phone" type="tel" autocomplete="tel" required placeholder="+38 (0__) ___ __ __" inputmode="tel" maxlength="24"></label>
@@ -301,7 +303,23 @@
   }
   function renderOrderSuccess(result){
     const number = escapeHtml(result?.number ?? "");
-    return `<div class="empty-state checkout-success" tabindex="-1"><p class="page-kicker">Замовлення прийнято</p><h2>№ ${number}</h2><p>Дякуємо! Менеджер зателефонує найближчим часом у робочий час, щоб підтвердити наявність, доставку й оплату.</p>${result?.hasUnpricedItems?`<p>Ціну позицій «за запитом» повідомимо під час дзвінка.</p>`:""}<a class="button button--primary" href="/catalog.html">Повернутися до каталогу</a></div>`;
+    return `<div class="empty-state checkout-success" tabindex="-1"><p class="page-kicker">Замовлення прийнято</p><h2>№ ${number}</h2><p>Дякуємо! Менеджер зателефонує найближчим часом у робочий час, щоб підтвердити наявність, доставку й оплату.</p>${result?.hasUnpricedItems?`<p>Ціну позицій «за запитом» повідомимо під час дзвінка.</p>`:""}${window.sofievkaAccount?.currentUser()?`<p><a href="/account.html?order=${encodeURIComponent(result?.number??"")}">Стежити за статусом у кабінеті →</a></p>`:""}<a class="button button--primary" href="/catalog.html">Повернутися до каталогу</a></div>`;
+  }
+  // Signed-in customers: contacts and delivery come from the profile; only empty fields are filled.
+  async function prefillCheckout(form){
+    const hint=form.querySelector("[data-checkout-account]");
+    const account=await accountClient();
+    if(!hint||!account?.available) return;
+    const user=account.currentUser();
+    if(!user){ hint.innerHTML=`Маєте кабінет? <a href="/account.html?next=${encodeURIComponent("/checkout.html")}">Увійдіть</a>, щоб замовлення збереглося в історії, а контакти підставилися автоматично.`; hint.hidden=false; return; }
+    hint.innerHTML=`Ви увійшли як <strong>${escapeHtml(user.email)}</strong> — замовлення з’явиться в <a href="/account.html">особистому кабінеті</a>.`;
+    hint.hidden=false;
+    const fill=(name,value)=>{ const input=form.elements[name]; if(input&&!input.value&&value) input.value=value; };
+    fill("email",user.email);
+    try{
+      const profile=(await account.getAccount())?.profile;
+      fill("name",profile?.name); fill("phone",profile?.phone); fill("city",profile?.deliveryCity); fill("deliveryPoint",profile?.deliveryPoint);
+    }catch(error){ if(!account.currentUser()) hint.hidden=true; }
   }
   function bindCheckout(){
     const form=document.querySelector("[data-checkout]");
@@ -311,6 +329,7 @@
     const syncDelivery=()=>{ const method=form.querySelector('input[name="delivery"]:checked')?.value; if(carrierFields) carrierFields.hidden=method!=="carrier"; if(pickupFields) pickupFields.hidden=method!=="pickup"; };
     form.querySelectorAll('input[name="delivery"]').forEach(input=>input.addEventListener("change",syncDelivery));
     syncDelivery();
+    prefillCheckout(form);
     const errorBox=form.querySelector("[data-checkout-error]");
     const submit=form.querySelector("[data-checkout-submit]");
     form.addEventListener("submit",async event=>{
@@ -393,7 +412,24 @@
       <p class="checkout-legal">Надсилаючи форму, ви погоджуєтесь на обробку контактних даних для відповіді на звернення. <a href="/privacy">Політика конфіденційності</a></p>`;
   }
   function renderFavorites(){ const selected=favorites().map(productById).filter(Boolean); return hero("Збережене","Обрані товари","Зберігайте моделі для порівняння або майбутньої консультації.",true)+`<section class="page-section"><div class="container">${selected.length?`<div class="catalog-products">${selected.map(productCard).join("")}</div>`:`<div class="empty-state"><h2>Поки нічого не збережено</h2><p>Позначте серцем потрібні товари — вони з'являться тут.</p><a class="button button--primary" href="/catalog.html">Перейти до каталогу</a></div>`}</div></section>`; }
-  function renderAccount(){ return hero("Профіль","Особистий кабінет","Майбутнє місце для замовлень, збережених специфікацій і сервісних звернень.",true)+`<section class="page-section"><div class="container content-layout"><form class="aside-card" style="position:static" data-account><h2>Увійти</h2><p>Авторизація ще не підключена. Форма працює лише як візуальний сценарій.</p><label class="field" style="margin-top:22px"><span>Email або телефон</span><input required></label><label class="field" style="margin-top:14px"><span>Пароль</span><input type="password" required></label><button class="button button--primary" type="submit">Продовжити</button></form><div class="prose"><h2>Для приватних клієнтів</h2><p>Історія замовлень, гарантійні документи, адреси доставки та збережені комплекти.</p><h2>Для професіоналів</h2><p>Об'єкти, специфікації, повторне замовлення за кодами й доступ до погоджених документів.</p></div></div></section>`; }
+  // Customer account: account-page.js renders sign-in / orders / profile into [data-account-root].
+  function renderAccount(){ return hero("Профіль","Особистий кабінет","Замовлення, їхні статуси, повторні покупки та контакти для швидкого оформлення.",true)+`<section class="page-section account-page"><div class="container" data-account-root><p class="account-loading" role="status">Завантажуємо кабінет…</p></div></section>`; }
+  function loadAccountScripts(){
+    return accountClient().then(()=>window.sofievkaAccountPage?null:new Promise(resolve=>{const script=document.createElement("script");script.src="/account-page.js?v=20261002-account-1";script.onload=resolve;script.onerror=resolve;document.head.append(script);}));
+  }
+  // customer-account.js is added to every page by the build (deferred); wait for it, load it only if missing.
+  function accountClient(){
+    const ready=document.readyState==="loading"?new Promise(resolve=>document.addEventListener("DOMContentLoaded",resolve,{once:true})):Promise.resolve();
+    return ready.then(()=>window.sofievkaAccount||new Promise(resolve=>{const script=document.createElement("script");script.src="/customer-account.js?v=20261002-account-1";script.onload=()=>resolve(window.sofievkaAccount||null);script.onerror=()=>resolve(null);document.head.append(script);}));
+  }
+  async function bindAccountPage(){
+    const container=document.querySelector("[data-account-root]");
+    if(!container) return;
+    await loadAccountScripts();
+    if(!window.sofievkaAccountPage){ container.innerHTML=`<div class="empty-state"><h2>Не вдалося відкрити кабінет</h2><p>Оновіть сторінку або спробуйте пізніше.</p></div>`; return; }
+    window.sofievkaAccountPage.mount(container,{ escapeHtml, money, toast, updateCounts });
+    window.sofievkaAccount?.decorateHeader(document);
+  }
 
   function bindGlobal(){
     const toggle=document.querySelector("[data-page-menu]");
@@ -436,7 +472,8 @@
   function bindPage(name){ if(name==="catalog"){const params=new URLSearchParams(location.search);let category=params.get("category")||"all";const query=(params.get("q")||"").toLocaleLowerCase("uk");const pills=[...document.querySelectorAll("[data-category]")];const render=()=>{const brands=[...document.querySelectorAll("[data-brand-filter]:checked")].map(x=>x.value);const result=PRODUCTS.filter(p=>(category==="all"||p.category===category)&&(!brands.length||brands.includes(p.brand))&&(!query||`${p.brand} ${p.model} ${p.code}`.toLocaleLowerCase("uk").includes(query)));document.querySelector("[data-catalog-products]").innerHTML=result.length?result.map(productCard).join(""):`<div class="catalog-empty"><h2>Нічого не знайдено</h2><p>Спробуйте іншу категорію або очистіть фільтри.</p></div>`;document.querySelector("[data-result-count]").textContent=result.length;pills.forEach(b=>b.classList.toggle("is-active",b.dataset.category===category));};pills.forEach(b=>b.addEventListener("click",()=>{category=b.dataset.category;render();}));document.querySelectorAll("[data-brand-filter]").forEach(x=>x.addEventListener("change",render));document.querySelector("[data-filter-toggle]")?.addEventListener("click",()=>document.querySelector("[data-filter]")?.classList.toggle("is-open"));render();}
     if(name==="cart") document.querySelector("[data-cart-view]")?.addEventListener("click",e=>{const q=e.target.closest("[data-qty]");const r=e.target.closest("[data-remove]");const value=cart();if(q)value[q.dataset.qty]=Math.max(0,(value[q.dataset.qty]||0)+Number(q.dataset.delta));if(r)delete value[r.dataset.remove];if(q||r){saveCart(value);const lines=Object.entries(value).filter(([,n])=>n>0);document.querySelector("[data-cart-view]").innerHTML=cartMarkup(lines);}});
     if(name==="checkout") bindCheckout();
-    bindLeadForms();document.querySelector("[data-account]")?.addEventListener("submit",e=>{e.preventDefault();toast("Авторизація ще не підключена");}); }
+    if(name==="account") bindAccountPage();
+    bindLeadForms(); }
   function siteNavLink(href, label, pages) {
     const active = pages.includes(page);
     return `<a href="${href}"${active ? ' class="is-active" aria-current="page"' : ""}>${label}</a>`;
@@ -464,7 +501,7 @@
         <div class="catalog-navigation"><button class="catalog-button" type="button" data-page-menu aria-expanded="false" aria-controls="page-catalog-menu" aria-haspopup="true" aria-label="Відкрити каталог і меню"><span class="catalog-button__mark" aria-hidden="true"><i></i><i></i><i></i></span>Каталог</button>
         <nav class="catalog-menu" id="page-catalog-menu" hidden aria-label="Каталог товарів">${window.sofievkaCatalogUI?.megaMenu() || `<div class="catalog-menu__panel"><a class="catalog-menu__all" href="/catalog">Увесь каталог <span aria-hidden="true">→</span></a></div>`}<div class="catalog-menu__support"><a href="/about.html">Про нас</a><a href="/delivery.html">Доставка</a><a href="/payment.html">Оплата</a><a href="/blog.html">Блог</a><a href="/installation.html">Монтаж</a><a href="/service-center.html">Сервіс</a><a href="/contact.html">Контакти</a></div></nav></div>
         <form class="search" data-search action="/search" role="search"><label class="sr-only" for="page-search">Пошук товарів, брендів і категорій</label><input id="page-search" name="q" type="search" value="${escapeHtml(searchQuery)}" autocomplete="off" placeholder="Назва, бренд, модель або артикул" aria-controls="page-search-results" aria-expanded="false"><button type="submit">Знайти</button><div class="search-results" id="page-search-results" aria-live="polite" hidden></div></form>
-        <div class="header-actions"><a class="header-action" href="/favorites.html" data-favorites aria-label="Обране"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.5a5.5 5.5 0 0 0-.2-7.9Z"/></svg><span class="header-action__label">Обране</span><span class="header-action__count" data-fav-count>0</span></a><a class="header-action" href="/cart.html" data-cart aria-label="Кошик"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 7H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg><span class="header-action__label">Кошик</span><span class="header-action__count" data-cart-count>0</span></a></div>
+        <div class="header-actions"><a class="header-action" href="/account.html" data-account-link aria-label="Увійти до особистого кабінету"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></svg><span class="header-action__label" data-account-label>Увійти</span></a><a class="header-action" href="/favorites.html" data-favorites aria-label="Обране"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.5a5.5 5.5 0 0 0-.2-7.9Z"/></svg><span class="header-action__label">Обране</span><span class="header-action__count" data-fav-count>0</span></a><a class="header-action" href="/cart.html" data-cart aria-label="Кошик"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 7H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg><span class="header-action__label">Кошик</span><span class="header-action__count" data-cart-count>0</span></a></div>
       </div></header>`;
   }
 
@@ -472,7 +509,7 @@
     const footerCatalogLinks = (window.sofievkaCatalog?.activeSections || []).map(section =>
       `<a href="${escapeHtml(window.sofievkaCatalog.sectionUrl(section.id))}">${escapeHtml(section.shortTitle || section.name)}</a>`
     ).join("") || `<a href="/catalog/heating">Опалення</a><a href="/catalog/water-supply">Водопостачання</a><a href="/catalog/water-treatment">Водоочищення</a><a href="/catalog/smart-home">Розумний будинок</a><a href="/catalog/climate">Клімат</a><a href="/catalog/household-equipment">Для господарства</a>`;
-    return `<footer class="footer"><div class="container footer__grid"><nav aria-label="Каталог у підвалі"><h2>Каталог</h2>${footerCatalogLinks}</nav><div class="footer__menu" data-site-footer-menu><nav aria-label="Послуги у підвалі"><h2>Послуги</h2><a href="/installation.html">Монтаж</a><a href="/service-center.html">Сервісний центр</a><a href="/solutions.html">Комплексні рішення</a><a href="/partnership.html">Для монтажників</a></nav><nav aria-label="Покупцям у підвалі"><h2>Покупцям</h2><a href="/delivery.html">Доставка</a><a href="/payment.html">Оплата</a><a href="/warranty.html">Гарантія</a><a href="/returns.html">Обмін і повернення</a></nav><nav aria-label="Компанія у підвалі"><h2>Компанія</h2><a href="/about.html">Про нас</a><a href="/brands">Бренди</a><a href="/contact.html">Контакти та графік</a><a href="/partnership.html">Надіслати специфікацію</a><a href="/faq.html">Часті запитання</a></nav></div></div><div class="container footer__bottom"><span>© 2026 Торговий дім «Софіївка»</span><div class="footer__bottom-meta"><div class="footer__socials" aria-hidden="true"><span class="footer__social" title="Instagram"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg></span><span class="footer__social" title="Facebook"><svg viewBox="0 0 24 24"><path d="M14.5 8H17V4.5h-2.5C11.7 4.5 10 6.2 10 9v2H7v3.5h3V21h4v-6.5h3L17.5 11H14V9c0-.7.3-1 1-1Z"></path></svg></span><span class="footer__social" title="YouTube"><svg viewBox="0 0 24 24"><path d="M20.2 7.1c-.2-.9-.9-1.6-1.8-1.8C16.8 5 12 5 12 5s-4.8 0-6.4.3c-.9.2-1.6.9-1.8 1.8C3.5 8.7 3.5 12 3.5 12s0 3.3.3 4.9c.2.9.9 1.6 1.8 1.8 1.6.3 6.4.3 6.4.3s4.8 0 6.4-.3c.9-.2 1.6-.9 1.8-1.8.3-1.6.3-4.9.3-4.9s0-3.3-.3-4.9Z"></path><path class="footer__social-play" d="m10 15.5 5-3.5-5-3.5v7Z"></path></svg></span></div><span><a href="/privacy.html">Конфіденційність</a> · <a href="/terms.html">Умови</a></span></div></div></footer>`;
+    return `<footer class="footer"><div class="container footer__grid"><nav aria-label="Каталог у підвалі"><h2>Каталог</h2>${footerCatalogLinks}</nav><div class="footer__menu" data-site-footer-menu><nav aria-label="Послуги у підвалі"><h2>Послуги</h2><a href="/installation.html">Монтаж</a><a href="/service-center.html">Сервісний центр</a><a href="/solutions.html">Комплексні рішення</a><a href="/partnership.html">Для монтажників</a></nav><nav aria-label="Покупцям у підвалі"><h2>Покупцям</h2><a href="/delivery.html">Доставка</a><a href="/payment.html">Оплата</a><a href="/warranty.html">Гарантія</a><a href="/returns.html">Обмін і повернення</a><a href="/account.html">Особистий кабінет</a></nav><nav aria-label="Компанія у підвалі"><h2>Компанія</h2><a href="/about.html">Про нас</a><a href="/brands">Бренди</a><a href="/contact.html">Контакти та графік</a><a href="/partnership.html">Надіслати специфікацію</a><a href="/faq.html">Часті запитання</a></nav></div></div><div class="container footer__bottom"><span>© 2026 Торговий дім «Софіївка»</span><div class="footer__bottom-meta"><div class="footer__socials" aria-hidden="true"><span class="footer__social" title="Instagram"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg></span><span class="footer__social" title="Facebook"><svg viewBox="0 0 24 24"><path d="M14.5 8H17V4.5h-2.5C11.7 4.5 10 6.2 10 9v2H7v3.5h3V21h4v-6.5h3L17.5 11H14V9c0-.7.3-1 1-1Z"></path></svg></span><span class="footer__social" title="YouTube"><svg viewBox="0 0 24 24"><path d="M20.2 7.1c-.2-.9-.9-1.6-1.8-1.8C16.8 5 12 5 12 5s-4.8 0-6.4.3c-.9.2-1.6.9-1.8 1.8C3.5 8.7 3.5 12 3.5 12s0 3.3.3 4.9c.2.9.9 1.6 1.8 1.8 1.6.3 6.4.3 6.4.3s4.8 0 6.4-.3c.9-.2 1.6-.9 1.8-1.8.3-1.6.3-4.9.3-4.9s0-3.3-.3-4.9Z"></path><path class="footer__social-play" d="m10 15.5 5-3.5-5-3.5v7Z"></path></svg></span></div><span><a href="/privacy.html">Конфіденційність</a> · <a href="/terms.html">Умови</a></span></div></div></footer>`;
   }
 
   const FEATURE_LABELS = {

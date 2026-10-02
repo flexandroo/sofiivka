@@ -610,6 +610,11 @@ ul {
   stroke-linejoin: round;
 }
 
+/* Signed-in customer (customer-account.js): solid account icon. */
+.header-action.is-signed-in svg {
+  fill: currentColor;
+}
+
 .header-actions .header-action__count {
   display: inline-grid;
   place-items: center;

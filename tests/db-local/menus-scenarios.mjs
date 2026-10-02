@@ -38,7 +38,7 @@ export async function run(db) {
     ["Про нас", "/about.html"], ["Рішення", "/solutions.html"], ["Монтаж", "/installation.html"],
     ["Сервіс", "/service-center.html"], ["Доставка й оплата", "/delivery.html"], ["Контакти", "/contact.html"]
   ]);
-  assert.deepEqual(settings.menus.footer.map(column => [column.title, column.links.length]), [["Послуги", 4], ["Покупцям", 4], ["Компанія", 5]]);
+  assert.deepEqual(settings.menus.footer.map(column => [column.title, column.links.length]), [["Послуги", 4], ["Покупцям", 5], ["Компанія", 5]]);
   assert.deepEqual(settings.cookies, {
     enabled: false,
     text: "Ми використовуємо cookie, щоб сайт працював, а з вашої згоди — ще й для аналітики та реклами.",

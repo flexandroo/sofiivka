@@ -29,7 +29,10 @@ for (const file of sourceFiles) {
   if (["index.html", "script.js", "page-shell.js", "catalog-ui.js"].includes(file) && /catalog\.html\?category=/.test(source)) {
     legacyNavigationLinks.push(file);
   }
-  if (["index.html", "brands.html", "script.js", "page-shell.js", "catalog-ui.js"].includes(file) && /(?:href=["']\/?account\.html|data-profile)/.test(source)) {
+  // The customer account is live (customer-account.js + account-page.js); navigation may link to it only
+  // while the old visual stub is gone.
+  if (["index.html", "brands.html", "script.js", "page-shell.js", "catalog-ui.js"].includes(file) && /(?:href=["']\/?account\.html|data-profile)/.test(source)
+    && (/Авторизація ще не підключена/.test(fs.readFileSync(path.join(root, "page-shell.js"), "utf8")) || !fs.existsSync(path.join(root, "account-page.js")))) {
     accountNavigationLinks.push(file);
   }
   const seenScripts = new Set();

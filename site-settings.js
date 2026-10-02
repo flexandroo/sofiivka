@@ -65,7 +65,8 @@
           { label: "Доставка", href: "/delivery.html" },
           { label: "Оплата", href: "/payment.html" },
           { label: "Гарантія", href: "/warranty.html" },
-          { label: "Обмін і повернення", href: "/returns.html" }
+          { label: "Обмін і повернення", href: "/returns.html" },
+          { label: "Особистий кабінет", href: "/account.html" }
         ] },
         { title: "Компанія", links: [
           { label: "Про нас", href: "/about.html" },

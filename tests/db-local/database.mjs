@@ -19,6 +19,8 @@ export async function createDatabase({ log = () => {} } = {}) {
     create role service_role nologin bypassrls;
     create schema auth;
     create table auth.users (id uuid primary key, email text, created_at timestamptz default now(), last_sign_in_at timestamptz);
+    -- Customer accounts read these Supabase Auth columns (confirmed email, sign-up metadata).
+    alter table auth.users add column email_confirmed_at timestamptz, add column raw_user_meta_data jsonb not null default '{}'::jsonb;
     create function auth.uid() returns uuid language sql stable as
       $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
     create schema extensions;
