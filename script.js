@@ -731,8 +731,9 @@ function createLogoCell(brand, linkToDirectory = false, decorativeDuplicate = fa
 }
 
 function createDirectoryCard(brand) {
-  const card = document.createElement("article");
+  const card = document.createElement(brand.futurePath ? "a" : "article");
   card.className = "brand-directory-card";
+  if (brand.futurePath) card.href = brand.futurePath.replace(/\/$/, "");
   card.id = `brand-${brand.slug}`;
   card.dataset.brand = brand.slug;
   card.dataset.brandName = brand.name.toLocaleLowerCase("uk");
