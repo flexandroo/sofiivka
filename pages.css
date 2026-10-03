@@ -766,6 +766,13 @@ body[data-page="product"] {
 .pdp-master .pdp-buy:active { border-color: var(--yellow-pressed); background: var(--yellow-pressed); transform: translateY(1px); }
 .pdp-master .pdp-buy.is-in-cart { border-color: var(--success); background: var(--success); color: var(--surface); }
 .pdp-master .pdp-buy .pdp-icon { width: 20px; height: 20px; }
+.pdp-top-facts { grid-area: summary; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; min-width: 0; margin-top: 12px; padding-top: 13px; border-top: 1px solid var(--pdp-line); font-size: 13px; }
+.pdp-top-facts div { display: flex; justify-content: space-between; gap: 10px; min-width: 0; padding-bottom: 6px; border-bottom: 1px dashed var(--pdp-line); }
+.pdp-top-facts dt { color: var(--text-secondary); }
+.pdp-top-facts dd { font-weight: 700; text-align: right; overflow-wrap: anywhere; }
+.pdp-top-facts a { grid-column: 1 / -1; color: var(--info); font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.pdp-call { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 8px; margin-top: 10px; color: var(--text-secondary); font-size: 13px; }
+.pdp-call a { color: var(--graphite); font-weight: 800; }
 .pdp-advice { display: inline-flex; width: 100%; min-height: 44px; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; border: 1px solid var(--graphite); border-radius: 3px; background: var(--surface); color: var(--graphite); font-size: 12px; font-weight: 750; }
 .pdp-advice:hover { background: var(--surface-soft); }
 .pdp-advice .pdp-icon { width: 18px; height: 18px; }
@@ -896,6 +903,7 @@ body[data-page="product"] {
   .pdp-identifiers > div { font-size: 10px; }
   .pdp-copy-code { width: 44px; height: 44px; }
   .pdp-summary { margin-top: 8px; padding-top: 9px; font-size: 11px; line-height: 1.5; }
+  .pdp-top-facts { grid-template-columns: 1fr; margin-top: 8px; padding-top: 9px; }
   .pdp-gallery { grid-template: "media" auto "thumbs" auto / minmax(0, 1fr); gap: 8px; margin-top: 12px; }
   .pdp-gallery--single { grid-template: "media" / minmax(0, 1fr); }
   .pdp-thumbs { flex-direction: row; max-height: none; overflow-x: auto; overflow-y: hidden; padding: 1px; scrollbar-width: none; }

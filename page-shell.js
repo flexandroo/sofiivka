@@ -839,12 +839,16 @@
   }
 
   function renderPdpIdentity(view) {
-    const { product, model, series, summary } = view;
+    const { product, model, series, summary, keyFacts, groups } = view;
+    const topFacts = keyFacts.slice(0, 4);
+    const lead = topFacts.length
+      ? `<dl class="pdp-top-facts">${topFacts.map(([label, value]) => `<div><dt>${escapeHtml(label.replace(/, .+$/, ""))}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}${groups.length ? `<a href="#specifications" data-pdp-jump="specifications">Усі характеристики →</a>` : ""}</dl>`
+      : summary ? `<p class="pdp-summary">${escapeHtml(summary)}</p>` : "";
     return `<header class="pdp-heading">
       ${series ? `<div class="pdp-heading__top"><span class="pdp__series">Серія ${escapeHtml(series)}</span></div>` : ""}
       <h1>${escapeHtml(product.title)}</h1>
       <dl class="pdp-identifiers">${model !== product.sku ? `<div><dt>Модель</dt><dd>${escapeHtml(model)}</dd></div>` : ""}<div><dt>Артикул</dt><dd>${escapeHtml(product.sku || product.id)}<button class="pdp-copy-code" type="button" data-copy-sku="${escapeHtml(product.sku || product.id)}" aria-label="Копіювати артикул ${escapeHtml(product.sku || product.id)}">${pdpIcon("Документ")}</button></dd></div></dl>
-    </header>${summary ? `<p class="pdp-summary">${escapeHtml(summary)}</p>` : ""}`;
+    </header>${lead}`;
   }
 
   function renderPdpGallery(view) {
@@ -865,11 +869,13 @@
 
   function renderPdpPurchase(view) {
     const { product, purchase, favoriteActive, compareActive } = view;
+    const phone = window.sofievkaSiteSettings?.current?.stores?.[0]?.phones?.[0] || "+38 (050) 358-22-84";
+    const phoneLink = `tel:+${phone.replace(/\D/g, "")}`;
     const quantity = purchase.purchasable ? `<div class="pdp-quantity" aria-label="Кількість товару"><button type="button" data-pdp-qty-change="-1" aria-label="Зменшити кількість">−</button><input type="number" min="1" max="99" step="1" value="1" inputmode="numeric" data-product-qty aria-label="Кількість"><button type="button" data-pdp-qty-change="1" aria-label="Збільшити кількість">+</button></div><span class="pdp-unit">шт.</span>` : "";
     return `<div class="pdp-purchase" data-pdp-purchase>
       <div class="pdp-purchase__line"><span class="buy-box__status buy-box__status--${escapeHtml(purchase.status)}"><i aria-hidden="true"></i>${escapeHtml(purchase.statusLabel)}</span>${renderPdpPrice(view)}</div>
       <div class="pdp-buy-row${purchase.purchasable ? "" : " pdp-buy-row--single"}">${quantity}${renderPdpPrimaryAction(view)}</div>
-      <a class="button button--outline-dark pdp-advice" href="/contact?product=${encodeURIComponent(product.sku || product.id)}">${pdpIcon("Консультація")}<span>Отримати консультацію</span></a>
+      <p class="pdp-call">Потрібна порада? <a href="${escapeHtml(phoneLink)}" data-site-primary-phone>${escapeHtml(phone)}</a></p>
       <div class="pdp-secondary-actions"><button class="pdp-favorite${favoriteActive ? " is-active" : ""}" type="button" data-favorite="${escapeHtml(product.id)}" aria-label="${favoriteActive ? "Видалити з обраного" : "Додати в обране"}" aria-pressed="${favoriteActive}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.5a5.5 5.5 0 0 0-.2-7.9Z"/></svg><span>${favoriteActive ? "В обраному" : "В обране"}</span></button><button class="pdp-compare${compareActive ? " is-active" : ""}" type="button" data-compare="${escapeHtml(product.id)}" aria-label="${compareActive ? "Видалити з порівняння" : "Додати до порівняння"}" aria-pressed="${compareActive}">${pdpIcon("Порівняти")}<span>${compareActive ? "У порівнянні" : "Порівняти"}</span></button></div>
       <p class="pdp-service-note">Ціну, наявність і комплектність менеджер підтвердить перед оплатою.</p>
     </div>`;
@@ -1354,6 +1360,12 @@
           event.preventDefault();
           selectTab(link.dataset.pdpTab, true);
           history.replaceState(history.state, "", link.hash);
+        }));
+        document.querySelectorAll("[data-pdp-jump]").forEach(link => link.addEventListener("click", event => {
+          event.preventDefault();
+          selectTab(link.dataset.pdpJump, false);
+          history.replaceState(history.state, "", link.hash);
+          document.querySelector(".pdp-anchor-nav")?.scrollIntoView({ behavior: "smooth" });
         }));
         const initialTab = tabLinks.find(link => link.hash === location.hash) || tabLinks[0];
         selectTab(initialTab.dataset.pdpTab, false);
