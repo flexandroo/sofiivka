@@ -1,9 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 
 const require = createRequire(import.meta.url);
-const sharp = require("sharp");
+let sharpModule;
+const sharp = (...args) => (sharpModule ||= require("sharp"))(...args);
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const SOURCE_FILE = path.join(ROOT, "tmp", "tekkhaus-source", "products.json");
@@ -523,4 +525,7 @@ async function main() {
   console.log(JSON.stringify(report, null, 2));
 }
 
-await main();
+// Reused by scripts/import/tekkhaus-batch.mjs (product import standard).
+export { clean, classify, extractModel, technicalDetails, normalizedFeatures, keyFeatures, extractApplications, description, extractDocuments, downloadImage, imageFileName, isDimensionImage };
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();
