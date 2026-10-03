@@ -1,11 +1,14 @@
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { transform } from "esbuild";
 import { resolveSiteUrl, writeSeoFiles } from "./generate-sitemap.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputArgument = process.argv.find(argument => argument.startsWith("--output-dir="))?.split("=").slice(1).join("=") || "dist";
 const skipAssets = process.argv.includes("--skip-assets");
+const skipMinify = process.argv.includes("--no-minify");
 const outputDirectory = path.resolve(root, outputArgument);
 const source = String(process.env.SOFIEVKA_CATALOG_SOURCE || "local").trim().toLowerCase();
 const deploymentEnvironment = String(process.env.VERCEL_ENV || "local").trim().toLowerCase();
@@ -117,6 +120,71 @@ for (const entry of await fs.readdir(outputDirectory, { withFileTypes: true })) 
   htmlFiles += 1;
 }
 
+// Smaller JS and CSS: whitespace, comments and local names are stripped (top-level names stay, other scripts use them).
+// Supplier feeds (local mode only) and vendored libraries are copied as they are.
+const minifyDirectories = new Set(["admin", "catalog"]);
+const minifySkip = new Set([...supplierFeedNames, "catalog-runtime-config.js"]);
+const minified = { files: 0, bytesBefore: 0, bytesAfter: 0 };
+if (!skipMinify) {
+  for (const filePath of await listFiles(outputDirectory, name => minifyDirectories.has(name))) {
+    const extension = path.extname(filePath).toLowerCase();
+    if (![".js", ".mjs", ".css"].includes(extension) || minifySkip.has(path.basename(filePath))) continue;
+    const code = await fs.readFile(filePath, "utf8");
+    const result = await transform(code, { loader: extension === ".css" ? "css" : "js", minify: true, legalComments: "none", charset: "utf8" });
+    minified.files += 1;
+    minified.bytesBefore += Buffer.byteLength(code);
+    minified.bytesAfter += Buffer.byteLength(result.code);
+    await fs.writeFile(filePath, result.code, "utf8");
+  }
+}
+
+// One version per file: every local script and stylesheet a page links gets ?v=<hash of its content>, so a file
+// is cached once across pages and a changed file is fetched again without bumping versions by hand.
+const fileHashes = new Map();
+async function contentHash(relativePath) {
+  if (!fileHashes.has(relativePath)) {
+    const filePath = path.join(outputDirectory, relativePath);
+    if (!filePath.startsWith(`${outputDirectory}${path.sep}`)) return null;
+    const content = await fs.readFile(filePath).catch(() => null);
+    fileHashes.set(relativePath, content ? crypto.createHash("sha256").update(content).digest("hex").slice(0, 10) : null);
+  }
+  return fileHashes.get(relativePath);
+}
+let versionedReferences = 0;
+// Scripts that load other scripts at run time ("/catalog-data.js?v=…" in page-shell.js) get the same treatment;
+// two passes so a loader that is itself loaded by another script carries its final hash.
+const scriptFiles = (await listFiles(outputDirectory, name => minifyDirectories.has(name))).filter(file => /\.m?js$/i.test(file) && !minifySkip.has(path.basename(file)));
+for (let pass = 0; pass < 2; pass += 1) {
+  fileHashes.clear();
+  for (const filePath of scriptFiles) {
+    const code = await fs.readFile(filePath, "utf8");
+    let next = code;
+    for (const [match, quote, reference] of code.matchAll(/(["'`])(\/[^"'`?#\s]+\.(?:js|mjs|css))\?v=[^"'`#\s]*\1/g)) {
+      const hash = await contentHash(reference.slice(1));
+      if (!hash) continue;
+      next = next.replace(match, `${quote}${reference}?v=${hash}${quote}`);
+      if (pass === 1) versionedReferences += 1;
+    }
+    if (next !== code) await fs.writeFile(filePath, next, "utf8");
+  }
+}
+fileHashes.clear();
+for (const filePath of await listFiles(outputDirectory, name => name === "admin")) {
+  if (path.extname(filePath).toLowerCase() !== ".html") continue;
+  const html = await fs.readFile(filePath, "utf8");
+  const pageDirectory = path.dirname(path.relative(outputDirectory, filePath));
+  const references = [...html.matchAll(/\b(src|href)="((?!https?:|\/\/|data:)[^"?#]+\.(?:js|mjs|css))(?:\?v=[^"#]*)?"/gi)];
+  let next = html;
+  for (const [match, name, reference] of references) {
+    const relativePath = reference.startsWith("/") ? reference.slice(1) : path.join(pageDirectory, reference);
+    const hash = await contentHash(path.normalize(relativePath));
+    if (!hash) continue;
+    next = next.replace(match, `${name}="${reference}?v=${hash}"`);
+    versionedReferences += 1;
+  }
+  if (next !== html) await fs.writeFile(filePath, next, "utf8");
+}
+
 const seo = await writeSeoFiles({ root, outputDirectory, config });
 
 const manifest = {
@@ -128,6 +196,8 @@ const manifest = {
   removedFeedTags,
   supplierFeedFilesIncluded: source === "local",
   assetsIncluded: !skipAssets,
+  minified,
+  versionedReferences,
   sitemap: seo
 };
 await fs.writeFile(path.join(outputDirectory, "catalog-build-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
@@ -143,4 +213,18 @@ function isPrivilegedKey(key) {
   } catch {
     return false;
   }
+}
+
+// Files under the output root: every root file, and everything inside the top-level directories `acceptDirectory` keeps.
+async function listFiles(directory, acceptDirectory, depth = 0) {
+  const files = [];
+  for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+    const entryPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      if (depth > 0 || acceptDirectory(entry.name)) files.push(...await listFiles(entryPath, acceptDirectory, depth + 1));
+    } else if (entry.isFile()) {
+      files.push(entryPath);
+    }
+  }
+  return files;
 }
