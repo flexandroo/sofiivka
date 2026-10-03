@@ -242,6 +242,8 @@
 .filter-group p { color: var(--text-secondary); font-size: 13px; line-height: 1.55; }
 .catalog-product { display: flex; flex-direction: column; }
 .catalog-product .product-card__actions { margin-top: auto; }
+/* Actions are pushed to the card bottom with margin-top: auto, so the price row keeps its own gap above the buttons. */
+.catalog-product .product-card__commercial { margin-bottom: 14px; }
 .compare-link { display: inline-flex; width: fit-content; margin-top: 12px; color: var(--text-secondary); font-size: 12px; font-weight: 650; border-bottom: 1px solid transparent; }
 .compare-link:hover { color: var(--text); border-color: currentColor; }
 
@@ -659,6 +661,7 @@ body[data-page="brand"] { background: var(--canvas); }
     gap: 4px;
     min-height: 53px;
     margin-top: 6px;
+    margin-bottom: 0;
   }
   .catalog-workspace .catalog-product .product-card__status { font-size: 8px; }
   .catalog-workspace .catalog-product .product-card__status i { width: 5px; height: 5px; }
@@ -1116,4 +1119,11 @@ body[data-page="product"] {
   .account-items tbody td[data-label]::before { content: attr(data-label); display: block; color: var(--text-subtle); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
   .account-items tfoot tr { grid-template-columns: minmax(0, 1fr) auto; border-bottom: 0; }
   .account-items tfoot td { text-align: right; }
+}
+
+/* Similar products on phones: narrow cards keep «До кошика» on one line, compare becomes an icon. */
+@media (max-width: 620px) {
+  .pdp-related-section .catalog-product .product-card__actions { grid-template-columns: minmax(0, 1fr) 44px; }
+  .pdp-related-section .catalog-product .compare-button { display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+  .pdp-related-section .catalog-product .compare-button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
