@@ -1,6 +1,7 @@
 // Converts the TEKK HAUS store feed (node scripts/fetch-tekkhaus-catalog.mjs) into an import batch
 // in the docs/product-import-standard.md format. Photos already in assets/products/tekkhaus are reused,
 // new ones are downloaded and converted to WebP (needs the sharp package).
+// Gardia products from the same store are skipped: the brand is not sold (Alex, 2026-10-03).
 // Usage: node scripts/import/tekkhaus-batch.mjs [--no-download] > imports/tekkhaus-YYYY-MM-DD.json
 import fs from "node:fs";
 import path from "node:path";
@@ -27,7 +28,7 @@ const feed = JSON.parse(fs.readFileSync(SOURCE_FILE, "utf8"));
 const bySku = new Map();
 for (const record of feed.products) {
   const sku = clean(record.sku);
-  if (!sku) continue;
+  if (!sku || /gardia/i.test(clean(record.name))) continue;
   const current = bySku.get(sku);
   if (!current || (String(current.permalink).includes("/ru/") && !String(record.permalink).includes("/ru/"))) bySku.set(sku, record);
 }
@@ -48,14 +49,12 @@ async function localImages(record) {
 
 const products = [];
 for (const record of bySku.values()) {
-  const gardia = /gardia/i.test(clean(record.name));
   const classification = classify(record);
   const model = extractModel(record, classification);
   const details = technicalDetails(record);
   const features = keyFeatures(record, details, classification);
   const editorial = description(record, classification, details, features, extractApplications(record, classification));
-  const brandName = gardia ? "Gardia" : "TEKK HAUS";
-  const title = `${classification.type} ${brandName} ${model.replace(/\bgardia\b/gi, "").replace(/\s{2,}/g, " ").trim()}`.trim();
+  const title = `${classification.type} TEKK HAUS ${model}`.replace(/\s{2,}/g, " ").trim();
   const filters = normalizedFeatures(details, classification);
   const price = Number(record.prices?.price || 0) / 10 ** Number(record.prices?.currency_minor_unit || 0);
   products.push({
@@ -64,7 +63,7 @@ for (const record of bySku.values()) {
     sourceCategory: classification.sourceCategoryId,
     sku: clean(record.sku),
     model,
-    brand: gardia ? "gardia" : "tekk",
+    brand: "tekk",
     title,
     category: CATEGORY_BY_SOURCE[classification.sourceCategoryId] || "",
     price: price > 0 ? price : null,
