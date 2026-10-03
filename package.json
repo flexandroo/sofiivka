@@ -39,7 +39,8 @@
     "account:qa": "node tests/account-qa.mjs"
   },
   "devDependencies": {
-    "supabase": "^2.118.0",
-    "@electric-sql/pglite": "^0.5.8"
+    "@electric-sql/pglite": "^0.5.8",
+    "esbuild": "^0.28.2",
+    "supabase": "^2.118.0"
   }
 }
