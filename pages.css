@@ -109,6 +109,8 @@
 .process-list h3 { margin: 20px 0 8px; }
 .process-list p { color: var(--text-secondary); }
 
+.page-section:has(> .contact-grid) { padding-bottom: 56px; }
+#contact-form.page-section { padding-top: 0; }
 .contact-grid { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); }
 .contact-grid > div { padding: clamp(20px, 2.4vw, 32px); background: var(--surface); }
 .contact-grid > div:first-child { padding-left: 0; }
