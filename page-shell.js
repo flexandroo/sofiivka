@@ -965,19 +965,17 @@
     const view = createPdpViewModel(product);
     window.sofievkaProductSchema = productSchema(product, view, canonicalPath);
     window.dispatchEvent(new Event("sofievka:product-schema"));
+    const specificationCount = view.groups.reduce((total, group) => total + group.items.length, 0);
     const navItems = [
-      ...((view.description || view.keyFacts.length) ? [["overview", view.description ? "Опис товару" : "Ключові характеристики"]] : []),
-      ...(view.groups.length ? [["specifications", "Характеристики"]] : []),
+      ...((view.description || view.keyFacts.length) ? [["overview", view.description ? "Опис" : "Ключові характеристики"]] : []),
+      ...(view.groups.length ? [["specifications", `Характеристики (${specificationCount})`]] : []),
       ...(view.compatibility ? [["compatibility", "Сумісність"]] : []),
-      ...(view.documents.length ? [["documents", "Документи"]] : []),
-      ...(view.compatibleProducts.length ? [["compatible-products", "Сумісні товари"]] : []),
-      ...(view.accessories.length ? [["accessories", "Аксесуари"]] : []),
-      ...(view.similarProducts.length ? [["similar", "Схожі товари"]] : [])
+      ...(view.documents.length ? [["documents", `Документи (${view.documents.length})`]] : [])
     ];
     const mainImage = view.images[0] || "";
     return `<article class="pdp-master">
       <section class="pdp pdp-hero"><div class="container">${productCrumbs(product)}<div class="pdp__top">${renderPdpIdentity(view)}${renderPdpGallery(view)}${renderPdpPurchase(view)}${renderPdpTrust(view)}</div></div></section>
-      ${navItems.length ? `<nav class="pdp-anchor-nav" aria-label="Навігація сторінкою"><div class="container">${navItems.map(([anchor, label], index) => `<a href="#${anchor}"${index === 0 ? ' class="is-active" aria-current="location"' : ""}>${label}</a>`).join("")}</div></nav>` : ""}
+      ${navItems.length > 1 ? `<nav class="pdp-anchor-nav" aria-label="Розділи товару"><div class="container" role="tablist">${navItems.map(([anchor, label], index) => `<a href="#${anchor}" role="tab" data-pdp-tab="${anchor}" aria-selected="${index === 0}"${index === 0 ? ' class="is-active"' : ""}>${label}</a>`).join("")}</div></nav>` : ""}
       <div class="pdp-detail-stack">${renderPdpOverview(view)}${renderPdpSpecifications(view)}${renderPdpCompatibility(view)}${renderPdpDocuments(view)}</div>
       ${renderPdpProductRail({ id: "compatible-products", title: "Сумісні товари", products: view.compatibleProducts })}
       ${renderPdpProductRail({ id: "accessories", title: "Аксесуари", products: view.accessories })}
@@ -1333,28 +1331,36 @@
 
       const modules = [...document.querySelectorAll("[data-pdp-module]")];
       const mobileModules = window.matchMedia ? window.matchMedia("(max-width: 620px)") : { matches: false, addEventListener() {} };
-      const setModuleMode = () => modules.forEach((module, index) => { module.open = mobileModules.matches ? index === 0 : true; });
-      setModuleMode();
-      mobileModules.addEventListener?.("change", setModuleMode);
-
-      const navLinks = [...document.querySelectorAll(".pdp-anchor-nav a[href^='#']")];
-      navLinks.forEach(link => link.addEventListener("click", () => {
-        const target = document.querySelector(link.hash);
-        const module = target?.querySelector("[data-pdp-module]");
-        if (module) module.open = true;
-      }));
-      if ("IntersectionObserver" in window && navLinks.length) {
-        const sections = navLinks.map(link => document.querySelector(link.hash)).filter(Boolean);
-        const sectionObserver = new IntersectionObserver(entries => {
-          const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-          if (!visible) return;
-          navLinks.forEach(link => {
-            const active = link.hash === `#${visible.target.id}`;
+      const tabLinks = [...document.querySelectorAll("[data-pdp-tab]")];
+      const detailStack = document.querySelector(".pdp-detail-stack");
+      if (tabLinks.length && detailStack) {
+        detailStack.classList.add("is-tabbed");
+        modules.forEach(module => { module.open = true; });
+        const selectTab = (id, scroll) => {
+          const target = document.getElementById(id);
+          if (!target) return;
+          tabLinks.forEach(link => {
+            const active = link.dataset.pdpTab === id;
             link.classList.toggle("is-active", active);
-            if (active) link.setAttribute("aria-current", "location"); else link.removeAttribute("aria-current");
+            link.setAttribute("aria-selected", String(active));
+            document.getElementById(link.dataset.pdpTab)?.classList.toggle("is-active-tab", active);
           });
-        }, { rootMargin: "-18% 0px -68%", threshold: [0, .1, .35] });
-        sections.forEach(section => sectionObserver.observe(section));
+          const nav = document.querySelector(".pdp-anchor-nav");
+          if (scroll && nav && nav.getBoundingClientRect().top <= parseFloat(getComputedStyle(nav).top) + 1) {
+            window.scrollTo({ top: detailStack.getBoundingClientRect().top + window.scrollY - nav.offsetHeight - nav.getBoundingClientRect().top, behavior: "smooth" });
+          }
+        };
+        tabLinks.forEach(link => link.addEventListener("click", event => {
+          event.preventDefault();
+          selectTab(link.dataset.pdpTab, true);
+          history.replaceState(history.state, "", link.hash);
+        }));
+        const initialTab = tabLinks.find(link => link.hash === location.hash) || tabLinks[0];
+        selectTab(initialTab.dataset.pdpTab, false);
+      } else {
+        const setModuleMode = () => modules.forEach((module, index) => { module.open = mobileModules.matches ? index === 0 : true; });
+        setModuleMode();
+        mobileModules.addEventListener?.("change", setModuleMode);
       }
 
       const purchase = document.querySelector("[data-pdp-purchase]");

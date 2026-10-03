@@ -794,6 +794,17 @@ body[data-page="product"] {
 .pdp-anchor-nav a::after { content: ""; position: absolute; right: 0; bottom: -1px; left: 0; height: 3px; background: var(--yellow); transform: scaleX(0); transform-origin: left; transition: transform .18s ease; }
 .pdp-anchor-nav a:hover, .pdp-anchor-nav a.is-active { color: var(--graphite); }
 .pdp-anchor-nav a:hover::after, .pdp-anchor-nav a.is-active::after { transform: scaleX(1); }
+.pdp-anchor-nav [role="tab"] { padding: 15px 0 14px; font-size: 15px; }
+.pdp-detail-stack.is-tabbed .pdp-detail-section:not(.is-active-tab) { display: none; }
+.pdp-detail-stack.is-tabbed .pdp-module > summary { display: none; }
+.pdp-detail-stack.is-tabbed .pdp-section__head { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.pdp-detail-stack.is-tabbed .pdp-module__body { padding-top: 30px; }
+@media (min-width: 901px) {
+  .pdp-spec-table { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px; border-top: 0; }
+  .pdp-spec-table > div { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; padding-inline: 0; }
+  .pdp-spec-table > div:nth-child(even) { background: none; }
+  .pdp-spec-table > div:nth-child(-n+2) { border-top: 1px solid var(--pdp-line); }
+}
 
 .pdp-detail-stack { border-top: 0; background: var(--surface); }
 .pdp-detail-section { scroll-margin-top: 166px; border-bottom: 1px solid var(--pdp-line); background: var(--surface); }
@@ -913,6 +924,7 @@ body[data-page="product"] {
   .pdp-trust a { grid-template-columns: 25px 1fr; }
   .pdp-anchor-nav .container { gap: 22px; }
   .pdp-anchor-nav a { padding-block: 10px; font-size: 10px; }
+  .pdp-anchor-nav [role="tab"] { padding-block: 13px 12px; font-size: 13px; }
   .pdp-detail-section, .pdp-related-section { scroll-margin-top: 140px; }
   .pdp-module > summary { display: flex; min-height: 52px; align-items: center; justify-content: space-between; gap: 20px; list-style: none; font-size: 14px; font-weight: 750; cursor: pointer; }
   .pdp-module > summary::-webkit-details-marker { display: none; }
