@@ -73,7 +73,7 @@ window.sofievkaCatalogUIReady = (async function () {
       : "";
     const primaryAction = inStock && hasPrice
       ? `<button class="product-card__buy${cartQuantity ? " is-in-cart" : ""}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${escapeHtml(cartQuantity ? `У кошику ${cartQuantity} шт. Додати ще` : `Додати ${title} до кошика`)}">${cartQuantity ? `У кошику · ${cartQuantity}` : "До кошика"}</button>`
-      : `<a class="product-card__buy product-card__buy--consult" href="/contact?product=${encodeURIComponent(product.sku || product.id)}">${hasPrice ? "Уточнити наявність" : "Запитати ціну"}</a>`;
+      : `<a class="product-card__buy product-card__buy--consult" href="/contact?product=${encodeURIComponent(product.id)}#contact-form">${hasPrice ? "Уточнити наявність" : "Запитати ціну"}</a>`;
     // Without a price the card says it once, on the button; an unknown stock status is not repeated either.
     const statusMarkup = hasPrice || status === "in_stock" || status === "out_of_stock"
       ? `<span class="product-card__status product-card__status--${inStock ? "available" : status === "out_of_stock" ? "unavailable" : "pending"}"><i aria-hidden="true"></i>${escapeHtml(statusLabel)}</span>`
@@ -182,7 +182,12 @@ window.sofievkaCatalogUIReady = (async function () {
       : (ctx.currentCategory?.description || ctx.section.description);
     document.title = title;
     ensureMeta("description", description);
-    ensureMeta("robots", ctx.notFound || ctx.currentCategory?.status !== "active" || hasFilters ? "noindex,follow" : "index,follow");
+    // The catalog root and brand pages have no current category; only a missing or inactive one is noindex,
+    // and brands without products stay noindex (they are not in the sitemap).
+    const hidden = ctx.notFound
+      || (ctx.isBrand && (!ctx.brand || catalog.countForBrand?.(ctx.brand.id) === 0))
+      || (ctx.currentCategory && ctx.currentCategory.status !== "active");
+    ensureMeta("robots", hidden || hasFilters ? "noindex,follow" : "index,follow");
     let canonical = document.head.querySelector('link[rel="canonical"]');
     if (!canonical) { canonical = document.createElement("link"); canonical.rel = "canonical"; document.head.append(canonical); }
     canonical.href = `https://sofievka.vercel.app${canonicalPath(ctx)}`;

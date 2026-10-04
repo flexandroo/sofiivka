@@ -4,9 +4,14 @@
   let CATALOG = window.sofievkaCatalog || null;
   let PRODUCTS = Array.isArray(CATALOG?.catalogProducts) && CATALOG.catalogProducts.length ? CATALOG.catalogProducts : (Array.isArray(CATALOG?.products) && CATALOG.products.length ? CATALOG.products : [...BASE_PRODUCTS, ...TERMOJET_PRODUCTS]);
   const SCOPED_PRODUCT_CACHE = new Map();
+  // Supabase pages register canonical products (pricing.amount, images[]); cart, checkout and compare read the
+  // legacy fields (price, image, primaryCategoryName), so canonical products are adapted on the way in.
   window.sofievkaRegisterScopedProducts = products => {
+    const adapter = window.sofievkaProductLegacyAdapter;
     (Array.isArray(products) ? products : []).forEach(product => {
-      if (product?.id) SCOPED_PRODUCT_CACHE.set(product.id, product);
+      if (!product?.id) return;
+      const canonical = product.pricing && !("price" in product);
+      SCOPED_PRODUCT_CACHE.set(product.id, canonical && adapter ? adapter.adaptProduct(product, {}) : product);
     });
   };
   const PRODUCT_TYPES = Array.isArray(window.sofievkaProductTypes) ? window.sofievkaProductTypes : [];
@@ -100,6 +105,7 @@
     script.onerror = () => resolve(null);
     document.head.append(script);
   });
+  const CATALOG_PAGES = new Set(["catalog", "brand", "product", "search", "cart", "checkout", "favorites", "compare", "heating", "water-supply", "plumbing", "climate"]);
   const initialize = async () => {
     let catalogLoadError = null;
     try {
@@ -114,15 +120,21 @@
       WATER = window.sofievkaWaterCatalog || WATER;
       WATER_PRODUCTS = Array.isArray(WATER.products) && WATER.products.length ? WATER.products : WATER_PRODUCTS;
     } catch (error) { catalogLoadError = error; console.error("Catalog navigation failed to load", error); }
-    const pageContent = catalogLoadError && window.sofievkaCatalogRemoteRequested
-      ? catalogFailureMarkup()
-      : PAGES[page]();
+    // Only catalogue pages need the catalogue; contacts, delivery and the other company pages render without it.
+    const catalogDown = catalogLoadError && window.sofievkaCatalogRemoteRequested;
+    let pageContent;
+    if (catalogDown && CATALOG_PAGES.has(page)) pageContent = catalogFailureMarkup();
+    else {
+      try { pageContent = PAGES[page](); }
+      catch (error) { if (!catalogDown) throw error; console.error("Page failed to render without the catalogue", error); pageContent = catalogFailureMarkup(); }
+    }
+    if (catalogDown && pageContent === catalogFailureMarkup()) setNoindex();
     root.innerHTML = headerExtended() + `<main id="main" class="page-main">${pageContent}</main>` + footerExtended() + `<div class="toast" data-page-toast role="status" aria-live="polite"></div>`;
     window.sofievkaCatalogUI?.trackProductImages(root);
     window.sofievkaSiteSettings?.applyHooks(root);
     window.sofievkaAccount?.decorateHeader(root);
-    if (sitePages && !(catalogLoadError && window.sofievkaCatalogRemoteRequested)) sitePages.then(api => api?.apply(page, root)).catch(error => console.error("Page texts failed to load", error));
-    if (sitePosts && !(catalogLoadError && window.sofievkaCatalogRemoteRequested)) sitePosts.then(api => api?.apply(page, root)).catch(error => console.error("Posts failed to load", error));
+    if (sitePages && !(catalogDown && CATALOG_PAGES.has(page))) sitePages.then(api => api?.apply(page, root)).catch(error => console.error("Page texts failed to load", error));
+    if (sitePosts && !(catalogDown && CATALOG_PAGES.has(page))) sitePosts.then(api => api?.apply(page, root)).catch(error => console.error("Posts failed to load", error));
     bindGlobal();
     await bindExtendedPage(page);
   };
@@ -136,7 +148,9 @@
     try { cartIds = Object.keys(JSON.parse(localStorage.getItem("sofievka-cart")) || {}); } catch {}
     try { favoriteIds = JSON.parse(localStorage.getItem("sofievka-favorites")) || []; } catch {}
     try { compareIds = JSON.parse(localStorage.getItem("sofievka-compare")) || []; } catch {}
-    const stateIds = [...new Set([...cartIds, ...favoriteIds, ...compareIds])].filter(Boolean).slice(0, 96);
+    // «Запитати ціну» links open /contact?product=<id>; the product is loaded so the form can name it.
+    const requestedProduct = name === "contact" ? new URLSearchParams(location.search).get("product") || "" : "";
+    const stateIds = [...new Set([requestedProduct, ...cartIds, ...favoriteIds, ...compareIds])].filter(Boolean).slice(0, 96);
     if (name === "product") {
       const slug = productPathSlug();
       const queryId = new URLSearchParams(location.search).get("id") || "";
@@ -163,14 +177,14 @@
       products = (await source.getProductsByIds(stateIds)).products;
     }
     if (!products.length) return;
-    window.sofievkaRegisterScopedProducts(products);
     const bootstrap = window.sofievkaCatalogSnapshot;
     window.sofievkaInstallCatalogSnapshot(Object.freeze({ ...bootstrap, products: Object.freeze(products) }), { useRawCatalog: false });
+    window.sofievkaRegisterScopedProducts(products);
     window.sofievkaInstallPdp?.();
     window.sofievkaInstallCatalogSearch?.();
   }
   function catalogFailureMarkup() {
-    return `<section class="page-section"><div class="container"><div class="catalog-empty" role="alert"><span aria-hidden="true">!</span><h1>Каталог тимчасово недоступний</h1><p>Не вдалося отримати дані з development-каталогу. Локальне джерело не підставляється автоматично.</p><button class="button button--primary" type="button" onclick="location.reload()">Спробувати ще раз</button></div></div></section>`;
+    return `<section class="page-section"><div class="container"><div class="catalog-empty" role="alert"><span aria-hidden="true">!</span><h1>Каталог тимчасово недоступний</h1><p>Не вдалося завантажити каталог. Оновіть сторінку або зателефонуйте нам: <a href="tel:+380503582284">+38 (050) 358-22-84</a>.</p><button class="button button--primary" type="button" onclick="location.reload()">Спробувати ще раз</button></div></div></section>`;
   }
   function money(value) { return new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 0 }).format(Math.round(Number(value) || 0)) + " грн"; }
   function productCountLabel(count) { const value = Math.abs(Number(count) || 0); const ending = value % 10 === 1 && value % 100 !== 11 ? "товар" : [2, 3, 4].includes(value % 10) && ![12, 13, 14].includes(value % 100) ? "товари" : "товарів"; return `${value} ${ending}`; }
@@ -205,11 +219,11 @@
     const first = productById(value[0]);
     if (first && first.compareType !== product.compareType) { toast(`Порівнювати можна лише товари типу «${first.primaryCategoryName}»`); return false; }
     if (value.length >= 4) { toast("У порівнянні вже 4 товари"); return false; }
-    saveCompare([...value, id]); toast("Додано до порівняння"); return true;
+    saveCompare([...value, id]); toast("Додано до порівняння", { href: "/compare", label: `Порівняти (${value.length + 1})` }); return true;
   }
-  function addToCart(id, qty = 1) { const value = cart(); value[id] = (value[id] || 0) + qty; saveCart(value); toast("Товар додано до кошика"); }
+  function addToCart(id, qty = 1) { const value = cart(); value[id] = (value[id] || 0) + qty; saveCart(value); toast("Товар додано до кошика", { href: "/cart", label: "Перейти до кошика" }); }
   function toggleFavorite(id) { const value = favorites(); const next = value.includes(id) ? value.filter(item => item !== id) : [...value, id]; saveFavorites(next); toast(next.includes(id) ? "Додано в обране" : "Видалено з обраного"); return next.includes(id); }
-  function toast(message) { const el = document.querySelector("[data-page-toast]"); if (!el) return; el.textContent = message; el.classList.add("is-visible"); clearTimeout(window.pageToast); window.pageToast = setTimeout(() => el.classList.remove("is-visible"), 2400); }
+  function toast(message, link) { const el = document.querySelector("[data-page-toast]"); if (!el) return; el.textContent = message; if (link) { const a = document.createElement("a"); a.href = link.href; a.textContent = link.label; el.append(" ", a); } el.classList.add("is-visible"); clearTimeout(window.pageToast); window.pageToast = setTimeout(() => el.classList.remove("is-visible"), link ? 4500 : 2400); }
 
   function crumbs(current) { return `<nav class="page-breadcrumbs" aria-label="Хлібні крихти"><a href="/">Головна</a><span>/</span><span aria-current="page">${current}</span></nav>`; }
   // Breadcrumbs name the page, not its headline (the headline is editable in /admin/pages).
@@ -419,7 +433,7 @@
           const result=await window.sofievkaCrm.submitLead({
             type:form.dataset.leadForm, name:data.get("name"), phone:data.get("phone"), email:data.get("email"),
             company:data.get("company"), subject:data.get("subject"), message:data.get("message"),
-            specLines:spec?window.sofievkaCrm.parseSpecLines(spec):[], pageUrl:location.pathname, website:data.get("website")
+            specLines:spec?window.sofievkaCrm.parseSpecLines(spec):[], pageUrl:(location.pathname+location.search).slice(0,500), website:data.get("website")
           });
           form.innerHTML=`<div class="lead-success" tabindex="-1" role="status"><p class="page-kicker">Звернення № ${escapeHtml(result?.number??"")}</p><h3>Дякуємо, ми отримали ваш запит</h3><p>Менеджер зв’яжеться з вами найближчим часом у робочий час.</p></div>`;
           form.querySelector(".lead-success")?.focus();
@@ -429,6 +443,20 @@
         }
       });
     });
+  }
+  function prefillProductRequest() {
+    const requested = new URLSearchParams(location.search).get("product");
+    const form = document.querySelector('[data-lead-form="contact"]');
+    const message = form?.querySelector('textarea[name="message"]');
+    if (!requested || !message) return;
+    const product = productById(requested) || PRODUCTS.find(item => item.sku === requested) || null;
+    const code = product?.sku || requested;
+    const name = product ? `${product.title} (код ${code})` : `товар з кодом ${code}`;
+    message.value = `Прошу уточнити ціну та наявність: ${name}.`;
+    form.querySelector(".form-section > p")?.insertAdjacentHTML("afterend", product
+      ? `<p class="lead-product">Запит щодо товару: <a href="${productUrl(product)}">${escapeHtml(product.title)}</a></p>`
+      : `<p class="lead-product">Запит щодо товару з кодом ${escapeHtml(code)}</p>`);
+    document.querySelector("#contact-form")?.scrollIntoView({ block: "start" });
   }
   function leadFormFields({ company=false, subject=false, spec=false, messageLabel="Ваш запит", messageRequired=true, submitLabel="Надіслати" }={}){
     return `<div class="notice notice--error" data-lead-error role="alert" hidden></div>
@@ -474,12 +502,14 @@
     document.addEventListener("click",e=>{
       const add=e.target.closest("[data-add]");
       if(add){
-        const qty=Number(document.querySelector("[data-product-qty]")?.value||1);
+        const qty=add.closest("[data-pdp-purchase], .pdp-mobile-buybar")?Number(document.querySelector("[data-product-qty]")?.value||1):1;
         addToCart(add.dataset.add,qty);
         const quantity=cart()[add.dataset.add]||qty;
-        add.classList.add("is-in-cart");
-        add.textContent=`У кошику · ${quantity}`;
-        add.setAttribute("aria-label",`У кошику ${quantity} шт. Додати ще`);
+        document.querySelectorAll(`[data-add="${CSS.escape(add.dataset.add)}"]`).forEach(button=>{
+          button.classList.add("is-in-cart");
+          button.textContent=`У кошику · ${quantity}`;
+          button.setAttribute("aria-label",`У кошику ${quantity} шт. Додати ще`);
+        });
       }
       const fav=e.target.closest("[data-favorite]");
       if(fav){
@@ -835,7 +865,7 @@
       return `<button class="button button--primary pdp-buy${modifier ? ` ${modifier}` : ""}${cartQuantity ? " is-in-cart" : ""}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${escapeHtml(cartQuantity ? `У кошику ${cartQuantity} шт. Додати ще` : `Додати ${product.title} до кошика`)}">${pdpIcon("Кошик")}<span data-buy-label>${label}</span></button>`;
     }
     const label = purchase.amount ? "Уточнити наявність" : "Уточнити ціну";
-    return `<a class="button button--primary pdp-buy pdp-buy--consult${modifier ? ` ${modifier}` : ""}" href="/contact?product=${encodeURIComponent(product.sku || product.id)}">${pdpIcon("Консультація")}<span>${label}</span></a>`;
+    return `<a class="button button--primary pdp-buy pdp-buy--consult${modifier ? ` ${modifier}` : ""}" href="/contact?product=${encodeURIComponent(product.id)}#contact-form">${pdpIcon("Консультація")}<span>${label}</span></a>`;
   }
 
   function renderPdpIdentity(view) {
@@ -913,7 +943,7 @@
 
   function renderPdpCompatibility(view) {
     if (!view.compatibility) return "";
-    return `<section class="pdp-detail-section pdp-compatibility" id="compatibility" aria-labelledby="compatibility-title"><div class="container"><details class="pdp-module" data-pdp-module open><summary><span>Сумісність</span><b aria-hidden="true"></b></summary><div class="pdp-module__body"><div class="pdp-compatibility__row"><div>${pdpIcon("Сумісність")}<h2 id="compatibility-title">Сумісність</h2></div><p>${escapeHtml(view.compatibility)}</p><a href="/contact?product=${encodeURIComponent(view.product.sku || view.product.id)}">Перевірити для вашої системи →</a></div></div></details></div></section>`;
+    return `<section class="pdp-detail-section pdp-compatibility" id="compatibility" aria-labelledby="compatibility-title"><div class="container"><details class="pdp-module" data-pdp-module open><summary><span>Сумісність</span><b aria-hidden="true"></b></summary><div class="pdp-module__body"><div class="pdp-compatibility__row"><div>${pdpIcon("Сумісність")}<h2 id="compatibility-title">Сумісність</h2></div><p>${escapeHtml(view.compatibility)}</p><a href="/contact?product=${encodeURIComponent(view.product.id)}#contact-form">Перевірити для вашої системи →</a></div></div></details></div></section>`;
   }
 
   function renderPdpDocuments(view) {
@@ -1060,19 +1090,37 @@
     return `<section class="brand-hero"><div class="container"><nav class="page-breadcrumbs" aria-label="Хлібні крихти"><a href="/brands">Бренди</a><span>→</span><span aria-current="page">${escapeHtml(brand)}</span></nav><p class="page-kicker">Виробник</p><h1>${escapeHtml(brand)}</h1><p>${allItems.length} товарів у ${categories.length} категоріях ${catalogLabel}.${brand === "Ecosoft" ? " Ключові параметри звірено з офіційним каталогом Ecosoft 2026." : ""}</p></div></section><section class="page-section page-section--compact"><div class="container brand-categories">${categoryLinks}</div></section><section class="page-section" id="brand-products"><div class="container"><div class="page-heading"><h2>${selectedName ? escapeHtml(selectedName) : `Товари ${escapeHtml(brand)}`}</h2><p>${selectedCategory ? `Знайдено ${items.length} товарів у вибраній категорії.` : "Оберіть категорію або перегляньте весь асортимент бренду."}</p></div><div class="catalog-products">${items.map(extendedProductCard).join("")}</div></div></section>`;
   }
 
+  function compareRows(products) {
+    const specs = products.map(product => new Map(window.sofievkaCatalogUI?.productCardAttributes ? window.sofievkaCatalogUI.productCardAttributes(product, 99) : featureEntries(product)));
+    const labels = [...new Set(specs.flatMap(map => [...map.keys()]))];
+    return labels.map(label => [label, specs.map(map => map.get(label) ?? "—")]);
+  }
   function renderCompareExtended() {
     const queryIds = new URLSearchParams(location.search).get("ids");
     const requestedIds = (queryIds ? queryIds.split(",") : compareSelection()).filter(Boolean).slice(0, 4);
     const selected = requestedIds.map(productById).filter(Boolean);
-    if (!selected.length) return hero("Порівняння", "Немає товарів для порівняння", "Позначте потрібні моделі в каталозі — випадкові товари не додаються.", true) + `<section class="page-section"><div class="container empty-state"><a class="button button--primary" href="/catalog/water-treatment">До каталогу</a></div></section>`;
+    if (!selected.length) return hero("Порівняння", "Порівняння товарів", "Додайте товари кнопкою «Порівняти» на картці або сторінці товару.", true) + `<section class="page-section"><div class="container empty-state"><a class="button button--primary" href="/catalog">До каталогу</a></div></section>`;
     const compatible = selected.filter(product => product.compareType === selected[0].compareType);
-    const keys = [...new Set(compatible.flatMap(product => Object.keys(product.features || {})))];
-    return hero("Порівняння", compatible[0].primaryCategoryName, "Поруч показані лише сумісні товари та підтверджені характеристики.", true) + `<section class="page-section"><div class="container compare-scroll"><table class="compare-table"><thead><tr><th>Параметр</th>${compatible.map(product => `<th><img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}"><span>${escapeHtml(product.brand)}</span><strong>${escapeHtml(product.shortTitle || product.title)}</strong></th>`).join("")}</tr></thead><tbody><tr><th>Код товару</th>${compatible.map(product => `<td>${escapeHtml(product.sku)}</td>`).join("")}</tr>${keys.map(key => { const label = FEATURE_LABELS[key]?.[0] || key; return `<tr><th>${escapeHtml(label)}</th>${compatible.map(product => `<td>${escapeHtml(featureEntries({ features: { [key]: product.features?.[key] } })[0]?.[1] || "—")}</td>`).join("")}</tr>`; }).join("")}<tr><th>Наявність</th>${compatible.map(product => `<td>${escapeHtml(product.availabilityLabel)}</td>`).join("")}</tr><tr><th>Ціна</th>${compatible.map(product => `<td><strong>${money(product.price)}</strong></td>`).join("")}</tr><tr><th>Дія</th>${compatible.map(product => `<td><a class="button button--secondary" href="${productUrl(product)}">Переглянути</a></td>`).join("")}</tr></tbody></table></div></section>`;
+    const skipped = selected.length - compatible.length;
+    const cells = render => compatible.map(product => `<td>${render(product)}</td>`).join("");
+    const head = compatible.map(product => `<th>${product.image ? `<img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">` : ""}<span>${escapeHtml(product.brand)}</span><strong>${escapeHtml(product.shortTitle || product.title)}</strong><button class="compare-remove" type="button" data-compare-remove="${escapeHtml(product.id)}">Прибрати</button></th>`).join("");
+    const rows = compareRows(compatible).map(([label, values]) => `<tr><th>${escapeHtml(label)}</th>${values.map(value => `<td>${escapeHtml(value)}</td>`).join("")}</tr>`).join("");
+    const note = skipped ? `<p class="notice">${productCountLabel(skipped)} з іншої категорії не показано: порівнювати можна лише товари одного типу.</p>` : "";
+    return hero("Порівняння", escapeHtml(compatible[0].primaryCategoryName || "Порівняння товарів"), "Поруч показані характеристики, ціна й наявність.", true) + `<section class="page-section"><div class="container">${note}<div class="compare-scroll"><table class="compare-table"><thead><tr><th>Параметр</th>${head}</tr></thead><tbody><tr><th>Код товару</th>${cells(product => escapeHtml(product.sku))}</tr>${rows}<tr><th>Наявність</th>${cells(product => escapeHtml(product.availabilityLabel || "Наявність уточнюйте"))}</tr><tr><th>Ціна</th>${cells(product => Number(product.price) > 0 ? `<strong>${money(product.price)}</strong>` : "Ціну уточнюйте")}</tr><tr><th>Дія</th>${cells(product => `<a class="button button--secondary" href="${productUrl(product)}">Переглянути</a>`)}</tr></tbody></table></div><button class="button button--secondary compare-clear" type="button" data-compare-clear>Очистити порівняння</button></div></section>`;
+  }
+  function bindCompare() {
+    document.querySelector("main")?.addEventListener("click", event => {
+      const remove = event.target.closest("[data-compare-remove]");
+      if (!remove && !event.target.closest("[data-compare-clear]")) return;
+      saveCompare(remove ? compareSelection().filter(id => id !== remove.dataset.compareRemove) : []);
+      if (new URLSearchParams(location.search).has("ids")) history.replaceState(null, "", "/compare");
+      document.querySelector("main").innerHTML = renderCompareExtended();
+    });
   }
 
   function renderBuyersExtended() {
     const items = [["/delivery", "Доставка", "Способи отримання, перевірка вантажу та строки."], ["/payment", "Оплата", "Коли й за якими реквізитами оплачується замовлення."], ["/warranty", "Гарантія", "Документи, діагностика та маршрут звернення."], ["/returns", "Обмін і повернення", "Умови для товару належної якості та дії при пошкодженні."], ["/faq", "Часті запитання", "Короткі відповіді про підбір, покупку й сервіс."], ["/contact", "Контакти", "Телефони, графік і маршрут до магазину."]];
-    return hero("Покупцям", "Усе важливе до замовлення", "Умови отримання, оплати, гарантії та повернення зібрані в одному розділі.", true) + `<section class="page-section"><div class="container buyer-help-grid">${items.map(([href, title, text], index) => `<a href="/${href}"><span>0${index + 1}</span><h2>${title}</h2><p>${text}</p><b>Перейти →</b></a>`).join("")}</div></section>`;
+    return hero("Покупцям", "Усе важливе до замовлення", "Умови отримання, оплати, гарантії та повернення зібрані в одному розділі.", true) + `<section class="page-section"><div class="container buyer-help-grid">${items.map(([href, title, text], index) => `<a href="${href}"><span>0${index + 1}</span><h2>${title}</h2><p>${text}</p><b>Перейти →</b></a>`).join("")}</div></section>`;
   }
 
   function renderAboutExtended() {
@@ -1084,7 +1132,7 @@
   }
 
   function renderPaymentExtended() {
-    return hero("Покупцям", "Оплата без неузгоджених переказів", "Оплачуйте замовлення лише після підтвердження моделі, ціни, комплектності, способу доставки та актуальних реквізитів.", true) + `<section class="page-section"><div class="container payment-grid"><article><span>01</span><h2>Безготівковий рахунок</h2><p>Для фізичних осіб, ФОП і підприємств. Реквізити та строк резерву вказуються в рахунку.</p></article><article><span>02</span><h2>Оплата при отриманні</h2><p>Доступність залежить від товару, суми, способу перевезення та правил перевізника.</p></article><article><span>03</span><h2>Оплата в магазині</h2><p>Після підтвердження, що товар є в точці видачі та підготовлений до отримання.</p></article></div></section><section class="page-section page-section--white"><div class="container content-layout"><article class="prose"><h2>Безпечний порядок оплати</h2><ol><li>Менеджер перевіряє артикул, ціну, залишок і комплектність.</li><li>Ви отримуєте підсумок замовлення та погоджений спосіб доставки.</li><li>Для безготівкової оплати надсилається рахунок з актуальними реквізитами.</li><li>Після зарахування коштів замовлення переходить до комплектування або відправлення.</li></ol><h2>Для підприємств і монтажних організацій</h2><p>Документи формуються за підтвердженими реквізитами та номенклатурою. Якщо об'єкт постачається частинами, порядок рахунків і відвантажень узгоджується до першої оплати.</p><h2>Поточний порядок оформлення</h2><p>Онлайн-еквайринг і автоматичне створення замовлення на сайті наразі недоступні. Менеджер погоджує спосіб оплати та надає актуальні реквізити після перевірки товарів. Не здійснюйте переказ до отримання підтвердження.</p></article><aside class="aside-card"><h2>Перевірити рахунок</h2><p>Звірте назву продавця, перелік товарів, кількість, суму та призначення платежу.</p><a class="button button--secondary" href="/contact">Зв'язатися з менеджером</a><div class="link-list"><a href="/delivery">Доставка <span>→</span></a><a href="/buyers">Покупцям <span>→</span></a><a href="/terms">Умови користування <span>→</span></a></div></aside></div></section>`;
+    return hero("Покупцям", "Оплата без неузгоджених переказів", "Оплачуйте замовлення лише після підтвердження моделі, ціни, комплектності, способу доставки та актуальних реквізитів.", true) + `<section class="page-section"><div class="container payment-grid"><article><span>01</span><h2>Безготівковий рахунок</h2><p>Для фізичних осіб, ФОП і підприємств. Реквізити та строк резерву вказуються в рахунку.</p></article><article><span>02</span><h2>Оплата при отриманні</h2><p>Доступність залежить від товару, суми, способу перевезення та правил перевізника.</p></article><article><span>03</span><h2>Оплата в магазині</h2><p>Після підтвердження, що товар є в точці видачі та підготовлений до отримання.</p></article></div></section><section class="page-section page-section--white"><div class="container content-layout"><article class="prose"><h2>Безпечний порядок оплати</h2><ol><li>Менеджер перевіряє артикул, ціну, залишок і комплектність.</li><li>Ви отримуєте підсумок замовлення та погоджений спосіб доставки.</li><li>Для безготівкової оплати надсилається рахунок з актуальними реквізитами.</li><li>Після зарахування коштів замовлення переходить до комплектування або відправлення.</li></ol><h2>Для підприємств і монтажних організацій</h2><p>Документи формуються за підтвердженими реквізитами та номенклатурою. Якщо об'єкт постачається частинами, порядок рахунків і відвантажень узгоджується до першої оплати.</p><h2>Поточний порядок оформлення</h2><p>Замовлення можна оформити на сайті: менеджер перевірить наявність, ціну й доставку та зв’яжеться з вами. Онлайн-оплати карткою поки немає, реквізити для оплати надсилаємо після підтвердження. Не здійснюйте переказ до отримання підтвердження.</p></article><aside class="aside-card"><h2>Перевірити рахунок</h2><p>Звірте назву продавця, перелік товарів, кількість, суму та призначення платежу.</p><a class="button button--secondary" href="/contact">Зв'язатися з менеджером</a><div class="link-list"><a href="/delivery">Доставка <span>→</span></a><a href="/buyers">Покупцям <span>→</span></a><a href="/terms">Умови користування <span>→</span></a></div></aside></div></section>`;
   }
 
   function renderWarrantyExtended() {
@@ -1151,6 +1199,8 @@
       return;
     }
     if (name !== "catalog") bindPage(name);
+    if (name === "compare") bindCompare();
+    if (name === "contact") prefillProductRequest();
 
     if (name === "catalog") {
       document.querySelector('[data-filter-key="availability"]')?.closest(".filter-group")?.insertAdjacentHTML("afterend", `<div class="filter-group"><strong>Тип встановлення</strong><label><input type="checkbox" value="under-sink" data-filter-key="installation"> Під мийку</label></div>`);

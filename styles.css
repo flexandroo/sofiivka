@@ -2547,7 +2547,15 @@ a.brand-directory-card:focus-visible {
 
 .toast.is-visible {
   opacity: 1;
+  pointer-events: auto;
   transform: translateY(0);
+}
+
+.toast a {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 [data-reveal] {

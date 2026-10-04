@@ -198,7 +198,7 @@
   .process-list article:nth-child(4) { border-top: 1px solid var(--divider); }
 }
 @media (max-width: 900px) {
-  .header-actions a.header-action:not([href="/cart.html"]) { display: none; }
+  .header-actions a.header-action:not([data-cart]) { display: none; }
   .page-hero__grid, .page-heading, .content-layout, .pdp__top, .contact-grid, .cart-layout, .checkout-layout { grid-template-columns: 1fr; }
   .contact-grid > div { padding-left: 0; padding-right: 0; }
   .contact-grid > div + div { border-left: 0; border-top: 1px solid var(--divider); }
@@ -302,6 +302,10 @@
 .compare-table thead strong { display: block; margin-top: 5px; font-size: 17px; }
 .compare-table tbody th { color: var(--text-secondary); font-weight: 600; }
 .compare-table .button { min-height: 42px; width: 100%; padding-inline: 12px; }
+.compare-remove { display: inline-flex; align-items: center; min-height: 40px; margin-top: 10px; padding: 0; border: 0; background: none; color: var(--text-secondary); font: inherit; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.compare-remove:hover { color: var(--graphite); }
+.compare-clear { margin-top: 24px; }
+.compare-scroll + .compare-clear, .notice + .compare-scroll { margin-top: 24px; }
 
 .buyer-help-grid, .service-hub-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; border: 1px solid var(--divider); background: var(--divider); }
 .buyer-help-grid a, .service-hub-grid a { min-height: 270px; display: flex; flex-direction: column; padding: clamp(26px, 3vw, 40px); background: var(--surface); transition: background .25s ease; }
@@ -994,6 +998,8 @@ body[data-page="product"] {
 .order-summary dd { white-space: nowrap; }
 .lead-form .form-section > p { margin: -6px 0 20px; color: var(--text-secondary); }
 .lead-form .notice { margin-bottom: 18px; }
+.lead-form .form-section > p.lead-product { margin: 0 0 20px; padding: 12px 16px; border-left: 3px solid var(--yellow); background: var(--yellow-tint); color: var(--text); }
+.lead-product a { color: inherit; font-weight: 700; }
 .lead-form .field small, .checkout-form .field small { color: var(--text-subtle); font-weight: 400; }
 .lead-success, .checkout-success { outline: none; }
 .lead-success { padding: 8px 0; }
