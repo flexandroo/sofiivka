@@ -355,10 +355,10 @@
 }
 
 .storefront-slide .button {
-  min-height: 42px;
+  min-height: var(--button-height);
   margin-top: clamp(22px, 3vw, 36px);
   padding-inline: 20px;
-  border-radius: 4px;
+  border-radius: var(--radius-button);
   font-size: 13px;
 }
 
@@ -552,9 +552,9 @@
   bottom: 18px;
   left: clamp(18px, 2vw, 28px);
   z-index: 3;
-  min-height: 34px;
+  min-height: var(--button-height-compact);
   padding-inline: 14px;
-  border-radius: 3px;
+  border-radius: var(--radius-button);
   font-size: 11px;
 }
 
@@ -707,7 +707,6 @@
   min-height: 14px;
   margin-top: 3px;
   padding-top: 0;
-  font-size: 9px;
 }
 
 .home-page .home-products .product-card__specs {
@@ -737,8 +736,9 @@
 
 .home-page .home-products .product-card__buy,
 .home-page .home-products .product-card__favorite {
-  min-height: 38px;
-  border-radius: 3px;
+  min-height: var(--button-height-compact);
+  min-width: var(--tap-target);
+  border-radius: var(--radius-button);
 }
 
 .home-page .home-products .product-card__buy {
@@ -1315,7 +1315,6 @@
   }
 
   .storefront-slide .button {
-    min-height: 44px;
     margin-top: 18px;
   }
 
@@ -1332,7 +1331,7 @@
 
   .storefront-showcase__dots button {
     width: 28px;
-    height: 32px;
+    height: var(--tap-target);
   }
 
   .storefront-showcase__arrows button {
@@ -1422,7 +1421,7 @@
   .storefront-promo__action {
     bottom: 14px;
     left: var(--gutter);
-    min-height: 40px;
+    min-height: var(--tap-target);
   }
 
   .home-products {
