@@ -824,6 +824,22 @@ function setupHomepageContact() {
 
   let stores = homepageStoreLocations();
   let activeStore = Object.keys(stores)[0];
+  // The Google Maps embed is heavy (~1 MB of scripts): index.html ships it as data-src and the frame is only
+  // given its address once the block is within half a screen of the viewport, and only when the address changes.
+  let mapSource = map?.getAttribute("data-src") || map?.getAttribute("src") || "";
+  let mapNear = !map || !("IntersectionObserver" in window);
+  const applyMapSource = () => {
+    if (map && mapNear && mapSource && map.getAttribute("src") !== mapSource) map.setAttribute("src", mapSource);
+  };
+  if (map && !mapNear) {
+    const observer = new IntersectionObserver(entries => {
+      if (!entries.some(entry => entry.isIntersecting)) return;
+      observer.disconnect();
+      mapNear = true;
+      applyMapSource();
+    }, { rootMargin: "50% 0px" });
+    observer.observe(map);
+  }
   const switcher = document.querySelector(".home-contact__store-switcher");
   const renderSwitcher = () => {
     if (!switcher) return;
@@ -851,8 +867,9 @@ function setupHomepageContact() {
 
     const encodedQuery = encodeURIComponent(store.mapQuery);
     if (map) {
-      map.src = `https://www.google.com/maps?q=${encodedQuery}&output=embed`;
+      mapSource = `https://www.google.com/maps?q=${encodedQuery}&output=embed`;
       map.title = `Магазин Софіївка у місті ${store.name} на мапі`;
+      applyMapSource();
     }
     if (kicker) kicker.textContent = store.kicker;
     if (address) address.textContent = store.address;

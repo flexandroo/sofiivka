@@ -4,11 +4,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { transform } from "esbuild";
 import { resolveSiteUrl, writeSeoFiles } from "./generate-sitemap.mjs";
+import { prerenderCompanyPages } from "./prerender-company-pages.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputArgument = process.argv.find(argument => argument.startsWith("--output-dir="))?.split("=").slice(1).join("=") || "dist";
 const skipAssets = process.argv.includes("--skip-assets");
 const skipMinify = process.argv.includes("--no-minify");
+const skipPrerender = process.argv.includes("--no-prerender");
 const outputDirectory = path.resolve(root, outputArgument);
 const source = String(process.env.SOFIEVKA_CATALOG_SOURCE || "local").trim().toLowerCase();
 const deploymentEnvironment = String(process.env.VERCEL_ENV || "local").trim().toLowerCase();
@@ -59,13 +61,19 @@ await fs.rm(outputDirectory, { recursive: true, force: true, maxRetries: 5, retr
 await fs.mkdir(outputDirectory, { recursive: true });
 
 const allowedDirectories = new Set(["admin", "assets", "catalog", "lib"]);
-const allowedRootExtensions = new Set([".css", ".html", ".ico", ".js", ".json", ".mjs", ".svg", ".txt", ".webmanifest", ".xml"]);
+// No .json at the root: package.json, package-lock.json and vercel.json are repository files, not site files.
+const allowedRootExtensions = new Set([".css", ".html", ".ico", ".js", ".mjs", ".svg", ".txt", ".webmanifest", ".xml"]);
+// Inside the copied directories, data/notes files (catalog/*.json review baselines, assets/**/SOURCES.md) stay
+// out of the site; nothing on the site fetches them.
+const internalFilePattern = /\.(?:json|md|markdown|ps1|sh|sql|csv|tsv|log|map)$/i;
 const rootEntries = await fs.readdir(root, { withFileTypes: true });
 for (const entry of rootEntries) {
   const sourcePath = path.join(root, entry.name);
   const destinationPath = path.join(outputDirectory, entry.name);
   if (entry.isDirectory()) {
-    if (allowedDirectories.has(entry.name) && !(skipAssets && entry.name === "assets")) await fs.cp(sourcePath, destinationPath, { recursive: true });
+    if (allowedDirectories.has(entry.name) && !(skipAssets && entry.name === "assets")) {
+      await fs.cp(sourcePath, destinationPath, { recursive: true, filter: file => !internalFilePattern.test(file) && !path.basename(file).startsWith(".") });
+    }
     continue;
   }
   if (!allowedRootExtensions.has(path.extname(entry.name).toLowerCase())) continue;
@@ -109,7 +117,27 @@ for (const entry of await fs.readdir(outputDirectory, { withFileTypes: true })) 
     ];
     html = html.replace(/<\/head>/i, `${tags.map(([property, content]) => `<meta property="${property}" content="${attribute(content)}">`).join("")}<meta name="twitter:card" content="summary_large_image"></head>`);
   }
+  // One canonical per indexable static page (no query string). Template pages (product, category, brand, post …)
+  // set theirs at run time from the address; pages that already declare one keep it.
+  const pageName = entry.name.slice(0, -".html".length);
+  if (!templatePages.has(pageName) && !/<link\b[^>]*\brel=["']canonical["']/i.test(html)) {
+    html = html.replace(/<\/head>/i, `<link rel="canonical" href="${attribute(`${siteUrl}${pageName === "index" ? "/" : `/${pageName}`}`)}"></head>`);
+  }
   if (!/seo-schema\.js/i.test(html)) html = html.replace(/<\/head>/i, '<script src="/seo-schema.js?v=20261002-stage4-1" defer></script></head>');
+  // page-shell.js loads brands-data.js, catalog-data.js and catalog-ui.js one after another before it renders;
+  // preloading them (same URLs, stamped below) lets the browser fetch all three in parallel with page-shell.js.
+  const hints = [];
+  if (/page-shell\.js/i.test(html) && /data-page-root/i.test(html)) {
+    for (const script of ["/brands-data.js", "/catalog-data.js", "/catalog-ui.js"]) {
+      if (!new RegExp(`<script\\b[^>]*\\bsrc=["'][^"']*${script.slice(1).replace(".", "\\.")}`, "i").test(html)) hints.push(`<link rel="preload" as="script" href="${script}?v=1">`);
+    }
+  }
+  // With the Supabase catalogue every storefront page imports these modules and calls the RPCs.
+  if (source === "supabase" && /catalog-data\.js|page-shell\.js/i.test(html)) {
+    hints.unshift(`<link rel="preconnect" href="${attribute(config.supabase.url)}" crossorigin>`);
+    for (const module of ["/lib/supabase-client.mjs", "/catalog/supabase-data-source.mjs", "/catalog/data-source.mjs"]) hints.push(`<link rel="modulepreload" href="${module}?v=1">`);
+  }
+  if (hints.length) html = html.replace(/<\/head>/i, `${hints.join("")}</head>`);
   if (source === "supabase") {
     html = html.replace(supplierFeedPattern, match => {
       removedFeedTags += 1;
@@ -151,39 +179,75 @@ async function contentHash(relativePath) {
   return fileHashes.get(relativePath);
 }
 let versionedReferences = 0;
-// Scripts that load other scripts at run time ("/catalog-data.js?v=…" in page-shell.js) get the same treatment;
-// two passes so a loader that is itself loaded by another script carries its final hash.
-const scriptFiles = (await listFiles(outputDirectory, name => minifyDirectories.has(name))).filter(file => /\.m?js$/i.test(file) && !minifySkip.has(path.basename(file)));
-for (let pass = 0; pass < 2; pass += 1) {
+// Scripts that load other scripts at run time ("/catalog-data.js?v=…" in page-shell.js) and ES module imports
+// (`from "./data-source.mjs"`, `import("/lib/supabase-client.mjs?v=1")`) get the same treatment, so modules are
+// cached as immutable files too instead of being revalidated (304) on every page. A file's hash covers the
+// stamped references inside it, so passes repeat until nothing changes: a changed module also changes the URL of
+// every module that imports it.
+const versionedStringPattern = /(["'`])(\/[^"'`?#\s]+\.(?:js|mjs|css))\?v=[^"'`#\s]*\1/g;
+const moduleSpecifierPattern = /(\bfrom\s*|\bimport\s*\(\s*|\bimport\s*)(["'])((?:\/|\.\.?\/)[^"'?#\s]+\.m?js)(?:\?v=[^"'#\s]*)?\2/g;
+const htmlReferencePattern = /\b(src|href)="((?!https?:|\/\/|data:)[^"?#]+\.(?:js|mjs|css))(?:\?v=[^"#]*)?"/gi;
+const resolveReference = (directory, reference) => reference.startsWith("/") ? reference.slice(1) : path.posix.normalize(path.posix.join(directory, reference));
+async function stampReferences(filePath, { html = false } = {}) {
+  const code = await fs.readFile(filePath, "utf8");
+  const directory = path.relative(outputDirectory, path.dirname(filePath)).split(path.sep).join("/") || ".";
+  const hashes = new Map();
+  const hashFor = async reference => {
+    const relativePath = resolveReference(directory, reference);
+    if (!hashes.has(relativePath)) hashes.set(relativePath, await contentHash(path.normalize(relativePath)));
+    return hashes.get(relativePath);
+  };
+  const patterns = html ? [htmlReferencePattern, moduleSpecifierPattern] : [versionedStringPattern, moduleSpecifierPattern];
+  for (const pattern of patterns) for (const match of code.matchAll(pattern)) await hashFor(match[pattern === moduleSpecifierPattern ? 3 : 2]);
+  let count = 0;
+  let next = code;
+  if (html) {
+    next = next.replace(htmlReferencePattern, (match, name, reference) => {
+      const hash = hashes.get(resolveReference(directory, reference));
+      if (!hash) return match;
+      count += 1;
+      return `${name}="${reference}?v=${hash}"`;
+    });
+  } else {
+    next = next.replace(versionedStringPattern, (match, quote, reference) => {
+      const hash = hashes.get(resolveReference(directory, reference));
+      if (!hash) return match;
+      count += 1;
+      return `${quote}${reference}?v=${hash}${quote}`;
+    });
+  }
+  next = next.replace(moduleSpecifierPattern, (match, lead, quote, reference) => {
+    const hash = hashes.get(resolveReference(directory, reference));
+    if (!hash) return match;
+    if (!match.includes(`?v=${hash}`)) count += 1;
+    return `${lead}${quote}${reference}?v=${hash}${quote}`;
+  });
+  if (next !== code) await fs.writeFile(filePath, next, "utf8");
+  return { changed: next !== code, count };
+}
+const scriptFiles = (await listFiles(outputDirectory, name => minifyDirectories.has(name) || name === "lib")).filter(file => /\.m?js$/i.test(file) && !minifySkip.has(path.basename(file)));
+let stampingPasses = 0;
+for (let changed = true; changed; stampingPasses += 1) {
+  if (stampingPasses >= 12) throw new Error("Script versions did not settle: a cycle of module imports?");
+  changed = false;
   fileHashes.clear();
   for (const filePath of scriptFiles) {
-    const code = await fs.readFile(filePath, "utf8");
-    let next = code;
-    for (const [match, quote, reference] of code.matchAll(/(["'`])(\/[^"'`?#\s]+\.(?:js|mjs|css))\?v=[^"'`#\s]*\1/g)) {
-      const hash = await contentHash(reference.slice(1));
-      if (!hash) continue;
-      next = next.replace(match, `${quote}${reference}?v=${hash}${quote}`);
-      if (pass === 1) versionedReferences += 1;
-    }
-    if (next !== code) await fs.writeFile(filePath, next, "utf8");
+    const result = await stampReferences(filePath);
+    if (result.changed) changed = true;
   }
 }
 fileHashes.clear();
 for (const filePath of await listFiles(outputDirectory, name => name === "admin")) {
   if (path.extname(filePath).toLowerCase() !== ".html") continue;
-  const html = await fs.readFile(filePath, "utf8");
-  const pageDirectory = path.dirname(path.relative(outputDirectory, filePath));
-  const references = [...html.matchAll(/\b(src|href)="((?!https?:|\/\/|data:)[^"?#]+\.(?:js|mjs|css))(?:\?v=[^"#]*)?"/gi)];
-  let next = html;
-  for (const [match, name, reference] of references) {
-    const relativePath = reference.startsWith("/") ? reference.slice(1) : path.join(pageDirectory, reference);
-    const hash = await contentHash(path.normalize(relativePath));
-    if (!hash) continue;
-    next = next.replace(match, `${name}="${reference}?v=${hash}"`);
-    versionedReferences += 1;
-  }
-  if (next !== html) await fs.writeFile(filePath, next, "utf8");
+  versionedReferences += (await stampReferences(filePath, { html: true })).count;
 }
+for (const filePath of scriptFiles) {
+  const code = await fs.readFile(filePath, "utf8");
+  versionedReferences += [...code.matchAll(versionedStringPattern)].length + [...code.matchAll(moduleSpecifierPattern)].filter(match => match[0].includes("?v=")).length;
+}
+
+// Company pages get their first paint in the HTML (pure Node, see scripts/prerender-company-pages.mjs).
+const prerendered = skipPrerender ? [] : await prerenderCompanyPages({ outputDirectory, siteUrl, log: message => console.warn(message) });
 
 const seo = await writeSeoFiles({ root, outputDirectory, config });
 
@@ -198,6 +262,9 @@ const manifest = {
   assetsIncluded: !skipAssets,
   minified,
   versionedReferences,
+  stampingPasses,
+  prerendered: prerendered.filter(item => item.status === "ok").map(item => item.page),
+  prerenderFailures: prerendered.filter(item => item.status !== "ok"),
   sitemap: seo
 };
 await fs.writeFile(path.join(outputDirectory, "catalog-build-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
