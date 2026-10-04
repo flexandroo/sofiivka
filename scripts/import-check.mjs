@@ -29,6 +29,56 @@ const UNITS = new Set(["kw", "kwt", "w", "mm", "bar", "rpm", "ip", "v", "hz", "p
 const LOGISTICS_LABELS = /штрих|\bean\b|упаков|палет|брутто|артикул|офіційна назва|категорія виробника|країна реєстрації бренду/i;
 const SHOP_TEXT = /оплата частинами|доставк|\+?38\s?\(?0\d{2}|(?:https?:\/\/|www\.)\S+/i;
 const SEO_SUFFIX = " — купити в ТД «Софіївка»";
+// Rules from the 2026-10-05 catalogue cleanup (AUD-032/033/035/037, AUD-050/052): what was fixed on PROD by SQL
+// must not come back with the next import.
+const SERVICE_LABELS = /^(qt|ean номер|посилання на групу товарів|вартість системи|схема (?:електричного )?підключення|розрахунок числа|об['’]єм пакування|код модельного ряду двигунів|№ структурного файла|fiktiv frekvens|сфера продажів|зображення продукту|main pump pn)$/i;
+const RAW_KEY = /^[a-z0-9]+(?:_[a-z0-9]+)+$/;
+const CODE_LABEL = /модел|сері|символ|верс|позначенн|артикул|код|стандарт|протокол|назва|найменування/i;
+const SERVICE_TEXT = /артикул виробника|офіційна назва|категорія виробника|(?<![\p{L}])(?:qT|eAN номер):/iu;
+const CASE_GLITCH = /(?<![\p{L}\d])[a-z][A-Z]{2,}(?![\p{L}\d])/u;
+const CASE_ALLOWED = new Set(["iOS", "iPWM", "iPad", "iPhone"]);
+const LOOKALIKES = "АВСЕНІКМОРТХаеорсіх";
+const UNIT_NAMES = { kW: "кВт", W: "Вт", V: "В", Hz: "Гц", GHz: "ГГц", bar: "бар", mm: "мм", m: "м", kg: "кг", "µF": "мкФ", uF: "мкФ" };
+const MEASURE = /^([<>≤≥~±]?\s?\d+(?:[.,]\d+)?(?:\s?[-–…÷]\s?\d+(?:[.,]\d+)?)?)\s?(kW|W|V|Hz|GHz|bar|mm|m|kg|µF|uF|[А-Яа-яІіЇїЄєҐґ°³²/%]+)?$/u;
+
+// Spelling that is safe in any value, then units of values that are only numbers with units («1.5 kW» → «1,5 кВт»).
+function normalizeValue(label, value) {
+  let text = value
+    .replace(/°\s?С/g, "°C")
+    .replace(/дм ?3(?!\d)/g, "дм³")
+    .replace(/м ?3 ?\/ ?(?:год|час)/g, "м³/год")
+    .replace(/[mм][3³] ?\/ ?h/gi, "м³/год")
+    .replace(/(\d) ?l\/min/g, "$1 л/хв")
+    .replace(/(\d) ?l\/h/g, "$1 л/год");
+  if (CODE_LABEL.test(label)) return text;
+  const parts = text.split(/(\s?[\/;]\s?)/);
+  const converted = parts.map((part, index) => {
+    if (index % 2) return part;
+    const match = part.trim().match(MEASURE);
+    if (!match) return null;
+    const unit = match[2] ? UNIT_NAMES[match[2]] || match[2] : "";
+    return `${match[1].replace(/(\d)\.(\d)/g, "$1,$2")}${unit ? ` ${unit}` : ""}`;
+  });
+  return converted.includes(null) || !/[A-Za-zµ.]/.test(text) ? text : converted.join("");
+}
+
+// «CE,EAC,UKCA» → «CE,UKCA»; «CE / VDE / EAC» → «CE / VDE»; «EAC-UPA» → «» (the row is dropped).
+const withoutEac = value => value
+  .replace(/(^|,|;\s|\s\/\s)EAC(?:-[A-Za-z]+)?(?=,|;\s|\s\/\s|$)/g, "")
+  .replace(/^(?:,|;\s|\s\/\s)/, "")
+  .trim();
+
+// Codes written in Latin letters must not hide a Cyrillic look-alike («F.FBnА10», «TJ-MU-40А»).
+function checkCodes(item, problems) {
+  for (const [field, value] of [["артикул", item.sku], ["модель", item.model], ["назва", item.title]]) {
+    for (const token of norm(value).split(/\s+/)) {
+      if (!/[A-Za-z]/.test(token)) continue;
+      if (!new RegExp(`^[A-Za-z\\d\\p{P}\\p{S}${LOOKALIKES}]+$`, "u").test(token)) continue;
+      const letter = token.match(new RegExp(`[${LOOKALIKES}]`, "u"));
+      if (letter) problems.errors.push(`${field}: кирилична літера «${letter[0]}» у латинському коді «${token}»`);
+    }
+  }
+}
 
 const norm = value => String(value ?? "").replace(/\s+/g, " ").trim();
 const lower = value => norm(value).toLocaleLowerCase("uk");
@@ -84,6 +134,11 @@ function checkDescriptions(item, problems) {
   if (short.length > 300) problems.warnings.push(`короткий опис довший за 300 знаків (${short.length})`);
   if (SHOP_TEXT.test(`${description} ${short}`)) problems.warnings.push(`в описі текст магазину або посилання («${`${description} ${short}`.match(SHOP_TEXT)[0]}»)`);
   if (description && !lower(description).startsWith(lower(item.title).slice(0, 20))) problems.warnings.push("опис не починається з назви товару");
+  const texts = [item.description, item.shortDescription, ...(item.sections || []).flatMap(section => section.paragraphs || [])].map(norm).join(" ");
+  if (SERVICE_TEXT.test(texts)) problems.errors.push(`службовий текст постачальника в описі («${texts.match(SERVICE_TEXT)[0]}»)`);
+  const glitch = (texts.match(new RegExp(CASE_GLITCH.source, "gu")) || []).find(word => !CASE_ALLOWED.has(word));
+  if (glitch) problems.warnings.push(`зламаний регістр в описі («${glitch}»)`);
+  if (/(?<![A-Za-z])EAC(?![A-Za-z])/.test(texts)) problems.warnings.push("маркування EAC в описі");
 }
 
 function seoFor(item, characteristics) {
@@ -102,16 +157,30 @@ function cleanCharacteristics(item, problems) {
   const seen = new Set();
   let dropped = 0;
   const rows = [];
+  let merged = 0;
   for (const row of item.characteristics || []) {
     const label = norm(row.label);
-    const value = norm(`${row.value ?? ""}${row.unit ? ` ${row.unit}` : ""}`);
+    let value = norm(`${row.value ?? ""}${row.unit ? ` ${row.unit}` : ""}`);
+    if (/(?<![A-Za-z])EAC(?![A-Za-z])/.test(value)) value = withoutEac(value);
+    value = normalizeValue(label, value);
     const key = `${lower(label)}\u0000${lower(value)}`;
-    if (!label || !value || LOGISTICS_LABELS.test(label) || seen.has(key)) { dropped += 1; continue; }
+    if (!label || !value || LOGISTICS_LABELS.test(label) || SERVICE_LABELS.test(label) || RAW_KEY.test(value)
+        || (lower(label) === "параметр" && lower(value) === "значення") || seen.has(key)) { dropped += 1; continue; }
     seen.add(key);
     textProblems(`характеристика «${label}»`, `${label} ${value}`, problems);
+    if (/^[A-Za-z][A-Za-z .()[\]/-]+$/.test(label) && /[A-Za-z]{4,}/.test(label)) problems.warnings.push(`англійська назва характеристики «${label}»`);
+    // One label = one row on the product page: values of a repeated label are joined with «; ».
+    const same = rows.find(other => lower(other.label) === lower(label));
+    if (same) {
+      merged += 1;
+      if (lower(value).startsWith(lower(same.value))) same.value = value;
+      else if (!lower(same.value).startsWith(lower(value))) same.value = `${same.value}; ${value}`;
+      continue;
+    }
     rows.push({ label, value });
   }
   if (dropped) problems.notes.push(`прибрано ${dropped} службових або повторених характеристик`);
+  if (merged) problems.warnings.push(`${merged} характеристик з однаковою назвою зведено в один рядок — перевірте значення`);
   if (!rows.length) problems.warnings.push("немає характеристик");
   return rows;
 }
@@ -146,12 +215,20 @@ async function linkWorks(url) {
   } catch { return false; }
 }
 
+// A real photo is never under 1 KB (the 8×8 Grundfos placeholders were 46 bytes). A Git LFS pointer of a
+// checkout without LFS files is not an empty photo.
+function isEmptyImage(file) {
+  if (fs.statSync(file).size >= 1024) return false;
+  return !fs.readFileSync(file, "utf8").startsWith("version https://git-lfs.github.com/spec/");
+}
+
 async function checkMedia(item, problems) {
   const images = (item.images || []).map(norm).filter(Boolean);
   if (!images.length) problems.errors.push("немає фото");
   for (const image of images) {
     if (/^https?:/i.test(image)) problems.errors.push(`фото з чужого сайту: ${image}`);
     else if (!fs.existsSync(path.join(ROOT, image.replace(/^\//, "")))) problems.errors.push(`немає файлу фото: ${image}`);
+    else if (isEmptyImage(path.join(ROOT, image.replace(/^\//, "")))) problems.errors.push(`порожній файл фото (менше 1 КБ): ${image}`);
     else if (!/\.webp$/i.test(image)) problems.warnings.push(`фото не WebP: ${image}`);
   }
   const documents = [];
@@ -192,6 +269,7 @@ for (const item of batch.products || []) {
   if (!category) problems.errors.push(`немає категорії «${item.category || item.sourceCategory || "—"}»`);
   else if (category.status !== "active" || !category.leaf || category.visibility !== "catalog") problems.errors.push(`категорія «${category.title}» не кінцева або неактивна`);
   checkTitle(item, brand, problems);
+  checkCodes(item, problems);
   if (batchTitles.get(lower(item.title)) > 1) problems.errors.push("назва повторюється в партії");
   const titleOwner = publishedTitles.get(lower(item.title));
   if (!existing && titleOwner) problems.errors.push(`така назва вже є в каталозі (артикул ${titleOwner.sku})`);

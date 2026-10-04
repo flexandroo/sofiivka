@@ -111,6 +111,38 @@ export async function run(db) {
   assert.equal((await one(db, "select count(*)::int n from public.products where sku = 'NEW-1'")).n, 1);
   assert.equal((await one(db, "select metadata from public.import_runs order by created_at desc, started_at desc limit 1")).metadata.skippedExisting, 1);
 
+  // 6. Rules from the 2026-10-05 catalogue cleanup: service rows, units, EAC, repeated labels, look-alike letters.
+  const batch2 = {
+    supplier: "test-supplier", supplierName: "Тестовий постачальник", collectedAt: "2026-10-05", sourceSite: "https://example.test",
+    products: [
+      good("SVC-1", `Насос ${brand.name} Сервіс 1`, {
+        description: `Насос ${brand.name} Сервіс 1 — модель серії dUO для подачі води з колодязя, з корпусом з нержавіючої сталі та захистом від перегріву.`,
+        characteristics: [
+          { label: "QT", value: "acc_pump" }, { label: "EAN номер", value: "5700000000000" }, { label: "Параметр", value: "Значення" },
+          { label: "Потужність", value: "1.5 kW" }, { label: "Температура", value: "5…90 °С" }, { label: "Подача", value: "4 m3/h" },
+          { label: "Сертифікати", value: "CE,EAC,UKCA" }, { label: "Маркування", value: "EAC-UPA" }, { label: "Тип", value: "pump_type_x" },
+          { label: "Витрата", value: "31 л/хв" }, { label: "Витрата", value: "32 л/хв" }, { label: "Pump type", value: "Відцентровий" },
+          { label: "Модель", value: "X.1 W" }
+        ]
+      }),
+      good("TJ-MU-40А", `Змішувальний вузол ${brand.name} TJ-MU-40А`, { model: "TJ-MU-40А", description: "Змішувальний вузол для теплої підлоги." })
+    ]
+  };
+  const batch2Path = path.join(directory, "batch2.json");
+  fs.writeFileSync(batch2Path, JSON.stringify(batch2));
+  const summary2 = JSON.parse(childProcess.execFileSync("node", [path.join(ROOT, "scripts/import-check.mjs"), batch2Path, `--reference=${path.join(directory, "reference.json")}`], { cwd: ROOT, encoding: "utf8" }));
+  assert.deepEqual([summary2.total, summary2.ready, summary2.blocked], [2, 1, 1]);
+  const report2 = fs.readFileSync(path.join(directory, "batch2.report.md"), "utf8");
+  assert.match(report2, /кирилична літера «А» у латинському коді «TJ-MU-40А»/);
+  assert.match(report2, /зламаний регістр в описі/);
+  const sql2 = fs.readFileSync(path.join(directory, "batch2.sql"), "utf8");
+  const rows2 = JSON.parse(sql2.match(/jsonb_array_elements\(\$sofimport\$(.*?)\$sofimport\$::jsonb\)/s)[1])[0].characteristics;
+  assert.deepEqual(rows2, [
+    { label: "Потужність", value: "1,5 кВт" }, { label: "Температура", value: "5…90 °C" }, { label: "Подача", value: "4 м³/год" },
+    { label: "Сертифікати", value: "CE,UKCA" }, { label: "Витрата", value: "31 л/хв; 32 л/хв" }, { label: "Pump type", value: "Відцентровий" },
+    { label: "Модель", value: "X.1 W" }
+  ]);
+
   fs.rmSync(directory, { recursive: true, force: true });
   console.log(JSON.stringify({ status: "ok", checks: "product-import" }));
 }
