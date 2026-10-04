@@ -60,6 +60,13 @@
   --info: #275d8c;
   --radius-card: 12px;
   --radius-control: 8px;
+  /* One button system (AUD-045): every CTA and in-card action shares the radius and weight; heights come in two sizes. */
+  --radius-button: 4px;
+  --button-height: 48px;
+  --button-height-compact: 42px;
+  --button-weight: 800;
+  /* Smallest touch target for icon buttons and secondary actions (AUD-047, WCAG 2.5.8 needs 24px, we aim for 40px). */
+  --tap-target: 40px;
   --container: 1440px;
   --gutter: clamp(20px, 4vw, 64px);
   --section-space: clamp(76px, 8vw, 128px);
@@ -206,6 +213,12 @@ ul {
   gap: 32px;
 }
 
+.utility-bar__inner > *,
+.utility-bar li,
+.utility-bar__contact > * {
+  white-space: nowrap;
+}
+
 .utility-bar li + li,
 .utility-bar__contact > * + * {
   position: relative;
@@ -225,6 +238,13 @@ ul {
 
 .utility-bar a:hover {
   color: var(--yellow);
+}
+
+/* Between the tablet and wide layouts the bar has room for one advantage only; the phone never wraps (AUD-058/SRR-09). */
+@media (max-width: 1180px) {
+  .utility-bar li:last-child {
+    display: none;
+  }
 }
 
 .site-header {
@@ -535,11 +555,13 @@ ul {
 }
 
 .search-suggestion__text strong {
+  display: -webkit-box;
   overflow: hidden;
   font-size: 13px;
   line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .search-suggestion__text small {
@@ -747,11 +769,11 @@ ul {
   align-items: center;
   justify-content: center;
   gap: 14px;
-  min-height: 50px;
+  min-height: var(--button-height);
   padding: 0 24px;
   border: 1px solid transparent;
-  border-radius: var(--radius-control);
-  font-weight: 800;
+  border-radius: var(--radius-button);
+  font-weight: var(--button-weight);
   white-space: nowrap;
   transition: transform .2s var(--ease), background .2s var(--ease), border-color .2s var(--ease);
 }
@@ -1254,8 +1276,8 @@ ul {
   display: flex;
   align-items: baseline;
   gap: 7px;
-  min-height: 17px;
-  margin-top: 12px;
+  min-height: 24px;
+  margin-top: 8px;
 }
 
 .product-card__brand,
@@ -1267,12 +1289,14 @@ ul {
   text-transform: uppercase;
 }
 
+/* The brand link is a 24px-tall target (WCAG 2.5.8) without changing the text size. */
+a.product-card__brand { display: inline-flex; align-items: center; min-height: 24px; }
 .product-card__brand:hover { color: var(--text); }
-.product-card__series { color: #878279; font-weight: 650; }
+.product-card__series { color: var(--text-secondary); font-weight: 650; }
 
 .product-card h3 {
   min-height: 63px;
-  margin-top: 3px;
+  margin-top: 0;
   font-size: 15px;
   line-height: 1.4;
   font-weight: 650;
@@ -1288,8 +1312,8 @@ ul {
 .product-card__code {
   margin-top: auto;
   padding-top: 9px;
-  color: #858078;
-  font-size: 9px;
+  color: var(--text-secondary);
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1368,10 +1392,10 @@ ul {
 .product-card__buy,
 .product-card__favorite,
 .compare-button {
-  min-height: 42px;
-  border-radius: 4px;
+  min-height: var(--button-height-compact);
+  border-radius: var(--radius-button);
   font: inherit;
-  font-weight: 800;
+  font-weight: var(--button-weight);
   cursor: pointer;
 }
 
@@ -2640,6 +2664,12 @@ a.brand-directory-card:focus-visible {
     display: none;
   }
 
+  /* Search fields at 16px so iOS Safari does not zoom on focus (AUD-026). */
+  .search input,
+  .brand-search input {
+    font-size: 16px;
+  }
+
   .site-nav {
     display: none;
   }
@@ -2832,10 +2862,14 @@ a.brand-directory-card:focus-visible {
     padding-bottom: 10px;
   }
 
+  /* The field keeps 16px from the 900px block (AUD-026); the placeholder stays compact so it fits. */
   .search input {
     height: 42px;
     padding-right: 78px;
-    font-size: 13px;
+  }
+
+  .search input::placeholder {
+    font-size: 14px;
   }
 
   .search > button {
