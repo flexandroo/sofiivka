@@ -50,20 +50,37 @@
     return result;
   }
 
+  // The locality comes from the address shown on /contact («с. Софіївська Борщагівка, вул. Київська, 3»
+  // → «Софіївська Борщагівка»), not from the store's short label («Київ»), so the village is not
+  // mistaken for the city. An address without a «с./м./смт» prefix keeps the label as before.
+  function postalAddress(store) {
+    const text = String(store.address).trim();
+    const match = text.match(/^(?:с\.|м\.|смт\.?)\s*([^,]+),\s*(.+)$/);
+    return {
+      "@type": "PostalAddress",
+      streetAddress: match ? match[2].trim() : text,
+      addressLocality: match ? match[1].trim() : store.city || undefined,
+      addressCountry: "UA"
+    };
+  }
+
   function organization() {
     const page = document.body?.dataset.page || "";
     if (!["home", "about", "contact"].includes(page)) return null;
     const settings = window.sofievkaSiteSettings?.current || {};
     const name = settings.company?.name || "Торговий дім «Софіївка»";
     const social = Object.values(settings.social || {}).filter(value => /^https:\/\//.test(String(value)));
-    const stores = (settings.stores || []).filter(store => store?.address).map(store => ({
-      "@type": "Store",
-      name: `${name}, ${store.city || store.title || ""}`.replace(/, $/, ""),
-      address: { "@type": "PostalAddress", streetAddress: store.address, addressLocality: store.city || undefined, addressCountry: "UA" },
-      telephone: store.phones?.[0] || undefined,
-      email: store.email || undefined,
-      openingHoursSpecification: hoursSpecification(store.hours)
-    }));
+    const stores = (settings.stores || []).filter(store => store?.address).map(store => {
+      const address = postalAddress(store);
+      return {
+        "@type": "Store",
+        name: `${name}, ${address.addressLocality || store.city || store.title || ""}`.replace(/, $/, ""),
+        address,
+        telephone: store.phones?.[0] || undefined,
+        email: store.email || undefined,
+        openingHoursSpecification: hoursSpecification(store.hours)
+      };
+    });
     return {
       "@context": "https://schema.org",
       "@type": "Organization",
