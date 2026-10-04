@@ -199,6 +199,21 @@
     }));
   }
 
+  // Footer «Контакти»: every store with its address, phones and hours (static markup is the first paint).
+  function renderFooterContacts(container) {
+    const stores = current.stores.filter(store => store && (store.address || store.phones.length));
+    const state = JSON.stringify(stores.map(store => [store.title || store.city, store.address, store.phones, store.hours]));
+    if (container.dataset.contactsState === state) return;
+    container.dataset.contactsState = state;
+    container.replaceChildren(...stores.map(store => {
+      const parts = [element("strong", { text: store.title || store.city || "" })];
+      if (store.address) parts.push(element("br"), store.address);
+      store.phones.forEach(phone => parts.push(element("br"), element("a", { href: phoneHref(phone), text: phone })));
+      if (store.hours.length) parts.push(element("br"), store.hours.join(", "));
+      return element("p", { class: "footer__store" }, parts);
+    }));
+  }
+
   // Shared static hooks: primary store contacts, social links, copyright, menus, cookie settings link.
   function applyHooks(root = document) {
     const primary = current.stores[0];
@@ -236,6 +251,7 @@
     });
     root.querySelectorAll("[data-site-header-menu]").forEach(renderHeaderMenu);
     root.querySelectorAll("[data-site-footer-menu]").forEach(renderFooterMenu);
+    root.querySelectorAll("[data-site-footer-contacts]").forEach(renderFooterContacts);
     // A way back to the consent choice, next to the legal links in the footer.
     root.querySelectorAll(".footer__bottom-meta > span:last-child").forEach(node => {
       const button = node.querySelector("[data-cookie-settings]");

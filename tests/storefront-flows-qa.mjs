@@ -519,6 +519,210 @@ for (const [label, viewport] of [["desktop", VIEWPORTS.desktop], ["mobile", VIEW
   });
 }
 
+// 9. Wave 2 page-shell (final audit 2026-10-04): footer contacts, JSON-LD locality, /about, synthetic SKUs,
+// PDP #documents, lightbox arrows, checkout carrier city, search «Показати ще» past the 48 loaded products.
+const shellFacts = await (async () => {
+  const page = await newPage();
+  await open(page, "/catalog");
+  const data = await page.evaluate(() => {
+    const products = window.sofievkaCatalog?.catalogProducts || [];
+    const images = product => (window.sofievkaPdp?.images?.(product) || []).length;
+    const docs = product => (window.sofievkaPdp?.documents?.(product) || []).length;
+    const synthetic = products.find(product => product.slug && /^(baxi|altep|buderus|focus)-/i.test(String(product.sku || "")));
+    const withDocs = products.find(product => product.slug && docs(product) > 0 && (product.description || product.fullDescription));
+    const gallery = products.find(product => product.slug && images(product) > 2);
+    const snapshot = window.sofievkaCatalogSnapshot?.products || [];
+    return {
+      synthetic: synthetic && { id: synthetic.id, slug: synthetic.slug, sku: synthetic.sku, title: synthetic.title },
+      withDocs: withDocs && { id: withDocs.id, slug: withDocs.slug },
+      gallery: gallery && { id: gallery.id, slug: gallery.slug, count: images(gallery) },
+      searchProducts: JSON.parse(JSON.stringify(snapshot.slice(0, 30)))
+    };
+  });
+  await page.context().close();
+  return data;
+})();
+const contactStores = [
+  { phone: "+38 (050) 358-22-84", address: "с. Софіївська Борщагівка, вул. Київська, 3" },
+  { phone: "+38 (067) 726-00-00", address: "м. Житомир, проспект Незалежності, 79" }
+];
+
+for (const [label, viewport] of [["mobile", VIEWPORTS.mobile], ["desktop", VIEWPORTS.desktop]]) {
+  await check(`footer-contacts-${label}`, async () => {
+    const page = await newPage(viewport);
+    const pages = ["/", "/brands", "/about", "/delivery", pricedProduct.categoryUrl, productPath(pricedProduct), "/cart"];
+    for (const pathname of pages) {
+      await open(page, pathname);
+      const footer = page.locator("footer.footer");
+      const text = normalize(await footer.innerText());
+      for (const store of contactStores) {
+        assert.ok(text.includes(store.address), `${pathname} @${viewport.width}: footer lacks «${store.address}»`);
+        const tel = footer.locator(`a[href="tel:+${store.phone.replace(/\D/g, "")}"]`);
+        assert.ok(await visibleBox(tel), `${pathname} @${viewport.width}: footer phone ${store.phone} is not a visible tel: link`);
+      }
+      // One footer template everywhere: accordion columns (AUD-044).
+      assert.ok(await footer.locator("[data-footer-section] .footer__toggle").count() >= 5, `${pathname}: footer is not the accordion template`);
+      if (viewport.width <= 640) {
+        const services = footer.locator("[data-footer-section]", { hasText: "Послуги" }).first();
+        assert.equal(await visibleBox(services.locator(".footer__links a").first()), null, `${pathname} @390: «Послуги» column is not folded`);
+        await services.locator(".footer__toggle").click();
+        assert.ok(await visibleBox(services.locator(".footer__links a").first()), `${pathname} @390: «Послуги» does not open`);
+      }
+    }
+    await page.context().close();
+    return { pages: pages.length };
+  });
+}
+
+await check("contact-jsonld-locality", async () => {
+  const page = await newPage();
+  await open(page, "/contact");
+  await page.waitForFunction(() => document.getElementById("schema-organization"), null, { timeout: 5000 });
+  const schema = await page.evaluate(() => JSON.parse(document.getElementById("schema-organization").textContent));
+  const localities = schema.department.map(store => store.address.addressLocality);
+  assert.deepEqual(localities, ["Софіївська Борщагівка", "Житомир"], `JSON-LD localities ${localities}`);
+  const text = normalize(await page.locator("main").innerText());
+  assert.ok(text.includes(contactStores[0].address), "/contact: address spelling changed");
+  await page.context().close();
+  return { localities };
+});
+
+await check("about-no-template-block", async () => {
+  const page = await newPage();
+  await open(page, "/about");
+  const text = normalize(await page.locator("main").innerText());
+  assert.ok(!/Спочатку задача|Гарантія на всі товари/.test(text), "/about still has the 01–03 block or the blanket warranty claim");
+  assert.equal(await page.locator(".about-principles").count(), 0);
+  await page.context().close();
+});
+
+await check("synthetic-sku-hidden", async () => {
+  assert.ok(shellFacts.synthetic, "local catalogue has no product with a slug-like SKU");
+  const product = shellFacts.synthetic;
+  const page = await newPage();
+  await open(page, `/product/${encodeURIComponent(product.slug)}`);
+  const heading = normalize(await page.locator(".pdp-heading").innerText());
+  assert.ok(!heading.includes(product.sku), `PDP shows the synthetic SKU ${product.sku}`);
+  assert.equal(await page.locator("[data-copy-sku]").count(), 0, "PDP offers to copy a synthetic SKU");
+  const schema = await page.evaluate(() => window.sofievkaProductSchema);
+  assert.equal(schema?.sku, undefined, "Product JSON-LD carries the synthetic SKU");
+  await seedStorage(page, { "sofievka-cart": { [product.id]: 1 } });
+  await open(page, "/cart");
+  const cartText = normalize(await page.locator(".cart-items").innerText());
+  assert.ok(cartText.includes(product.title) && !cartText.includes(product.sku), `/cart shows the synthetic SKU ${product.sku}`);
+  await page.context().close();
+  return { sku: product.sku };
+});
+
+await check("pdp-documents-hash-mobile", async () => {
+  assert.ok(shellFacts.withDocs, "local catalogue has no product with documents");
+  const page = await newPage(VIEWPORTS.mobile);
+  await open(page, `/product/${encodeURIComponent(shellFacts.withDocs.slug)}#documents`);
+  await page.waitForTimeout(300);
+  const state = await page.evaluate(() => {
+    const target = document.getElementById("documents");
+    const box = target?.getBoundingClientRect();
+    return { scrollY: window.scrollY, top: box?.top, bottom: box?.bottom, height: innerHeight, active: document.querySelector("[data-pdp-tab].is-active")?.dataset.pdpTab };
+  });
+  assert.ok(state.scrollY > 0, `#documents: page did not scroll (${JSON.stringify(state)})`);
+  assert.ok(state.top < state.height && state.bottom > 0, `#documents: section is not in the viewport (${JSON.stringify(state)})`);
+  await page.context().close();
+  return state;
+});
+
+await check("pdp-lightbox-arrows", async () => {
+  assert.ok(shellFacts.gallery, "local catalogue has no product with 3+ photos");
+  const page = await newPage();
+  await open(page, `/product/${encodeURIComponent(shellFacts.gallery.slug)}`);
+  await page.locator("[data-gallery-zoom]").click();
+  const dialog = page.locator("[data-gallery-dialog]");
+  await dialog.waitFor({ state: "visible" });
+  const image = () => page.locator("[data-gallery-dialog-image]").getAttribute("src");
+  const first = await image();
+  await dialog.locator("[data-gallery-next]").click();
+  await page.waitForTimeout(100);
+  const second = await image();
+  assert.notEqual(second, first, "lightbox «next» did not change the photo");
+  await page.keyboard.press("ArrowRight");
+  await page.waitForTimeout(100);
+  assert.notEqual(await image(), second, "ArrowRight in the lightbox did not change the photo");
+  await dialog.locator("[data-gallery-prev]").click();
+  await page.waitForTimeout(100);
+  assert.equal(await image(), second, "lightbox «previous» did not go back");
+  assert.match(normalize(await page.locator("[data-gallery-counter]").innerText()), /^2 \//);
+  await page.context().close();
+  return { photos: shellFacts.gallery.count };
+});
+
+await check("checkout-carrier-city", async () => {
+  const page = await newPage(VIEWPORTS.mobile);
+  let payload = null;
+  await page.route(/\/rest\/v1\/rpc\/crm_submit_order$/, async route => {
+    payload = JSON.parse(route.request().postData() || "{}").payload || null;
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ id: "00000000-0000-4000-8000-00000000qa02", number: "QA-2" }) });
+  });
+  await seedStorage(page, { "sofievka-cart": { [pricedProduct.id]: 1 } });
+  await open(page, "/checkout");
+  const form = page.locator("[data-checkout]");
+  await form.locator('input[name="delivery"][value="carrier"]').check();
+  assert.equal(await visibleBox(form.locator('select[name="pickupStore"]')), null, "carrier chosen, but the pickup store list is visible");
+  await form.locator('input[name="name"]').fill("QA Тест");
+  await form.locator('input[name="phone"]').fill("12345");
+  await form.locator("[data-checkout-submit]").click();
+  assert.equal(payload, null, "checkout sent a 5-digit phone");
+  await form.locator('input[name="phone"]').fill("067 123 45 67");
+  await form.locator("[data-checkout-submit]").click();
+  assert.equal(payload, null, "checkout sent a carrier order without a city");
+  assert.equal(await form.locator('input[name="city"]').evaluate(input => input.validity.valid), false, "city is not flagged");
+  await form.locator('input[name="city"]').fill("Житомир");
+  await form.locator("[data-checkout-submit]").click();
+  await page.locator(".checkout-success").waitFor({ timeout: 10000 }).catch(() => { throw new Error("checkout: no success after filling the city"); });
+  assert.equal(payload.city, "Житомир");
+  assert.equal("pickupStore" in payload, false, "carrier order still carries pickupStore");
+  await page.context().close();
+  return { delivery: payload.delivery };
+});
+
+await check("home-callback-form", async () => {
+  const page = await newPage();
+  await open(page, "/", { waitForShell: false });
+  const form = page.locator("[data-home-contact-form]");
+  assert.equal(await form.getAttribute("action"), null, "homepage form still has a mailto: action");
+  assert.ok(await form.locator('a[href="/privacy"]').count(), "homepage form has no privacy link");
+  await form.locator('input[name="name"]').fill("QA");
+  await form.locator('input[name="phone"]').fill("12345");
+  assert.equal(await form.locator('input[name="phone"]').evaluate(input => input.checkValidity()), false, "«12345» passes the phone check");
+  await form.locator('input[name="phone"]').fill("067 123 45 67");
+  assert.equal(await form.locator('input[name="phone"]').evaluate(input => input.checkValidity()), true, "a real phone fails the check");
+  await page.context().close();
+});
+
+await check("home-cart-count-stale", async () => {
+  const page = await newPage();
+  await useScopedCatalog(page);
+  await seedStorage(page, { "sofievka-cart": { [pricedProduct.id]: 1, "removed-product-qa": 3 } });
+  await open(page, "/", { waitForShell: false });
+  await page.waitForFunction(() => document.querySelector("[data-cart-count]")?.textContent === "1", null, { timeout: 10000 })
+    .catch(async () => { throw new Error(`homepage cart count is ${await page.locator("[data-cart-count]").first().textContent()}, /cart shows 1`); });
+  await page.context().close();
+});
+
+await check("search-show-more-limit", async () => {
+  const products = shellFacts.searchProducts;
+  assert.ok(products.length >= 25, "not enough products for the search check");
+  const page = await newPage();
+  await useScopedCatalog(page);
+  await page.route(/\/rest\/v1\/rpc\/search_catalog$/, route => route.fulfill({ contentType: "application/json",
+    body: JSON.stringify({ version: "storefront-flows-qa", query: "qa", totalProducts: 500, products, productHits: [], categories: [], brands: [], series: [] }) }));
+  await open(page, "/search?q=qa");
+  await page.locator("[data-search-more]").click();
+  await page.waitForFunction(count => document.querySelectorAll("[data-search-page-results] .catalog-products > *").length === count, products.length, { timeout: 5000 });
+  assert.equal(await page.locator("[data-search-more]").count(), 0, "«Показати ще» stays after every loaded product is shown");
+  assert.match(normalize(await page.locator("[data-search-more-hint]").innerText()), new RegExp(`Показано ${products.length} з 500`));
+  await page.context().close();
+  return { loaded: products.length };
+});
+
 await browser.close();
 stopServers();
 if (failures.length) {

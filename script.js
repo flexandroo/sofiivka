@@ -509,11 +509,32 @@ function setupProducts() {
     storedFavorites = storedFavorites.filter(id => validProductIds.has(id));
   }
   const favoriteIds = new Set(storedFavorites);
-  let cart = Object.values(storedCart).reduce((sum, quantity) => sum + Number(quantity || 0), 0);
-  if (cartCount) cartCount.textContent = String(cart);
-  if (favoriteCount) favoriteCount.textContent = String(favoriteIds.size);
-  document.querySelector("[data-cart]")?.setAttribute("aria-label", `Кошик, ${cart} товарів`);
-  document.querySelector("[data-favorites]")?.setAttribute("aria-label", `Обране, ${favoriteIds.size} товарів`);
+  // Products that are no longer published stay in the saved cart but are not counted, as on /cart
+  // (final audit AUD-058); with the database they are known once getProductsByIds has answered.
+  const staleIds = new Set();
+  const countCart = () => Object.entries(storedCart).reduce((sum, [id, quantity]) => sum + (staleIds.has(id) ? 0 : Number(quantity || 0)), 0);
+  let cart = countCart();
+  const showCartCount = () => {
+    if (cartCount) cartCount.textContent = String(cart);
+    document.querySelector("[data-cart]")?.setAttribute("aria-label", `Кошик, ${cart} товарів`);
+  };
+  const showFavoriteCount = () => {
+    const count = [...favoriteIds].filter(id => !staleIds.has(id)).length;
+    if (favoriteCount) favoriteCount.textContent = String(count);
+    document.querySelector("[data-favorites]")?.setAttribute("aria-label", `Обране, ${count} товарів`);
+  };
+  showCartCount();
+  showFavoriteCount();
+  const savedIds = [...new Set([...Object.keys(storedCart), ...favoriteIds])].slice(0, 96);
+  if (window.sofievkaCatalogScopedDataSource && savedIds.length) {
+    window.sofievkaCatalogScopedDataSource.getProductsByIds(savedIds).then(result => {
+      const known = new Set((result?.products || []).map(product => product.id));
+      savedIds.filter(id => !known.has(id)).forEach(id => staleIds.add(id));
+      cart = countCart();
+      showCartCount();
+      showFavoriteCount();
+    }).catch(() => { /* keep the saved counts */ });
+  }
 
   const render = (grid, group) => {
     grid.setAttribute("aria-busy", "true");
@@ -543,11 +564,11 @@ function setupProducts() {
     const favoriteButton = event.target.closest("[data-favorite]");
 
     if (buyButton) {
-      cart += 1;
+      staleIds.delete(buyButton.dataset.buy);
       storedCart[buyButton.dataset.buy] = (storedCart[buyButton.dataset.buy] || 0) + 1;
       localStorage.setItem("sofievka-cart", JSON.stringify(storedCart));
-      if (cartCount) cartCount.textContent = String(cart);
-      document.querySelector("[data-cart]")?.setAttribute("aria-label", `Кошик, ${cart} товарів`);
+      cart = countCart();
+      showCartCount();
       showToast("Товар додано до кошика");
     }
 
@@ -561,9 +582,8 @@ function setupProducts() {
         button.classList.toggle("is-active", !active);
         button.setAttribute("aria-pressed", String(!active));
       });
-      if (favoriteCount) favoriteCount.textContent = String(favoriteIds.size);
       localStorage.setItem("sofievka-favorites", JSON.stringify([...favoriteIds]));
-      document.querySelector("[data-favorites]")?.setAttribute("aria-label", `Обране, ${favoriteIds.size} товарів`);
+      showFavoriteCount();
       showToast(active ? "Товар видалено з обраного" : "Товар додано в обране");
     }
   };
@@ -874,8 +894,9 @@ function setupHomepageContact() {
     }
 
     if (storeInput) storeInput.value = store.name;
+    // No mailto: form action (it triggered Mixed Content warnings, AUD-060); the submit handler
+    // opens the prepared email itself when the CRM is unavailable.
     form.dataset.contactEmail = store.email;
-    form.action = `mailto:${store.email}`;
   };
 
   renderSwitcher();

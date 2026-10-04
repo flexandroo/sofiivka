@@ -155,17 +155,19 @@ assert.deepEqual(page.scripts(), ["https://connect.facebook.net/en_US/fbevents.j
 // ---------------------------------------------------------------------------
 const links = markup => [...markup.matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)].map(match => ({ href: match[1], label: match[2] }));
 const shell = read("page-shell.js");
-const footerMenu = shell.slice(shell.indexOf('<div class="footer__menu" data-site-footer-menu>'), shell.indexOf("</div></div><div class=\"container footer__bottom\">"));
+// Inner pages use the homepage's accordion columns (final audit AUD-044); footerSection() builds each one.
+const footerMenu = shell.slice(shell.indexOf('<div class="footer__menu" data-site-footer-menu="accordion">'), shell.indexOf("</div>${footerContactsMarkup()}"));
 assert.ok(footerMenu.length > 100, "page-shell footer menu hook");
-assert.deepEqual(links(footerMenu), seedMenus.footer.flatMap(column => column.links));
-assert.deepEqual([...footerMenu.matchAll(/<h2>([^<]+)<\/h2>/g)].map(match => match[1]), seedMenus.footer.map(column => column.title));
+const shellColumns = [...footerMenu.matchAll(/footerSection\("([^"]+)", `([^`]*)`\)/g)];
+assert.deepEqual(shellColumns.flatMap(match => links(match[2])), seedMenus.footer.flatMap(column => column.links));
+assert.deepEqual(shellColumns.map(match => match[1]), seedMenus.footer.map(column => column.title));
 assert.match(shell, /<div class="container \$\{className\}__inner" data-site-header-menu>/);
 const navCalls = [...shell.matchAll(/siteNavLink\("([^"]+)", "([^"]+)"/g)].map(match => ({ label: match[2], href: match[1], children: [] }));
 assert.deepEqual(navCalls, seedMenus.header, "page-shell built-in nav equals the header seed");
 assert.match(shell, /window\.sofievkaSiteSettings\?\.applyHooks\(root\)/, "page-shell hands the rendered shell to the hooks");
 
 const home = read("index.html");
-const homeMenu = home.slice(home.indexOf('<div class="footer__menu" data-site-footer-menu="accordion">'), home.indexOf("</div>\n    <div class=\"container footer__bottom\">"));
+const homeMenu = home.slice(home.indexOf('<div class="footer__menu" data-site-footer-menu="accordion">'), home.indexOf("\n      <div class=\"footer__section is-open\" data-footer-section>"));
 assert.ok(homeMenu.length > 100, "homepage footer menu hook");
 assert.deepEqual(links(homeMenu), seedMenus.footer.flatMap(column => column.links));
 assert.deepEqual([...homeMenu.matchAll(/<span>([^<]+)<\/span>/g)].map(match => match[1]), seedMenus.footer.map(column => column.title));

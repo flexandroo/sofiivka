@@ -1,6 +1,9 @@
 // Site pages v1: seed equals the storefront's built-in texts, public reads, roles, block
 // validation (no HTML, safe links only), optimistic locking, publish switch, FAQ list editing, audit.
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { MIGRATIONS_DIR } from "./database.mjs";
 import { PAGE_SOURCES, extractFallbackPages, extractFallbackFaq, extractStaticSeo } from "../site-pages-fallback.mjs";
 
 const STAFF = {
@@ -186,5 +189,24 @@ export async function run(db) {
   assert.equal(emptied.items.length, 0);
   assert.deepEqual(await anon(db, "select public.get_site_faq() r"), []);
 
-  console.log(JSON.stringify({ status: "ok", scenarios: 9, suite: "pages" }));
+  // 10. 20261005000300_about_text: the «Про нас» text saved on the live sites loses «Гарантія на всі товари»
+  // and gets the /contact spelling of the address; other blocks and a re-run stay untouched.
+  const aboutSql = fs.readFileSync(path.join(MIGRATIONS_DIR, "20261005000300_about_text.sql"), "utf8");
+  const liveAbout = [
+    { type: "heading", text: "Що ми гарантуємо" },
+    { type: "list", ordered: false, items: ["Лише офіційна продукція з гарантією та сервісною підтримкою в Україні.", "Гарантія на всі товари, гарантійне й післягарантійне обслуговування."] },
+    { type: "heading", text: "Магазини" },
+    { type: "list", ordered: false, items: ["Київська обл., с. Софіївська Борщагівка, вул. Київська, 3. Пн–Пт 9:00–18:00, Сб 9:00–14:00.", "м. Житомир, проспект Незалежності, 79. Пн–Пт 8:30–17:00, Сб 8:30–14:00."] }
+  ];
+  await db.query("update public.site_pages set body = $1 where slug = 'about'", [JSON.stringify(liveAbout)]);
+  await db.exec(aboutSql);
+  const fixedAbout = (await one(db, "select body from public.site_pages where slug = 'about'")).body;
+  assert.deepEqual(fixedAbout[1].items, ["Лише офіційна продукція з гарантією та сервісною підтримкою в Україні.", "Гарантія виробника, допомога з гарантійним зверненням, гарантійне й післягарантійне обслуговування."]);
+  assert.deepEqual(fixedAbout[3].items[0], "с. Софіївська Борщагівка, вул. Київська, 3. Пн–Пт 9:00–18:00, Сб 9:00–14:00.");
+  assert.deepEqual([fixedAbout[0], fixedAbout[2], fixedAbout[3].items[1]], [liveAbout[0], liveAbout[2], liveAbout[3].items[1]]);
+  const stamp = (await one(db, "select updated_at from public.site_pages where slug = 'about'")).updated_at;
+  await db.exec(aboutSql);
+  assert.deepEqual((await one(db, "select updated_at from public.site_pages where slug = 'about'")).updated_at, stamp, "re-run is a no-op");
+
+  console.log(JSON.stringify({ status: "ok", scenarios: 10, suite: "pages" }));
 }
