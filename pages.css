@@ -565,7 +565,7 @@ body[data-page="brand"] { background: var(--canvas); }
   .catalog-subcategory-tabs { margin-right: -16px; gap: 15px; padding-right: 16px; }
   .catalog-subcategory-tabs a { font-size: 10px; }
   .catalog-toolbar > label { font-size: 0; }
-  .catalog-toolbar select { max-width: 145px; }
+  .catalog-toolbar select { max-width: 172px; }
   .catalog-workspace .catalog-products { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .catalog-workspace .catalog-product { padding: 8px; }
   .catalog-workspace .catalog-product .product-card__image { height: 150px; min-height: 150px; }
@@ -1136,3 +1136,12 @@ body[data-page="product"] {
   .pdp-related-section .catalog-product .compare-button { display: inline-flex; align-items: center; justify-content: center; padding: 0; }
   .pdp-related-section .catalog-product .compare-button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
+
+/* «Показати ще» failure: the message sits above the button, the loaded cards stay. */
+.catalog-more { flex-wrap: wrap; }
+.catalog-more__error { flex: 0 0 100%; margin: 0 0 12px; color: var(--danger); font-size: 13px; text-align: center; }
+.catalog-more__error[hidden] { display: none; }
+
+/* Search suggestions: two lines of the title, so neighbouring models stay distinguishable.
+   Pages without pages.css (/, /brands) keep the one-line rule from styles.css until it moves there. */
+.search-results .search-suggestion__text strong { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; white-space: normal; text-overflow: clip; overflow-wrap: anywhere; }

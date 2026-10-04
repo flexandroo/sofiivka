@@ -519,6 +519,228 @@ for (const [label, viewport] of [["desktop", VIEWPORTS.desktop], ["mobile", VIEW
   });
 }
 
+// ---------- catalogue listing UI (AUD-027/028/031/034/056/057) ----------
+// Listing facts: the largest category (needs > 48 products for «Показати ще» twice), one without any priced product,
+// and the products of the largest category in the canonical (Supabase) shape for the scoped-mode checks.
+const listingFacts = await (async () => {
+  const page = await newPage();
+  await open(page, "/catalog");
+  const data = await page.evaluate(() => {
+    const catalog = window.sofievkaCatalog;
+    const products = catalog.catalogProducts || [];
+    const byCategory = new Map();
+    for (const product of products) {
+      if (!product.primaryCategoryId) continue;
+      if (!byCategory.has(product.primaryCategoryId)) byCategory.set(product.primaryCategoryId, []);
+      byCategory.get(product.primaryCategoryId).push(product);
+    }
+    const priced = product => Number(product.pricing?.amount ?? product.price) > 0;
+    const entries = [...byCategory.entries()].filter(([id]) => catalog.categoryUrl(id));
+    const [bigId, bigList] = entries.sort((a, b) => b[1].length - a[1].length)[0] || [];
+    const unpricedEntry = entries.filter(([, list]) => list.length >= 2 && !list.some(priced)).sort((a, b) => b[1].length - a[1].length)[0];
+    const pricedEntry = entries.filter(([, list]) => list.filter(priced).length >= 2).sort((a, b) => b[1].length - a[1].length)[0];
+    const snapshotProducts = (window.sofievkaCatalogSnapshot?.products || []).filter(product => product.primaryCategoryId === bigId);
+    return {
+      big: bigId ? { id: bigId, url: catalog.categoryUrl(bigId), count: bigList.length } : null,
+      unpriced: unpricedEntry ? { id: unpricedEntry[0], url: catalog.categoryUrl(unpricedEntry[0]) } : null,
+      priced: pricedEntry ? { id: pricedEntry[0], url: catalog.categoryUrl(pricedEntry[0]) } : null,
+      scopedProducts: JSON.parse(JSON.stringify(snapshotProducts.slice(0, 120)))
+    };
+  });
+  await page.context().close();
+  assert.ok(data.big && data.big.count > 48, `no category with more than 48 products (largest: ${JSON.stringify(data.big)})`);
+  assert.ok(data.scopedProducts.length > 48, "no canonical snapshot products for the largest category");
+  return data;
+})();
+const ukrainianCount = count => {
+  const value = Math.abs(count);
+  return `${value} ${value % 10 === 1 && value % 100 !== 11 ? "товар" : [2, 3, 4].includes(value % 10) && ![12, 13, 14].includes(value % 100) ? "товари" : "товарів"}`;
+};
+
+// 9. Mobile filter panel: inert while closed, focus in on open and back to «Фільтри» on Escape, dialog semantics,
+// «Показати N товар/товари/товарів».
+await check("catalog-filter-drawer-mobile", async () => {
+  const page = await newPage(VIEWPORTS.mobile);
+  await open(page, listingFacts.big.url);
+  await page.waitForSelector("[data-product-card]", { timeout: 15000 });
+  const panel = page.locator("[data-filter]");
+  assert.equal(await panel.evaluate(node => node.inert), true, "closed filter panel is not inert at 390");
+  assert.equal(await panel.getAttribute("role"), "dialog", "filter panel has no role=dialog at 390");
+  assert.equal(await panel.getAttribute("aria-modal"), "true", "filter panel has no aria-modal at 390");
+  assert.ok(await panel.getAttribute("aria-label") || await panel.getAttribute("aria-labelledby"), "filter panel has no accessible name");
+  await page.focus("[data-filter-toggle]");
+  await page.keyboard.press("Tab");
+  assert.equal(await page.evaluate(() => Boolean(document.activeElement?.closest("[data-filter]"))), false, "Tab from «Фільтри» enters the closed panel");
+  await page.click("[data-filter-toggle]");
+  await page.waitForFunction(() => document.activeElement?.closest("[data-filter]"), null, { timeout: 3000 })
+    .catch(() => { throw new Error("opening the filter panel did not move focus into it"); });
+  assert.equal(await panel.evaluate(node => node.inert), false, "open filter panel is inert");
+  const label = normalize(await page.locator("[data-filter-apply]").innerText());
+  const count = Number(label.match(/\d+/)?.[0]);
+  assert.equal(label, `Показати ${ukrainianCount(count)}`, `drawer button «${label}»`);
+  await page.keyboard.press("Escape");
+  await page.waitForFunction(() => document.activeElement?.matches("[data-filter-toggle]"), null, { timeout: 3000 })
+    .catch(() => { throw new Error("Escape did not return focus to «Фільтри»"); });
+  assert.equal(await panel.evaluate(node => node.inert), true, "filter panel is not inert after Escape");
+  await page.context().close();
+  return { url: listingFacts.big.url, label };
+});
+
+// 10. Price filter: hidden with price sorting where no product has a price; Enter applies; a reversed range is swapped.
+await check("catalog-price-filter", async () => {
+  const page = await newPage();
+  const result = {};
+  if (listingFacts.unpriced) {
+    await open(page, listingFacts.unpriced.url);
+    await page.waitForSelector("[data-product-card]", { timeout: 15000 });
+    assert.equal(await page.locator("[data-price-min]").count(), 0, `${listingFacts.unpriced.url}: price filter shown in a category without prices`);
+    const options = await page.locator("[data-catalog-sort] option").evaluateAll(nodes => nodes.map(node => node.value));
+    assert.deepEqual(options, ["default"], `${listingFacts.unpriced.url}: sort options ${options.join(", ")}`);
+    result.unpriced = listingFacts.unpriced.url;
+  }
+  assert.ok(listingFacts.priced, "no category with priced products");
+  await open(page, listingFacts.priced.url);
+  await page.waitForSelector("[data-price-min]", { timeout: 15000 });
+  await page.fill("[data-price-min]", "900000");
+  await page.fill("[data-price-max]", "1");
+  await page.press("[data-price-max]", "Enter");
+  await page.waitForFunction(() => location.search.includes("minPrice"), null, { timeout: 3000 })
+    .catch(() => { throw new Error("Enter in the price field did not apply the filter"); });
+  const params = new URL(page.url()).searchParams;
+  assert.equal(params.get("minPrice"), "1", `reversed range not swapped: ${page.url()}`);
+  assert.equal(params.get("maxPrice"), "900000", `reversed range not swapped: ${page.url()}`);
+  result.priced = page.url();
+  await page.context().close();
+  return result;
+});
+
+// 11. Cards and search suggestions never show a generated code (altep-…, baxi-…, TJ-new_…, «запит», a product name).
+await check("catalog-synthetic-sku", async () => {
+  const page = await newPage();
+  await open(page, "/catalog");
+  const leaked = await page.evaluate(() => {
+    const ui = window.sofievkaCatalogUI;
+    const synthetic = /^(?:altep|baxi|buderus|focus)-|^tj-new_|^запит$/i;
+    const samples = [
+      { id: "qa-1", sku: "altep-p20-5", brandId: "altep", title: "Котел Altep" },
+      { id: "qa-2", sku: "TJ-new_truba-termojet", brandId: "termojet", title: "Труба" },
+      { id: "qa-3", sku: "запит", brandId: "focus", title: "Вентилятор" },
+      { id: "qa-4", sku: "Датчик Холла", brandId: "tech", title: "Датчик Холла" }
+    ];
+    const products = [...samples, ...(window.sofievkaCatalog.catalogProducts || [])];
+    const bad = [];
+    for (const product of products) {
+      const html = ui.renderProductCard(product);
+      const code = html.match(/class="product-card__code">Код: ([^<]*)</)?.[1] || "";
+      if (code && (synthetic.test(code) || /[а-яіїєґ]{3,}/.test(code))) bad.push(`${product.id}: ${code}`);
+    }
+    const kept = ui.displaySku({ sku: "MO550MECOSTD", brandId: "ecosoft", title: "Мембрана" });
+    return { bad: bad.slice(0, 10), kept };
+  });
+  assert.deepEqual(leaked.bad, [], `synthetic codes on cards: ${leaked.bad.join("; ")}`);
+  assert.equal(leaked.kept, "MO550MECOSTD", "a real manufacturer code was hidden");
+  await page.context().close();
+});
+
+// 12. Back from a product page restores the loaded count and the scroll position (local listing).
+await check("catalog-back-restore", async () => {
+  const page = await newPage();
+  await open(page, listingFacts.big.url);
+  await page.waitForSelector("[data-product-card]", { timeout: 15000 });
+  await page.click("[data-load-more]");
+  await page.waitForFunction(() => document.querySelectorAll("[data-product-card]").length >= 48, null, { timeout: 5000 });
+  const target = page.locator("[data-product-card]").nth(40);
+  await target.scrollIntoViewIfNeeded();
+  const scrollBefore = await page.evaluate(() => Math.round(scrollY));
+  const id = await target.getAttribute("data-product-card");
+  await target.locator("h3 a").click();
+  await page.waitForURL(url => !url.pathname.startsWith("/catalog"), { timeout: 15000 });
+  await page.goBack({ waitUntil: "networkidle" });
+  await page.waitForFunction(count => document.querySelectorAll("[data-product-card]").length >= count, 48, { timeout: 15000 })
+    .catch(async () => { throw new Error(`after Back: ${await page.locator("[data-product-card]").count()} cards, expected 48`); });
+  await page.waitForTimeout(400);
+  const scrollAfter = await page.evaluate(() => Math.round(scrollY));
+  assert.ok(Math.abs(scrollAfter - scrollBefore) < 120, `after Back scrollY ${scrollAfter}, before ${scrollBefore}`);
+  const box = await page.locator(`[data-product-card="${id}"]`).first().boundingBox();
+  assert.ok(box && box.y > -box.height && box.y < VIEWPORTS.desktop.height, `card ${id} is not on screen after Back`);
+  await page.context().close();
+  return { scrollBefore, scrollAfter };
+});
+
+// 13. Scoped (Supabase) listing: a failed «Показати ще» keeps the loaded cards and filters, shows the error under the list,
+// and a retry appends; Back restores the loaded pages; no price filter/sorting when priceBounds.max is null.
+await check("scoped-load-more-error", async () => {
+  const page = await newPage();
+  await useScopedCatalog(page);
+  const pool = listingFacts.scopedProducts;
+  let failPage = 0;
+  await page.route(/\/rest\/v1\/rpc\/get_catalog_products$/, route => {
+    const body = JSON.parse(route.request().postData() || "{}");
+    if (body.product_ids) {
+      const products = body.product_ids.map(id => pool.find(item => item.id === id) || facts.scoped.products[id]).filter(Boolean);
+      return route.fulfill({ contentType: "application/json", body: JSON.stringify({ version: "storefront-flows-qa", total: products.length, page: 1, pageSize: products.length, products, hasMore: false }) });
+    }
+    const pageNumber = Number(body.page_number) || 1;
+    const pageSize = Number(body.page_size) || 24;
+    if (pageNumber === failPage) return route.fulfill({ status: 503, contentType: "application/json", body: '{"message":"qa outage"}' });
+    const products = pool.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
+    return route.fulfill({ contentType: "application/json", body: JSON.stringify({ version: "storefront-flows-qa", total: pool.length, page: pageNumber, pageSize, products, hasMore: pageNumber * pageSize < pool.length }) });
+  });
+  await page.route(/\/rest\/v1\/rpc\/get_catalog_facets$/, route => route.fulfill({ contentType: "application/json", body: JSON.stringify({
+    version: "storefront-flows-qa", total: pool.length,
+    brandCounts: Object.fromEntries([...new Set(pool.map(item => item.brandId))].map(id => [id, pool.filter(item => item.brandId === id).length])),
+    availabilityCounts: {}, categoryCounts: {}, technicalCounts: {}, priceBounds: { min: null, max: null }
+  }) }));
+  await open(page, listingFacts.big.url);
+  await page.waitForFunction(() => document.querySelectorAll("[data-product-card]").length === 24, null, { timeout: 15000 })
+    .catch(async () => { throw new Error(`scoped listing: ${await page.locator("[data-product-card]").count()} cards, expected 24`); });
+  assert.equal(await page.locator("[data-price-min]").count(), 0, "scoped: price filter shown with priceBounds.max = null");
+  assert.deepEqual(await page.locator("[data-catalog-sort] option").evaluateAll(nodes => nodes.map(node => node.value)), ["default"], "scoped: price sorting offered with priceBounds.max = null");
+  const facetGroups = await page.locator("[data-facet-group]").count();
+  failPage = 2;
+  await page.click("[data-load-more]");
+  const error = page.locator("[data-load-more-error]");
+  await error.waitFor({ state: "visible", timeout: 5000 }).catch(() => { throw new Error("no error under the list after a failed «Показати ще»"); });
+  assert.equal(await page.locator("[data-product-card]").count(), 24, "failed «Показати ще» removed the loaded cards");
+  assert.equal(await page.locator("[data-facet-group]").count(), facetGroups, "failed «Показати ще» removed the filters");
+  assert.ok(await page.locator("[data-load-more]").isVisible(), "«Показати ще» hidden after a failure");
+  failPage = 0;
+  await page.click("[data-load-more]");
+  await page.waitForFunction(() => document.querySelectorAll("[data-product-card]").length === 48, null, { timeout: 5000 })
+    .catch(async () => { throw new Error(`retry of «Показати ще»: ${await page.locator("[data-product-card]").count()} cards`); });
+  assert.ok(await error.isHidden(), "load-more error still shown after a successful retry");
+  const target = page.locator("[data-product-card]").nth(40);
+  await target.scrollIntoViewIfNeeded();
+  const scrollBefore = await page.evaluate(() => Math.round(scrollY));
+  await target.locator("h3 a").click();
+  await page.waitForURL(url => !url.pathname.startsWith("/catalog"), { timeout: 15000 });
+  await page.goBack({ waitUntil: "networkidle" });
+  await page.waitForFunction(() => document.querySelectorAll("[data-product-card]").length >= 48, null, { timeout: 15000 })
+    .catch(async () => { throw new Error(`scoped after Back: ${await page.locator("[data-product-card]").count()} cards, expected 48`); });
+  await page.waitForTimeout(400);
+  const scrollAfter = await page.evaluate(() => Math.round(scrollY));
+  assert.ok(Math.abs(scrollAfter - scrollBefore) < 120, `scoped after Back scrollY ${scrollAfter}, before ${scrollBefore}`);
+  await page.context().close();
+  return { scrollBefore, scrollAfter };
+});
+
+// 14. Search suggestions: the first Escape closes them and keeps the query.
+await check("search-escape-keeps-query", async () => {
+  const page = await newPage();
+  await open(page, "/catalog");
+  const input = page.locator("header input[type=search]").first();
+  const query = String(pricedProduct.title).split(/\s+/).slice(0, 2).join(" ");
+  await input.click();
+  await input.fill(query);
+  await page.waitForSelector(".search-results:not([hidden])", { timeout: 8000 })
+    .catch(() => { throw new Error(`no suggestions for «${query}»`); });
+  await input.press("Escape");
+  assert.equal(await input.inputValue(), query, "first Escape cleared the search query");
+  assert.ok(await page.locator(".search-results").first().isHidden(), "first Escape did not close the suggestions");
+  await page.context().close();
+  return { query };
+});
+
 await browser.close();
 stopServers();
 if (failures.length) {

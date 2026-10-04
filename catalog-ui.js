@@ -25,6 +25,123 @@ window.sofievkaCatalogUIReady = (async function () {
     return `${value} ${ending}`;
   };
 
+  // Some supplier imports carry a generated slug (altep-p20-5, baxi-…, TJ-new_…), the product name or «запит»
+  // instead of the manufacturer code. Such values cannot be matched against a price list, so they are not shown.
+  const SYNTHETIC_SKU = /^(?:altep|baxi|buderus|focus)-|^tj-new_/i;
+  function displaySku(product) {
+    const code = String(product?.sku || product?.code || "").replace(/^Код товару:\s*/i, "").trim();
+    if (!code) return "";
+    const brand = String(product.brandId || product.brand_id || "").toLowerCase();
+    if (SYNTHETIC_SKU.test(code) || (brand && code.toLowerCase().startsWith(`${brand}-`))) return "";
+    // A run of lowercase Cyrillic letters is a word («Датчик Холла», «запит»), not a code (КРН200V, F.FBnА10 are codes).
+    if (/[а-яіїєґ]{3,}/.test(code)) return "";
+    if (product.title && code.toLocaleLowerCase("uk") === String(product.title).toLocaleLowerCase("uk")) return "";
+    return code;
+  }
+
+  // Back from a product page restores how far the listing was loaded and scrolled (per URL, this tab only).
+  const listingStateKey = () => `sofievka-listing:${location.pathname}${location.search}`;
+  const readListingState = () => {
+    try {
+      const navigation = performance.getEntriesByType?.("navigation")?.[0];
+      if (!navigation || !["back_forward", "reload"].includes(navigation.type)) return null;
+      const saved = JSON.parse(sessionStorage.getItem(listingStateKey()) || "null");
+      return saved && Number(saved.count) > 0 ? { count: Number(saved.count), scrollY: Math.max(0, Number(saved.scrollY) || 0) } : null;
+    } catch { return null; }
+  };
+  const saveListingState = count => {
+    try {
+      if (count > 0) sessionStorage.setItem(listingStateKey(), JSON.stringify({ count, scrollY: Math.round(window.scrollY) }));
+    } catch { /* storage unavailable: Back simply starts at the top */ }
+  };
+  const restoreScroll = scrollY => {
+    if (!scrollY) return;
+    requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo({ top: scrollY, behavior: "instant" })));
+  };
+
+  const priceGroupMarkup = filters => `<fieldset class="filter-group" data-price-group><legend>Ціна, грн</legend><div class="price-filter"><label><span>Від</span><input type="number" min="0" inputmode="numeric" enterkeyhint="done" value="${Number.isFinite(filters.minPrice) && filters.minPrice > 0 ? filters.minPrice : ""}" data-price-min></label><label><span>До</span><input type="number" min="0" inputmode="numeric" enterkeyhint="done" value="${Number.isFinite(filters.maxPrice) ? filters.maxPrice : ""}" data-price-max></label></div><button class="price-apply" type="button" data-price-apply>Застосувати</button></fieldset>`;
+  const priceFilterActive = filters => filters.minPrice > 0 || Number.isFinite(filters.maxPrice);
+  // Reads both price fields; a reversed range (10 000 … 5 000) is swapped instead of returning nothing.
+  const readPriceInputs = () => {
+    let minimum = Number(document.querySelector("[data-price-min]")?.value || 0);
+    const rawMaximum = document.querySelector("[data-price-max]")?.value;
+    let maximum = rawMaximum ? Number(rawMaximum) : Infinity;
+    if (!(minimum > 0)) minimum = 0;
+    if (!(maximum >= 0)) maximum = Infinity;
+    if (Number.isFinite(maximum) && minimum > maximum) [minimum, maximum] = [maximum, minimum];
+    return { minPrice: minimum, maxPrice: maximum };
+  };
+  // Price sorting is offered only where at least one product has a price (or it is already selected).
+  const syncSortOptions = (pricesKnown, sort) => {
+    const select = document.querySelector("[data-catalog-sort]");
+    if (!select) return;
+    const showPrice = pricesKnown || sort !== "default";
+    const options = [["default", "За замовчуванням"], ...(showPrice ? [["price-asc", "За ціною ↑"], ["price-desc", "За ціною ↓"]] : [])];
+    if ([...select.options].map(option => option.value).join() !== options.map(([value]) => value).join()) {
+      select.innerHTML = options.map(([value, label]) => `<option value="${value}">${label}</option>`).join("");
+    }
+    select.value = sort;
+  };
+
+  // Facet re-renders replace the markup; keep keyboard focus on the same control.
+  const withFacetFocus = (root, renderFn) => {
+    const active = document.activeElement;
+    let selector = "";
+    if (active && root.contains(active)) {
+      if (active.dataset.filterKey) selector = `[data-filter-key="${CSS.escape(active.dataset.filterKey)}"][value="${CSS.escape(active.value)}"]`;
+      else if (active.matches("[data-price-min]")) selector = "[data-price-min]";
+      else if (active.matches("[data-price-max]")) selector = "[data-price-max]";
+      else if (active.matches("[data-price-apply]")) selector = "[data-price-apply]";
+      else if (active.matches("[data-brand-search]")) selector = "[data-brand-search]";
+      else if (active.dataset.facetMore) selector = `[data-facet-more="${CSS.escape(active.dataset.facetMore)}"]`;
+    }
+    renderFn();
+    if (selector) root.querySelector(selector)?.focus({ preventScroll: true });
+  };
+
+  // The filter panel is a sidebar on desktop and an off-canvas dialog up to 900 px: there it is inert while closed,
+  // takes focus when opened, keeps Tab inside and gives focus back to «Фільтри» when closed.
+  function bindFilterDrawer(filterPanel, backdrop) {
+    const drawerQuery = matchMedia("(max-width: 900px)");
+    const toggleButton = () => document.querySelector("[data-filter-toggle]");
+    let open = false;
+    const sync = () => {
+      if (!filterPanel) return;
+      const modal = drawerQuery.matches;
+      filterPanel.setAttribute("role", modal ? "dialog" : "region");
+      if (modal) filterPanel.setAttribute("aria-modal", "true");
+      else filterPanel.removeAttribute("aria-modal");
+      filterPanel.toggleAttribute("inert", modal && !open);
+    };
+    const focusables = () => [...filterPanel.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')]
+      .filter(element => !element.closest("[hidden]") && element.getClientRects().length);
+    const setDrawer = (next, { restoreFocus = true } = {}) => {
+      if (!filterPanel) return;
+      const focusWasInside = filterPanel.contains(document.activeElement);
+      open = Boolean(next) && drawerQuery.matches;
+      filterPanel.classList.toggle("is-open", open);
+      backdrop?.toggleAttribute("hidden", !open);
+      document.body.classList.toggle("filter-drawer-open", open);
+      toggleButton()?.setAttribute("aria-expanded", String(open));
+      sync();
+      if (open) requestAnimationFrame(() => (filterPanel.querySelector("[data-filter-close]") || focusables()[0])?.focus({ preventScroll: true }));
+      else if (restoreFocus && drawerQuery.matches && (focusWasInside || document.activeElement === document.body)) toggleButton()?.focus({ preventScroll: true });
+    };
+    filterPanel?.addEventListener("keydown", event => {
+      if (event.key !== "Tab" || !open) return;
+      const items = focusables();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
+    document.addEventListener("keydown", event => { if (event.key === "Escape" && open) setDrawer(false); });
+    drawerQuery.addEventListener?.("change", () => { if (open && !drawerQuery.matches) setDrawer(false, { restoreFocus: false }); else sync(); });
+    sync();
+    return { setDrawer, isOpen: () => open };
+  }
+
   const containsProduct = (collection, id) => collection instanceof Set
     ? collection.has(id)
     : Array.isArray(collection)
@@ -67,6 +184,7 @@ window.sofievkaCatalogUIReady = (async function () {
     const image = product.image || product.images?.[0] || "";
     const attributes = productCardAttributes(product, attributeLimit);
     const series = catalog.attributeSchema?.seriesLabels?.[product.seriesId] || "";
+    const sku = displaySku(product);
     const showCompare = options.showCompare !== false;
     const priceMarkup = hasPrice
       ? `<div class="product-card__price-group">${hasOldPrice ? `<del class="product-card__old-price">${money(oldAmount)}</del>` : ""}<strong class="product-card__price">${money(amount)}</strong></div>`
@@ -83,7 +201,7 @@ window.sofievkaCatalogUIReady = (async function () {
       ? `<img src="${escapeHtml(image)}" width="800" height="800" loading="lazy" decoding="async" data-product-image onerror="this.hidden=true;this.parentElement.classList.add('is-fallback')" alt="${escapeHtml(title)}">`
       : "";
 
-    return `<article class="product-card catalog-product product-card--${variant}" data-product-card="${escapeHtml(product.id)}"><div class="product-card__media-actions">${isSale ? '<span class="product-card__badge">Акція</span>' : ""}<button class="product-card__favorite${favoriteActive ? " is-active" : ""}" type="button" data-favorite="${escapeHtml(product.id)}" aria-label="${favoriteActive ? "Видалити з обраного" : "Додати в обране"}: ${escapeHtml(title)}" aria-pressed="${favoriteActive}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.5a5.5 5.5 0 0 0-.2-7.9Z"/></svg></button></div><a class="product-card__image${image ? "" : " is-fallback"}" href="${productHref}" aria-label="Відкрити товар: ${escapeHtml(title)}">${imageMarkup}<span class="product-card__image-fallback" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 8h22v17H5zM9 20l5-5 4 4 3-3 6 6M11 12h.01"/></svg>Фото готується</span></a><div class="product-card__identity"><a class="product-card__brand" href="${escapeHtml(brandHref)}">${escapeHtml(product.brand || "Виробник")}</a>${series ? `<span class="product-card__series">Серія ${escapeHtml(series)}</span>` : ""}</div><h3><a href="${productHref}" title="${escapeHtml(title)}">${escapeHtml(title)}</a></h3>${attributes.length ? `<dl class="product-card__specs" aria-label="Ключові характеристики">${attributes.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl>` : `<p class="product-card__specs-empty">Характеристики уточнюються</p>`}<span class="product-card__code">Код: ${escapeHtml(product.sku || product.code || product.id)}</span>${commercialMarkup}<div class="product-card__actions">${primaryAction}${showCompare ? `<button class="compare-button${compareActive ? " is-active" : ""}" type="button" data-compare="${escapeHtml(product.id)}" aria-label="${compareActive ? "Видалити з порівняння" : "Додати до порівняння"}: ${escapeHtml(title)}" aria-pressed="${compareActive}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h10v10M16 19H6V9"/></svg><span>${compareActive ? "У порівнянні" : "Порівняти"}</span></button>` : ""}</div></article>`;
+    return `<article class="product-card catalog-product product-card--${variant}" data-product-card="${escapeHtml(product.id)}"><div class="product-card__media-actions">${isSale ? '<span class="product-card__badge">Акція</span>' : ""}<button class="product-card__favorite${favoriteActive ? " is-active" : ""}" type="button" data-favorite="${escapeHtml(product.id)}" aria-label="${favoriteActive ? "Видалити з обраного" : "Додати в обране"}: ${escapeHtml(title)}" aria-pressed="${favoriteActive}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.5a5.5 5.5 0 0 0-.2-7.9Z"/></svg></button></div><a class="product-card__image${image ? "" : " is-fallback"}" href="${productHref}" aria-label="Відкрити товар: ${escapeHtml(title)}">${imageMarkup}<span class="product-card__image-fallback" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 8h22v17H5zM9 20l5-5 4 4 3-3 6 6M11 12h.01"/></svg>Фото готується</span></a><div class="product-card__identity"><a class="product-card__brand" href="${escapeHtml(brandHref)}">${escapeHtml(product.brand || "Виробник")}</a>${series ? `<span class="product-card__series">Серія ${escapeHtml(series)}</span>` : ""}</div><h3><a href="${productHref}" title="${escapeHtml(title)}">${escapeHtml(title)}</a></h3>${attributes.length ? `<dl class="product-card__specs" aria-label="Ключові характеристики">${attributes.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl>` : `<p class="product-card__specs-empty">Характеристики уточнюються</p>`}${sku ? `<span class="product-card__code">Код: ${escapeHtml(sku)}</span>` : `<span class="product-card__code" aria-hidden="true"></span>`}${commercialMarkup}<div class="product-card__actions">${primaryAction}${showCompare ? `<button class="compare-button${compareActive ? " is-active" : ""}" type="button" data-compare="${escapeHtml(product.id)}" aria-label="${compareActive ? "Видалити з порівняння" : "Додати до порівняння"}: ${escapeHtml(title)}" aria-pressed="${compareActive}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h10v10M16 19H6V9"/></svg><span>${compareActive ? "У порівнянні" : "Порівняти"}</span></button>` : ""}</div></article>`;
   }
 
   const showProductImageFallback = image => {
@@ -269,7 +387,7 @@ window.sofievkaCatalogUIReady = (async function () {
     if (ctx.currentCategory?.status === "future") return `${introMarkup(ctx, 0)}<section class="catalog-workspace catalog-workspace--state"><div class="container"><div class="catalog-state"><p class="page-kicker">Асортимент готується</p><h2>Розділ готується до наповнення</h2><p>Тут з’являться товари після перевірки категорій, характеристик і доступності.</p><a class="button button--secondary" href="/catalog">Перейти до каталогу</a></div></div></section>`;
     if (ctx.currentCategory?.visibility === "service") return `${introMarkup(ctx, 0)}<section class="catalog-workspace catalog-workspace--state"><div class="container"><div class="catalog-state"><p class="page-kicker">Сервісна послуга</p><h2>Пусконалагодження не є товаром каталогу</h2><p>Умови, виїзд і вартість погоджуються сервісним центром після перевірки обладнання та об’єкта.</p><a class="button button--primary" href="/service-center">Звернутися до сервісного центру</a></div></div></section>`;
     const skeletons = Array.from({ length: 6 }, () => `<div class="product-skeleton" aria-hidden="true"><i></i><b></b><span></span><span></span></div>`).join("");
-    return `${introMarkup(ctx, total)}<section class="catalog-workspace"><div class="container">${selectorMarkup(ctx)}${subcategoryMarkup(ctx)}<div class="catalog-mobile-tools"><button class="button button--secondary mobile-filter-button" type="button" data-filter-toggle aria-expanded="false">Фільтри</button><span data-mobile-result-count>${countLabel(total)}</span></div><div class="catalog-layout"><div class="catalog-filter-backdrop" data-filter-backdrop hidden></div><aside class="catalog-filter" data-filter aria-label="Фільтри каталогу"><div class="catalog-filter__head"><div><span>Параметри вибору</span><h2>Фільтри</h2></div><button type="button" data-filter-close aria-label="Закрити фільтри">Закрити</button></div><div data-facet-root></div><div class="catalog-filter__footer"><button class="button button--primary" type="button" data-filter-apply>Показати <span data-drawer-count>${total}</span> товарів</button></div></aside><div class="catalog-results"><div class="catalog-toolbar"><div><p><strong data-result-count>${total}</strong> <span data-result-label>${countLabel(total).replace(/^\d+\s+/, "")}</span></p><div class="active-filters" data-active-filters></div></div><label>Сортування<select data-catalog-sort><option value="default">За замовчуванням</option><option value="price-asc">За ціною ↑</option><option value="price-desc">За ціною ↓</option></select></label></div><div class="catalog-products is-loading" data-catalog-products>${skeletons}</div><div class="catalog-more"><button class="button button--secondary" type="button" data-load-more>Показати ще</button></div></div></div></div></section><section class="catalog-seo"><div class="container"><h2>${escapeHtml(ctx.currentCategory?.name || ctx.section.name)}: підбір за технічними параметрами</h2><p>${escapeHtml(ctx.currentCategory?.description || ctx.section.description)} Фільтри каталогу показують лише характеристики, наявні в поточному наборі товарів. Для остаточного підбору перевірте робочу точку, приєднання та умови монтажу.</p></div></section>`;
+    return `${introMarkup(ctx, total)}<section class="catalog-workspace"><div class="container">${selectorMarkup(ctx)}${subcategoryMarkup(ctx)}<div class="catalog-mobile-tools"><button class="button button--secondary mobile-filter-button" type="button" data-filter-toggle aria-expanded="false" aria-controls="catalog-filter-panel">Фільтри</button><span data-mobile-result-count>${countLabel(total)}</span></div><div class="catalog-layout"><div class="catalog-filter-backdrop" data-filter-backdrop hidden></div><div class="catalog-filter" id="catalog-filter-panel" data-filter role="region" aria-label="Фільтри каталогу"><div class="catalog-filter__head"><div><span>Параметри вибору</span><h2>Фільтри</h2></div><button type="button" data-filter-close aria-label="Закрити фільтри">Закрити</button></div><div data-facet-root></div><div class="catalog-filter__footer"><button class="button button--primary" type="button" data-filter-apply>Показати <span data-drawer-count>${countLabel(total)}</span></button></div></div><div class="catalog-results"><div class="catalog-toolbar"><div><p><strong data-result-count>${total}</strong> <span data-result-label>${countLabel(total).replace(/^\d+\s+/, "")}</span></p><div class="active-filters" data-active-filters></div></div><label>Сортування<select data-catalog-sort><option value="default">За замовчуванням</option><option value="price-asc">За ціною ↑</option><option value="price-desc">За ціною ↓</option></select></label></div><div class="catalog-products is-loading" data-catalog-products>${skeletons}</div><div class="catalog-more"><p class="catalog-more__error" data-load-more-error role="alert" hidden></p><button class="button button--secondary" type="button" data-load-more>Показати ще</button></div></div></div></div></section><section class="catalog-seo"><div class="container"><h2>${escapeHtml(ctx.currentCategory?.name || ctx.section.name)}: підбір за технічними параметрами</h2><p>${escapeHtml(ctx.currentCategory?.description || ctx.section.description)} Фільтри каталогу показують лише характеристики, наявні в поточному наборі товарів. Для остаточного підбору перевірте робочу точку, приєднання та умови монтажу.</p></div></section>`;
   }
 
   function readState(ctx) {
@@ -357,13 +475,13 @@ window.sofievkaCatalogUIReady = (async function () {
     return `<fieldset class="filter-group" data-facet-group="${escapeHtml(key)}"><legend>${escapeHtml(label)}</legend>${search}<div class="facet-options">${visible.map(item => `<label data-facet-option data-option-label="${escapeHtml(item.label.toLocaleLowerCase("uk"))}"${!item.count && !selected.includes(item.value) ? ' class="is-disabled"' : ""}><input type="checkbox" data-filter-key="${escapeHtml(key)}" value="${escapeHtml(item.value)}" ${selected.includes(item.value) ? "checked" : ""} ${!item.count && !selected.includes(item.value) ? "disabled" : ""}><span>${escapeHtml(item.label)}</span><small>${item.count}</small></label>`).join("")}</div>${items.length > limit ? `<button class="facet-more" type="button" data-facet-more="${escapeHtml(key)}">${expanded ? "Згорнути" : `Показати всі · ${items.length}`}</button>` : ""}</fieldset>`;
   }
 
-  function renderFacets(ctx, baseProducts, filters) {
+  function renderFacets(ctx, baseProducts, filters, options = {}) {
     const groups = [];
     if (ctx.isBrand) {
       groups.push(facetGroup("category", "Категорія", optionCounts(baseProducts, filters, "category"), filters, { limit: 8 }));
     }
     if (!ctx.isBrand) groups.push(facetGroup("brand", "Бренд", optionCounts(baseProducts, filters, "brand"), filters, { search: true, limit: 8 }));
-    groups.push(`<fieldset class="filter-group"><legend>Ціна, грн</legend><div class="price-filter"><label><span>Від</span><input type="number" min="0" inputmode="numeric" value="${Number.isFinite(filters.minPrice) && filters.minPrice > 0 ? filters.minPrice : ""}" data-price-min></label><label><span>До</span><input type="number" min="0" inputmode="numeric" value="${Number.isFinite(filters.maxPrice) ? filters.maxPrice : ""}" data-price-max></label></div><button class="price-apply" type="button" data-price-apply>Застосувати</button></fieldset>`);
+    if (options.pricesKnown !== false || priceFilterActive(filters)) groups.push(priceGroupMarkup(filters));
     groups.push(facetGroup("availability", "Наявність", optionCounts(baseProducts, filters, "availability"), filters, { limit: 4 }));
     relevantDefinitions(ctx, baseProducts).forEach(([key, definition]) => groups.push(facetGroup(key, definition.label, optionCounts(baseProducts, filters, key), filters, { limit: 7 })));
     return `${groups.filter(Boolean).join("")}<button class="filter-reset" type="button" data-filter-clear>Скинути всі фільтри</button>`;
@@ -407,17 +525,24 @@ window.sofievkaCatalogUIReady = (async function () {
     let currentFacets = null;
     let controller = null;
     let requestSequence = 0;
+    let pendingRestore = readListingState();
+    if (pendingRestore && "scrollRestoration" in history) history.scrollRestoration = "manual";
     const filterPanel = document.querySelector("[data-filter]");
     const backdrop = document.querySelector("[data-filter-backdrop]");
+    const { setDrawer } = bindFilterDrawer(filterPanel, backdrop);
+    const loadMoreError = document.querySelector("[data-load-more-error]");
+    const pricesKnown = facets => !facets?.priceBounds || facets.priceBounds.max != null;
     const skeletons = Array.from({ length: 6 }, () => `<div class="product-skeleton" aria-hidden="true"><i></i><b></b><span></span><span></span></div>`).join("");
 
     const writeUrl = (push = true) => {
       const params = paramsFromFilters(filters);
-      const path = canonicalPath(ctx);
-      history[push ? "pushState" : "replaceState"]({}, "", `${path}${params.toString() ? `?${params}` : ""}`);
+      const target = `${canonicalPath(ctx)}${params.toString() ? `?${params}` : ""}`;
+      // Applying the same filters twice (Enter, then «Застосувати») must not add a second history entry.
+      const same = target === `${location.pathname}${location.search}`;
+      history[push && !same ? "pushState" : "replaceState"]({}, "", target);
       applyMetadata(ctx, hasIndexableFilters(filters));
     };
-    const requestQuery = requestedPage => {
+    const requestQuery = (requestedPage, pageSize = 24) => {
       const technicalFilters = {};
       Object.entries(filters.values).forEach(([key, values]) => {
         if (!["brand", "availability", "subcategory", "category"].includes(key)) technicalFilters[key] = values;
@@ -430,7 +555,7 @@ window.sofievkaCatalogUIReady = (async function () {
         technicalFilters,
         minPrice: filters.minPrice > 0 ? filters.minPrice : null,
         maxPrice: Number.isFinite(filters.maxPrice) ? filters.maxPrice : null,
-        sort: filters.sort, q: filters.q, page: requestedPage, pageSize: 24
+        sort: filters.sort, q: filters.q, page: requestedPage, pageSize
       };
     };
     const countsMap = (values, selected = []) => {
@@ -442,7 +567,7 @@ window.sofievkaCatalogUIReady = (async function () {
       const groups = [];
       if (ctx.isBrand) groups.push(facetGroup("category", "Категорія", countsMap(facets.categoryCounts, filters.values.category), filters, { limit: 8 }));
       if (!ctx.isBrand) groups.push(facetGroup("brand", "Бренд", countsMap(facets.brandCounts, filters.values.brand), filters, { search: true, limit: 8 }));
-      groups.push(`<fieldset class="filter-group"><legend>Ціна, грн</legend><div class="price-filter"><label><span>Від</span><input type="number" min="0" inputmode="numeric" value="${Number.isFinite(filters.minPrice) && filters.minPrice > 0 ? filters.minPrice : ""}" data-price-min></label><label><span>До</span><input type="number" min="0" inputmode="numeric" value="${Number.isFinite(filters.maxPrice) ? filters.maxPrice : ""}" data-price-max></label></div><button class="price-apply" type="button" data-price-apply>Застосувати</button></fieldset>`);
+      if (pricesKnown(facets) || priceFilterActive(filters)) groups.push(priceGroupMarkup(filters));
       groups.push(facetGroup("availability", "Наявність", countsMap(facets.availabilityCounts, filters.values.availability), filters, { limit: 4 }));
       Object.entries(facets.technicalCounts || {})
         .sort(([left], [right]) => (catalog.attributeDefinitions[left]?.rank || 999) - (catalog.attributeDefinitions[right]?.rank || 999))
@@ -450,19 +575,20 @@ window.sofievkaCatalogUIReady = (async function () {
           const definition = catalog.attributeDefinitions[key];
           if (definition?.filterable) groups.push(facetGroup(key, definition.label, countsMap(counts, filters.values[key]), filters, { limit: 7 }));
         });
-      facetRoot.innerHTML = `${groups.filter(Boolean).join("")}<button class="filter-reset" type="button" data-filter-clear>Скинути всі фільтри</button>`;
+      withFacetFocus(facetRoot, () => { facetRoot.innerHTML = `${groups.filter(Boolean).join("")}<button class="filter-reset" type="button" data-filter-clear>Скинути всі фільтри</button>`; });
       if (state.brandQuery) filterBrandOptions();
+      syncSortOptions(pricesKnown(facets), filters.sort);
     };
     const updateCounters = () => {
-      document.querySelectorAll("[data-result-count], [data-drawer-count]").forEach(element => { element.textContent = String(total); });
+      document.querySelectorAll("[data-result-count]").forEach(element => { element.textContent = String(total); });
+      document.querySelectorAll("[data-drawer-count]").forEach(element => { element.textContent = countLabel(total); });
       document.querySelectorAll("[data-mobile-result-count]").forEach(element => { element.textContent = countLabel(total); });
       document.querySelectorAll("[data-result-label]").forEach(element => { element.textContent = countLabel(total).replace(/^\d+\s+/, ""); });
       const activeRoot = document.querySelector("[data-active-filters]");
       if (activeRoot) activeRoot.innerHTML = activeChips(filters);
-      const sort = document.querySelector("[data-catalog-sort]");
-      if (sort) sort.value = filters.sort;
+      syncSortOptions(pricesKnown(currentFacets), filters.sort);
       const loadMore = document.querySelector("[data-load-more]");
-      if (loadMore) { loadMore.hidden = !hasMore; loadMore.textContent = `Показати ще · ${Math.min(24, Math.max(0, total - currentProducts.length))}`; }
+      if (loadMore) { loadMore.hidden = !hasMore; loadMore.disabled = false; loadMore.removeAttribute("aria-busy"); loadMore.textContent = `Показати ще · ${Math.min(24, Math.max(0, total - currentProducts.length))}`; }
       const mobileButton = document.querySelector("[data-filter-toggle]");
       const activeCount = Object.values(filters.values).reduce((sum, values) => sum + values.length, 0) + Number(Boolean(filters.minPrice)) + Number(Number.isFinite(filters.maxPrice));
       if (mobileButton) mobileButton.textContent = activeCount ? `Фільтри · ${activeCount}` : "Фільтри";
@@ -479,6 +605,14 @@ window.sofievkaCatalogUIReady = (async function () {
       trackProductImages(productRoot);
       updateCounters();
     };
+    // A failed «Показати ще» keeps the cards and filters already on screen; the message sits above the button.
+    const renderLoadMoreError = error => {
+      if (loadMoreError) { loadMoreError.textContent = "Не вдалося завантажити наступні товари. Перевірте з’єднання та натисніть «Показати ще» ще раз."; loadMoreError.hidden = false; }
+      const loadMore = document.querySelector("[data-load-more]");
+      if (loadMore) { loadMore.hidden = false; loadMore.disabled = false; loadMore.removeAttribute("aria-busy"); loadMore.textContent = "Показати ще"; }
+      console.error("Scoped catalogue «load more» failed", error);
+    };
+    const clearLoadMoreError = () => { if (loadMoreError) { loadMoreError.hidden = true; loadMoreError.textContent = ""; } };
     const renderError = error => {
       productRoot.classList.remove("is-loading");
       productRoot.removeAttribute("aria-busy");
@@ -486,18 +620,24 @@ window.sofievkaCatalogUIReady = (async function () {
       facetRoot.innerHTML = `<div class="catalog-empty" role="alert"><p>Фільтри тимчасово недоступні.</p></div>`;
       console.error("Scoped catalogue request failed", error);
     };
-    const load = async ({ append = false } = {}) => {
+    const load = async ({ append = false, restore = null } = {}) => {
       controller?.abort();
       controller = new AbortController();
       const sequence = ++requestSequence;
+      // Restoring after Back asks for every page that was on screen at once (the RPC caps a page at 96).
+      const pagesWanted = restore && !append ? Math.min(4, Math.max(1, Math.ceil(restore.count / 24))) : 1;
       const nextPage = append ? page + 1 : 1;
+      clearLoadMoreError();
       if (!append) {
         productRoot.classList.add("is-loading");
         productRoot.setAttribute("aria-busy", "true");
         productRoot.innerHTML = skeletons;
+      } else {
+        const loadMore = document.querySelector("[data-load-more]");
+        if (loadMore) { loadMore.disabled = true; loadMore.setAttribute("aria-busy", "true"); loadMore.textContent = "Завантаження…"; }
       }
       try {
-        const query = requestQuery(nextPage);
+        const query = requestQuery(nextPage, 24 * pagesWanted);
         const [products, facets] = append
           ? [await source.listProducts(query, { signal: controller.signal }), currentFacets]
           : await Promise.all([
@@ -505,25 +645,23 @@ window.sofievkaCatalogUIReady = (async function () {
             source.loadFacets(query, { signal: controller.signal })
           ]);
         if (sequence !== requestSequence) return;
-        page = nextPage;
+        page = append ? nextPage : pagesWanted;
         total = products.total;
         hasMore = products.hasMore;
         currentProducts = append ? [...currentProducts, ...products.products] : [...products.products];
         currentFacets = facets;
         if (!append && facets) renderScopedFacets(facets);
         renderProducts();
+        if (restore && currentProducts.length < restore.count && hasMore) load({ append: true, restore });
+        else if (restore) restoreScroll(restore.scrollY);
       } catch (error) {
         if (error?.name === "AbortError" || /abort/i.test(error?.message || "")) return;
-        if (sequence === requestSequence) renderError(error);
+        if (sequence !== requestSequence) return;
+        if (append) renderLoadMoreError(error); else renderError(error);
       }
     };
-    const update = (push = true) => { writeUrl(push); load(); };
-    const setDrawer = open => {
-      filterPanel?.classList.toggle("is-open", open);
-      backdrop?.toggleAttribute("hidden", !open);
-      document.body.classList.toggle("filter-drawer-open", open);
-      document.querySelector("[data-filter-toggle]")?.setAttribute("aria-expanded", String(open));
-    };
+    const update = (push = true) => { pendingRestore = null; writeUrl(push); load(); };
+    const applyPrice = () => { Object.assign(filters, readPriceInputs()); update(); };
     const filterBrandOptions = () => {
       const query = state.brandQuery.toLocaleLowerCase("uk");
       facetRoot.querySelectorAll('[data-facet-group="brand"] [data-facet-option]').forEach(option => { option.hidden = Boolean(query) && !option.dataset.optionLabel.includes(query); });
@@ -548,12 +686,7 @@ window.sofievkaCatalogUIReady = (async function () {
     document.addEventListener("click", event => {
       if (event.target.closest("[data-filter-toggle]")) setDrawer(true);
       if (event.target.closest("[data-filter-close], [data-filter-backdrop], [data-filter-apply]")) setDrawer(false);
-      if (event.target.closest("[data-price-apply]")) {
-        filters.minPrice = Number(document.querySelector("[data-price-min]")?.value || 0);
-        const maximum = document.querySelector("[data-price-max]")?.value;
-        filters.maxPrice = maximum ? Number(maximum) : Infinity;
-        update();
-      }
+      if (event.target.closest("[data-price-apply]")) applyPrice();
       const more = event.target.closest("[data-facet-more]");
       if (more) { state.expandedGroups.has(more.dataset.facetMore) ? state.expandedGroups.delete(more.dataset.facetMore) : state.expandedGroups.add(more.dataset.facetMore); if (currentFacets) renderScopedFacets(currentFacets); }
       const remove = event.target.closest("[data-remove-filter]");
@@ -562,17 +695,21 @@ window.sofievkaCatalogUIReady = (async function () {
       if (price) { filters[price.dataset.removePrice] = price.dataset.removePrice === "maxPrice" ? Infinity : 0; update(); }
       if (event.target.closest("[data-remove-query]")) { filters.q = ""; update(); }
       if (event.target.closest("[data-filter-clear]")) { filters = { values: {}, q: "", minPrice: 0, maxPrice: Infinity, sort: "default" }; state.brandQuery = ""; update(); }
-      if (event.target.closest("[data-load-more]") && hasMore) load({ append: true });
+      if (event.target.closest("[data-load-more]") && hasMore && !event.target.closest("[data-load-more]").disabled) load({ append: true });
       if (event.target.closest("[data-scoped-retry]")) load();
     });
-    document.addEventListener("keydown", event => { if (event.key === "Escape") setDrawer(false); });
-    window.addEventListener("popstate", () => { ctx = context(pageName); filters = readState(ctx); applyMetadata(ctx, hasIndexableFilters(filters)); load(); });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Enter" && event.target.matches?.("[data-price-min], [data-price-max]")) { event.preventDefault(); applyPrice(); }
+    });
+    window.addEventListener("popstate", () => { pendingRestore = null; ctx = context(pageName); filters = readState(ctx); applyMetadata(ctx, hasIndexableFilters(filters)); load(); });
+    window.addEventListener("pagehide", () => saveListingState(currentProducts.length));
+    productRoot.addEventListener("click", event => { if (event.target.closest("a[href]")) saveListingState(currentProducts.length); });
 
     const initialParams = new URLSearchParams(location.search);
     const redundantLegacyType = catalog.sourceMappings.categoryMappings.ecosoft?.[initialParams.get("type")]?.categoryId === ctx.currentCategory?.id;
     if (ctx.route.legacy || initialParams.has("slug") || (!ctx.isBrand && (initialParams.has("category") || redundantLegacyType))) writeUrl(false);
     else applyMetadata(ctx, hasIndexableFilters(filters));
-    requestAnimationFrame(() => load());
+    requestAnimationFrame(() => { const restore = pendingRestore; pendingRestore = null; load({ restore }); });
   }
 
   function bind({ pageName = "catalog", productCard } = {}) {
@@ -582,13 +719,18 @@ window.sofievkaCatalogUIReady = (async function () {
     if (!productRoot || !facetRoot || typeof productCard !== "function") return;
     let ctx = context(pageName);
     let filters = readState(ctx);
+    let pendingRestore = readListingState();
+    if (pendingRestore && "scrollRestoration" in history) history.scrollRestoration = "manual";
     const filterPanel = document.querySelector("[data-filter]");
     const backdrop = document.querySelector("[data-filter-backdrop]");
+    const { setDrawer } = bindFilterDrawer(filterPanel, backdrop);
+    const hasPrice = product => Number(product.pricing?.amount ?? product.price) > 0;
 
     const writeUrl = (push = true) => {
       const params = paramsFromFilters(filters);
-      const path = canonicalPath(ctx);
-      history[push ? "pushState" : "replaceState"]({}, "", `${path}${params.toString() ? `?${params}` : ""}`);
+      const target = `${canonicalPath(ctx)}${params.toString() ? `?${params}` : ""}`;
+      const same = target === `${location.pathname}${location.search}`;
+      history[push && !same ? "pushState" : "replaceState"]({}, "", target);
       applyMetadata(ctx, hasIndexableFilters(filters));
     };
 
@@ -597,19 +739,20 @@ window.sofievkaCatalogUIReady = (async function () {
       const results = filteredProducts(baseProducts, filters);
       if (filters.sort === "price-asc") results.sort((a, b) => catalog.compareProductsByPrice(a, b, "asc"));
       if (filters.sort === "price-desc") results.sort((a, b) => catalog.compareProductsByPrice(a, b, "desc"));
-      facetRoot.innerHTML = renderFacets(ctx, baseProducts, filters);
+      const pricesKnown = filteredProducts(baseProducts, filters, "price").some(hasPrice);
+      withFacetFocus(facetRoot, () => { facetRoot.innerHTML = renderFacets(ctx, baseProducts, filters, { pricesKnown }); });
       productRoot.classList.remove("is-loading");
       productRoot.innerHTML = results.length ? results.slice(0, state.visibleCount).map(productCard).join("") : baseProducts.length
         ? `<div class="catalog-empty"><span aria-hidden="true">0</span><h2>Товарів за цими параметрами немає</h2><p>Змініть один із фільтрів або скиньте вибір.</p><button class="button button--secondary" type="button" data-filter-clear>Скинути фільтри</button></div>`
         : `<div class="catalog-empty"><span aria-hidden="true">0</span><h2>Товарів у цьому розділі поки немає</h2><p>Ми не показуємо порожні підкатегорії або вигадані позиції. Перейдіть до іншого розділу каталогу.</p><a class="button button--secondary" href="/catalog">Увесь каталог</a></div>`;
       trackProductImages(productRoot);
-      document.querySelectorAll("[data-result-count], [data-drawer-count]").forEach(element => { element.textContent = String(results.length); });
+      document.querySelectorAll("[data-result-count]").forEach(element => { element.textContent = String(results.length); });
+      document.querySelectorAll("[data-drawer-count]").forEach(element => { element.textContent = countLabel(results.length); });
       document.querySelectorAll("[data-mobile-result-count]").forEach(element => { element.textContent = countLabel(results.length); });
       document.querySelectorAll("[data-result-label]").forEach(element => { element.textContent = countLabel(results.length).replace(/^\d+\s+/, ""); });
       const activeRoot = document.querySelector("[data-active-filters]");
       if (activeRoot) activeRoot.innerHTML = activeChips(filters);
-      const sort = document.querySelector("[data-catalog-sort]");
-      if (sort) sort.value = filters.sort;
+      syncSortOptions(pricesKnown, filters.sort);
       const loadMore = document.querySelector("[data-load-more]");
       if (loadMore) { loadMore.hidden = state.visibleCount >= results.length; loadMore.textContent = `Показати ще · ${Math.min(24, Math.max(0, results.length - state.visibleCount))}`; }
       const mobileButton = document.querySelector("[data-filter-toggle]");
@@ -618,13 +761,9 @@ window.sofievkaCatalogUIReady = (async function () {
       if (state.brandQuery) filterBrandOptions();
     };
 
-    const update = (push = true) => { state.visibleCount = 24; writeUrl(push); renderResults(); };
-    const setDrawer = open => {
-      filterPanel?.classList.toggle("is-open", open);
-      backdrop?.toggleAttribute("hidden", !open);
-      document.body.classList.toggle("filter-drawer-open", open);
-      document.querySelector("[data-filter-toggle]")?.setAttribute("aria-expanded", String(open));
-    };
+    const update = (push = true) => { pendingRestore = null; state.visibleCount = 24; writeUrl(push); renderResults(); };
+    const applyPrice = () => { Object.assign(filters, readPriceInputs()); update(); };
+    const visibleProductCount = () => productRoot.querySelectorAll("[data-product-card]").length;
     const filterBrandOptions = () => {
       const query = state.brandQuery.toLocaleLowerCase("uk");
       facetRoot.querySelectorAll('[data-facet-group="brand"] [data-facet-option]').forEach(option => { option.hidden = Boolean(query) && !option.dataset.optionLabel.includes(query); });
@@ -639,8 +778,6 @@ window.sofievkaCatalogUIReady = (async function () {
         if (values.size) filters.values[key] = [...values]; else delete filters.values[key];
         update();
       }
-      if (event.target.matches("[data-price-min]")) { filters.minPrice = Number(event.target.value || 0); update(); }
-      if (event.target.matches("[data-price-max]")) { filters.maxPrice = event.target.value ? Number(event.target.value) : Infinity; update(); }
       if (event.target.matches("[data-catalog-sort]")) { filters.sort = event.target.value; update(); }
     });
     document.addEventListener("input", event => {
@@ -651,13 +788,7 @@ window.sofievkaCatalogUIReady = (async function () {
     document.addEventListener("click", event => {
       if (event.target.closest("[data-filter-toggle]")) setDrawer(true);
       if (event.target.closest("[data-filter-close], [data-filter-backdrop], [data-filter-apply]")) setDrawer(false);
-      if (event.target.closest("[data-price-apply]")) {
-        const minimum = document.querySelector("[data-price-min]");
-        const maximum = document.querySelector("[data-price-max]");
-        filters.minPrice = Number(minimum?.value || 0);
-        filters.maxPrice = maximum?.value ? Number(maximum.value) : Infinity;
-        update();
-      }
+      if (event.target.closest("[data-price-apply]")) applyPrice();
       const more = event.target.closest("[data-facet-more]");
       if (more) { state.expandedGroups.has(more.dataset.facetMore) ? state.expandedGroups.delete(more.dataset.facetMore) : state.expandedGroups.add(more.dataset.facetMore); renderResults(); }
       const remove = event.target.closest("[data-remove-filter]");
@@ -668,14 +799,24 @@ window.sofievkaCatalogUIReady = (async function () {
       if (event.target.closest("[data-filter-clear]")) { filters = { values: {}, q: "", minPrice: 0, maxPrice: Infinity, sort: "default" }; state.brandQuery = ""; update(); }
       if (event.target.closest("[data-load-more]")) { state.visibleCount += 24; renderResults(); }
     });
-    document.addEventListener("keydown", event => { if (event.key === "Escape") setDrawer(false); });
-    window.addEventListener("popstate", () => { ctx = context(pageName); filters = readState(ctx); state.visibleCount = 24; applyMetadata(ctx, hasIndexableFilters(filters)); renderResults(); });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Enter" && event.target.matches?.("[data-price-min], [data-price-max]")) { event.preventDefault(); applyPrice(); }
+    });
+    window.addEventListener("popstate", () => { pendingRestore = null; ctx = context(pageName); filters = readState(ctx); state.visibleCount = 24; applyMetadata(ctx, hasIndexableFilters(filters)); renderResults(); });
+    window.addEventListener("pagehide", () => saveListingState(visibleProductCount()));
+    productRoot.addEventListener("click", event => { if (event.target.closest("a[href]")) saveListingState(visibleProductCount()); });
 
     const initialParams = new URLSearchParams(location.search);
     const redundantLegacyType = catalog.sourceMappings.categoryMappings.ecosoft?.[initialParams.get("type")]?.categoryId === ctx.currentCategory?.id;
     if (ctx.route.legacy || initialParams.has("slug") || (!ctx.isBrand && (initialParams.has("category") || redundantLegacyType))) writeUrl(false);
     else applyMetadata(ctx, hasIndexableFilters(filters));
-    requestAnimationFrame(renderResults);
+    requestAnimationFrame(() => {
+      const restore = pendingRestore;
+      pendingRestore = null;
+      if (restore) state.visibleCount = Math.max(24, Math.ceil(restore.count / 24) * 24);
+      renderResults();
+      if (restore) restoreScroll(restore.scrollY);
+    });
   }
 
   function megaMenu() {
@@ -830,7 +971,7 @@ window.sofievkaCatalogUIReady = (async function () {
       if (currentRequest !== request) return;
       let index = 0;
       const blocks = [];
-      const productGroup = group("Товари", "product", found.products, index, product => ({ href: preserveDataSource(catalog.productUrl(product)), title: product.title, meta: `${product.brand} · Код ${product.sku}`, image: product.image || product.images?.[0] || "" }));
+      const productGroup = group("Товари", "product", found.products, index, product => ({ href: preserveDataSource(catalog.productUrl(product)), title: product.title, meta: displaySku(product) ? `${product.brand} · Код ${displaySku(product)}` : product.brand, image: product.image || product.images?.[0] || "" }));
       blocks.push(productGroup.html); index = productGroup.next;
       const categoryGroup = group("Категорії", "category", found.categories, index, hit => ({ href: hit.href || catalog.categoryUrl(hit.entity.id), title: hit.entity.title, meta: countLabel(hit.count) }));
       blocks.push(categoryGroup.html); index = categoryGroup.next;
@@ -856,7 +997,8 @@ window.sofievkaCatalogUIReady = (async function () {
       if (normalizeQuery(input.value).length >= minLength) queueRender();
     });
     input.addEventListener("keydown", event => {
-      if (event.key === "Escape") { close(); return; }
+      // The first Escape only closes the suggestions; the browser's own «clear the search field» is kept for a second one.
+      if (event.key === "Escape") { if (!results.hidden) { event.preventDefault(); close(); } return; }
       if (!["ArrowDown", "ArrowUp"].includes(event.key)) {
         if (event.key === "Enter" && selectedIndex >= 0) {
           const selected = links()[selectedIndex];
@@ -896,5 +1038,5 @@ window.sofievkaCatalogUIReady = (async function () {
     }).join("");
   }
 
-  window.sofievkaCatalogUI = Object.freeze({ render, bind, renderProductCard, productCardAttributes, trackProductImages, megaMenu, bindMenu, bindSearch, homeCards, applyMetadata, preserveDataSource });
+  window.sofievkaCatalogUI = Object.freeze({ render, bind, renderProductCard, displaySku, productCardAttributes, trackProductImages, megaMenu, bindMenu, bindSearch, homeCards, applyMetadata, preserveDataSource });
 })();
