@@ -3703,7 +3703,7 @@ a.brand-directory-card:focus-visible {
 }
 
 .catalog-menu__pages,
-.catalog-menu__section-all { display: none; }
+.catalog-menu .catalog-menu__children .catalog-menu__section-all { display: none; }
 
 @media (max-width: 640px) {
   body.catalog-navigation-open { overflow: hidden; }
