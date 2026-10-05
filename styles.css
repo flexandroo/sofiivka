@@ -3702,6 +3702,7 @@ a.brand-directory-card:focus-visible {
   .categories .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+.catalog-menu__back,
 .catalog-menu__pages,
 .catalog-menu .catalog-menu__children .catalog-menu__section-all { display: none; }
 .tabbar { display: none; }
@@ -3732,11 +3733,20 @@ a.brand-directory-card:focus-visible {
   .catalog-menu__support { display: none; }
   .categories .category-grid { grid-template-columns: 1fr; }
   /* Phone menu: a section opens its subcategories (catalog-ui.js bindMenu), site pages follow the catalog. */
-  .catalog-menu__title > i { transform: rotate(90deg); transition: transform .2s ease; }
-  .catalog-menu__taxonomy section.is-expanded .catalog-menu__title > i { transform: rotate(-90deg); }
-  .catalog-menu__taxonomy section.is-expanded .catalog-menu__children { display: grid; gap: 0; padding: 0 14px 8px 26px; }
-  .catalog-menu .catalog-menu__children a { min-height: 44px; padding: 11px 0; border-top: 1px solid var(--divider); font-size: 14px; line-height: 1.3; }
-  .catalog-menu .catalog-menu__children .catalog-menu__section-all { display: block; font-weight: 700; }
+  /* Drill-down: a section replaces the menu with its subcategories and a back button (catalog-ui.js bindMenu). */
+  .catalog-menu.is-drilled .catalog-menu__heading,
+  .catalog-menu.is-drilled .catalog-menu__utilities,
+  .catalog-menu.is-drilled .catalog-menu__pages,
+  .catalog-menu.is-drilled .catalog-menu__taxonomy section:not(.is-expanded) { display: none; }
+  .catalog-menu.is-drilled .catalog-menu__taxonomy section.is-expanded { border-bottom: 0; box-shadow: none; }
+  .catalog-menu.is-drilled .catalog-menu__taxonomy section.is-expanded .catalog-menu__children { display: grid; gap: 0; padding: 0 0 12px; }
+  .catalog-menu.is-drilled .catalog-menu__title { min-height: 48px; pointer-events: none; }
+  .catalog-menu.is-drilled .catalog-menu__title strong { font-size: 22px; letter-spacing: -.02em; }
+  .catalog-menu.is-drilled .catalog-menu__title > i { display: none; }
+  .catalog-menu.is-drilled .catalog-menu__back { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; border: 0; background: transparent; color: var(--text-secondary); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .catalog-menu.is-drilled .catalog-menu__back::before { content: "←"; font-size: 18px; line-height: 1; }
+  .catalog-menu .catalog-menu__children a { display: flex; align-items: center; min-height: 50px; padding: 0 18px; border-top: 1px solid var(--divider); color: var(--text); font-size: 16px; font-weight: 600; line-height: 1.3; }
+  .catalog-menu .catalog-menu__children .catalog-menu__section-all { display: flex; font-weight: 750; }
   .catalog-menu__pages { order: 4; display: block; padding-bottom: 12px; }
   .catalog-menu__group p { margin: 0; padding: 22px 18px 6px; color: var(--text-subtle); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
   .catalog-menu .catalog-menu__group a { display: flex; align-items: center; min-height: 48px; padding: 0 18px; border: 0; color: var(--text); font-size: 16px; font-weight: 650; }
@@ -3752,11 +3762,18 @@ a.brand-directory-card:focus-visible {
   .catalog-menu__utilities { border-inline: 0; }
   .catalog-menu .catalog-menu__utilities a,
   .catalog-menu .catalog-menu__title { padding-inline: 18px; }
-  .catalog-button[aria-expanded="true"] { box-shadow: none; }
+  /* Menu button: no fill, white lines. */
+  .catalog-button,
+  .catalog-button:hover,
+  .catalog-button:active,
+  .catalog-button.is-active,
+  .catalog-button[aria-expanded="true"] { background: transparent; box-shadow: none; color: #fff; transform: none; }
+  .catalog-button__mark { width: 24px; gap: 5px; }
+  .catalog-button__mark i { height: 2px; }
   .catalog-button__mark i { transition: transform .2s ease, opacity .2s ease; }
-  .catalog-button[aria-expanded="true"] .catalog-button__mark i:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .catalog-button[aria-expanded="true"] .catalog-button__mark i:nth-child(1) { transform: translateY(7px) rotate(45deg); }
   .catalog-button[aria-expanded="true"] .catalog-button__mark i:nth-child(2) { opacity: 0; transform: none; }
-  .catalog-button[aria-expanded="true"] .catalog-button__mark i:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+  .catalog-button[aria-expanded="true"] .catalog-button__mark i:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
   /* Bottom navigation (catalog-ui.js mountTabBar); fixed bars sit on top of it. */
   body { padding-bottom: var(--tabbar-offset); }
