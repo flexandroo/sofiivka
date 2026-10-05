@@ -537,6 +537,9 @@ body[data-page="brand"] { background: var(--canvas); }
   .catalog-subcategory-tabs::-webkit-scrollbar { display: none; }
   .catalog-workspace .catalog-filter { position: fixed; inset: 0 0 0 auto; z-index: 90; width: min(420px, 100%); max-height: none; overflow-y: auto; padding: 0 20px 92px; background: var(--canvas); transform: translateX(105%); transition: transform .24s ease; }
   .catalog-workspace .catalog-filter.is-open { transform: translateX(0); }
+  /* Closed drawer is off-screen to the right; hidden so iOS Safari cannot pan the page sideways into it. */
+  .catalog-workspace .catalog-filter:not(.is-open) { visibility: hidden; transition: transform .24s ease, visibility 0s linear .24s; }
+  .catalog-workspace .catalog-filter:not(.is-open) .catalog-filter__footer { visibility: hidden; }
   .catalog-filter__head { position: sticky; top: 0; z-index: 2; padding: 18px 0 13px; }
   .catalog-filter__head button { display: block; }
   .facet-search input { font-size: 16px; }
@@ -566,8 +569,9 @@ body[data-page="brand"] { background: var(--canvas); }
   .catalog-section-tabs a span { font-size: 8px; }
   .catalog-subcategory-tabs { margin-right: -16px; gap: 15px; padding-right: 16px; }
   .catalog-subcategory-tabs a { font-size: 10px; }
-  .catalog-toolbar > label { font-size: 0; }
-  .catalog-toolbar select { max-width: 172px; }
+  .catalog-workspace .catalog-toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+  .catalog-toolbar > label { display: block; font-size: 0; }
+  .catalog-workspace .catalog-toolbar select { width: 100%; max-width: none; min-height: 40px; font-size: 14px; }
   .catalog-workspace .catalog-products { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .catalog-workspace .catalog-product { padding: 8px; }
   .catalog-workspace .catalog-product .product-card__image { height: 150px; min-height: 150px; }

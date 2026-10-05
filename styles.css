@@ -2855,7 +2855,8 @@ a.brand-directory-card:focus-visible {
 
   .site-header__inner {
     grid-template-columns: 138px auto auto;
-    gap: 8px;
+    grid-template-rows: 62px auto;
+    gap: 0 8px;
     min-height: 66px;
   }
 
@@ -2881,10 +2882,11 @@ a.brand-directory-card:focus-visible {
   }
 
   .search > button {
-    top: 0;
-    right: 0;
-    height: 44px;
-    padding-inline: 11px;
+    top: 4px;
+    right: 4px;
+    height: 34px;
+    padding-inline: 12px;
+    border-radius: 6px;
   }
 
   .search-results {
