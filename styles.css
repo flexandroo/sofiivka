@@ -3704,6 +3704,9 @@ a.brand-directory-card:focus-visible {
 
 .catalog-menu__pages,
 .catalog-menu .catalog-menu__children .catalog-menu__section-all { display: none; }
+.tabbar { display: none; }
+:root { --tabbar-offset: 0px; }
+@media (max-width: 640px) { :root { --tabbar-offset: calc(60px + env(safe-area-inset-bottom)); } }
 
 @media (max-width: 640px) {
   body.catalog-navigation-open { overflow: hidden; }
@@ -3734,9 +3737,36 @@ a.brand-directory-card:focus-visible {
   .catalog-menu__taxonomy section.is-expanded .catalog-menu__children { display: grid; gap: 0; padding: 0 14px 8px 26px; }
   .catalog-menu .catalog-menu__children a { min-height: 44px; padding: 11px 0; border-top: 1px solid var(--divider); font-size: 14px; line-height: 1.3; }
   .catalog-menu .catalog-menu__children .catalog-menu__section-all { display: block; font-weight: 700; }
-  .catalog-menu__pages { order: 4; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 2px solid var(--graphite); background: var(--canvas); }
-  .catalog-menu .catalog-menu__pages a { display: flex; align-items: center; min-height: 48px; padding: 0 14px; border-bottom: 1px solid var(--divider); font-size: 14px; font-weight: 600; }
-  .catalog-menu .catalog-menu__pages a:nth-child(odd) { border-right: 1px solid var(--divider); }
+  .catalog-menu__pages { order: 4; display: block; padding-bottom: 12px; }
+  .catalog-menu__group p { margin: 0; padding: 22px 18px 6px; color: var(--text-subtle); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+  .catalog-menu .catalog-menu__group a { display: flex; align-items: center; min-height: 48px; padding: 0 18px; border: 0; color: var(--text); font-size: 16px; font-weight: 650; }
+  .catalog-menu .catalog-menu__group a[aria-current="page"] { box-shadow: inset 3px 0 0 var(--yellow); }
+
+  /* Phone menu fills the screen between the header and the bottom bar (like a native app sheet). */
+  .site-header { backdrop-filter: none; }
+  .catalog-menu { position: fixed; top: var(--menu-top, 114px); right: 0; bottom: var(--tabbar-offset); left: 0; z-index: 40; width: auto; max-height: none; border: 0; border-top: 1px solid var(--divider); border-radius: 0; box-shadow: none; overscroll-behavior: contain; }
+  .catalog-menu__heading { padding: 22px 18px 8px; }
+  .catalog-menu__heading span { color: var(--text-subtle); font-size: 11px; letter-spacing: .14em; }
+  .catalog-menu__taxonomy { border: 0; }
+  .catalog-menu__title strong { color: var(--text); font-size: 16px; }
+  .catalog-menu__utilities { border-inline: 0; }
+  .catalog-menu .catalog-menu__utilities a,
+  .catalog-menu .catalog-menu__title { padding-inline: 18px; }
+  .catalog-button[aria-expanded="true"] { box-shadow: none; }
+  .catalog-button__mark i { transition: transform .2s ease, opacity .2s ease; }
+  .catalog-button[aria-expanded="true"] .catalog-button__mark i:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .catalog-button[aria-expanded="true"] .catalog-button__mark i:nth-child(2) { opacity: 0; transform: none; }
+  .catalog-button[aria-expanded="true"] .catalog-button__mark i:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  /* Bottom navigation (catalog-ui.js mountTabBar); fixed bars sit on top of it. */
+  body { padding-bottom: var(--tabbar-offset); }
+  .tabbar { position: fixed; right: 0; bottom: 0; left: 0; z-index: 75; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding-bottom: env(safe-area-inset-bottom); border-top: 1px solid rgba(255, 255, 255, .12); background: #151515; }
+  .tabbar a { position: relative; display: grid; justify-items: center; align-content: center; gap: 4px; height: 60px; color: #a9a59b; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-decoration: none; text-transform: uppercase; }
+  .tabbar svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .tabbar a.is-current { color: var(--yellow); }
+  .tabbar b { position: absolute; top: 6px; left: calc(50% + 6px); min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: var(--yellow); color: #202020; font-size: 10px; line-height: 17px; text-align: center; }
+  .tabbar b[hidden] { display: none; }
+  .cookie-consent { bottom: var(--tabbar-offset); }
   /* Logo left, cart and the menu button in the top right corner. */
   .site-header__inner { grid-template-columns: minmax(0, 1fr) auto auto; }
   .site-header__inner > .brand { grid-column: 1; grid-row: 1; }

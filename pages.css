@@ -979,6 +979,7 @@ body[data-page="product"] {
   .pdp-related-products > * { scroll-snap-align: start; }
   .pdp-mobile-buybar { position: fixed; right: 0; bottom: 0; left: 0; z-index: 70; display: grid; grid-template-columns: minmax(0, 1fr) minmax(142px, .8fr); align-items: center; gap: 12px; padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid var(--pdp-line); background: rgba(255,255,255,.98); box-shadow: 0 -8px 28px rgba(32,32,32,.09); transform: translateY(115%); opacity: 0; pointer-events: none; transition: transform .22s ease, opacity .18s ease; }
   .pdp-mobile-buybar.is-visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .pdp-mobile-buybar { bottom: var(--tabbar-offset, 0px); padding-bottom: 8px; }
   .pdp-mobile-buybar > div { display: grid; min-width: 0; }
   .pdp-mobile-buybar > div span { overflow: hidden; color: var(--success); font-size: 9px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
   .pdp-mobile-buybar > div strong { overflow: hidden; font-size: 17px; line-height: 1.25; font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; }

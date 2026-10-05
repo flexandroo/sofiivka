@@ -820,9 +820,11 @@ window.sofievkaCatalogUIReady = (async function () {
     });
   }
 
-  // Site pages for the phone menu, where the header page links are hidden. Refreshed from the header menu
-  // (edited in /admin/menus) each time the menu opens; this list is the first paint and fallback.
-  const MENU_PAGES = [["/about", "Про нас"], ["/solutions", "Рішення"], ["/installation", "Монтаж"], ["/service-center", "Сервіс"], ["/delivery", "Доставка й оплата"], ["/contact", "Контакти"], ["/blog", "Блог"]];
+  // Site pages for the phone menu (the header page links are hidden on phones), grouped like the footer.
+  const MENU_GROUPS = [
+    ["Про компанію", [["/about", "Про нас"], ["/solutions", "Рішення"], ["/blog", "Блог"], ["/contact", "Контакти"]]],
+    ["Для клієнта", [["/delivery", "Доставка й оплата"], ["/returns", "Повернення та обмін"], ["/warranty", "Гарантія"], ["/service-center", "Сервіс"], ["/installation", "Монтаж"], ["/buyers", "Покупцям"]]]
+  ];
 
   function megaMenu() {
     const route = catalog.resolveRoute(location.pathname, location.search, document.body.dataset.page || "catalog");
@@ -835,7 +837,7 @@ window.sofievkaCatalogUIReady = (async function () {
       return `<section class="${sectionCurrent ? "is-current-section is-expanded" : ""}"><a class="catalog-menu__title${currentId === section.id ? " is-current" : ""}" href="${catalog.getCategoryPath(section.id)}"${currentId === section.id ? ' aria-current="page"' : ""}><span><strong>${escapeHtml(sectionName)}</strong><small>${escapeHtml(section.menuDescription || section.description)}</small></span><i aria-hidden="true">→</i></a>${children.length ? `<div class="catalog-menu__children"><a class="catalog-menu__section-all" href="${catalog.getCategoryPath(section.id)}">Усі товари: ${escapeHtml(sectionName)}</a>${children.map(category => `<a class="${currentBranch.has(category.id) ? "is-current" : ""}" href="${catalog.getCategoryPath(category.id)}"${currentId === category.id ? ' aria-current="page"' : ""}>${escapeHtml(category.name)}</a>`).join("")}</div>` : ""}</section>`;
     }).join("");
     const allCurrent = !route.notFound && route.catalogState === "all" && /^\/catalog\/?$/.test(location.pathname);
-    return `<div class="catalog-menu__panel"><div class="catalog-menu__heading"><span>Каталог обладнання</span><small>Швидкий перехід до категорії</small></div><div class="catalog-menu__taxonomy">${columns}</div><div class="catalog-menu__utilities"><a class="catalog-menu__all${allCurrent ? " is-current" : ""}" href="${catalog.sectionUrl("all")}"${allCurrent ? ' aria-current="page"' : ""}>Увесь каталог <span aria-hidden="true">→</span></a><a class="catalog-menu__brands" href="/brands">Усі бренди <span aria-hidden="true">→</span></a></div><div class="catalog-menu__pages" data-catalog-menu-pages>${MENU_PAGES.map(([href, label]) => `<a href="${href}">${label}</a>`).join("")}</div></div>`;
+    return `<div class="catalog-menu__panel"><div class="catalog-menu__heading"><span>Каталог обладнання</span><small>Швидкий перехід до категорії</small></div><div class="catalog-menu__taxonomy">${columns}</div><div class="catalog-menu__utilities"><a class="catalog-menu__all${allCurrent ? " is-current" : ""}" href="${catalog.sectionUrl("all")}"${allCurrent ? ' aria-current="page"' : ""}>Увесь каталог <span aria-hidden="true">→</span></a><a class="catalog-menu__brands" href="/brands">Усі бренди <span aria-hidden="true">→</span></a></div><div class="catalog-menu__pages">${MENU_GROUPS.map(([title, links]) => `<section class="catalog-menu__group"><p>${title}</p>${links.map(([href, label]) => `<a href="${href}"${location.pathname === href ? ' aria-current="page"' : ""}>${label}</a>`).join("")}</section>`).join("")}</div></div>`;
   }
 
   function bindMenu({ toggle, menu }) {
@@ -846,6 +848,7 @@ window.sofievkaCatalogUIReady = (async function () {
     toggle.classList.toggle("is-active", catalogRoute);
     if (catalogRoute) toggle.setAttribute("aria-label", "Каталог, поточний розділ. Відкрити меню");
 
+    const phone = () => matchMedia("(max-width: 640px)").matches;
     const links = () => [...menu.querySelectorAll("a[href]")].filter(link => link.offsetParent !== null);
     const setOpen = (open, { focusFirst = false, restoreFocus = false } = {}) => {
       if (open) {
@@ -854,22 +857,15 @@ window.sofievkaCatalogUIReady = (async function () {
         if (searchResults) searchResults.hidden = true;
         search?.querySelector('input[aria-expanded="true"]')?.setAttribute("aria-expanded", "false");
       }
+      if (open && phone()) menu.style.setProperty("--menu-top", `${Math.max(0, Math.round(toggle.closest("header")?.getBoundingClientRect().bottom || 0))}px`);
       menu.hidden = !open;
       toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Закрити меню" : "Відкрити каталог і меню");
       document.body.classList.toggle("catalog-navigation-open", open && matchMedia("(max-width: 640px)").matches);
       if (focusFirst && open) requestAnimationFrame(() => links()[0]?.focus());
       if (restoreFocus && !open) toggle.focus();
     };
 
-    const phone = () => matchMedia("(max-width: 640px)").matches;
-    const syncPages = () => {
-      const target = menu.querySelector("[data-catalog-menu-pages]");
-      const source = [...document.querySelectorAll("[data-site-header-menu] a[href]")];
-      if (!target || !source.length) return;
-      const blog = target.querySelector('a[href="/blog"]');
-      target.replaceChildren(...source.map(link => { const copy = document.createElement("a"); copy.href = link.getAttribute("href"); copy.textContent = link.textContent.trim(); return copy; }));
-      if (blog && !source.some(link => link.getAttribute("href") === "/blog")) target.append(blog);
-    };
     menu.querySelectorAll(".catalog-menu__taxonomy section").forEach(section => {
       const title = section.querySelector(".catalog-menu__title");
       if (title && section.querySelector(".catalog-menu__children")) title.setAttribute("aria-expanded", String(section.classList.contains("is-expanded")));
@@ -885,7 +881,8 @@ window.sofievkaCatalogUIReady = (async function () {
       title.setAttribute("aria-expanded", String(open));
     });
 
-    toggle.addEventListener("click", () => { if (menu.hidden) syncPages(); setOpen(menu.hidden); });
+    toggle.addEventListener("click", () => setOpen(menu.hidden));
+    mountTabBar();
     toggle.addEventListener("keydown", event => {
       if (["Enter", " "].includes(event.key)) {
         event.preventDefault();
@@ -922,6 +919,32 @@ window.sofievkaCatalogUIReady = (async function () {
     window.addEventListener("resize", () => {
       if (!matchMedia("(max-width: 640px)").matches) document.body.classList.remove("catalog-navigation-open");
     });
+  }
+
+  // Bottom navigation on phones (styles.css hides it above 640px). The cart count mirrors the header's
+  // counter, which page-shell.js and script.js keep up to date.
+  function mountTabBar() {
+    if (document.querySelector("[data-tabbar]")) return;
+    const path = location.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/";
+    const icon = d => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+    const items = [
+      ["/", "Головна", icon('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>'), path === "/" || path === "/index"],
+      ["/catalog", "Каталог", icon('<rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 10h16M4 15h16M10 4v16M15 4v16"/>'), /^\/(catalog|brands|product)(\/|$)/.test(path)],
+      ["/favorites", "Обране", icon('<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.5a5.5 5.5 0 0 0 1-8.9Z"/>'), path === "/favorites"],
+      ["/cart", "Кошик", icon('<path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 8H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>'), path === "/cart" || path === "/checkout"],
+      ["/contact", "Контакти", icon('<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>'), path === "/contact"]
+    ];
+    const bar = document.createElement("nav");
+    bar.className = "tabbar";
+    bar.dataset.tabbar = "";
+    bar.setAttribute("aria-label", "Швидка навігація");
+    bar.innerHTML = items.map(([href, label, svg, current]) => `<a href="${href}"${current ? ' aria-current="page" class="is-current"' : ""}>${svg}<span>${label}</span>${href === "/cart" ? '<b data-tabbar-cart hidden>0</b>' : ""}</a>`).join("");
+    document.body.append(bar);
+    const badge = bar.querySelector("[data-tabbar-cart]");
+    const source = document.querySelector("header [data-cart-count]");
+    const sync = () => { const count = Number(source?.textContent || 0); badge.textContent = String(count); badge.hidden = !(count > 0); };
+    sync();
+    if (source) new MutationObserver(sync).observe(source, { childList: true, characterData: true, subtree: true });
   }
 
   function bindSearch(form = document.querySelector("[data-search]"), options = {}) {
