@@ -857,6 +857,8 @@ window.sofievkaCatalogUIReady = (async function () {
         if (searchResults) searchResults.hidden = true;
         search?.querySelector('input[aria-expanded="true"]')?.setAttribute("aria-expanded", "false");
       }
+      // Phones: jump to the top so the menu opens right under the header.
+      if (open && phone() && window.scrollY > 0) window.scrollTo({ top: 0, behavior: "instant" });
       if (open && phone()) menu.style.setProperty("--menu-top", `${Math.max(0, Math.round(toggle.closest("header")?.getBoundingClientRect().bottom || 0))}px`);
       if (!open) { menu.classList.remove("is-drilled"); menu.querySelectorAll(".catalog-menu__taxonomy section.is-expanded").forEach(item => item.classList.remove("is-expanded")); }
       menu.hidden = !open;
