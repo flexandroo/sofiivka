@@ -820,6 +820,10 @@ window.sofievkaCatalogUIReady = (async function () {
     });
   }
 
+  // Site pages for the phone menu, where the header page links are hidden. Refreshed from the header menu
+  // (edited in /admin/menus) each time the menu opens; this list is the first paint and fallback.
+  const MENU_PAGES = [["/about", "Про нас"], ["/solutions", "Рішення"], ["/installation", "Монтаж"], ["/service-center", "Сервіс"], ["/delivery", "Доставка й оплата"], ["/contact", "Контакти"], ["/blog", "Блог"]];
+
   function megaMenu() {
     const route = catalog.resolveRoute(location.pathname, location.search, document.body.dataset.page || "catalog");
     const currentId = route.notFound ? "" : route.currentCategory?.id || "";
@@ -828,10 +832,10 @@ window.sofievkaCatalogUIReady = (async function () {
       const children = catalog.availableCategories(section.id);
       const sectionCurrent = route.sectionId === section.id;
       const sectionName = section.shortTitle || section.name;
-      return `<section class="${sectionCurrent ? "is-current-section" : ""}"><a class="catalog-menu__title${currentId === section.id ? " is-current" : ""}" href="${catalog.getCategoryPath(section.id)}"${currentId === section.id ? ' aria-current="page"' : ""}><span><strong>${escapeHtml(sectionName)}</strong><small>${escapeHtml(section.menuDescription || section.description)}</small></span><i aria-hidden="true">→</i></a>${children.length ? `<div class="catalog-menu__children">${children.map(category => `<a class="${currentBranch.has(category.id) ? "is-current" : ""}" href="${catalog.getCategoryPath(category.id)}"${currentId === category.id ? ' aria-current="page"' : ""}>${escapeHtml(category.name)}</a>`).join("")}</div>` : ""}</section>`;
+      return `<section class="${sectionCurrent ? "is-current-section is-expanded" : ""}"><a class="catalog-menu__title${currentId === section.id ? " is-current" : ""}" href="${catalog.getCategoryPath(section.id)}"${currentId === section.id ? ' aria-current="page"' : ""}><span><strong>${escapeHtml(sectionName)}</strong><small>${escapeHtml(section.menuDescription || section.description)}</small></span><i aria-hidden="true">→</i></a>${children.length ? `<div class="catalog-menu__children"><a class="catalog-menu__section-all" href="${catalog.getCategoryPath(section.id)}">Усі товари: ${escapeHtml(sectionName)}</a>${children.map(category => `<a class="${currentBranch.has(category.id) ? "is-current" : ""}" href="${catalog.getCategoryPath(category.id)}"${currentId === category.id ? ' aria-current="page"' : ""}>${escapeHtml(category.name)}</a>`).join("")}</div>` : ""}</section>`;
     }).join("");
     const allCurrent = !route.notFound && route.catalogState === "all" && /^\/catalog\/?$/.test(location.pathname);
-    return `<div class="catalog-menu__panel"><div class="catalog-menu__heading"><span>Каталог обладнання</span><small>Швидкий перехід до категорії</small></div><div class="catalog-menu__taxonomy">${columns}</div><div class="catalog-menu__utilities"><a class="catalog-menu__all${allCurrent ? " is-current" : ""}" href="${catalog.sectionUrl("all")}"${allCurrent ? ' aria-current="page"' : ""}>Увесь каталог <span aria-hidden="true">→</span></a><a class="catalog-menu__brands" href="/brands">Усі бренди <span aria-hidden="true">→</span></a></div></div>`;
+    return `<div class="catalog-menu__panel"><div class="catalog-menu__heading"><span>Каталог обладнання</span><small>Швидкий перехід до категорії</small></div><div class="catalog-menu__taxonomy">${columns}</div><div class="catalog-menu__utilities"><a class="catalog-menu__all${allCurrent ? " is-current" : ""}" href="${catalog.sectionUrl("all")}"${allCurrent ? ' aria-current="page"' : ""}>Увесь каталог <span aria-hidden="true">→</span></a><a class="catalog-menu__brands" href="/brands">Усі бренди <span aria-hidden="true">→</span></a></div><div class="catalog-menu__pages" data-catalog-menu-pages>${MENU_PAGES.map(([href, label]) => `<a href="${href}">${label}</a>`).join("")}</div></div>`;
   }
 
   function bindMenu({ toggle, menu }) {
@@ -857,7 +861,31 @@ window.sofievkaCatalogUIReady = (async function () {
       if (restoreFocus && !open) toggle.focus();
     };
 
-    toggle.addEventListener("click", () => setOpen(menu.hidden));
+    const phone = () => matchMedia("(max-width: 640px)").matches;
+    const syncPages = () => {
+      const target = menu.querySelector("[data-catalog-menu-pages]");
+      const source = [...document.querySelectorAll("[data-site-header-menu] a[href]")];
+      if (!target || !source.length) return;
+      const blog = target.querySelector('a[href="/blog"]');
+      target.replaceChildren(...source.map(link => { const copy = document.createElement("a"); copy.href = link.getAttribute("href"); copy.textContent = link.textContent.trim(); return copy; }));
+      if (blog && !source.some(link => link.getAttribute("href") === "/blog")) target.append(blog);
+    };
+    menu.querySelectorAll(".catalog-menu__taxonomy section").forEach(section => {
+      const title = section.querySelector(".catalog-menu__title");
+      if (title && section.querySelector(".catalog-menu__children")) title.setAttribute("aria-expanded", String(section.classList.contains("is-expanded")));
+    });
+    // On phones a section title opens its subcategories instead of navigating ("Усі товари" link inside).
+    menu.addEventListener("click", event => {
+      const title = event.target.closest(".catalog-menu__title");
+      const section = title?.closest("section");
+      if (!title || !phone() || !section?.querySelector(".catalog-menu__children")) return;
+      event.preventDefault();
+      const open = !section.classList.contains("is-expanded");
+      section.classList.toggle("is-expanded", open);
+      title.setAttribute("aria-expanded", String(open));
+    });
+
+    toggle.addEventListener("click", () => { if (menu.hidden) syncPages(); setOpen(menu.hidden); });
     toggle.addEventListener("keydown", event => {
       if (["Enter", " "].includes(event.key)) {
         event.preventDefault();
@@ -872,7 +900,7 @@ window.sofievkaCatalogUIReady = (async function () {
         (event.key === "ArrowUp" ? items.at(-1) : items[0])?.focus();
       });
     });
-    menu.addEventListener("click", event => { if (event.target.closest("a")) setOpen(false); });
+    menu.addEventListener("click", event => { if (event.target.closest("a") && !event.defaultPrevented) setOpen(false); });
     menu.addEventListener("keydown", event => {
       const items = links();
       const index = items.indexOf(document.activeElement);

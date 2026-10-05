@@ -3702,6 +3702,9 @@ a.brand-directory-card:focus-visible {
   .categories .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+.catalog-menu__pages,
+.catalog-menu__section-all { display: none; }
+
 @media (max-width: 640px) {
   body.catalog-navigation-open { overflow: hidden; }
   .catalog-menu { max-height: calc(100dvh - 132px); overflow-y: auto; }
@@ -3714,7 +3717,8 @@ a.brand-directory-card:focus-visible {
   .catalog-menu__taxonomy { order: 3; grid-template-columns: 1fr; border-bottom: 0; }
   .catalog-menu__taxonomy section,
   .catalog-menu__taxonomy section:nth-child(2n),
-  .catalog-menu__taxonomy section:nth-child(3n) { padding: 0; border-right: 0; border-bottom: 1px solid var(--divider); }
+  .catalog-menu__taxonomy section:nth-child(3n),
+  .catalog-menu__taxonomy section:nth-last-child(-n + 2) { padding: 0; border-right: 0; border-bottom: 1px solid var(--divider); }
   .catalog-menu__taxonomy section:last-child { border-bottom: 0; }
   .catalog-menu__taxonomy section.is-current-section { box-shadow: inset 3px 0 0 var(--yellow); }
   .catalog-menu .catalog-menu__title { align-items: center; min-height: 54px; padding: 0 14px; }
@@ -3722,8 +3726,29 @@ a.brand-directory-card:focus-visible {
   .catalog-menu__title strong { font-size: 15px; }
   .catalog-menu__title small,
   .catalog-menu__children { display: none; }
-  .catalog-menu__support { border-top: 1px solid var(--divider); }
+  .catalog-menu__support { display: none; }
   .categories .category-grid { grid-template-columns: 1fr; }
+  /* Phone menu: a section opens its subcategories (catalog-ui.js bindMenu), site pages follow the catalog. */
+  .catalog-menu__title > i { transform: rotate(90deg); transition: transform .2s ease; }
+  .catalog-menu__taxonomy section.is-expanded .catalog-menu__title > i { transform: rotate(-90deg); }
+  .catalog-menu__taxonomy section.is-expanded .catalog-menu__children { display: grid; gap: 0; padding: 0 14px 8px 26px; }
+  .catalog-menu .catalog-menu__children a { min-height: 44px; padding: 11px 0; border-top: 1px solid var(--divider); font-size: 14px; line-height: 1.3; }
+  .catalog-menu .catalog-menu__children .catalog-menu__section-all { display: block; font-weight: 700; }
+  .catalog-menu__pages { order: 4; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 2px solid var(--graphite); background: var(--canvas); }
+  .catalog-menu .catalog-menu__pages a { display: flex; align-items: center; min-height: 48px; padding: 0 14px; border-bottom: 1px solid var(--divider); font-size: 14px; font-weight: 600; }
+  .catalog-menu .catalog-menu__pages a:nth-child(odd) { border-right: 1px solid var(--divider); }
+  /* Logo left, cart and the menu button in the top right corner. */
+  .site-header__inner { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .site-header__inner > .brand { grid-column: 1; grid-row: 1; }
+  .site-header__inner > .header-actions { grid-column: 2; grid-row: 1; }
+  .site-header__inner > .catalog-button,
+  .site-header__inner > .catalog-navigation { grid-column: 3; grid-row: 1; justify-self: end; }
+}
+
+/* iOS Safari ignores overflow-x on body alone and lets the page pan sideways; clip keeps sticky headers working. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+@supports (overflow: clip) {
+  html, body { overflow-x: clip; }
 }
 
 .home-contact__status { margin: 12px 0 0; font-size: 14px; color: var(--text-secondary); }
