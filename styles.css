@@ -3710,7 +3710,8 @@ a.brand-directory-card:focus-visible {
 @media (max-width: 640px) { :root { --tabbar-offset: calc(60px + env(safe-area-inset-bottom)); } }
 
 @media (max-width: 640px) {
-  body.catalog-navigation-open { overflow: hidden; }
+  /* Lock the page behind the open phone menu on the root: overflow on body would turn it into a scroller (html uses overflow-x: clip) and unstick the header. */
+  html:has(> body.catalog-navigation-open) { overflow: hidden; }
   .catalog-menu { max-height: calc(100dvh - 132px); overflow-y: auto; }
   .catalog-menu__panel { display: flex; flex-direction: column; padding: 0; }
   .catalog-menu__heading { order: 1; padding: 14px; }
