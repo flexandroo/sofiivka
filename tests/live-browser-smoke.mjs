@@ -70,6 +70,17 @@ await withPage(desktop, "old catalogue address", async page => {
   await page.waitForURL(/\/catalog\/heating\/heat-generation\/gas-boilers/, { timeout: 20000 });
 });
 
+await withPage(desktop, "about figures", async page => {
+  await open(page, "/about");
+  await page.locator("[data-catalog-total]").waitFor({ timeout: 20000 });
+  const expected = await page.evaluate(async () => {
+    const { url, publishableKey } = window.SOFIEVKA_CATALOG_CONFIG.supabase;
+    const response = await fetch(`${url}/rest/v1/rpc/get_catalog_products`, { method: "POST", headers: { apikey: publishableKey, "Content-Type": "application/json" }, body: JSON.stringify({ page_size: 1 }) });
+    return new Intl.NumberFormat("uk-UA").format(Math.floor((await response.json()).total / 100) * 100) + "+";
+  });
+  await page.waitForFunction(value => document.querySelector("[data-catalog-total]").textContent === value, expected, { timeout: 15000 });
+});
+
 await withPage(desktop, "search", async page => {
   await open(page, "/search?q=grundfos");
   await page.locator(".product-card").first().waitFor({ timeout: 20000 });
