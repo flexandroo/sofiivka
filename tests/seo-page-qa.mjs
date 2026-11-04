@@ -97,13 +97,7 @@ assert.match((await resolve({ kind: "catalog", path: "heating" })).page.body, /h
 assert.equal((await resolve({ kind: "catalog", path: "heating/gas-boilers" })).plainShell, true, "old addresses still resolve in the browser");
 assert.equal((await resolve({ kind: "catalog", path: "water-supply/water-treatment/anything" })).plainShell, true);
 assert.equal((await resolve({ kind: "catalog", path: ":path+" })).plainShell, true, "an unsubstituted rewrite is not a 404");
-const catalogRoot = (await resolve({ kind: "catalog" })).page;
-assert.match(catalogRoot.body, /<h1>Каталог інженерного обладнання<\/h1>/);
-assert.match(catalogRoot.body, /href="\/catalog\/heating"/);
-assert.match(catalogRoot.body, /href="\/product\/kotel-1"/);
-assert.equal(catalogRoot.canonical, "https://shop.test/catalog");
-assert.equal(catalogRoot.robots, "index,follow");
-assert.equal((await resolve({ kind: "catalog", search: "?brand=wilo" })).page.robots, "noindex,follow");
+assert.equal((await resolve({ kind: "catalog" })).plainShell, true);
 assert.equal((await resolve({ kind: "brand", slug: "none" })).missing, true);
 assert.equal((await resolve({ kind: "brand", slug: "wilo" })).page.robots, "index,follow");
 assert.equal((await resolve({ kind: "brand", slug: "ghost" })).page.robots, "noindex,follow", "a brand without products stays out of the index");
@@ -166,8 +160,7 @@ const destination = source => vercel.rewrites.find(rule => rule.source === sourc
 assert.equal(destination("/product/:slug"), "/api/seo-page?kind=product&slug=:slug");
 assert.equal(destination("/brands/:slug"), "/api/seo-page?kind=brand&slug=:slug");
 assert.equal(destination("/catalog/:path(.+)"), "/api/seo-page?kind=catalog&path=:path");
-assert.equal(destination("/catalog"), "/api/seo-page?kind=catalog");
-assert.equal(destination("/_shell/catalog"), "/catalog.html", "the shells stay static: the function reads them");
+assert.equal(destination("/catalog"), "/catalog.html", "the shells stay static: the function reads them");
 assert.equal(destination("/product"), "/product.html");
 assert.equal(destination("/brand"), "/brand.html");
 

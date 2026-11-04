@@ -43,8 +43,7 @@
   "rewrites": [
     { "source": "/admin", "destination": "/admin/index.html" },
     { "source": "/admin/:path*", "destination": "/admin/index.html" },
-    { "source": "/_shell/catalog", "destination": "/catalog.html" },
-    { "source": "/catalog", "destination": "/api/seo-page?kind=catalog" },
+    { "source": "/catalog", "destination": "/catalog.html" },
     { "source": "/catalog/:path(.+)", "destination": "/api/seo-page?kind=catalog&path=:path" },
     { "source": "/brands/:slug", "destination": "/api/seo-page?kind=brand&slug=:slug" },
     { "source": "/blog/:slug", "destination": "/post.html" },
