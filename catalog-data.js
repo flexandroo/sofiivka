@@ -1862,7 +1862,8 @@
       statusLabel: product.availabilityLabel || (status === "in_stock" ? "В наявності" : status === "out_of_stock" ? "Немає в наявності" : "Наявність уточнюйте"),
       amount: Number.isFinite(amount) && amount > 0 ? amount : null,
       oldAmount: Number.isFinite(oldAmount) && oldAmount > amount ? oldAmount : null,
-      purchasable: status === "in_stock" && Number.isFinite(amount) && amount > 0
+      // An unconfirmed stock status can still be ordered: the manager confirms availability before payment.
+      purchasable: !["out_of_stock", "discontinued"].includes(status) && Number.isFinite(amount) && amount > 0
     });
   }
 

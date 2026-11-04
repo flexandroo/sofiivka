@@ -872,7 +872,7 @@
       statusLabel: product.availabilityLabel || "Наявність уточнюйте",
       amount: Number(product.price) || null,
       oldAmount: null,
-      purchasable: product.availability === "in_stock" && Number(product.price) > 0
+      purchasable: !["out_of_stock", "discontinued"].includes(product.availability) && Number(product.price) > 0
     };
     const compatibilityValue = product.normalizedAttributes?.compatibility;
     return Object.freeze({

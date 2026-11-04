@@ -98,6 +98,18 @@ await withPage(desktop, "product and cart", async page => {
   await page.waitForFunction(() => /грн/.test(document.querySelector("main")?.innerText || ""), null, { timeout: 20000 });
 });
 
+// A product with a price and an unconfirmed stock status can be ordered, up to the checkout form. Nothing is submitted.
+await withPage(desktop, "unconfirmed stock", async page => {
+  await open(page, "/catalog/heating/heat-generation?sort=price-asc");
+  const card = page.locator('[data-catalog-products] .product-card:has-text("Наявність уточнюйте"):has(button[data-add])').first();
+  await card.waitFor({ timeout: 20000 });
+  await card.locator("button[data-add]").click();
+  await page.waitForFunction(() => Object.keys(JSON.parse(localStorage.getItem("sofievka-cart")) || {}).length > 0, null, { timeout: 10000 });
+  await open(page, "/checkout");
+  await page.waitForFunction(() => /грн/.test(document.querySelector("main")?.innerText || ""), null, { timeout: 20000 });
+  check(await page.locator("form").count() > 0, "unconfirmed stock: checkout has no form");
+});
+
 await browser.close();
 
 if (failures.length) {

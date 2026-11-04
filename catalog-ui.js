@@ -189,7 +189,9 @@ window.sofievkaCatalogUIReady = (async function () {
     const priceMarkup = hasPrice
       ? `<div class="product-card__price-group">${hasOldPrice ? `<del class="product-card__old-price">${money(oldAmount)}</del>` : ""}<strong class="product-card__price">${money(amount)}</strong></div>`
       : "";
-    const primaryAction = inStock && hasPrice
+    // An unconfirmed stock status can still be ordered: the manager confirms availability before payment.
+    const purchasable = hasPrice && !["out_of_stock", "discontinued"].includes(status);
+    const primaryAction = purchasable
       ? `<button class="product-card__buy${cartQuantity ? " is-in-cart" : ""}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${escapeHtml(cartQuantity ? `У кошику ${cartQuantity} шт. Додати ще` : `Додати ${title} до кошика`)}">${cartQuantity ? `У кошику · ${cartQuantity}` : "До кошика"}</button>`
       : `<a class="product-card__buy product-card__buy--consult" href="/contact?product=${encodeURIComponent(product.id)}#contact-form">${hasPrice ? "Уточнити наявність" : "Запитати ціну"}</a>`;
     // Without a price the card says it once, on the button; an unknown stock status is not repeated either.
