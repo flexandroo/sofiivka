@@ -209,6 +209,8 @@ window.sofievkaCatalogUIReady = (async function () {
     image.closest(".product-card__image")?.classList.add("is-fallback");
   };
 
+  // A background tab gets no animation frames: products must still load for it, not wait until it is opened.
+  const nextFrame = callback => document.hidden ? setTimeout(callback, 0) : requestAnimationFrame(callback);
   const imageVisibilityObserver = "IntersectionObserver" in window ? new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
@@ -236,7 +238,7 @@ window.sofievkaCatalogUIReady = (async function () {
     const image = event.target.closest?.("[data-product-image]");
     if (image) showProductImageFallback(image);
   }, true);
-  requestAnimationFrame(() => trackProductImages(document));
+  nextFrame(() => trackProductImages(document));
 
   // Keep the explicit development data-source switch across internal navigation.
   // Local and production URLs are untouched because they do not carry the switch.
@@ -710,7 +712,7 @@ window.sofievkaCatalogUIReady = (async function () {
     const redundantLegacyType = catalog.sourceMappings.categoryMappings.ecosoft?.[initialParams.get("type")]?.categoryId === ctx.currentCategory?.id;
     if (ctx.route.legacy || initialParams.has("slug") || (!ctx.isBrand && (initialParams.has("category") || redundantLegacyType))) writeUrl(false);
     else applyMetadata(ctx, hasIndexableFilters(filters));
-    requestAnimationFrame(() => { const restore = pendingRestore; pendingRestore = null; load({ restore }); });
+    nextFrame(() => { const restore = pendingRestore; pendingRestore = null; load({ restore }); });
   }
 
   function bind({ pageName = "catalog", productCard } = {}) {

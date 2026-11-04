@@ -505,6 +505,11 @@ body[data-page="brand"] { background: var(--canvas); }
 .catalog-workspace .active-filters button span { color: var(--text); font-size: 13px; line-height: 1; }
 .catalog-workspace .active-filters .active-filters__clear { border-color: transparent; background: transparent; text-decoration: underline; text-underline-offset: 3px; }
 .catalog-workspace .catalog-products { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.catalog-products .product-skeleton { aspect-ratio: auto; min-width: 0; }
+@media (max-width: 620px) {
+  .catalog-products .product-skeleton { min-height: 340px; padding: 10px; }
+  .catalog-products .product-skeleton i { height: 150px; }
+}
 .catalog-workspace .product-card { min-width: 0; }
 .catalog-workspace .catalog-empty { grid-column: 1 / -1; min-height: 360px; display: grid; place-items: center; align-content: center; gap: 9px; padding: 36px; border: 1px solid var(--divider); background: #fff; text-align: center; }
 .catalog-workspace .catalog-empty > span { color: #b99500; font-size: 54px; font-weight: 800; }

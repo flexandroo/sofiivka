@@ -267,6 +267,29 @@ ${listingMarkup(products)}
   };
 }
 
+export function renderCatalogRoot({ products = [], bootstrap, origin, filtered = false }) {
+  const taxonomy = createTaxonomy(bootstrap.categories);
+  const crumbs = [{ name: "Головна", href: "/" }, { name: "Каталог", href: "/catalog" }];
+  const description = "Каталог обладнання для опалення, водопостачання, водопідготовки, каналізації та клімату.";
+  const sections = taxonomy.childrenOf(null).filter(section => Number(bootstrap.categoryCounts?.[section.id]) > 0);
+  const body = `<section class="ssr-page"><div class="container">${crumbsMarkup(crumbs)}
+<h1>Каталог інженерного обладнання</h1>
+<p>${escapeHtml(description)}</p>
+${sections.length ? `<h2>Розділи</h2><ul>${sections.map(section => `<li><a href="${escapeHtml(taxonomy.pathOf(section))}">${escapeHtml(section.title)}</a></li>`).join("")}</ul>` : ""}
+${listingMarkup(products)}
+</div></section>`;
+  return {
+    title: `Каталог інженерного обладнання | ${SITE_NAME}`,
+    description,
+    canonical: absolute("/catalog", origin),
+    robots: filtered ? "noindex,follow" : "index,follow",
+    ogType: "website",
+    image: "",
+    schemas: { "schema-breadcrumbs": breadcrumbSchema(crumbs, origin) },
+    body
+  };
+}
+
 export function renderBrand({ brand, products = [], bootstrap, origin, filtered = false }) {
   const path = `/brands/${encodeURIComponent(brand.id)}`;
   const crumbs = [{ name: "Головна", href: "/" }, { name: "Бренди", href: "/brands" }, { name: brand.name, href: path }];
@@ -358,7 +381,8 @@ async function loadShell(path, requestOrigin, fetchImpl, now) {
 }
 
 const single = value => Array.isArray(value) ? value.join("/") : String(value ?? "");
-const SHELL_BY_KIND = { product: "/product", catalog: "/catalog", brand: "/brand" };
+// /catalog itself goes through this function, so its shell has a separate address.
+const SHELL_BY_KIND = { product: "/product", catalog: "/_shell/catalog", brand: "/brand" };
 
 function safeDecode(value) {
   try { return decodeURIComponent(value); } catch { return value; }
@@ -381,8 +405,13 @@ export async function resolvePage({ kind, slug, path, search = "", rpc, origin, 
   }
   if (kind === "catalog") {
     const segments = safeDecode(single(path)).split("/").filter(Boolean);
-    // No usable path means the rewrite did not pass it: never answer 404 for a page that may exist.
-    if (!segments.length || segments[0].startsWith(":")) return { plainShell: true };
+    // A literal parameter means the rewrite did not substitute it: never answer 404 for a page that may exist.
+    if (segments[0]?.startsWith(":")) return { plainShell: true };
+    if (!segments.length) {
+      const bootstrap = await loadBootstrap(rpc, now);
+      const listing = await rpc("get_catalog_products", { page_size: LISTING_SIZE });
+      return { page: renderCatalogRoot({ products: listing?.products || [], bootstrap, origin, filtered }) };
+    }
     const requested = `/catalog/${segments.join("/")}`.replace(/\.html$/i, "");
     if (LEGACY_CATALOG_PATHS.has(requested) || /^\/catalog\/water-supply\/water-treatment\/[^/]+$/.test(requested)) return { plainShell: true };
     const bootstrap = await loadBootstrap(rpc, now);
@@ -446,7 +475,7 @@ export default async function handler(req, res, { fetchImpl = fetch, env = proce
   } catch (error) {
     console.error("seo-page:", error?.message || error);
     try {
-      send(200, CACHE_FALLBACK, await loadShell(shellPath || "/catalog", requestOrigin, fetchImpl, now));
+      send(200, CACHE_FALLBACK, await loadShell(shellPath || SHELL_BY_KIND.catalog, requestOrigin, fetchImpl, now));
     } catch {
       send(503, "no-store", `<!doctype html><html lang="uk"><meta charset="utf-8"><title>${SITE_NAME}</title><p>Сторінка тимчасово недоступна. Оновіть її за хвилину.</p></html>`);
     }
