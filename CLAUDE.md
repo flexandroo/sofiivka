@@ -14,6 +14,10 @@ Read `AGENTS.md` first: it holds the design rules and the publishing workflow.
 
 Push to `master` deploys production. Other branches deploy Vercel Preview builds against DEV.
 
+The owner wants every finished site change live right away: after the checks pass, commit, push to
+`master`, and confirm the production deployment and the live page before reporting. Do not ask first.
+The owner treats sofievka.vercel.app as a test environment for now.
+
 ## How Claude reaches each service
 
 - **GitHub**: the repo is attached to the session with push access. Shallow clones need
