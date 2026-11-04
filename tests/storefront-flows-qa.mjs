@@ -60,8 +60,11 @@ await new Promise((resolve, reject) => {
 
 const vercel = JSON.parse(fs.readFileSync(path.join(root, "vercel.json"), "utf8"));
 const rewrites = vercel.rewrites.map(rule => ({
-  pattern: new RegExp(`^${rule.source.replace(/:[a-z]+\*/gi, ".*").replace(/:[a-z]+/gi, "[^/]+")}$`),
-  destination: rule.destination
+  pattern: new RegExp(`^${rule.source.replace(/:[a-z]+\*/gi, ".*").replace(/:[a-z]+\+/gi, ".+").replace(/:[a-z]+/gi, "[^/]+")}$`),
+  // On Vercel api/seo-page.mjs adds the first paint to these shells; the flows run on the client render.
+  destination: rule.destination.startsWith("/api/seo-page")
+    ? { catalog: "/catalog.html", brand: "/brand.html", product: "/product.html" }[new URLSearchParams(rule.destination.split("?")[1]).get("kind")]
+    : rule.destination
 }));
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css",
   ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",

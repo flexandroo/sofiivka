@@ -28,6 +28,7 @@
     "attributes:qa": "node tests/attributes-qa.mjs",
     "staff:qa": "node tests/staff-qa.mjs",
     "seo:qa": "node tests/seo-qa.mjs",
+    "seo:page:qa": "node tests/seo-page-qa.mjs",
     "notifications:qa": "node tests/notifications-qa.mjs",
     "prices:qa": "node tests/price-import-qa.mjs",
     "pages:qa": "node tests/pages-qa.mjs",
