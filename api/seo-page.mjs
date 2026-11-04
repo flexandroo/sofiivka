@@ -381,6 +381,8 @@ export async function resolvePage({ kind, slug, path, search = "", rpc, origin, 
   }
   if (kind === "catalog") {
     const segments = safeDecode(single(path)).split("/").filter(Boolean);
+    // No usable path means the rewrite did not pass it: never answer 404 for a page that may exist.
+    if (!segments.length || segments[0].startsWith(":")) return { plainShell: true };
     const requested = `/catalog/${segments.join("/")}`.replace(/\.html$/i, "");
     if (LEGACY_CATALOG_PATHS.has(requested) || /^\/catalog\/water-supply\/water-treatment\/[^/]+$/.test(requested)) return { plainShell: true };
     const bootstrap = await loadBootstrap(rpc, now);

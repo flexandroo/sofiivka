@@ -44,7 +44,7 @@
     { "source": "/admin", "destination": "/admin/index.html" },
     { "source": "/admin/:path*", "destination": "/admin/index.html" },
     { "source": "/catalog", "destination": "/catalog.html" },
-    { "source": "/catalog/:path+", "destination": "/api/seo-page?kind=catalog&path=:path+" },
+    { "source": "/catalog/:path(.+)", "destination": "/api/seo-page?kind=catalog&path=:path" },
     { "source": "/brands/:slug", "destination": "/api/seo-page?kind=brand&slug=:slug" },
     { "source": "/blog/:slug", "destination": "/post.html" },
     { "source": "/portfolio/:slug", "destination": "/post.html" },

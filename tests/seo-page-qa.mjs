@@ -96,6 +96,8 @@ assert.equal((await resolve({ kind: "catalog", path: "heating/empty" })).page.ro
 assert.match((await resolve({ kind: "catalog", path: "heating" })).page.body, /href="\/catalog\/heating\/boilers"/);
 assert.equal((await resolve({ kind: "catalog", path: "heating/gas-boilers" })).plainShell, true, "old addresses still resolve in the browser");
 assert.equal((await resolve({ kind: "catalog", path: "water-supply/water-treatment/anything" })).plainShell, true);
+assert.equal((await resolve({ kind: "catalog", path: ":path+" })).plainShell, true, "an unsubstituted rewrite is not a 404");
+assert.equal((await resolve({ kind: "catalog" })).plainShell, true);
 assert.equal((await resolve({ kind: "brand", slug: "none" })).missing, true);
 assert.equal((await resolve({ kind: "brand", slug: "wilo" })).page.robots, "index,follow");
 assert.equal((await resolve({ kind: "brand", slug: "ghost" })).page.robots, "noindex,follow", "a brand without products stays out of the index");
@@ -157,7 +159,7 @@ const vercel = JSON.parse(read("vercel.json"));
 const destination = source => vercel.rewrites.find(rule => rule.source === source)?.destination;
 assert.equal(destination("/product/:slug"), "/api/seo-page?kind=product&slug=:slug");
 assert.equal(destination("/brands/:slug"), "/api/seo-page?kind=brand&slug=:slug");
-assert.equal(destination("/catalog/:path+"), "/api/seo-page?kind=catalog&path=:path+");
+assert.equal(destination("/catalog/:path(.+)"), "/api/seo-page?kind=catalog&path=:path");
 assert.equal(destination("/catalog"), "/catalog.html", "the shells stay static: the function reads them");
 assert.equal(destination("/product"), "/product.html");
 assert.equal(destination("/brand"), "/brand.html");
