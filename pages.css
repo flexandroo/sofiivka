@@ -1207,16 +1207,22 @@ body[data-page="product"] {
 .co-mosaic strong { font-size: 20px; font-weight: 700; }
 .co-mosaic small { color: rgba(255,255,255,.82); font-size: 14px; line-height: 1.35; }
 
-.co-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(20px, 3vw, 36px); margin: 0; padding: 0; list-style: none; counter-reset: co-step; }
-.co-steps li { position: relative; padding-top: 18px; border-top: 2px solid var(--graphite); counter-increment: co-step; }
-.co-steps li::before { content: counter(co-step, decimal-leading-zero); position: absolute; top: 18px; right: 0; color: var(--text-subtle); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.co-steps h3 { margin-top: 14px; }
-.co-steps p { margin-top: 6px; color: var(--text-secondary); font-size: 15px; line-height: 1.5; }
+/* Steps read as a table, like a work schedule: stage, what happens, what the buyer gets. */
+.co-steps { border-top: 2px solid var(--graphite); counter-reset: co-step; }
+.co-steps ol { margin: 0; padding: 0; list-style: none; }
+.co-steps__head, .co-steps li { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(0, 2fr) minmax(200px, 1.2fr); gap: clamp(16px, 3vw, 40px); }
+.co-steps__head { padding: 10px 0; color: var(--text-subtle); font-size: 13px; font-weight: 500; }
+.co-steps li { padding: 16px 0; border-top: 1px solid var(--divider); counter-increment: co-step; }
+.co-steps h3 { display: flex; gap: 12px; margin: 0; }
+.co-steps h3::before { content: counter(co-step); min-width: 12px; color: var(--text-subtle); font-weight: 500; font-variant-numeric: tabular-nums; }
+.co-steps p { margin: 0; color: var(--text-secondary); font-size: 15px; line-height: 1.5; }
+.co-steps .co-steps__result { color: var(--graphite); font-weight: 600; }
 
 .co-rows { display: grid; margin: 0; padding: 0; list-style: none; }
-.co-rows li { display: flex; gap: 16px; padding: 18px 0; border-top: 1px solid var(--divider); }
-.co-rows li:first-child { padding-top: 0; border-top: 0; }
-.co-rows p { margin-top: 4px; color: var(--text-secondary); font-size: 15px; line-height: 1.5; }
+.co-rows li { display: grid; grid-template-columns: minmax(130px, 2fr) minmax(0, 5fr); gap: 16px; padding: 14px 0; border-top: 1px solid var(--divider); }
+.co-rows li:last-child { border-bottom: 1px solid var(--divider); }
+.co-rows h3 { margin: 0; font-size: 16px; }
+.co-rows p { margin: 0; color: var(--text-secondary); font-size: 15px; line-height: 1.5; }
 
 .co-checks { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .co-checks li { display: flex; gap: 10px; line-height: 1.4; }
@@ -1278,7 +1284,6 @@ body[data-page="product"] {
   .co-split, .co-split--media-first, .co-split--article, .co-solution, .co-contact, .co-contact-form { grid-template-columns: minmax(0, 1fr); }
   .co-photo--tall { min-height: 0; max-height: none; aspect-ratio: 3 / 2; }
   .co-solution:nth-child(even) .co-photo { order: 0; }
-  .co-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .co-note { position: static; }
   .co-split > .co-photo { order: -1; }
 }
@@ -1293,8 +1298,14 @@ body[data-page="product"] {
   .co-mosaic small { display: none; }
   .co-mosaic span { left: 14px; right: 14px; bottom: 12px; }
   .co-mosaic strong { font-size: 17px; }
-  .co-steps { grid-template-columns: minmax(0, 1fr); gap: 18px; }
   .co-compare { grid-template-columns: minmax(0, 1fr); }
+  .co-steps__head { display: none; }
+  .co-steps li { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 14px 0; }
+  .co-steps li:first-child { border-top: 0; }
+  .co-steps p:not(.co-steps__result) { padding-left: 24px; }
+  .co-steps .co-steps__result { padding-left: 24px; }
+  .co-steps .co-steps__result::before { content: "Результат: "; color: var(--text-subtle); font-weight: 500; }
+  .co-rows li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .co-methods { grid-template-columns: minmax(0, 1fr); }
   .co-methods article + article { border-top: 1px solid var(--divider); border-left: 0; }
   .co-tabs { display: flex; }
