@@ -29,6 +29,8 @@
     "staff:qa": "node tests/staff-qa.mjs",
     "seo:qa": "node tests/seo-qa.mjs",
     "seo:page:qa": "node tests/seo-page-qa.mjs",
+    "live:smoke": "node tests/live-smoke.mjs",
+    "live:browser": "node tests/live-browser-smoke.mjs",
     "notifications:qa": "node tests/notifications-qa.mjs",
     "prices:qa": "node tests/price-import-qa.mjs",
     "pages:qa": "node tests/pages-qa.mjs",

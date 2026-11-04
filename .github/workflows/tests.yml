@@ -1,0 +1,42 @@
+# Automated tests for every push to master and every pull request. They need no secrets and no network access to the shop.
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Site and admin
+        run: |
+          node tests/seo-page-qa.mjs
+          node tests/seo-qa.mjs
+          node tests/blog-qa.mjs
+          node tests/menus-qa.mjs
+          node tests/admin-foundation-qa.mjs
+          node tests/products-admin-qa.mjs
+          node tests/crm-qa.mjs
+      - name: Build
+        run: |
+          node scripts/build-static-site.mjs --output-dir=dist --skip-assets
+          node tests/static-assets-qa.js
+      - name: Database scenarios
+        run: |
+          node tests/db-local/harness.mjs scenarios.mjs
+          node tests/db-local/harness.mjs priced-first-scenarios.mjs
+          node tests/db-local/harness.mjs fx-pricing-scenarios.mjs
+          node tests/db-local/harness.mjs facet-ranges-scenarios.mjs
+          node tests/db-local/harness.mjs search-v4-scenarios.mjs

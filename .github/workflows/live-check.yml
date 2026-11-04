@@ -1,0 +1,37 @@
+# Checks the live site after every production deploy, and once a day because prices and products change without a deploy.
+# Production is already deployed by then: a failure means "fix or revert now", GitHub emails it to the repository owner.
+name: Live site check
+
+on:
+  deployment_status:
+  schedule:
+    - cron: "30 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-check
+  cancel-in-progress: true
+
+jobs:
+  live-check:
+    if: >-
+      github.event_name != 'deployment_status' ||
+      (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Pages, content and status codes
+        run: node tests/live-smoke.mjs
+      - name: Real browser
+        if: always()
+        run: |
+          npm install --no-save --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+          node tests/live-browser-smoke.mjs

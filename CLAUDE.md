@@ -18,6 +18,10 @@ The owner wants every finished site change live right away: after the checks pas
 `master`, and confirm the production deployment and the live page before reporting. Do not ask first.
 The owner treats sofievka.vercel.app as a test environment for now.
 
+GitHub Actions run the tests on every push (`tests.yml`) and check the live site after every production deploy and
+daily (`live-check.yml`). Production is deployed regardless of the result, so a red check means fix or revert now.
+After a push, run `npm run -s live:smoke` once the deploy is ready instead of waiting for the workflow.
+
 ## How Claude reaches each service
 
 - **GitHub**: the repo is attached to the session with push access. Shallow clones need
