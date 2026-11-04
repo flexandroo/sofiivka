@@ -81,16 +81,16 @@ await withPage(desktop, "missing page", async page => {
   await page.locator(".not-found").waitFor({ timeout: 20000 });
 });
 
-// Product page and cart. The product comes from the catalogue, so a price change or a hidden product cannot fail this.
+// Product page and cart. The default order starts with products that have a price and are in stock, the only ones with
+// a buy button, and taking the first one means a price change or a hidden product cannot fail this.
 await withPage(desktop, "product and cart", async page => {
-  await open(page, "/catalog/heating/heat-generation?sort=price-asc");
+  await open(page, "/catalog");
   await cards(page).first().waitFor({ timeout: 20000 });
   await cards(page).first().locator('a[href^="/product/"]').first().click();
   await page.waitForURL(/\/product\//, { timeout: 20000 });
-  await page.locator(".pdp-gallery, [class*=pdp-]").first().waitFor({ timeout: 20000 });
-  check(await page.locator(".ssr-page").count() === 0, "product: the client did not replace the server content");
-  const buy = page.getByRole("button", { name: /^Купити/ }).first();
+  const buy = page.locator("button.pdp-buy[data-add]").first();
   await buy.waitFor({ timeout: 20000 });
+  check(await page.locator(".ssr-page").count() === 0, "product: the client did not replace the server content");
   await buy.click();
   await page.waitForFunction(() => Object.keys(JSON.parse(localStorage.getItem("sofievka-cart")) || {}).length > 0, null, { timeout: 10000 });
   await open(page, "/cart");
