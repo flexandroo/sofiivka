@@ -253,10 +253,11 @@
 
   // Stores and contacts come from the shop settings (site-settings.js, edited in /admin/settings).
   function siteSettings() { return window.sofievkaSiteSettings?.current || null; }
+  const contactPageStores = settings => (settings?.stores || []).filter(store => store.id !== "zhytomyr");
   function contactStoresMarkup() {
     const settings = siteSettings();
     if (!settings) return "";
-    return settings.stores.map(store => `<section class="contact-store"><h2>${escapeHtml(store.title || store.city)}</h2><dl class="contact-details">
+    return contactPageStores(settings).map(store => `<section class="contact-store"><h2>${escapeHtml(store.title || store.city)}</h2><dl class="contact-details">
       ${store.phones.length ? `<div><dt>Телефон</dt><dd>${store.phones.map(phone => `<a href="${window.sofievkaSiteSettings.phoneHref(phone)}">${escapeHtml(phone)}</a>`).join("<br>")}</dd></div>` : ""}
       ${store.email ? `<div><dt>Email</dt><dd><a href="mailto:${escapeHtml(store.email)}">${escapeHtml(store.email)}</a></dd></div>` : ""}
       ${store.hours.length ? `<div><dt>Графік</dt><dd>${store.hours.map(escapeHtml).join("<br>")}</dd></div>` : ""}
@@ -265,12 +266,12 @@
   function contactRoutesMarkup() {
     const settings = siteSettings();
     if (!settings) return "";
-    return settings.stores.map(store => `<a class="button button--primary" href="${escapeHtml(window.sofievkaSiteSettings.mapRoute(store.mapQuery || store.address))}" target="_blank" rel="noreferrer">Маршрут: ${escapeHtml(store.city || store.title)}</a>`).join("");
+    return contactPageStores(settings).map(store => `<a class="button button--primary" href="${escapeHtml(window.sofievkaSiteSettings.mapRoute(store.mapQuery || store.address))}" target="_blank" rel="noreferrer">Маршрут: ${escapeHtml(store.city || store.title)}</a>`).join("");
   }
   // Google map of one store at a time; the tabs switch the store.
   function contactMapMarkup(active = 0) {
     const settings = siteSettings();
-    const stores = (settings?.stores || []).filter(store => store.mapQuery || store.address);
+    const stores = contactPageStores(settings).filter(store => store.mapQuery || store.address);
     if (!stores.length) return "";
     const index = Math.min(active, stores.length - 1);
     const store = stores[index];
@@ -1226,16 +1227,10 @@
       ["/assets/images/projects/cathedral.webp", "Спасо-Преображенський собор", "Житомир. Твердопаливні котли Altep і SWaG, сталеві радіатори."],
       ["/assets/images/projects/agromat.webp", "Магазин «Агромат»", "Київ. Два пелетні котли OXI по 200 кВт: витрати на опалення зменшились уп’ятеро."]
     ];
-    const certificates = [
-      ["/assets/images/certificates/altep.webp", "Сертифікат офіційного представника Altep"], ["/assets/images/certificates/buderus.webp", "Сертифікат офіційного партнера Buderus"], ["/assets/images/certificates/imi.webp", "Сертифікат дистриб’ютора IMI: Heimeier, Pneumatex, TA"], ["/assets/images/certificates/hot-well.webp", "Сертифікат сервісного центру BAXI, Westen, Potterton"],
-      ["/assets/images/certificates/mastas.webp", "Сертифікат авторизованого партнера Mastas"], ["/assets/images/certificates/valtec.webp", "Сертифікат дистриб’ютора Valtec"], ["/assets/images/certificates/organic.webp", "Сертифікат авторизованого дилера Organic"], ["/assets/images/certificates/shimge.webp", "Свідоцтво офіційного дилера Shimge"],
-      ["/assets/images/certificates/kht.webp", "Сертифікат дилера KHT"], ["/assets/images/certificates/swag.webp", "Почесна грамота SWaG"], ["/assets/images/certificates/swag-2018.webp", "Диплом SWaG за друге місце в дилерському марафоні"], ["/assets/images/certificates/best-dealer-2004.webp", "Відзнака «Кращий регіональний дилер 2004»"]
-    ];
     return hero("Про компанію", "Про компанію", "З 2000 року продаємо, проєктуємо, монтуємо й обслуговуємо інженерні системи: опалення, водопостачання, водопідготовку та каналізацію.")
       + coSection(`<div class="co-split"><article class="prose"><h2>Хто ми</h2><p>«Софіївка» починала з котельних систем і досі вважає їх своєю головною спеціалізацією. Сьогодні ми ведемо весь шлях обладнання: допомагаємо обрати, постачаємо, встановлюємо, запускаємо й обслуговуємо його після гарантії.</p><p>Серед наших клієнтів власники будинків і квартир, забудовники, монтажники, проєктанти й архітектори. Ми розраховуємо на довгу співпрацю, тому радимо те, що підходить саме вашому об’єкту.</p><h2>Що ми гарантуємо</h2><ul><li>Лише офіційна продукція з гарантією та сервісною підтримкою в Україні.</li><li>2 роки гарантії на монтажні роботи.</li><li>Гарантія виробника, допомога з гарантійним зверненням, післягарантійне обслуговування.</li><li>Підбір за технічними параметрами й консультація фахівця перед покупкою.</li></ul><h2>Як ми працюємо</h2><ul><li>Сертифіковані фахівці регулярно проходять навчання й тренінги виробників.</li><li>Власний сервісний центр обслуговує котли та інженерні системи.</li><li>Власне виробництво комплектуючих для котельного обладнання.</li><li>Комплектуючі й аксесуари до основного обладнання в одному місці.</li><li>Доставка по всій Україні.</li></ul><h2>Бренди</h2><p>Співпрацюємо з виробниками, яким довіряємо: Termojet, Buderus, BAXI, Wilo, Grundfos, Ecosoft, TEKK HAUS, Altep, FENIKS, FOCUS, TECH та іншими.</p><h2>Магазини</h2><ul><li>с. Софіївська Борщагівка, вул. Київська, 3. Пн–Пт 9:00–18:00, Сб 9:00–14:00.</li><li>м. Житомир, проспект Незалежності, 79. Пн–Пт 8:30–17:00, Сб 8:30–14:00.</li></ul></article>${coPhoto("/assets/images/showroom.webp", "Торговий зал магазину з котлами, насосами й арматурою", "co-photo--tall co-photo--sticky")}</div><dl class="co-facts">${facts.map(([value, label]) => `<div><dt${label === "товарів у каталозі" ? " data-catalog-total" : ""}>${value}</dt><dd>${label}</dd></div>`).join("")}</dl>`)
       + coSection(`${coHeading("Що ми продаємо", "Основні напрямки каталогу. Усередині — обладнання, комплектуючі й матеріали для монтажу.")}<div class="co-mosaic">${directions.map(([href, src, title, text]) => `<a href="${href}"><img src="${src}" alt="" width="1536" height="1024" loading="lazy" decoding="async"><span><strong>${title}</strong><small>${text}</small></span></a>`).join("")}</div>`, { white: true })
       + coSection(`${coHeading("Наші об’єкти", "Від квартири до логістичного центру. Кілька проєктів, які ми реалізували й обслуговуємо.")}<ul class="co-projects">${projects.map(([image, name, work]) => `<li><img src="${image}" alt="${name}: обладнання на об’єкті" width="1280" height="853" loading="lazy" decoding="async"><h3>${name}</h3><p>${work}</p></li>`).join("")}</ul>`)
-      + coSection(`${coHeading("Сертифікати й відзнаки", "Партнерські статуси й нагороди від виробників, отримані за роки роботи.")}<ul class="co-certificates">${certificates.map(([image, name]) => `<li><a href="${image}" target="_blank" rel="noopener" aria-label="${name}: відкрити документ"><img src="${image}" alt="${name}" loading="lazy" decoding="async"></a></li>`).join("")}</ul>`, { white: true })
       + coCta("Потрібна порада щодо обладнання?", "Опишіть задачу або надішліть список — відповімо телефоном чи листом.");
   }
 

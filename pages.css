@@ -1231,11 +1231,6 @@ body[data-page="product"] {
 .co-projects h3 { margin: 12px 0 0; font-size: 16px; }
 .co-projects li:nth-child(-n+2) h3 { font-size: 18px; }
 .co-projects p { margin: 4px 0 0; color: var(--text-secondary); font-size: 14px; line-height: 1.45; }
-.co-certificates { display: flex; gap: 12px; margin: 0; padding: 0 0 12px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; list-style: none; }
-.co-certificates li { flex: none; scroll-snap-align: start; }
-.co-certificates a { display: block; padding: 8px; border-radius: var(--radius-control); background: #fff; transition: transform .18s ease; }
-.co-certificates a:hover { transform: translateY(-2px); }
-.co-certificates img { display: block; width: auto; height: 240px; }
 .co-advice p { max-width: 58ch; color: var(--text-secondary); line-height: 1.6; }
 .co-advice p + p { margin-top: 12px; }
 .co-brands { max-width: 58ch; font-size: 17px; font-weight: 600; line-height: 1.6; }
@@ -1328,7 +1323,6 @@ body[data-page="product"] {
   .co-projects { gap: 20px 10px; }
   .co-projects li { grid-column: span 6; }
   .co-projects li:nth-child(-n+2) { grid-column: span 12; }
-  .co-certificates img { height: 190px; }
   .co-steps li { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 14px 0; }
   .co-steps li:first-child { border-top: 0; }
   .co-steps p:not(.co-steps__result) { padding-left: 24px; }
