@@ -24,6 +24,7 @@ jobs:
         run: |
           node tests/seo-page-qa.mjs
           node tests/seo-qa.mjs
+          node tests/pages-qa.mjs
           node tests/blog-qa.mjs
           node tests/menus-qa.mjs
           node tests/admin-foundation-qa.mjs
@@ -37,6 +38,7 @@ jobs:
         run: |
           node tests/db-local/harness.mjs scenarios.mjs
           node tests/db-local/harness.mjs priced-first-scenarios.mjs
+          node tests/db-local/harness.mjs pages-scenarios.mjs
           node tests/db-local/harness.mjs fx-pricing-scenarios.mjs
           node tests/db-local/harness.mjs facet-ranges-scenarios.mjs
           node tests/db-local/harness.mjs search-v4-scenarios.mjs
