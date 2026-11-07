@@ -993,6 +993,15 @@
     return `<section class="pdp-detail-section pdp-documents" id="documents" aria-labelledby="documents-title"><div class="container"><details class="pdp-module" data-pdp-module open><summary><span>Документи</span><b aria-hidden="true"></b></summary><div class="pdp-module__body"><div class="pdp-section__head"><h2 id="documents-title">Документи</h2></div><div class="pdp-document-list">${view.documents.map(doc => `<a href="${escapeHtml(doc.url)}" target="_blank" rel="noreferrer"><span class="pdp-document-list__icon">${pdpIcon("Документ")}</span><span><small>${escapeHtml([doc.type, doc.language, doc.audience, doc.size].filter(Boolean).join(" · "))}</small><strong>${escapeHtml(doc.title)}</strong></span><b>Відкрити ↗</b></a>`).join("")}</div></div></details></div></section>`;
   }
 
+  // Products this browser opened before (localStorage «sofievka-viewed», newest first), without the current one
+  // and without those the rails above already show.
+  function recentlyViewedProducts(product, view) {
+    let ids = [];
+    try { ids = JSON.parse(localStorage.getItem("sofievka-viewed")) || []; } catch {}
+    const shown = new Set([product.id, ...[view.compatibleProducts, view.accessories, view.similarProducts].flat().filter(Boolean).map(item => item.id)]);
+    return [...new Set(Array.isArray(ids) ? ids : [])].filter(id => !shown.has(id)).map(productById).filter(Boolean).slice(0, 4);
+  }
+
   function renderPdpProductRail({ id, title, products }) {
     if (!products.length) return "";
     return `<section class="pdp-related-section" id="${id}" aria-labelledby="${id}-title"><div class="container"><div class="pdp-section__head"><h2 id="${id}-title">${escapeHtml(title)}</h2></div><div class="catalog-products pdp-related-products">${products.map(extendedProductCard).join("")}</div></div></section>`;
@@ -1058,6 +1067,7 @@
       ${renderPdpProductRail({ id: "compatible-products", title: "Сумісні товари", products: view.compatibleProducts })}
       ${renderPdpProductRail({ id: "accessories", title: "Аксесуари", products: view.accessories })}
       ${renderPdpProductRail({ id: "similar", title: "Схожі товари", products: view.similarProducts })}
+      ${renderPdpProductRail({ id: "recently-viewed", title: "Ви переглядали", products: recentlyViewedProducts(product, view) })}
       ${renderPdpMobileBuybar(view)}
       ${mainImage ? `<dialog class="pdp-lightbox" data-gallery-dialog aria-label="Збільшене фото товару"><button type="button" data-gallery-close aria-label="Закрити збільшене фото">×</button>${view.images.length > 1 ? `<button class="pdp-lightbox__arrow pdp-lightbox__arrow--prev" type="button" data-gallery-prev aria-label="Попереднє фото" style="top:50%;right:auto;left:12px;transform:translateY(-50%)">←</button><button class="pdp-lightbox__arrow pdp-lightbox__arrow--next" type="button" data-gallery-next aria-label="Наступне фото" style="top:50%;transform:translateY(-50%)">→</button>` : ""}<img data-gallery-dialog-image src="${escapeHtml(mainImage)}" alt="${escapeHtml(product.title)}, збільшене фото"></dialog>` : ""}
     </article>`;
