@@ -97,8 +97,8 @@
   function faq() {
     if (document.body?.dataset.page !== "faq") return null;
     const questions = [...document.querySelectorAll("details.faq-item")].map(item => {
-      const question = item.querySelector("summary")?.textContent.replace(/s+/g, " ").trim();
-      const answer = [...item.children].filter(node => node.tagName !== "SUMMARY").map(node => node.textContent).join(" ").replace(/s+/g, " ").trim();
+      const question = item.querySelector("summary")?.textContent.replace(/\s+/g, " ").trim();
+      const answer = [...item.children].filter(node => node.tagName !== "SUMMARY").map(node => node.textContent).join(" ").replace(/\s+/g, " ").trim();
       return question && answer ? { "@type": "Question", name: question, acceptedAnswer: { "@type": "Answer", text: answer } } : null;
     }).filter(Boolean);
     return questions.length ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: questions } : null;

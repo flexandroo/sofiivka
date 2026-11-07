@@ -3792,6 +3792,14 @@ a.brand-directory-card:focus-visible {
   .site-header__inner > .header-actions { grid-column: 2; grid-row: 1; }
   .site-header__inner > .catalog-button,
   .site-header__inner > .catalog-navigation { grid-column: 3; grid-row: 1; justify-self: end; }
+  /* Scrolling down hides most of the 62px top row (catalog-ui.js condenseHeaderOnScroll) and keeps 8px above the search. */
+  .site-header { transition: transform .2s ease; }
+  .header-condensed .site-header { transform: translateY(-54px); }
+  .pdp-anchor-nav { transition: top .2s ease; }
+  .header-condensed .pdp-master { --pdp-sticky-top: 45px; }
+}
+@media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+  .site-header, .pdp-anchor-nav { transition: none; }
 }
 
 /* iOS Safari ignores overflow-x on body alone and lets the page pan sideways; clip keeps sticky headers working. */

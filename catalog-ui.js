@@ -59,6 +59,46 @@ window.sofievkaCatalogUIReady = (async function () {
     requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo({ top: scrollY, behavior: "instant" })));
   };
 
+  // Numeric facets with many values (get_catalog_facets technicalRanges) filter by «від/до». The range lives in
+  // the URL as key=min..max; the request sends the facet values that fall inside it (technical_filters).
+  const RANGE_PATTERN = /^(-?\d+(?:\.\d+)?)?\.\.(-?\d+(?:\.\d+)?)?$/;
+  const parseRange = raw => {
+    const match = RANGE_PATTERN.exec(String(raw || ""));
+    if (!match || (match[1] === undefined && match[2] === undefined)) return null;
+    let min = match[1] === undefined ? null : Number(match[1]);
+    let max = match[2] === undefined ? null : Number(match[2]);
+    if (min !== null && max !== null && min > max) [min, max] = [max, min];
+    return { min, max };
+  };
+  const rangeParam = range => `${range.min ?? ""}..${range.max ?? ""}`;
+  const inRange = (value, range) => {
+    const number = Number(value);
+    return Number.isFinite(number) && (range.min === null || number >= range.min) && (range.max === null || number <= range.max);
+  };
+  const formatAmount = value => new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 3 }).format(Number(value));
+  const rangeLabel = (key, range) => {
+    const definition = catalog.attributeDefinitions[key];
+    const unit = definition?.unit ? ` ${definition.unit}` : "";
+    const name = String(definition?.label || key).replace(/,\s*[^,]*$/, "");
+    if (range.min !== null && range.max !== null) return `${name}: ${formatAmount(range.min)}–${formatAmount(range.max)}${unit}`;
+    return range.min !== null ? `${name}: від ${formatAmount(range.min)}${unit}` : `${name}: до ${formatAmount(range.max)}${unit}`;
+  };
+  const rangeGroupMarkup = (key, label, bounds, range) => {
+    const unit = bounds.unit ? ` ${escapeHtml(bounds.unit)}` : "";
+    const field = (name, value, placeholder) => `<label><span>${name === "min" ? "Від" : "До"}</span><input type="number" step="any" inputmode="decimal" enterkeyhint="done" placeholder="${escapeHtml(formatAmount(placeholder))}" value="${value ?? ""}" data-range-${name}></label>`;
+    return `<fieldset class="filter-group filter-group--range" data-range-group="${escapeHtml(key)}"><legend>${escapeHtml(label)}</legend><div class="price-filter">${field("min", range?.min, bounds.min)}${field("max", range?.max, bounds.max)}</div><p class="filter-range-hint">У каталозі: ${escapeHtml(formatAmount(bounds.min))}–${escapeHtml(formatAmount(bounds.max))}${unit}</p><button class="price-apply" type="button" data-range-apply="${escapeHtml(key)}">Застосувати</button></fieldset>`;
+  };
+  // Reads one «від/до» group; empty fields mean no bound, both empty clear the range.
+  const readRangeInputs = group => {
+    const read = name => { const raw = group?.querySelector(`[data-range-${name}]`)?.value; return raw === "" || raw === undefined ? null : Number(String(raw).replace(",", ".")); };
+    let min = read("min");
+    let max = read("max");
+    if (!Number.isFinite(min)) min = null;
+    if (!Number.isFinite(max)) max = null;
+    if (min !== null && max !== null && min > max) [min, max] = [max, min];
+    return min === null && max === null ? null : { min, max };
+  };
+
   const priceGroupMarkup = filters => `<fieldset class="filter-group" data-price-group><legend>Ціна, грн</legend><div class="price-filter"><label><span>Від</span><input type="number" min="0" inputmode="numeric" enterkeyhint="done" value="${Number.isFinite(filters.minPrice) && filters.minPrice > 0 ? filters.minPrice : ""}" data-price-min></label><label><span>До</span><input type="number" min="0" inputmode="numeric" enterkeyhint="done" value="${Number.isFinite(filters.maxPrice) ? filters.maxPrice : ""}" data-price-max></label></div><button class="price-apply" type="button" data-price-apply>Застосувати</button></fieldset>`;
   const priceFilterActive = filters => filters.minPrice > 0 || Number.isFinite(filters.maxPrice);
   // Reads both price fields; a reversed range (10 000 … 5 000) is swapped instead of returning nothing.
@@ -398,7 +438,11 @@ window.sofievkaCatalogUIReady = (async function () {
   function readState(ctx) {
     const params = new URLSearchParams(location.search);
     const values = {};
+    const ranges = {};
     ["brand", "availability", "subcategory", ...(ctx?.isBrand ? ["category"] : []), ...Object.keys(catalog.attributeDefinitions)].forEach(key => {
+      // Definitions may still be the local seed here, so a range is recognised by its min..max form.
+      const range = ["brand", "availability", "subcategory", "category"].includes(key) ? null : parseRange(params.get(key));
+      if (range) { ranges[key] = range; return; }
       const selected = (params.get(key) || "").split(",").filter(Boolean);
       if (selected.length) values[key] = selected;
     });
@@ -406,6 +450,7 @@ window.sofievkaCatalogUIReady = (async function () {
     if (!ctx?.isBrand && legacyTypeTarget && legacyTypeTarget === ctx.currentCategory?.id) delete values.type;
     return {
       values,
+      ranges,
       q: (params.get("q") || "").trim(),
       minPrice: Number(params.get("minPrice") || 0),
       maxPrice: Number(params.get("maxPrice") || Infinity),
@@ -426,7 +471,8 @@ window.sofievkaCatalogUIReady = (async function () {
       const amount = product.pricing?.amount;
       if (!Number.isFinite(amount) || amount <= 0 || amount < filters.minPrice || amount > filters.maxPrice) return false;
     }
-    return Object.entries(filters.values).every(([key, selected]) => {
+    const rangesMatch = Object.entries(filters.ranges || {}).every(([key, range]) => key === omitKey || inRange(product.normalizedAttributes?.[key], range));
+    return rangesMatch && Object.entries(filters.values).every(([key, selected]) => {
       if (key === omitKey || !selected.length) return true;
       const value = productValue(product, key);
       return value !== undefined && value !== null && selected.includes(String(value));
@@ -495,6 +541,7 @@ window.sofievkaCatalogUIReady = (async function () {
   function activeChips(filters) {
     const chips = [];
     Object.entries(filters.values).forEach(([key, values]) => values.forEach(value => chips.push(`<button type="button" data-remove-filter="${escapeHtml(key)}" data-remove-value="${escapeHtml(value)}">${escapeHtml(labelFor(key, value))}<span aria-hidden="true">×</span></button>`)));
+    Object.entries(filters.ranges || {}).forEach(([key, range]) => chips.push(`<button type="button" data-remove-range="${escapeHtml(key)}">${escapeHtml(rangeLabel(key, range))}<span aria-hidden="true">×</span></button>`));
     if (filters.minPrice) chips.push(`<button type="button" data-remove-price="minPrice">Від ${money(filters.minPrice)}<span aria-hidden="true">×</span></button>`);
     if (Number.isFinite(filters.maxPrice)) chips.push(`<button type="button" data-remove-price="maxPrice">До ${money(filters.maxPrice)}<span aria-hidden="true">×</span></button>`);
     if (filters.q) chips.push(`<button type="button" data-remove-query>Пошук: ${escapeHtml(filters.q)}<span aria-hidden="true">×</span></button>`);
@@ -505,6 +552,7 @@ window.sofievkaCatalogUIReady = (async function () {
     const params = new URLSearchParams();
     if (window.sofievkaCatalogScopedDataSource && new URLSearchParams(location.search).get("dataSource") === "supabase") params.set("dataSource", "supabase");
     Object.entries(filters.values).forEach(([key, values]) => { if (values.length) params.set(key, values.join(",")); });
+    Object.entries(filters.ranges || {}).forEach(([key, range]) => params.set(key, rangeParam(range)));
     if (filters.minPrice) params.set("minPrice", String(filters.minPrice));
     if (Number.isFinite(filters.maxPrice)) params.set("maxPrice", String(filters.maxPrice));
     if (filters.sort !== "default") params.set("sort", filters.sort);
@@ -513,7 +561,7 @@ window.sofievkaCatalogUIReady = (async function () {
   }
 
   function hasIndexableFilters(filters) {
-    return Boolean(Object.keys(filters.values).length || filters.minPrice || Number.isFinite(filters.maxPrice) || filters.q || filters.sort !== "default");
+    return Boolean(Object.keys(filters.values).length || Object.keys(filters.ranges || {}).length || filters.minPrice || Number.isFinite(filters.maxPrice) || filters.q || filters.sort !== "default");
   }
 
   function bindScoped({ pageName = "catalog", productCard } = {}) {
@@ -547,11 +595,18 @@ window.sofievkaCatalogUIReady = (async function () {
       history[push && !same ? "pushState" : "replaceState"]({}, "", target);
       applyMetadata(ctx, hasIndexableFilters(filters));
     };
-    const requestQuery = (requestedPage, pageSize = 24) => {
+    // Range values come from facet counts loaded without the ranges (rangeSource), so every value of the scope is known.
+    let rangeSource = null;
+    const rangeValues = (key, range) => {
+      const values = Object.keys(rangeSource?.technicalCounts?.[key] || {}).filter(value => inRange(value, range));
+      return values.length ? values : ["__no_value__"];
+    };
+    const requestQuery = (requestedPage, pageSize = 24, { withRanges = true } = {}) => {
       const technicalFilters = {};
       Object.entries(filters.values).forEach(([key, values]) => {
         if (!["brand", "availability", "subcategory", "category"].includes(key)) technicalFilters[key] = values;
       });
+      if (withRanges) Object.entries(filters.ranges || {}).forEach(([key, range]) => { technicalFilters[key] = rangeValues(key, range); });
       const scopeCategory = ctx.currentCategory?.id || (ctx.section?.id !== "all" ? ctx.section?.id : "all");
       return {
         scopeCategory, scopeBrand: ctx.isBrand ? ctx.brand?.id || "" : "",
@@ -578,7 +633,11 @@ window.sofievkaCatalogUIReady = (async function () {
         .sort(([left], [right]) => (catalog.attributeDefinitions[left]?.rank || 999) - (catalog.attributeDefinitions[right]?.rank || 999))
         .forEach(([key, counts]) => {
           const definition = catalog.attributeDefinitions[key];
-          if (definition?.filterable) groups.push(facetGroup(key, definition.label, countsMap(counts, filters.values[key]), filters, { limit: 7 }));
+          if (!definition?.filterable) return;
+          const bounds = facets.technicalRanges?.[key];
+          // Old links with picked values keep their checkboxes; otherwise a long numeric list becomes «від/до».
+          if (bounds && !filters.values[key]?.length) groups.push(rangeGroupMarkup(key, definition.label, bounds, filters.ranges?.[key]));
+          else groups.push(facetGroup(key, definition.label, countsMap(counts, filters.values[key]), filters, { limit: 7 }));
         });
       withFacetFocus(facetRoot, () => { facetRoot.innerHTML = `${groups.filter(Boolean).join("")}<button class="filter-reset" type="button" data-filter-clear>Скинути всі фільтри</button>`; });
       if (state.brandQuery) filterBrandOptions();
@@ -595,7 +654,7 @@ window.sofievkaCatalogUIReady = (async function () {
       const loadMore = document.querySelector("[data-load-more]");
       if (loadMore) { loadMore.hidden = !hasMore; loadMore.disabled = false; loadMore.removeAttribute("aria-busy"); loadMore.textContent = `Показати ще · ${Math.min(24, Math.max(0, total - currentProducts.length))}`; }
       const mobileButton = document.querySelector("[data-filter-toggle]");
-      const activeCount = Object.values(filters.values).reduce((sum, values) => sum + values.length, 0) + Number(Boolean(filters.minPrice)) + Number(Number.isFinite(filters.maxPrice));
+      const activeCount = Object.values(filters.values).reduce((sum, values) => sum + values.length, 0) + Object.keys(filters.ranges || {}).length + Number(Boolean(filters.minPrice)) + Number(Number.isFinite(filters.maxPrice));
       if (mobileButton) mobileButton.textContent = activeCount ? `Фільтри · ${activeCount}` : "Фільтри";
     };
     const renderProducts = () => {
@@ -642,23 +701,39 @@ window.sofievkaCatalogUIReady = (async function () {
         if (loadMore) { loadMore.disabled = true; loadMore.setAttribute("aria-busy", "true"); loadMore.textContent = "Завантаження…"; }
       }
       try {
+        if (!append && Object.keys(filters.ranges || {}).length) {
+          rangeSource = await source.loadFacets(requestQuery(1, 24, { withRanges: false }), { signal: controller.signal });
+          if (sequence !== requestSequence) return;
+        }
         const query = requestQuery(nextPage, 24 * pagesWanted);
-        const [products, facets] = append
-          ? [await source.listProducts(query, { signal: controller.signal }), currentFacets]
-          : await Promise.all([
-            source.listProducts(query, { signal: controller.signal }),
-            source.loadFacets(query, { signal: controller.signal })
-          ]);
+        // Facet counts take noticeably longer than the products (seconds with technical filters), so the
+        // products are shown as soon as they arrive and the filter panel follows.
+        const facetsRequest = append ? null : source.loadFacets(query, { signal: controller.signal });
+        facetsRequest?.catch(() => {});
+        const products = await source.listProducts(query, { signal: controller.signal });
         if (sequence !== requestSequence) return;
         page = append ? nextPage : pagesWanted;
         total = products.total;
         hasMore = products.hasMore;
         currentProducts = append ? [...currentProducts, ...products.products] : [...products.products];
-        currentFacets = facets;
-        if (!append && facets) renderScopedFacets(facets);
         renderProducts();
         if (restore && currentProducts.length < restore.count && hasMore) load({ append: true, restore });
         else if (restore) restoreScroll(restore.scrollY);
+        if (!facetsRequest) return;
+        facetRoot.setAttribute("aria-busy", "true");
+        try {
+          const facets = await facetsRequest;
+          if (sequence !== requestSequence) return;
+          currentFacets = facets;
+          if (facets) renderScopedFacets(facets);
+          updateCounters();
+        } catch (error) {
+          if (error?.name === "AbortError" || /abort/i.test(error?.message || "") || sequence !== requestSequence) return;
+          facetRoot.innerHTML = `<div class="catalog-empty" role="alert"><p>Фільтри тимчасово недоступні.</p></div>`;
+          console.error("Scoped catalogue facets failed", error);
+        } finally {
+          if (sequence === requestSequence) facetRoot.removeAttribute("aria-busy");
+        }
       } catch (error) {
         if (error?.name === "AbortError" || /abort/i.test(error?.message || "")) return;
         if (sequence !== requestSequence) return;
@@ -667,6 +742,14 @@ window.sofievkaCatalogUIReady = (async function () {
     };
     const update = (push = true) => { pendingRestore = null; writeUrl(push); load(); };
     const applyPrice = () => { Object.assign(filters, readPriceInputs()); update(); };
+    const applyRange = group => {
+      const key = group?.dataset.rangeGroup;
+      if (!key) return;
+      const range = readRangeInputs(group);
+      filters.ranges = { ...(filters.ranges || {}) };
+      if (range) filters.ranges[key] = range; else delete filters.ranges[key];
+      update();
+    };
     const filterBrandOptions = () => {
       const query = state.brandQuery.toLocaleLowerCase("uk");
       facetRoot.querySelectorAll('[data-facet-group="brand"] [data-facet-option]').forEach(option => { option.hidden = Boolean(query) && !option.dataset.optionLabel.includes(query); });
@@ -692,6 +775,10 @@ window.sofievkaCatalogUIReady = (async function () {
       if (event.target.closest("[data-filter-toggle]")) setDrawer(true);
       if (event.target.closest("[data-filter-close], [data-filter-backdrop], [data-filter-apply]")) setDrawer(false);
       if (event.target.closest("[data-price-apply]")) applyPrice();
+      const rangeApply = event.target.closest("[data-range-apply]");
+      if (rangeApply) applyRange(rangeApply.closest("[data-range-group]"));
+      const rangeRemove = event.target.closest("[data-remove-range]");
+      if (rangeRemove) { delete filters.ranges[rangeRemove.dataset.removeRange]; update(); }
       const more = event.target.closest("[data-facet-more]");
       if (more) { state.expandedGroups.has(more.dataset.facetMore) ? state.expandedGroups.delete(more.dataset.facetMore) : state.expandedGroups.add(more.dataset.facetMore); if (currentFacets) renderScopedFacets(currentFacets); }
       const remove = event.target.closest("[data-remove-filter]");
@@ -699,12 +786,13 @@ window.sofievkaCatalogUIReady = (async function () {
       const price = event.target.closest("[data-remove-price]");
       if (price) { filters[price.dataset.removePrice] = price.dataset.removePrice === "maxPrice" ? Infinity : 0; update(); }
       if (event.target.closest("[data-remove-query]")) { filters.q = ""; update(); }
-      if (event.target.closest("[data-filter-clear]")) { filters = { values: {}, q: "", minPrice: 0, maxPrice: Infinity, sort: "default" }; state.brandQuery = ""; update(); }
+      if (event.target.closest("[data-filter-clear]")) { filters = { values: {}, ranges: {}, q: "", minPrice: 0, maxPrice: Infinity, sort: "default" }; state.brandQuery = ""; update(); }
       if (event.target.closest("[data-load-more]") && hasMore && !event.target.closest("[data-load-more]").disabled) load({ append: true });
       if (event.target.closest("[data-scoped-retry]")) load();
     });
     document.addEventListener("keydown", event => {
       if (event.key === "Enter" && event.target.matches?.("[data-price-min], [data-price-max]")) { event.preventDefault(); applyPrice(); }
+      if (event.key === "Enter" && event.target.matches?.("[data-range-min], [data-range-max]")) { event.preventDefault(); applyRange(event.target.closest("[data-range-group]")); }
     });
     window.addEventListener("popstate", () => { pendingRestore = null; ctx = context(pageName); filters = readState(ctx); applyMetadata(ctx, hasIndexableFilters(filters)); load(); });
     window.addEventListener("pagehide", () => saveListingState(currentProducts.length));
@@ -801,7 +889,9 @@ window.sofievkaCatalogUIReady = (async function () {
       const price = event.target.closest("[data-remove-price]");
       if (price) { filters[price.dataset.removePrice] = price.dataset.removePrice === "maxPrice" ? Infinity : 0; update(); }
       if (event.target.closest("[data-remove-query]")) { filters.q = ""; update(); }
-      if (event.target.closest("[data-filter-clear]")) { filters = { values: {}, q: "", minPrice: 0, maxPrice: Infinity, sort: "default" }; state.brandQuery = ""; update(); }
+      const rangeRemove = event.target.closest("[data-remove-range]");
+      if (rangeRemove) { delete filters.ranges[rangeRemove.dataset.removeRange]; update(); }
+      if (event.target.closest("[data-filter-clear]")) { filters = { values: {}, ranges: {}, q: "", minPrice: 0, maxPrice: Infinity, sort: "default" }; state.brandQuery = ""; update(); }
       if (event.target.closest("[data-load-more]")) { state.visibleCount += 24; renderResults(); }
     });
     document.addEventListener("keydown", event => {
@@ -954,6 +1044,30 @@ window.sofievkaCatalogUIReady = (async function () {
     const sync = () => { const count = Number(source?.textContent || 0); badge.textContent = String(count); badge.hidden = !(count > 0); };
     sync();
     if (source) new MutationObserver(sync).observe(source, { childList: true, characterData: true, subtree: true });
+    condenseHeaderOnScroll();
+  }
+
+  // On phones the tab bar repeats the header's top row (logo, cart, menu), so scrolling down slides that row
+  // away and keeps only the search field; scrolling up brings it back (styles.css, .header-condensed).
+  function condenseHeaderOnScroll() {
+    const header = document.querySelector(".site-header");
+    const phone = window.matchMedia?.("(max-width: 640px)");
+    if (!header || !phone) return;
+    const root = document.documentElement;
+    let lastY = window.scrollY;
+    let queued = false;
+    const apply = () => {
+      queued = false;
+      const y = window.scrollY;
+      const delta = y - lastY;
+      if (!phone.matches || y < 160 || header.querySelector('[aria-expanded="true"]')) root.classList.remove("header-condensed");
+      else if (delta > 6) root.classList.add("header-condensed");
+      else if (delta < -6) root.classList.remove("header-condensed");
+      else return;
+      lastY = y;
+    };
+    window.addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(apply); } }, { passive: true });
+    phone.addEventListener?.("change", apply);
   }
 
   function bindSearch(form = document.querySelector("[data-search]"), options = {}) {
