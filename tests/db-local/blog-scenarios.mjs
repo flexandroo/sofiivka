@@ -52,7 +52,8 @@ export async function run(db) {
   const cases = await list(db, "case");
   assert.equal(cases.total, 1);
   const [seedCase] = cases.posts;
-  assert.deepEqual({ category: seedCase.category, title: seedCase.title, excerpt: seedCase.excerpt, cover: seedCase.cover.url, coverAlt: seedCase.cover.alt }, fallbackCase);
+  if (fallbackCase) assert.deepEqual({ category: seedCase.category, title: seedCase.title, excerpt: seedCase.excerpt, cover: seedCase.cover.url, coverAlt: seedCase.cover.alt }, fallbackCase);
+  else assert.equal(seedCase.title, "Котельня приватного будинку");
   assert.equal(seedCase.case.object, "Приватний будинок");
   // Every seeded body passes the same validation as admin saves and has links the storefront allows.
   for (const row of (await db.query("select slug, body from public.site_posts")).rows) {

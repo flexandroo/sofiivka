@@ -24,10 +24,13 @@ export function extractFallbackArticles(source = fs.readFileSync(path.join(root,
   return JSON.parse(cards).map(([category, title, excerpt, cover]) => ({ category, title, excerpt, cover }));
 }
 
-// The large case card of the portfolio page: { category, title, excerpt, cover, coverAlt }.
+// The large case card of the portfolio page: { category, title, excerpt, cover, coverAlt }, or null when the
+// page has no built-in case (it lists the company's own objects and leaves the case slot to the database).
 export function extractFallbackCase(source = fs.readFileSync(path.join(root, "page-shell.js"), "utf8")) {
   const body = functionBody(source, "renderPortfolioExtended");
-  const [, cover, coverAlt, category, title, excerpt] =
+  const match =
     /<article class="portfolio-lead"><img src="([^"]+)" alt="([^"]*)"><div><p class="page-kicker">([^<]+)<\/p><h2>([^<]+)<\/h2><p>([^<]+)<\/p>/.exec(body);
+  if (!match) return null;
+  const [, cover, coverAlt, category, title, excerpt] = match;
   return { category: decode(category), title: decode(title), excerpt: decode(excerpt), cover, coverAlt: decode(coverAlt) };
 }

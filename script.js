@@ -1200,8 +1200,8 @@ function buildHeroSlide(banner, index, total) {
     });
     content.append(kicker);
   }
-  // The first slide carries the page heading, as in the static markup.
-  content.append(bannerElement(index === 0 ? "h1" : "h2", "", banner.title));
+  // The page heading is a hidden h1 above the storefront; slides carry h2.
+  content.append(bannerElement("h2", "", banner.title));
   if (banner.text) content.append(bannerElement("p", "storefront-slide__lead", banner.text));
   if (banner.buttonLabel) {
     const button = bannerElement("span", "button button--primary");

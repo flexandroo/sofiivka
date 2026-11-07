@@ -56,7 +56,8 @@ assert.doesNotMatch(migration, /create trigger|drop trigger/i);
 assert.doesNotMatch(migration, /taxonomy_admin_audit_entity_type_check|alter table public\.taxonomy_admin_audit/, "own audit table, taxonomy audit untouched");
 assert.doesNotMatch(migration, /^begin;|^commit;/m);
 for (const card of extractFallbackArticles()) assert.ok(migration.includes(`'${card.title}'`), `seed ${card.title}`);
-assert.ok(migration.includes(`'${extractFallbackCase().title}'`), "seed case");
+const fallbackCase = extractFallbackCase();
+assert.ok(migration.includes(`'${fallbackCase ? fallbackCase.title : "Котельня приватного будинку"}'`), "seed case");
 
 // Admin wiring.
 for (const name of ["admin_list_site_posts", "admin_get_site_post", "admin_create_site_post", "admin_update_site_post", "admin_delete_site_post"]) {

@@ -917,6 +917,14 @@
   background: #fff;
 }
 
+.home-contact__store-switcher[hidden] {
+  display: none;
+}
+
+.home-contact__location:has(> .home-contact__store-switcher[hidden]) {
+  grid-template-rows: minmax(300px, 1fr) auto;
+}
+
 .home-contact__store-switcher button {
   position: relative;
   min-height: 54px;
