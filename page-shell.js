@@ -1097,7 +1097,7 @@
   function renderSearchExtended() {
     const query = (new URLSearchParams(location.search).get("q") || "").trim();
     document.title = query ? `${query} — пошук | ТД «Софіївка»` : "Пошук по каталогу | ТД «Софіївка»";
-    return `<section class="search-page-hero"><div class="container">${crumbs("Пошук")}<p class="page-kicker">Каталог інженерного обладнання</p><h1>${query ? "Результати пошуку" : "Пошук по каталогу"}</h1>${query ? `<p class="search-page-hero__query">«${escapeHtml(query)}»</p>` : `<p>Введіть назву, бренд, модель або артикул.</p>`}</div></section><section class="page-section search-page-section"><div class="container"><form class="search-page-form" action="/search"><label for="search-page-query">Пошуковий запит</label><div><input id="search-page-query" name="q" type="search" value="${escapeHtml(query)}" placeholder="Наприклад, Ecosoft осмос або MO550MECOSTD"><button class="button button--primary" type="submit">Знайти</button></div></form><div class="search-page-results" data-search-page-results aria-live="polite"></div></div></section>`;
+    return `<section class="search-page-hero"><div class="container">${crumbs("Пошук")}<h1>${query ? `Результати пошуку: <span class="search-page-hero__query">«${escapeHtml(query)}»</span>` : "Пошук по каталогу"}</h1>${query ? "" : `<p>Введіть назву, бренд, модель або артикул.</p>`}</div></section><section class="page-section search-page-section"><div class="container"><form class="search-page-form" action="/search"><label for="search-page-query">Пошуковий запит</label><div><input id="search-page-query" name="q" type="search" value="${escapeHtml(query)}" placeholder="Наприклад, Ecosoft осмос або MO550MECOSTD"><button class="button button--primary" type="submit">Знайти</button></div></form><div class="search-page-results" data-search-page-results aria-live="polite"></div></div></section>`;
   }
 
   // 404.html: Vercel serves it with status 404 for any unknown address.
@@ -1454,7 +1454,7 @@
             return "";
           };
           const renderProducts = () => {
-            root.innerHTML = `<div class="search-result-head"><div><span>«${escapeHtml(query)}»</span><h2>${productCountLabel(found.totalProducts)}</h2></div><a href="/catalog">Увесь каталог →</a></div>${related ? `<nav class="search-related" aria-label="Пов’язані категорії та бренди">${related}</nav>` : ""}<div class="catalog-products">${found.products.slice(0, visible).map(extendedProductCard).join("")}</div>${moreMarkup()}`;
+            root.innerHTML = `<div class="search-result-head"><div><h2>${productCountLabel(found.totalProducts)}</h2></div><a href="/catalog">Увесь каталог →</a></div>${related ? `<nav class="search-related" aria-label="Пов’язані категорії та бренди">${related}</nav>` : ""}<div class="catalog-products">${found.products.slice(0, visible).map(extendedProductCard).join("")}</div>${moreMarkup()}`;
             window.sofievkaCatalogUI?.trackProductImages(root);
             root.querySelector("[data-search-more]")?.addEventListener("click", () => { visible += 24; renderProducts(); });
           };

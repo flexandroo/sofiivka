@@ -749,7 +749,7 @@ window.sofievkaCatalogUIReady = (async function () {
       productRoot.classList.remove("is-loading");
       productRoot.innerHTML = results.length ? results.slice(0, state.visibleCount).map(productCard).join("") : baseProducts.length
         ? `<div class="catalog-empty"><span aria-hidden="true">0</span><h2>Товарів за цими параметрами немає</h2><p>Змініть один із фільтрів або скиньте вибір.</p><button class="button button--secondary" type="button" data-filter-clear>Скинути фільтри</button></div>`
-        : `<div class="catalog-empty"><span aria-hidden="true">0</span><h2>Товарів у цьому розділі поки немає</h2><p>Ми не показуємо порожні підкатегорії або вигадані позиції. Перейдіть до іншого розділу каталогу.</p><a class="button button--secondary" href="/catalog">Увесь каталог</a></div>`;
+        : `<div class="catalog-empty"><span aria-hidden="true">0</span><h2>Товарів у цьому розділі поки немає</h2><p>Перейдіть до іншого розділу каталогу.</p><a class="button button--secondary" href="/catalog">Увесь каталог</a></div>`;
       trackProductImages(productRoot);
       document.querySelectorAll("[data-result-count]").forEach(element => { element.textContent = String(results.length); });
       document.querySelectorAll("[data-drawer-count]").forEach(element => { element.textContent = countLabel(results.length); });

@@ -1785,7 +1785,7 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
 }
 
 .brand-directory-hero {
-  padding-block: clamp(42px, 6vw, 76px);
+  padding-block: 20px clamp(24px, 3vw, 36px);
   border-bottom: 1px solid var(--divider);
   background: var(--surface);
 }
@@ -1808,14 +1808,15 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
 }
 
 .brand-directory-hero h1 {
-  font-size: clamp(40px, 5vw, 64px);
-  line-height: 1.06;
+  font-size: clamp(30px, 3.4vw, 44px);
+  line-height: 1.1;
+  letter-spacing: -.03em;
 }
 
 .brand-directory-hero p {
   max-width: 720px;
   color: var(--text-secondary);
-  font-size: clamp(16px, 1.7vw, 20px);
+  font-size: clamp(16px, 1.2vw, 18px);
 }
 
 .brand-directory-featured {

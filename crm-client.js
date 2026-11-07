@@ -67,4 +67,31 @@
       });
     }
   });
+
+  // Browser messages for empty or malformed fields follow the browser language ("Please fill out this
+  // field"); the shop's own forms answer in Ukrainian. Messages a form sets itself (phone, password) stay.
+  const fieldMessage = field => {
+    const validity = field.validity;
+    if (validity.customError) return null;
+    if (validity.valueMissing) {
+      if (field.type === "checkbox") return "Позначте це поле, щоб продовжити.";
+      if (field.type === "radio" || field.tagName === "SELECT") return "Оберіть один із варіантів.";
+      if (field.type === "email") return "Вкажіть email.";
+      return "Заповніть це поле.";
+    }
+    if (validity.typeMismatch && field.type === "email") return "Вкажіть email у форматі name@example.com.";
+    if (validity.tooShort) return `Щонайменше ${field.minLength} символів.`;
+    if (validity.patternMismatch) return field.title || "Перевірте формат значення.";
+    return null;
+  };
+  document.addEventListener("invalid", event => {
+    const field = event.target;
+    if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement)) return;
+    const message = fieldMessage(field);
+    if (!message) return;
+    field.setCustomValidity(message);
+    // The message is cleared on the next edit so the browser re-checks the new value.
+    field.addEventListener("input", () => field.setCustomValidity(""), { once: true });
+    field.addEventListener("change", () => field.setCustomValidity(""), { once: true });
+  }, true);
 })();

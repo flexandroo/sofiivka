@@ -1,5 +1,6 @@
 /* Structured data (schema.org JSON-LD) for search engines, added on every page by the build.
- * - BreadcrumbList from the visible breadcrumbs (nav.page-breadcrumbs), kept in sync when a page re-renders.
+ * - BreadcrumbList from the visible breadcrumbs (company pages, catalogue, brands), kept in sync when a page re-renders.
+ * - FAQPage from the questions on /faq.
  * - Organization with both stores on the home, about and contact pages (from site settings).
  * - Product on the product page: page-shell.js fills window.sofievkaProductSchema and fires "sofievka:product-schema".
  * Google reads JSON-LD added by JavaScript; messengers and other crawlers need prerendered HTML (stage 5). */
@@ -23,7 +24,7 @@
   }
 
   function breadcrumbs() {
-    const nav = document.querySelector("nav.page-breadcrumbs");
+    const nav = document.querySelector("nav.page-breadcrumbs, nav.catalog-breadcrumbs, nav.breadcrumbs");
     if (!nav) return null;
     const items = [];
     for (const node of nav.querySelectorAll("a, [aria-current]")) {
@@ -93,6 +94,16 @@
     };
   }
 
+  function faq() {
+    if (document.body?.dataset.page !== "faq") return null;
+    const questions = [...document.querySelectorAll("details.faq-item")].map(item => {
+      const question = item.querySelector("summary")?.textContent.replace(/s+/g, " ").trim();
+      const answer = [...item.children].filter(node => node.tagName !== "SUMMARY").map(node => node.textContent).join(" ").replace(/s+/g, " ").trim();
+      return question && answer ? { "@type": "Question", name: question, acceptedAnswer: { "@type": "Answer", text: answer } } : null;
+    }).filter(Boolean);
+    return questions.length ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: questions } : null;
+  }
+
   function product() {
     return document.body?.dataset.page === "product" ? window.sofievkaProductSchema || null : null;
   }
@@ -103,6 +114,7 @@
     put("schema-breadcrumbs", breadcrumbs());
     put("schema-organization", organization());
     put("schema-product", product());
+    put("schema-faq", faq());
   }
   function schedule() {
     if (queued) return;
