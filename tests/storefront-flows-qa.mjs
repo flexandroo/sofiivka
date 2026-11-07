@@ -768,8 +768,7 @@ const shellFacts = await (async () => {
   return data;
 })();
 const contactStores = [
-  { phone: "+38 (050) 358-22-84", address: "с. Софіївська Борщагівка, вул. Київська, 3" },
-  { phone: "+38 (067) 726-00-00", address: "м. Житомир, проспект Незалежності, 79" }
+  { phone: "+38 (050) 358-22-84", address: "с. Софіївська Борщагівка, вул. Київська, 3" }
 ];
 
 for (const [label, viewport] of [["mobile", VIEWPORTS.mobile], ["desktop", VIEWPORTS.desktop]]) {
@@ -805,7 +804,7 @@ await check("contact-jsonld-locality", async () => {
   await page.waitForFunction(() => document.getElementById("schema-organization"), null, { timeout: 5000 });
   const schema = await page.evaluate(() => JSON.parse(document.getElementById("schema-organization").textContent));
   const localities = schema.department.map(store => store.address.addressLocality);
-  assert.deepEqual(localities, ["Софіївська Борщагівка", "Житомир"], `JSON-LD localities ${localities}`);
+  assert.deepEqual(localities, ["Софіївська Борщагівка"], `JSON-LD localities ${localities}`);
   const text = normalize(await page.locator("main").innerText());
   assert.ok(text.includes(contactStores[0].address), "/contact: address spelling changed");
   await page.context().close();

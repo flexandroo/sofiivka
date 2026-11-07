@@ -33,7 +33,7 @@ export async function run(db) {
 
   // 1. Public read exposes shop data but not notification recipients.
   const publicSettings = (await as(db, "anon", null, () => one(db, "select public.get_site_settings() r"))).r;
-  assert.equal(publicSettings.stores.length, 2);
+  assert.equal(publicSettings.stores.length, 1, "the site is for the Kyiv branch");
   assert.equal(publicSettings.stores[0].city, "Київ");
   assert.equal(publicSettings.checkout.deliveryMethods.length, 2);
   assert.equal("notifications" in publicSettings, false);
@@ -48,7 +48,7 @@ export async function run(db) {
     /власник і адміністратор/, "content write");
 
   // 3. Stores: cleaned, validated, audited.
-  const stores = publicSettings.stores.map(store => ({ ...store }));
+  const stores = [{ ...publicSettings.stores[0] }, { ...publicSettings.stores[0], id: "second", city: "Житомир", title: "Другий магазин" }];
   stores[1] = { ...stores[1], phones: ["  +38 (067) 726-00-00 ", ""], hours: ["Пн–Пт 9:00–18:00"], unknown: "drop me", pickup: false };
   const saved = (await update(db, "stores", stores)).r.sections.stores.value;
   assert.deepEqual(saved[1].phones, ["+38 (067) 726-00-00"]);

@@ -19,17 +19,6 @@
         email: "sofievkakyiv@ukr.net",
         hours: ["Пн–Пт 9:00–18:00", "Сб 9:00–14:00"],
         pickup: true
-      },
-      {
-        id: "zhytomyr",
-        city: "Житомир",
-        title: "Магазин у Житомирі",
-        address: "м. Житомир, проспект Незалежності, 79",
-        mapQuery: "Житомир, проспект Незалежності, 79",
-        phones: ["+38 (067) 726-00-00"],
-        email: "sofievka.zt.ua@gmail.com",
-        hours: ["Пн–Пт 8:30–17:00", "Сб 8:30–14:00"],
-        pickup: true
       }
     ],
     checkout: {
