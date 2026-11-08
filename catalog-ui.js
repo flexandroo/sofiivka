@@ -578,6 +578,9 @@ window.sofievkaCatalogUIReady = (async function () {
     let currentFacets = null;
     let controller = null;
     let requestSequence = 0;
+    // Facet counts have their own request: «Показати ще» must not cancel the counts of the listing it extends.
+    let facetController = null;
+    let facetSequence = 0;
     let pendingRestore = readListingState();
     if (pendingRestore && "scrollRestoration" in history) history.scrollRestoration = "manual";
     const filterPanel = document.querySelector("[data-filter]");
@@ -708,8 +711,33 @@ window.sofievkaCatalogUIReady = (async function () {
         const query = requestQuery(nextPage, 24 * pagesWanted);
         // Facet counts take noticeably longer than the products (seconds with technical filters), so the
         // products are shown as soon as they arrive and the filter panel follows.
-        const facetsRequest = append ? null : source.loadFacets(query, { signal: controller.signal });
-        facetsRequest?.catch(() => {});
+        let facetsRequest = null;
+        let facetRun = facetSequence;
+        const showFacets = async () => {
+          try {
+            const facets = await facetsRequest;
+            if (facetRun !== facetSequence) return;
+            currentFacets = facets;
+            if (facets) renderScopedFacets(facets);
+            updateCounters();
+          } catch (error) {
+            if (error?.name === "AbortError" || /abort/i.test(error?.message || "") || facetRun !== facetSequence) return;
+            facetRoot.innerHTML = `<div class="catalog-empty" role="alert"><p>Фільтри тимчасово недоступні.</p></div>`;
+            console.error("Scoped catalogue facets failed", error);
+          } finally {
+            if (facetRun === facetSequence) facetRoot.removeAttribute("aria-busy");
+          }
+        };
+        if (!append) {
+          facetController?.abort();
+          facetController = new AbortController();
+          facetRun = ++facetSequence;
+          facetsRequest = source.loadFacets(query, { signal: facetController.signal });
+          facetsRequest.catch(() => {});
+          facetRoot.setAttribute("aria-busy", "true");
+          // Without a Back restore the panel updates on its own, whenever the counts arrive.
+          if (!restore) showFacets();
+        }
         const products = await source.listProducts(query, { signal: controller.signal });
         if (sequence !== requestSequence) return;
         page = append ? nextPage : pagesWanted;
@@ -717,27 +745,16 @@ window.sofievkaCatalogUIReady = (async function () {
         hasMore = products.hasMore;
         currentProducts = append ? [...currentProducts, ...products.products] : [...products.products];
         renderProducts();
+        // After Back the page needs its final height (filter panel included) before the scroll position returns.
+        if (restore && facetsRequest) await showFacets();
+        if (sequence !== requestSequence) return;
         if (restore && currentProducts.length < restore.count && hasMore) load({ append: true, restore });
         else if (restore) restoreScroll(restore.scrollY);
-        if (!facetsRequest) return;
-        facetRoot.setAttribute("aria-busy", "true");
-        try {
-          const facets = await facetsRequest;
-          if (sequence !== requestSequence) return;
-          currentFacets = facets;
-          if (facets) renderScopedFacets(facets);
-          updateCounters();
-        } catch (error) {
-          if (error?.name === "AbortError" || /abort/i.test(error?.message || "") || sequence !== requestSequence) return;
-          facetRoot.innerHTML = `<div class="catalog-empty" role="alert"><p>Фільтри тимчасово недоступні.</p></div>`;
-          console.error("Scoped catalogue facets failed", error);
-        } finally {
-          if (sequence === requestSequence) facetRoot.removeAttribute("aria-busy");
-        }
       } catch (error) {
         if (error?.name === "AbortError" || /abort/i.test(error?.message || "")) return;
         if (sequence !== requestSequence) return;
-        if (append) renderLoadMoreError(error); else renderError(error);
+        if (append) renderLoadMoreError(error);
+        else { facetController?.abort(); facetRoot.removeAttribute("aria-busy"); renderError(error); }
       }
     };
     const update = (push = true) => { pendingRestore = null; writeUrl(push); load(); };

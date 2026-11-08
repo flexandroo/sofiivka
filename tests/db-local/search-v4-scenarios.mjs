@@ -73,6 +73,11 @@ export async function run(db) {
   assert.equal((await search(db, "грундфос")).brands[0].entity.id, "grundfos");
   assert.equal((await search(db, "грундфос")).brands[0].count, 2);
   assert.deepEqual(ids(await search(db, "насос грундфос")), ["a-4"], "synonym inside a longer query");
+  // Model series in Cyrillic (20261107000200): brand and series are both expanded.
+  assert.equal(await expand("грундфос альфа"), "grundfos alpha");
+  assert.equal(await expand("віло стар"), "wilo стар", "everyday words stay as typed");
+  assert.deepEqual(ids(await search(db, "грундфос альфа")), ["a-4"], "Cyrillic series");
+  assert.deepEqual(ids(await search(db, "луна")), ["a-1"], "BAXI Luna in Cyrillic");
 
   // 3. SKU-prefix bonus only with a digit: «baxi» no longer puts the collector (SKU baxi-…) first.
   const baxiV3 = await search(db, "baxi", "_catalog_search_v3");

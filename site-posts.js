@@ -216,9 +216,10 @@
     section.querySelector(".post-more")?.remove();
     section.querySelector(".post-empty")?.remove();
     if (!lead) return;
+    // The page already lists the company's own objects; without published cases this block stays hidden.
+    section.hidden = !posts.length;
     if (!posts.length) {
       lead.hidden = true;
-      section.append(emptyState("case"));
       return;
     }
     lead.hidden = false;

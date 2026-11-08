@@ -701,6 +701,19 @@
     return `<svg class="pdp-icon" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
   }
 
+  // Source labels carry the unit after a comma («Тиск на вході, атм»). The short label drops it, so the unit
+  // moves to a numeric value («3–6 атм») instead of disappearing.
+  function factParts(label, value) {
+    const text = String(label || "");
+    const short = text.replace(/, .+$/, "");
+    const shown = String(value ?? "");
+    if (short === text) return [short, shown];
+    const unit = text.slice(text.lastIndexOf(", ") + 2).trim();
+    const unitLike = unit.length > 0 && unit.length <= 8 && !/[\d\s]/.test(unit);
+    const hasUnit = shown.toLocaleLowerCase("uk-UA").endsWith(unit.toLocaleLowerCase("uk-UA"));
+    return [short, unitLike && /\d/.test(shown) && !hasUnit ? `${shown} ${unit}` : shown];
+  }
+
   function selectKeyFacts(product) {
     return (window.sofievkaPdp?.keySpecs(product, 5) || []).map(item => [item.label, item.value]);
   }
@@ -914,7 +927,7 @@
     const shownModel = model && model !== product.sku && model !== product.id && displaySku({ ...product, sku: model }) ? model : "";
     const identifiers = `${shownModel && shownModel !== sku ? `<div><dt>Модель</dt><dd>${escapeHtml(shownModel)}</dd></div>` : ""}${sku ? `<div><dt>Артикул</dt><dd>${escapeHtml(sku)}<button class="pdp-copy-code" type="button" data-copy-sku="${escapeHtml(sku)}" aria-label="Копіювати артикул ${escapeHtml(sku)}">${pdpIcon("Документ")}</button></dd></div>` : ""}`;
     const lead = topFacts.length
-      ? `<dl class="pdp-top-facts">${topFacts.map(([label, value]) => `<div><dt>${escapeHtml(label.replace(/, .+$/, ""))}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}${groups.length ? `<a href="#specifications" data-pdp-jump="specifications">Усі характеристики →</a>` : ""}</dl>`
+      ? `<dl class="pdp-top-facts">${topFacts.map(fact => factParts(...fact)).map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}${groups.length ? `<a href="#specifications" data-pdp-jump="specifications">Усі характеристики →</a>` : ""}</dl>`
       : summary ? `<p class="pdp-summary">${escapeHtml(summary)}</p>` : "";
     return `<header class="pdp-heading">
       ${series ? `<div class="pdp-heading__top"><span class="pdp__series">Серія ${escapeHtml(series)}</span></div>` : ""}
@@ -965,7 +978,7 @@
 
   function renderPdpKeySpecifications(view) {
     if (!view.keyFacts.length) return "";
-    return `<aside class="pdp-key-specs" aria-labelledby="key-specs-title"><h3 id="key-specs-title">Ключові характеристики</h3><dl>${view.keyFacts.map(([label, value]) => `<div><dt>${escapeHtml(label.replace(/, .+$/, ""))}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl></aside>`;
+    return `<aside class="pdp-key-specs" aria-labelledby="key-specs-title"><h3 id="key-specs-title">Ключові характеристики</h3><dl>${view.keyFacts.map(fact => factParts(...fact)).map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl></aside>`;
   }
 
   function renderPdpOverview(view) {
@@ -1325,7 +1338,7 @@
   function renderPortfolioExtended() {
     return hero("Наші об’єкти", "Реалізовані об’єкти", "Котельні, опалення та сервіс, які ми змонтували й обслуговуємо: від житлового комплексу до логістичного центру.")
       + coSection(projectListMarkup())
-      + `<section class="page-section"><div class="container"><h2>Розбори задач</h2></div><div class="container portfolio-showcase"><article class="portfolio-lead" hidden></article></div></section>`
+      + `<section class="page-section" hidden><div class="container"><h2>Розбори задач</h2></div><div class="container portfolio-showcase"><article class="portfolio-lead" hidden></article></div></section>`
       + coCta("Є схожий об’єкт?", "Надішліть опис, схему або специфікацію — підберемо обладнання й порахуємо монтаж.");
   }
 
