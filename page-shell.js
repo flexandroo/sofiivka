@@ -714,6 +714,132 @@
     return [short, unitLike && /\d/.test(shown) && !hasUnit ? `${shown} ${unit}` : shown];
   }
 
+  // The specification table as a customer reads it. Imported sources repeat a characteristic under several names
+  // (Grundfos: «Живлення», «Номінальна напруга», «U»), split one value over rows with the same label, use drawing
+  // codes (B1, H2, W3 — meaningful only next to the drawing) and mix «2.37» with «2,21». Rows with the same label in
+  // a group are merged, a value already shown under a synonym is dropped, drawing codes fold into one row.
+  const SPEC_LABEL_NAMES = Object.freeze({ u: "Напруга", f: "Частота", "i max": "Струм, макс.", "i min": "Струм, мін.", g: "Різьба" });
+  const SPEC_SERVICE_LABELS = /^(qt|pump head|найменування продукції|схема електричного підключення)$/i;
+  const SPEC_DRAWING_CODE = /^(?:[ABCDHLW]\d{0,2}|DN\d)$/;
+  const SPEC_SYNONYMS = Object.freeze([/^(вага|маса)/i, /(напруга|живлення)/i, /(^ip\b|ip-клас|клас захисту)/i, /(eei|енергоефективн)/i, /частот/i, /(потужн|теплопродуктивн)/i, /^(розмір )?(підключення|приєднання)/i]);
+  const specValueKey = value => String(value).toLowerCase().replace(/(\d),(\d)/g, "$1.$2").replace(/\s+/g, "");
+  const tidyUnits = text => String(text).replace(/\s+(″|")$/, "$1").replace(/м\s?3(?=\s?\/|\b|$)/g, "м³").replace(/м\s?2(?=\b|$)/g, "м²").replace(/\s+\/(?=год|хв|с(?![а-яіїєґa-z]))/g, "/");
+  function tidySpecValue(label, value) {
+    let text = tidyUnits(String(value ?? "").trim()).replace(/^(-?\d+)\.(\d+)(?=\s|$)/, "$1,$2");
+    if (text === "0" && /^наявність/i.test(label)) text = "Немає";
+    // A pipe thread («G 1 1/2») is not a length in millimetres.
+    if (/^G\s?\d/.test(text)) text = text.replace(/\s*мм$/, "");
+    return text;
+  }
+
+  function tidySpecificationGroups(groups) {
+    const shownValues = [];
+    const drawing = [];
+    const tidy = groups.map(group => {
+      const rows = new Map();
+      group.items.forEach(([rawLabel, rawValue]) => {
+        const source = String(rawLabel || "").trim();
+        const mapped = SPEC_LABEL_NAMES[source.toLowerCase()];
+        if (!source || SPEC_SERVICE_LABELS.test(source)) return;
+        const label = mapped || tidyUnits(source);
+        const value = tidySpecValue(label, rawValue);
+        if (!value) return;
+        if (!mapped && SPEC_DRAWING_CODE.test(source)) { drawing.push(`${source} ${value}`); return; }
+        const key = label.toLocaleLowerCase("uk-UA").replace(/\s+/g, " ");
+        const row = rows.get(key);
+        if (row) { if (!row.values.includes(value)) row.values.push(value); return; }
+        const family = SPEC_SYNONYMS.findIndex(pattern => pattern.test(label));
+        const valueKey = specValueKey(value);
+        if (family >= 0 && shownValues.some(entry => entry.family === family && entry.valueKey === valueKey)) return;
+        if (family >= 0) shownValues.push({ family, valueKey });
+        rows.set(key, { label, values: [value] });
+      });
+      return { ...group, rows: [...rows.values()] };
+    });
+    if (drawing.length) {
+      const target = tidy.find(group => group.id === "dimensions") || tidy[tidy.length - 1];
+      if (target) target.rows.push({ label: drawing.length > 1 ? "Розміри за кресленням" : "Розмір за кресленням", values: [drawing.join(" · ")] });
+    }
+    return tidy
+      .map(({ rows, ...group }) => ({ ...group, items: rows.map(row => [row.label, row.values.join(" / ")]) }))
+      .filter(group => group.items.length);
+  }
+
+  // A description paragraph that lists «name: value; name: value; …» repeats the table when most of its values are
+  // already there («Характеристики моделі: …», «виробник підтверджує такі ключові дані: …», «За офіційною
+  // специфікацією: …»); it is left out. Lists of series features keep their place: their values are not in the table.
+  function withoutSpecificationLists(sections, groups) {
+    const tableValues = new Set(groups.flatMap(group => group.items.map(([, value]) => specValueKey(value))));
+    const tableText = [...tableValues].join(" ");
+    const listItems = paragraph => {
+      const body = String(paragraph).match(/^[^:]{3,140}:\s*([\s\S]+)$/)?.[1];
+      const items = body ? body.split(/;\s*/).map(item => item.replace(/\.\s*$/, "").trim()).filter(Boolean) : [];
+      return items.length >= 3 ? items : null;
+    };
+    const inTable = item => {
+      const key = specValueKey(item.split(/\s[—–]\s|:\s/).pop() || item);
+      return tableValues.has(key) || (key.length >= 4 && tableText.includes(key));
+    };
+    return sections
+      .map(section => ({ ...section, paragraphs: section.paragraphs.filter(paragraph => {
+        const items = listItems(paragraph);
+        return !items || items.filter(inTable).length / items.length < 0.6;
+      }) }))
+      .filter(section => section.paragraphs.length);
+  }
+
+  // Warranty term when the manufacturer data names one («гарантія: 2 роки»), otherwise "".
+  function warrantyTerm(product, groups) {
+    const fromTable = groups.flatMap(group => group.items).find(([label]) => /гаранті/i.test(label))?.[1];
+    const text = `${fromTable || ""} ${product.fullDescription || ""} ${JSON.stringify(product.descriptionSections || [])}`;
+    const match = text.match(/гаранті[яїю]?[^.;\d]{0,24}?(\d{1,2})\s*(рок[иі]?|років|міс(?:яц[іяь]+)?)/i) || text.match(/(\d{1,2})\s*(рок[иі]?|років|міс(?:яц[іяь]+)?)\s*гаранті/i);
+    if (!match) return "";
+    const number = Number(match[1]);
+    if (/^міс/i.test(match[2])) return `${number} міс.`;
+    return `${number} ${number === 1 ? "рік" : number < 5 ? "роки" : "років"}`;
+  }
+
+  // Parts, consumables and fittings are not installed by a service visit; the trust strip and the warranty line
+  // describe them differently from equipment.
+  const PART_PATTERN = /(комплектуюч|аксесуар|картридж|завантаж|фільтрувальн|смол[аи]|сіль|фітинг|коліно|муфт|трійник|димох|запчаст|шланг|кабель|ущільн|фланц|кріплен|форсунк|магістраль|ремкомплект|датчик|антен|подовжен|спіраль|колосник|двер|вентилятор)/i;
+  function isPartOrConsumable(product) {
+    const type = String(product.normalizedAttributes?.productType || product.type || "");
+    const category = CATALOG?.categoryById?.[product.primaryCategoryId]?.name || "";
+    const titleStart = /^(аксесуар|комплект(?: змінних)? картридж|картридж|коліно|муфт|трійник|фланц|ущільн|шланг|кріплен|запчаст|ремкомплект|подовжен|антен|спіраль|колосник|двер|димох|коаксіальн|роздільн)/i;
+    return PART_PATTERN.test(`${type} ${category}`) || titleStart.test(String(product.title || "").trim()) || !(window.sofievkaPdp?.installationRelevant?.(product) ?? true);
+  }
+
+  // «20 кВт FOCUS (5-25 кВт) з пневмоочищенням теплообмінника», «твердопаливний Feniks Серія B new 10 кВт»: a piece of
+  // the product name stored as the model (the source's «Модель» field), not a manufacturer designation.
+  const descriptiveModel = model => /[а-яіїєґ]{3,}[^а-яіїєґ]+[а-яіїєґ]{3,}/i.test(String(model).replace(/(^|[^а-яіїєґa-z])(квт|вт|кабель|кабелем)(?![а-яіїєґa-z])/gi, "$1"));
+
+  // A long descriptive series («Аксесуари регулювання температури для традиційних котлів») that the title already
+  // contains (without the brand) adds a second copy of the heading.
+  function seriesRepeatsTitle(series, product) {
+    const brand = String(window.sofievkaPdp?.brand?.(product)?.name || product.brand || "").toLocaleLowerCase("uk-UA");
+    const normalize = text => {
+      const lower = String(text).toLocaleLowerCase("uk-UA");
+      return (brand ? lower.split(brand).join(" ") : lower).replace(/\s+/g, " ").trim();
+    };
+    const name = normalize(series);
+    return name.split(" ").length >= 3 && normalize(product.title).includes(name);
+  }
+
+  // EAN/GTIN from the manufacturer data (Grundfos lists «EAN номер»): 8, 12, 13 or 14 digits.
+  function productGtin(product) {
+    const rows = [...(product.unmappedAttributes || []), ...(product.sourceAttributes || [])];
+    const value = product.ean || product.gtin || rows.find(item => /^(ean|gtin|штрих)/i.test(String(item?.label || "").trim()))?.value;
+    const digits = String(value || "").replace(/\D/g, "");
+    return [8, 12, 13, 14].includes(digits.length) ? digits : "";
+  }
+
+  // Search results show about 60 characters of a title: the generic tail goes first, the shop name stays.
+  function shortSeoTitle(title) {
+    let text = String(title || "").replace(/\s+/g, " ").trim();
+    if (text.length > 65) text = text.replace(/\s+—\s+характеристики(?: та ціна)?(?=\s*\|)/i, "");
+    return text;
+  }
+
   function selectKeyFacts(product) {
     return (window.sofievkaPdp?.keySpecs(product, 5) || []).map(item => [item.label, item.value]);
   }
@@ -862,12 +988,13 @@
   }
 
   function createPdpViewModel(product) {
-    const descriptionSections = customerDescriptionSections(product)
+    const groups = tidySpecificationGroups((window.sofievkaPdp?.specificationGroups?.(product) || []).map(group => ({ ...group, items: group.items.map(item => [item.label, item.value]) })));
+    const descriptionSections = withoutSpecificationLists(customerDescriptionSections(product)
       .map(section => ({
         title: pdpPlainText(section.title),
         paragraphs: (section.paragraphs || []).map(pdpPlainText).filter(Boolean)
       }))
-      .filter(section => section.paragraphs.length);
+      .filter(section => section.paragraphs.length), groups);
     const fallbackDescription = pdpPlainText(product.fullDescription || product.description || "");
     const description = descriptionSections.flatMap(section => section.paragraphs).join("\n\n") || fallbackDescription;
     const summarySource = pdpPlainText(product.shortDescription || product.description || "");
@@ -883,7 +1010,9 @@
       product,
       images: galleryImages(product),
       keyFacts: (window.sofievkaPdp?.keySpecs?.(product, 6) || []).map(item => [item.label, item.value]),
-      groups: (window.sofievkaPdp?.specificationGroups?.(product) || []).map(group => ({ ...group, items: group.items.map(item => [item.label, item.value]) })),
+      groups,
+      warranty: warrantyTerm(product, groups),
+      partOrConsumable: isPartOrConsumable(product),
       documents: window.sofievkaPdp?.documents?.(product) || [],
       accessories: window.sofievkaPdp?.accessoryProducts?.(product, 8) || [],
       compatibleProducts: window.sofievkaPdp?.compatibleProducts?.(product, 8) || [],
@@ -915,7 +1044,8 @@
       const label = cartQuantity ? `У кошику · ${cartQuantity}` : "Купити";
       return `<button class="button button--primary pdp-buy${modifier ? ` ${modifier}` : ""}${cartQuantity ? " is-in-cart" : ""}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${escapeHtml(cartQuantity ? `У кошику ${cartQuantity} шт. Додати ще` : `Додати ${product.title} до кошика`)}">${pdpIcon("Кошик")}<span data-buy-label>${label}</span></button>`;
     }
-    const label = purchase.amount ? "Уточнити наявність" : "Уточнити ціну";
+    // Same wording as the catalogue cards (catalog-ui.js productCard).
+    const label = purchase.amount ? "Уточнити наявність" : "Запитати ціну";
     return `<a class="button button--primary pdp-buy pdp-buy--consult${modifier ? ` ${modifier}` : ""}" href="/contact?product=${encodeURIComponent(product.id)}#contact-form">${pdpIcon("Консультація")}<span>${label}</span></a>`;
   }
 
@@ -924,13 +1054,13 @@
     const topFacts = keyFacts.slice(0, 4);
     // Placeholder SKUs from the import are not shown (AUD-034); the model is shown when it is a real one.
     const sku = displaySku(product);
-    const shownModel = model && model !== product.sku && model !== product.id && displaySku({ ...product, sku: model }) ? model : "";
+    const shownModel = model && model !== product.sku && model !== product.id && displaySku({ ...product, sku: model }) && !descriptiveModel(model) ? model : "";
     const identifiers = `${shownModel && shownModel !== sku ? `<div><dt>Модель</dt><dd>${escapeHtml(shownModel)}</dd></div>` : ""}${sku ? `<div><dt>Артикул</dt><dd>${escapeHtml(sku)}<button class="pdp-copy-code" type="button" data-copy-sku="${escapeHtml(sku)}" aria-label="Копіювати артикул ${escapeHtml(sku)}">${pdpIcon("Документ")}</button></dd></div>` : ""}`;
     const lead = topFacts.length
       ? `<dl class="pdp-top-facts">${topFacts.map(fact => factParts(...fact)).map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}${groups.length ? `<a href="#specifications" data-pdp-jump="specifications">Усі характеристики →</a>` : ""}</dl>`
       : summary ? `<p class="pdp-summary">${escapeHtml(summary)}</p>` : "";
     return `<header class="pdp-heading">
-      ${series ? `<div class="pdp-heading__top"><span class="pdp__series">Серія ${escapeHtml(series)}</span></div>` : ""}
+      ${series && !seriesRepeatsTitle(series, product) ? `<div class="pdp-heading__top"><span class="pdp__series">Серія ${escapeHtml(series)}</span></div>` : ""}
       <h1>${escapeHtml(product.title)}</h1>
       ${identifiers ? `<dl class="pdp-identifiers">${identifiers}</dl>` : ""}
     </header>${lead}`;
@@ -966,12 +1096,16 @@
     </div>`;
   }
 
+  // Equipment: warranty (the manufacturer's term when the data names one) and installation; parts, consumables
+  // and fittings: the return terms instead, no installation line.
   function renderPdpTrust(view) {
-    const { product, installationRelevant } = view;
+    const { product, installationRelevant, partOrConsumable, warranty } = view;
     const items = [
-      ["/assets/icons/icon-delivery.svg", "Доставка", "за тарифами перевізника", "/delivery"],
-      ["/assets/icons/icon-warranty.svg", "Гарантія", product.warranty || "від виробника", "/warranty"],
-      ...(installationRelevant ? [["/assets/icons/icon-installation.svg", "Монтаж і сервіс", "професійний запуск", "/installation"]] : [])
+      ["/assets/icons/icon-delivery.svg", "Доставка", "по Україні, самовивіз безкоштовно", "/delivery"],
+      partOrConsumable
+        ? ["/assets/icons/icon-warranty.svg", "Обмін і повернення", "14 днів, якщо товар не встановлювали", "/returns"]
+        : ["/assets/icons/icon-warranty.svg", "Гарантія", product.warranty || (warranty ? `${warranty} від виробника` : "від виробника"), "/warranty"],
+      ...(installationRelevant && !partOrConsumable ? [["/assets/icons/icon-installation.svg", "Монтаж і сервіс", "підбір, монтаж і запуск", "/installation"]] : [])
     ];
     return `<ul class="pdp-trust" id="purchase-info" aria-label="Доставка, гарантія та сервіс">${items.map(([icon, title, text, href]) => `<li><a href="${href}"><img src="${icon}" width="24" height="24" alt=""><span><strong>${escapeHtml(title)}</strong><small>${escapeHtml(text)}</small></span></a></li>`).join("")}</ul>`;
   }
@@ -981,19 +1115,26 @@
     return `<aside class="pdp-key-specs" aria-labelledby="key-specs-title"><h3 id="key-specs-title">Ключові характеристики</h3><dl>${view.keyFacts.map(fact => factParts(...fact)).map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl></aside>`;
   }
 
+  // The key facts are already at the top of the page and in the table; the description stands on its own here.
   function renderPdpOverview(view) {
-    if (!view.description && !view.keyFacts.length) return "";
-    const title = view.description ? "Опис товару" : "Ключові характеристики";
+    if (!view.description) return "";
+    const generic = /^(опис|про товар)$/i;
     const structuredDescription = view.descriptionSections.length
-      ? view.descriptionSections.map(section => `<section>${section.title ? `<h3>${escapeHtml(section.title)}</h3>` : ""}${section.paragraphs.map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join("")}</section>`).join("")
+      ? view.descriptionSections.map((section, index) => `<section>${section.title && !(index === 0 && generic.test(section.title)) ? `<h3>${escapeHtml(section.title)}</h3>` : ""}${section.paragraphs.map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join("")}</section>`).join("")
       : view.description.split(/\n{2,}/).filter(Boolean).map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join("");
-    return `<section class="pdp-detail-section pdp-overview" id="overview" aria-labelledby="overview-title"><div class="container"><details class="pdp-module" data-pdp-module open><summary><span>${title}</span><b aria-hidden="true"></b></summary><div class="pdp-module__body"><div class="pdp-section__head"><h2 id="overview-title">${title}</h2></div><div class="pdp-overview__grid${view.description && view.keyFacts.length ? "" : " is-single"}">${view.description ? `<div class="pdp-description-copy">${structuredDescription}</div>` : ""}${renderPdpKeySpecifications(view)}</div></div></details></div></section>`;
+    return `<section class="pdp-detail-section pdp-overview" id="overview" aria-labelledby="overview-title"><div class="container"><details class="pdp-module" data-pdp-module open><summary><span>Опис</span><b aria-hidden="true"></b></summary><div class="pdp-module__body"><div class="pdp-section__head"><h2 id="overview-title">Опис</h2></div><div class="pdp-overview__grid is-single"><div class="pdp-description-copy">${structuredDescription}</div></div></div></details></div></section>`;
   }
 
+  // Groups from the PDP engine (main, performance, connection, dimensions, other, full source list) get their own
+  // headings; a single group is shown as one table without a heading.
   function renderPdpSpecifications(view) {
     if (!view.groups.length) return "";
-    const items = view.groups.flatMap(group => group.items);
-    return `<section class="pdp-detail-section pdp-specifications" id="specifications" aria-labelledby="specifications-title"><div class="container"><details class="pdp-module" data-pdp-module open><summary><span>Характеристики</span><b aria-hidden="true"></b></summary><div class="pdp-module__body"><div class="pdp-section__head"><h2 id="specifications-title">Характеристики</h2></div><dl class="pdp-spec-table">${items.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl></div></details></div></section>`;
+    const table = items => `<dl class="pdp-spec-table">${items.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl>`;
+    const rows = view.groups.reduce((total, group) => total + group.items.length, 0);
+    const body = view.groups.length > 1 && rows > 12
+      ? view.groups.map(group => `<section class="pdp-spec-group"><h3>${escapeHtml(group.id === "complete" ? "Додаткові характеристики" : group.title)}</h3>${table(group.items)}</section>`).join("")
+      : table(view.groups.flatMap(group => group.items));
+    return `<section class="pdp-detail-section pdp-specifications" id="specifications" aria-labelledby="specifications-title"><div class="container"><details class="pdp-module" data-pdp-module open><summary><span>Характеристики</span><b aria-hidden="true"></b></summary><div class="pdp-module__body"><div class="pdp-section__head"><h2 id="specifications-title">Характеристики</h2></div>${body}</div></details></div></section>`;
   }
 
   function renderPdpCompatibility(view) {
@@ -1050,7 +1191,7 @@
       window.sofievkaProductSchema = null;
       return `<section class="pdp-missing"><div class="container">${crumbs("Товар не знайдено")}<span class="pdp-missing__code">404</span><h1>Товар не знайдено</h1><p>${id || productPathSlug() ? "Товару за цим посиланням немає в каталозі. Можливо, його прибрали або перейменували." : "У посиланні немає ідентифікатора товару."}</p><div><a class="button button--primary" href="/catalog">До каталогу</a><button class="text-link pdp-back" type="button" data-history-back>← Повернутися назад</button></div></div></section>`;
     }
-    document.title = product.seo?.title || product.seoTitle || `${product.title} | ТД «Софіївка»`;
+    document.title = shortSeoTitle(product.seo?.title || product.seoTitle || `${product.title} | ТД «Софіївка»`);
     const metaDescription = document.querySelector('meta[name="description"]');
     const productDescription = product.seo?.description || product.seoDescription;
     if (metaDescription && productDescription) metaDescription.setAttribute("content", productDescription);
@@ -1067,7 +1208,7 @@
     window.dispatchEvent(new Event("sofievka:product-schema"));
     const specificationCount = view.groups.reduce((total, group) => total + group.items.length, 0);
     const navItems = [
-      ...((view.description || view.keyFacts.length) ? [["overview", view.description ? "Опис" : "Ключові характеристики"]] : []),
+      ...(view.description ? [["overview", "Опис"]] : []),
       ...(view.groups.length ? [["specifications", `Характеристики (${specificationCount})`]] : []),
       ...(view.compatibility ? [["compatibility", "Сумісність"]] : []),
       ...(view.documents.length ? [["documents", `Документи (${view.documents.length})`]] : [])
@@ -1075,7 +1216,7 @@
     const mainImage = view.images[0] || "";
     return `<article class="pdp-master">
       <section class="pdp pdp-hero"><div class="container">${productCrumbs(product)}<div class="pdp__top">${renderPdpIdentity(view)}${renderPdpGallery(view)}${renderPdpPurchase(view)}${renderPdpTrust(view)}</div></div></section>
-      ${navItems.length > 1 ? `<nav class="pdp-anchor-nav" aria-label="Розділи товару"><div class="container" role="tablist">${navItems.map(([anchor, label], index) => `<a href="#${anchor}" role="tab" data-pdp-tab="${anchor}" aria-selected="${index === 0}"${index === 0 ? ' class="is-active"' : ""}>${label}</a>`).join("")}</div></nav>` : ""}
+      ${navItems.length > 1 ? `<nav class="pdp-anchor-nav" aria-label="Розділи товару"><div class="container">${navItems.map(([anchor, label], index) => `<a href="#${anchor}" data-pdp-tab="${anchor}"${index === 0 ? ' class="is-active" aria-current="true"' : ""}>${label}</a>`).join("")}</div></nav>` : ""}
       <div class="pdp-detail-stack">${renderPdpOverview(view)}${renderPdpSpecifications(view)}${renderPdpCompatibility(view)}${renderPdpDocuments(view)}</div>
       ${renderPdpProductRail({ id: "compatible-products", title: "Сумісні товари", products: view.compatibleProducts })}
       ${renderPdpProductRail({ id: "accessories", title: "Аксесуари", products: view.accessories })}
@@ -1100,15 +1241,17 @@
     const brand = pick(product.brand, adapted.brand, CATALOG?.brands?.find?.(item => item.id === product.brandId)?.name);
     const category = pick(product.primaryCategoryName, adapted.primaryCategoryName, CATALOG?.categoryById?.[product.primaryCategoryId]?.title);
     const description = String(pick(product.seo?.description, adapted.seo?.description, product.seoDescription, product.shortDescription, adapted.shortDescription, view.summary, view.description) || "").replace(/\s+/g, " ").trim();
-    const images = (view.images || []).slice(0, 6).map(image => new URL(image, location.origin).href);
+    const images = (view.images || []).slice(0, 20).map(image => new URL(image, location.origin).href);
     const model = pick(product.model, adapted.model);
+    const gtin = productGtin(product);
     return {
       "@context": "https://schema.org",
       "@type": "Product",
       name: product.title,
       url,
       sku: displaySku(product) || undefined,
-      mpn: model && model !== product.title && model.length <= 70 ? model : undefined,
+      mpn: model && model !== product.title && model.length <= 70 && displaySku({ ...product, sku: model }) && !descriptiveModel(model) ? model : undefined,
+      ...(gtin ? { gtin } : {}),
       ...(images.length ? { image: images } : {}),
       ...(description ? { description: decodeEntities(description).slice(0, 500) } : {}),
       ...(brand ? { brand: { "@type": "Brand", name: brand } } : {}),
@@ -1565,35 +1708,33 @@
       const tabLinks = [...document.querySelectorAll("[data-pdp-tab]")];
       const detailStack = document.querySelector(".pdp-detail-stack");
       if (tabLinks.length && detailStack) {
-        detailStack.classList.add("is-tabbed");
+        // Description, specifications and documents follow each other; the bar jumps to a section and marks the
+        // one on screen (the specifications used to hide behind a tab).
         modules.forEach(module => { module.open = true; });
-        const selectTab = (id, scroll) => {
+        const nav = document.querySelector(".pdp-anchor-nav");
+        const markActive = id => tabLinks.forEach(link => {
+          const active = link.dataset.pdpTab === id;
+          link.classList.toggle("is-active", active);
+          if (active) link.setAttribute("aria-current", "true"); else link.removeAttribute("aria-current");
+        });
+        const jumpTo = id => {
           const target = document.getElementById(id);
           if (!target) return;
-          tabLinks.forEach(link => {
-            const active = link.dataset.pdpTab === id;
-            link.classList.toggle("is-active", active);
-            link.setAttribute("aria-selected", String(active));
-            document.getElementById(link.dataset.pdpTab)?.classList.toggle("is-active-tab", active);
-          });
-          const nav = document.querySelector(".pdp-anchor-nav");
-          if (scroll && nav && nav.getBoundingClientRect().top <= parseFloat(getComputedStyle(nav).top) + 1) {
-            window.scrollTo({ top: detailStack.getBoundingClientRect().top + window.scrollY - nav.offsetHeight - nav.getBoundingClientRect().top, behavior: "smooth" });
-          }
+          const offset = (nav ? nav.offsetHeight + (parseFloat(getComputedStyle(nav).top) || 0) : 0) - 1;
+          window.scrollTo({ top: Math.max(0, target.getBoundingClientRect().top + window.scrollY - offset), behavior: "smooth" });
+          markActive(id);
+          history.replaceState(history.state, "", `#${id}`);
         };
-        tabLinks.forEach(link => link.addEventListener("click", event => {
-          event.preventDefault();
-          selectTab(link.dataset.pdpTab, true);
-          history.replaceState(history.state, "", link.hash);
-        }));
-        document.querySelectorAll("[data-pdp-jump]").forEach(link => link.addEventListener("click", event => {
-          event.preventDefault();
-          selectTab(link.dataset.pdpJump, false);
-          history.replaceState(history.state, "", link.hash);
-          document.querySelector(".pdp-anchor-nav")?.scrollIntoView({ behavior: "smooth" });
-        }));
-        const initialTab = tabLinks.find(link => link.hash === location.hash) || tabLinks[0];
-        selectTab(initialTab.dataset.pdpTab, false);
+        tabLinks.forEach(link => link.addEventListener("click", event => { event.preventDefault(); jumpTo(link.dataset.pdpTab); }));
+        document.querySelectorAll("[data-pdp-jump]").forEach(link => link.addEventListener("click", event => { event.preventDefault(); jumpTo(link.dataset.pdpJump); }));
+        const sections = tabLinks.map(link => document.getElementById(link.dataset.pdpTab)).filter(Boolean);
+        const spy = () => {
+          const line = (nav ? nav.getBoundingClientRect().bottom : 0) + 24;
+          const current = sections.filter(section => section.getBoundingClientRect().top <= line).pop() || sections[0];
+          if (current) markActive(current.id);
+        };
+        let spyQueued = false;
+        window.addEventListener("scroll", () => { if (!spyQueued) { spyQueued = true; requestAnimationFrame(() => { spyQueued = false; spy(); }); } }, { passive: true });
       } else {
         const setModuleMode = () => modules.forEach((module, index) => { module.open = mobileModules.matches ? index === 0 : true; });
         setModuleMode();
@@ -1606,19 +1747,25 @@
         if (hashTarget.tagName === "DETAILS") hashTarget.open = true;
         const scrollToHash = () => {
           const nav = document.querySelector(".pdp-anchor-nav");
-          const tabbed = detailStack?.classList.contains("is-tabbed");
-          const anchor = tabbed ? detailStack : hashTarget;
+          // Looked up every time: a second render replaces the section.
+          const anchor = document.getElementById(hashTarget.id);
+          if (!anchor) return;
           const offset = nav ? nav.offsetHeight + (parseFloat(getComputedStyle(nav).top) || 0) : 0;
-          window.scrollTo({ top: Math.max(0, anchor.getBoundingClientRect().top + window.scrollY - offset), behavior: "auto" });
+          window.scrollTo({ top: Math.max(0, anchor.getBoundingClientRect().top + window.scrollY - offset), behavior: "instant" });
         };
         requestAnimationFrame(scrollToHash);
-        // Photos above may still change the layout; repeat once when the page has loaded, unless the visitor scrolled.
-        if (document.readyState !== "complete") {
-          let userScrolled = false;
-          const markScroll = () => { userScrolled = true; };
-          ["wheel", "touchmove", "keydown"].forEach(type => addEventListener(type, markScroll, { once: true, passive: true }));
-          addEventListener("load", () => { if (!userScrolled) scrollToHash(); }, { once: true });
+        // The description and the full specification table sit above the target now, and photos or a second render
+        // can still change their height: for the first seconds every layout change brings the target back, unless
+        // the visitor scrolled.
+        let userScrolled = false;
+        const markScroll = () => { userScrolled = true; };
+        ["wheel", "touchmove", "keydown"].forEach(type => addEventListener(type, markScroll, { once: true, passive: true }));
+        if ("ResizeObserver" in window) {
+          const watcher = new ResizeObserver(() => { if (!userScrolled) requestAnimationFrame(scrollToHash); });
+          watcher.observe(document.body);
+          setTimeout(() => watcher.disconnect(), 3000);
         }
+        if (document.readyState !== "complete") addEventListener("load", () => { if (!userScrolled) scrollToHash(); }, { once: true });
       }
 
       const purchase = document.querySelector("[data-pdp-purchase]");

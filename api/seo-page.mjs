@@ -186,14 +186,43 @@ function paragraphsOf(product) {
   return source.map(paragraph => clean(paragraph)).filter(Boolean).slice(0, MAX_PARAGRAPHS);
 }
 
+// Same rules as page-shell.js (displaySku, shortSeoTitle, productGtin); tests/seo-page-qa.mjs keeps them in step.
+// Import placeholders («altep-p20-5», «baxi-аксесуари-…», «TJ-new_…») are not manufacturer codes.
+export function displaySku(product) {
+  const sku = String(product?.sku || product?.id || "").trim();
+  if (!sku) return "";
+  if (/^(altep|baxi|buderus|focus)-/i.test(sku) || /^tj-new_/i.test(sku) || /запит/i.test(sku)) return "";
+  const brand = String(product?.brandId || product?.brand || "").trim().toLowerCase().replace(/\s+/g, "-");
+  if (brand && sku.toLowerCase().startsWith(`${brand}-`) && sku === sku.toLowerCase() && /[a-zа-яіїєґ]{3,}-[a-zа-яіїєґ0-9]/.test(sku.slice(brand.length + 1))) return "";
+  if (sku.toLowerCase() === String(product?.title || "").trim().toLowerCase()) return "";
+  if (/^[А-ЯІЇЄҐ][а-яіїєґ’']{3,}\s/.test(sku)) return "";
+  return sku;
+}
+
+// Search results show about 60 characters of a title: the generic tail goes first, the shop name stays.
+export function shortSeoTitle(title) {
+  let text = String(title || "").replace(/\s+/g, " ").trim();
+  if (text.length > 65) text = text.replace(/\s+—\s+характеристики(?: та ціна)?(?=\s*\|)/i, "");
+  return text;
+}
+
+export function productGtin(product) {
+  const rows = [...(product?.unmappedAttributes || []), ...(product?.sourceAttributes || [])];
+  const value = product?.ean || product?.gtin || rows.find(item => /^(ean|gtin|штрих)/i.test(String(item?.label || "").trim()))?.value;
+  const digits = String(value || "").replace(/\D/g, "");
+  return [8, 12, 13, 14].includes(digits.length) ? digits : "";
+}
+
 export function renderProduct({ product, relatedProducts = [], bootstrap, origin }) {
   const taxonomy = createTaxonomy(bootstrap.categories);
   const brand = (bootstrap.brands || []).find(item => item.id === product.brandId);
   const category = taxonomy.byId.get(product.primaryCategoryId);
   const path = `/product/${encodeURIComponent(product.slug)}`;
   const url = absolute(path, origin);
-  const title = clean(product.seo?.title) || `${clean(product.title)} | ${SITE_NAME}`;
+  const title = shortSeoTitle(clean(product.seo?.title) || `${clean(product.title)} | ${SITE_NAME}`);
   const description = clean(product.seo?.description || product.shortDescription || product.description, 300);
+  const sku = displaySku(product);
+  const gtin = productGtin(product);
   const images = (product.images || []).map(image => absolute(typeof image === "string" ? image : image?.url || image?.src, origin)).filter(Boolean);
   const pricing = product.pricing || {};
   const price = pricing.priceStatus === "known" && Number(pricing.amount) > 0 ? Number(pricing.amount) : null;
@@ -205,8 +234,9 @@ export function renderProduct({ product, relatedProducts = [], bootstrap, origin
     "@type": "Product",
     name: clean(product.title),
     url,
-    ...(product.sku ? { sku: String(product.sku) } : {}),
-    ...(images.length ? { image: images.slice(0, 6) } : {}),
+    ...(sku ? { sku } : {}),
+    ...(gtin ? { gtin } : {}),
+    ...(images.length ? { image: images.slice(0, 20) } : {}),
     ...(description ? { description } : {}),
     ...(brand ? { brand: { "@type": "Brand", name: brand.name } } : {}),
     ...(category ? { category: category.title } : {}),
@@ -221,7 +251,7 @@ export function renderProduct({ product, relatedProducts = [], bootstrap, origin
   const oldPrice = price && Number(pricing.oldAmount) > price ? `<s>${escapeHtml(money(pricing.oldAmount))}</s> ` : "";
   const body = `<article class="ssr-page"><div class="container">${crumbsMarkup(crumbs)}
 <h1>${escapeHtml(product.title)}</h1>
-<p>${brand ? `<a href="/brands/${escapeHtml(encodeURIComponent(brand.id))}">${escapeHtml(brand.name)}</a> · ` : ""}Артикул: ${escapeHtml(product.sku)}</p>
+<p>${brand ? `<a href="/brands/${escapeHtml(encodeURIComponent(brand.id))}">${escapeHtml(brand.name)}</a> · ` : ""}${sku ? `Артикул: ${escapeHtml(sku)}` : ""}</p>
 ${images[0] ? `<img src="${escapeHtml(images[0])}" alt="${escapeHtml(clean(product.title))}" width="320" height="320">` : ""}
 <p class="ssr-price">${oldPrice}${escapeHtml(priceLabel(pricing))}</p>
 <p>${escapeHtml(availabilityLabel(status))}</p>

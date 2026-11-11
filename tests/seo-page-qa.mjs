@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import handler, { applyToShell, createTaxonomy, hasFilterParams, renderProduct, resetMemory, resolvePage } from "../api/seo-page.mjs";
+import handler, { applyToShell, createTaxonomy, displaySku, hasFilterParams, productGtin, renderProduct, resetMemory, resolvePage, shortSeoTitle } from "../api/seo-page.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = relative => fs.readFileSync(path.join(root, relative), "utf8");
@@ -163,5 +163,33 @@ assert.equal(destination("/catalog/:path(.+)"), "/api/seo-page?kind=catalog&path
 assert.equal(destination("/catalog"), "/catalog.html", "the shells stay static: the function reads them");
 assert.equal(destination("/product"), "/product.html");
 assert.equal(destination("/brand"), "/brand.html");
+
+// The server first paint and page-shell.js apply the same SKU, title and GTIN rules (product card audit 2026-11-11).
+{
+  const shell = read("page-shell.js");
+  const pick = name => {
+    const start = shell.indexOf(`  function ${name}(`);
+    assert.ok(start >= 0, `page-shell.js: ${name}`);
+    return shell.slice(start, shell.indexOf("\n  }\n", start) + 4);
+  };
+  const browser = new Function(`${pick("displaySku")}
+${pick("shortSeoTitle")}
+${pick("productGtin")}
+return { displaySku, shortSeoTitle, productGtin };`)();
+  const skus = [{ sku: "99199593", brandId: "grundfos", title: "Насос" }, { sku: "altep-p20-5", brandId: "altep" }, { sku: "baxi-аксесуари-для-котлів", brandId: "baxi" },
+    { sku: "TJ-new_15", brandId: "termojet" }, { sku: "Датчик Холла", brandId: "tech" }, { sku: "КПЛ50-20(ПГ17)ПН", brandId: "focus" }, { sku: "Насос", title: "насос" }];
+  for (const item of skus) assert.equal(displaySku(item), browser.displaySku(item), item.sku);
+  assert.equal(displaySku(skus[1]), "", "placeholder hidden");
+  assert.equal(displaySku(skus[5]), "КПЛ50-20(ПГ17)ПН", "a Cyrillic manufacturer code stays");
+  const titles = ["Насос Wilo Actun FIRST SPU 4.01-10-B/XI4-50-1-230 — характеристики | ТД «Софіївка»", "Котел А — характеристики | ТД «Софіївка»", "Котел — характеристики та ціна | ТД «Софіївка» котел котел котел котел котел"];
+  for (const title of titles) assert.equal(shortSeoTitle(title), browser.shortSeoTitle(title), title);
+  assert.equal(shortSeoTitle(titles[0]), "Насос Wilo Actun FIRST SPU 4.01-10-B/XI4-50-1-230 | ТД «Софіївка»");
+  assert.equal(shortSeoTitle(titles[1]), titles[1], "short titles stay as written");
+  const gtins = [{ unmappedAttributes: [{ label: "EAN номер", value: "5712608550331" }] }, { unmappedAttributes: [{ label: "EAN номер", value: "123" }] }, {}];
+  for (const item of gtins) assert.equal(productGtin(item), browser.productGtin(item));
+  assert.equal(productGtin(gtins[0]), "5712608550331");
+  const page = renderProduct({ product: { ...product, sku: "wilo-nasos-dlia-svердловини", unmappedAttributes: gtins[0].unmappedAttributes }, bootstrap, origin });
+  assert.equal(page.schemas["schema-product"].gtin, "5712608550331");
+}
 
 console.log(JSON.stringify({ status: "ok", legacyAddresses: legacyInRouting.length }));

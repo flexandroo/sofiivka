@@ -809,7 +809,7 @@ body[data-page="product"] {
 .pdp-secondary-actions .pdp-favorite.is-active svg { fill: currentColor; }
 .pdp-service-note { margin-top: 8px; color: var(--text-subtle); font-size: 10px; line-height: 1.45; }
 
-.pdp-trust { grid-area: trust; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 17px 0 0; padding: 16px 0 0; border-top: 1px solid var(--pdp-line); list-style: none; }
+.pdp-trust { grid-area: trust; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); margin: 17px 0 0; padding: 16px 0 0; border-top: 1px solid var(--pdp-line); list-style: none; }
 .pdp-trust li { min-width: 0; padding: 0 15px; border-left: 1px solid var(--pdp-line); }
 .pdp-trust li:first-child { padding-left: 0; border-left: 0; }
 .pdp-trust li:last-child { padding-right: 0; }
@@ -826,11 +826,7 @@ body[data-page="product"] {
 .pdp-anchor-nav a::after { content: ""; position: absolute; right: 0; bottom: -1px; left: 0; height: 3px; background: var(--yellow); transform: scaleX(0); transform-origin: left; transition: transform .18s ease; }
 .pdp-anchor-nav a:hover, .pdp-anchor-nav a.is-active { color: var(--graphite); }
 .pdp-anchor-nav a:hover::after, .pdp-anchor-nav a.is-active::after { transform: scaleX(1); }
-.pdp-anchor-nav [role="tab"] { padding: 15px 0 14px; font-size: 15px; }
-.pdp-detail-stack.is-tabbed .pdp-detail-section:not(.is-active-tab) { display: none; }
-.pdp-detail-stack.is-tabbed .pdp-module > summary { display: none; }
-.pdp-detail-stack.is-tabbed .pdp-section__head { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.pdp-detail-stack.is-tabbed .pdp-module__body { padding-top: 30px; }
+.pdp-anchor-nav a[data-pdp-tab] { padding: 15px 0 14px; font-size: 15px; }
 @media (min-width: 901px) {
   .pdp-spec-table { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px; border-top: 0; }
   .pdp-spec-table > div { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; padding-inline: 0; }
@@ -859,6 +855,9 @@ body[data-page="product"] {
 .pdp-key-specs dt { color: var(--graphite); }
 .pdp-key-specs dd { max-width: 24ch; text-align: right; font-weight: 750; overflow-wrap: anywhere; }
 .pdp-spec-table { border-top: 1px solid var(--pdp-line); }
+/* Specification groups from the PDP engine (Основні, Робочі параметри, Підключення, Габарити…). */
+.pdp-spec-group + .pdp-spec-group { margin-top: 30px; }
+.pdp-spec-group h3 { margin-bottom: 12px; color: var(--graphite); font-size: 17px; line-height: 1.35; }
 .pdp-spec-table > div { display: grid; grid-template-columns: minmax(220px, .78fr) minmax(0, 1.22fr); gap: 32px; min-height: 48px; align-items: center; padding: 11px 14px; border-bottom: 1px solid var(--pdp-line); font-size: 13px; line-height: 1.45; }
 .pdp-spec-table > div:nth-child(even) { background: var(--surface-soft); }
 .pdp-spec-table dt { color: var(--graphite); font-weight: 600; }
@@ -936,7 +935,7 @@ body[data-page="product"] {
   .pdp-thumbs { flex-direction: row; max-height: none; overflow-x: auto; overflow-y: hidden; padding: 1px; scrollbar-width: none; }
   .pdp-thumbs::-webkit-scrollbar { display: none; }
   .pdp-thumb { width: 57px; height: 48px; flex-basis: 57px; }
-  .pdp__media { height: min(76vw, 310px); padding: 14px; }
+  .pdp__media { height: min(64vw, 260px); padding: 12px; }
   .pdp__media .pdp-gallery__zoom { width: 44px; min-height: 44px; padding: 0; font-size: 0; }
   .pdp__media .pdp-gallery__arrow { width: 44px; height: 44px; }
   .pdp-gallery__counter { top: 8px; right: 8px; }
@@ -954,7 +953,7 @@ body[data-page="product"] {
   .pdp-advice { min-height: 44px; }
   .pdp-secondary-actions { justify-content: space-between; }
   .pdp-secondary-actions button { min-height: 44px; }
-  .pdp-trust { grid-template-columns: 1fr; margin-top: 13px; padding-top: 0; }
+  .pdp-trust { grid-auto-flow: row; grid-template-columns: 1fr; margin-top: 13px; padding-top: 0; }
   .pdp-trust li, .pdp-trust li:first-child { padding: 10px 0; border-top: 1px solid var(--pdp-line); border-left: 0; }
   .pdp-trust a { grid-template-columns: 25px 1fr; }
   .pdp-anchor-nav .container { gap: 22px; }
