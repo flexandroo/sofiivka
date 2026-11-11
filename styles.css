@@ -3692,7 +3692,8 @@ a.brand-directory-card:focus-visible {
 
 @media (max-width: 900px) {
   .catalog-navigation { position: static; }
-  .catalog-menu { top: 100%; right: var(--gutter); left: var(--gutter); width: auto; border-radius: 0 0 8px 8px; }
+  /* The header is sticky, so a menu taller than the screen could not be scrolled into view: it scrolls itself. */
+  .catalog-menu { top: 100%; right: var(--gutter); left: var(--gutter); width: auto; max-height: calc(100vh - 120px); overflow-y: auto; overscroll-behavior: contain; border-radius: 0 0 8px 8px; }
   .catalog-menu::before { display: none; }
   .catalog-menu__panel { padding-top: 14px; }
   .catalog-menu__taxonomy { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -3701,6 +3702,23 @@ a.brand-directory-card:focus-visible {
   .catalog-menu__taxonomy section:nth-last-child(-n + 3) { border-bottom: 1px solid var(--divider); }
   .catalog-menu__taxonomy section:nth-last-child(-n + 2) { border-bottom: 0; }
   .categories .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Desktop: the catalogue opens under the whole header row instead of an 820px box under the button, and the
+   sections flow into balanced columns, so every category fits on a 1366×768 screen. Phones keep their own menu. */
+@media (min-width: 901px) {
+  .site-header__inner { position: relative; }
+  .catalog-navigation { position: static; }
+  .catalog-menu { top: calc(100% + 1px); right: 0; left: 0; width: auto; max-height: calc(100vh - 176px); overflow-y: auto; overscroll-behavior: contain; border-radius: 0 0 8px 8px; }
+  .catalog-menu::before { display: none; }
+  /* Content lines up with the logo and the search field; on the homepage the menu spans the whole header. */
+  .catalog-menu__panel { width: min(100%, var(--container)); margin-inline: auto; padding: 17px var(--gutter) 14px; }
+  .catalog-menu__taxonomy { display: block; columns: 4; column-gap: 0; column-rule: 1px solid var(--divider); border: 0; border-bottom: 1px solid var(--divider); }
+  .catalog-menu .catalog-menu__taxonomy section { break-inside: avoid; padding: 14px 18px 13px; border-top: 1px solid var(--divider); border-right: 0; border-bottom: 0; }
+  .catalog-menu__children { margin-top: 9px; }
+}
+@media (min-width: 1280px) {
+  .catalog-menu__taxonomy { columns: 5; }
 }
 
 .catalog-menu__back,
