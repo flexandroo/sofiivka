@@ -945,7 +945,7 @@ window.sofievkaCatalogUIReady = (async function () {
       const children = catalog.availableCategories(section.id);
       const sectionCurrent = route.sectionId === section.id;
       const sectionName = section.shortTitle || section.name;
-      return `<section class="${sectionCurrent ? "is-current-section" : ""}">${children.length ? '<button class="catalog-menu__back" type="button">Назад</button>' : ""}<a class="catalog-menu__title${currentId === section.id ? " is-current" : ""}" href="${catalog.getCategoryPath(section.id)}"${currentId === section.id ? ' aria-current="page"' : ""}><span><strong>${escapeHtml(sectionName)}</strong><small>${escapeHtml(section.menuDescription || section.description)}</small></span><i aria-hidden="true">→</i></a>${children.length ? `<div class="catalog-menu__children"><a class="catalog-menu__section-all" href="${catalog.getCategoryPath(section.id)}">Усі товари: ${escapeHtml(sectionName)}</a>${children.map(category => `<a class="${currentBranch.has(category.id) ? "is-current" : ""}" href="${catalog.getCategoryPath(category.id)}"${currentId === category.id ? ' aria-current="page"' : ""}>${escapeHtml(category.name)}</a>`).join("")}</div>` : ""}</section>`;
+      return `<section class="${sectionCurrent ? "is-current-section" : ""}"><a class="catalog-menu__title${currentId === section.id ? " is-current" : ""}" href="${catalog.getCategoryPath(section.id)}"${currentId === section.id ? ' aria-current="page"' : ""}><span><strong>${escapeHtml(sectionName)}</strong><small>${escapeHtml(section.menuDescription || section.description)}</small></span><i aria-hidden="true">→</i></a>${children.length ? `<div class="catalog-menu__children"><a class="catalog-menu__section-all" href="${catalog.getCategoryPath(section.id)}">Усі товари: ${escapeHtml(sectionName)}</a>${children.map(category => `<a class="${currentBranch.has(category.id) ? "is-current" : ""}" href="${catalog.getCategoryPath(category.id)}"${currentId === category.id ? ' aria-current="page"' : ""}>${escapeHtml(category.name)}</a>`).join("")}</div>` : ""}</section>`;
     }).join("");
     const allCurrent = !route.notFound && route.catalogState === "all" && /^\/catalog\/?$/.test(location.pathname);
     return `<div class="catalog-menu__panel"><div class="catalog-menu__heading"><span>Каталог обладнання</span><small>Швидкий перехід до категорії</small></div><div class="catalog-menu__taxonomy">${columns}</div><div class="catalog-menu__utilities"><a class="catalog-menu__all${allCurrent ? " is-current" : ""}" href="${catalog.sectionUrl("all")}"${allCurrent ? ' aria-current="page"' : ""}>Увесь каталог <span aria-hidden="true">→</span></a><a class="catalog-menu__brands" href="/brands">Усі бренди <span aria-hidden="true">→</span></a></div><div class="catalog-menu__pages">${MENU_GROUPS.map(([title, links]) => `<section class="catalog-menu__group"><p>${title}</p>${links.map(([href, label]) => `<a href="${href}"${location.pathname === href ? ' aria-current="page"' : ""}>${label}</a>`).join("")}</section>`).join("")}</div></div>`;
@@ -971,7 +971,6 @@ window.sofievkaCatalogUIReady = (async function () {
       // Phones: jump to the top so the menu opens right under the header.
       if (open && phone() && window.scrollY > 0) window.scrollTo({ top: 0, behavior: "instant" });
       if (open && phone()) menu.style.setProperty("--menu-top", `${Math.max(0, Math.round(toggle.closest("header")?.getBoundingClientRect().bottom || 0))}px`);
-      if (!open) { menu.classList.remove("is-drilled"); menu.querySelectorAll(".catalog-menu__taxonomy section.is-expanded").forEach(item => item.classList.remove("is-expanded")); }
       menu.hidden = !open;
       toggle.setAttribute("aria-expanded", String(open));
       toggle.setAttribute("aria-label", open ? "Закрити меню" : "Відкрити каталог і меню");
@@ -980,23 +979,8 @@ window.sofievkaCatalogUIReady = (async function () {
       if (restoreFocus && !open) toggle.focus();
     };
 
-    // On phones a section opens its subcategories in place of the menu (drill-down), with a back button.
-    const drill = section => {
-      menu.querySelectorAll(".catalog-menu__taxonomy section.is-expanded").forEach(item => item.classList.remove("is-expanded"));
-      section?.classList.add("is-expanded");
-      menu.classList.toggle("is-drilled", Boolean(section));
-      menu.scrollTop = 0;
-      (section?.querySelector(".catalog-menu__back") || menu.querySelector(".catalog-menu__taxonomy .catalog-menu__title"))?.focus({ preventScroll: true });
-    };
-    menu.addEventListener("click", event => {
-      if (event.target.closest(".catalog-menu__back")) { drill(null); return; }
-      const title = event.target.closest(".catalog-menu__title");
-      const section = title?.closest("section");
-      if (!title || !phone() || !section?.querySelector(".catalog-menu__children")) return;
-      event.preventDefault();
-      if (!menu.classList.contains("is-drilled")) drill(section);
-    });
-
+    // Phones show every section with its subcategories at once, like the desktop menu (styles.css); a section
+    // title opens the section page.
     toggle.addEventListener("click", () => setOpen(menu.hidden));
     mountTabBar();
     toggle.addEventListener("keydown", event => {

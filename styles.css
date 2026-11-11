@@ -3721,7 +3721,6 @@ a.brand-directory-card:focus-visible {
   .catalog-menu__taxonomy { columns: 5; }
 }
 
-.catalog-menu__back,
 .catalog-menu__pages,
 .catalog-menu .catalog-menu__children .catalog-menu__section-all { display: none; }
 .tabbar { display: none; }
@@ -3745,28 +3744,8 @@ a.brand-directory-card:focus-visible {
   .catalog-menu__taxonomy section:nth-last-child(-n + 2) { padding: 0; border-right: 0; border-bottom: 1px solid var(--divider); }
   .catalog-menu__taxonomy section:last-child { border-bottom: 0; }
   .catalog-menu__taxonomy section.is-current-section { box-shadow: inset 3px 0 0 var(--yellow); }
-  .catalog-menu .catalog-menu__title { align-items: center; min-height: 54px; padding: 0 14px; }
-  .catalog-menu__title > span { display: block; }
-  .catalog-menu__title strong { font-size: 15px; }
-  .catalog-menu__title small,
-  .catalog-menu__children { display: none; }
   .catalog-menu__support { display: none; }
   .categories .category-grid { grid-template-columns: 1fr; }
-  /* Phone menu: a section opens its subcategories (catalog-ui.js bindMenu), site pages follow the catalog. */
-  /* Drill-down: a section replaces the menu with its subcategories and a back button (catalog-ui.js bindMenu). */
-  .catalog-menu.is-drilled .catalog-menu__heading,
-  .catalog-menu.is-drilled .catalog-menu__utilities,
-  .catalog-menu.is-drilled .catalog-menu__pages,
-  .catalog-menu.is-drilled .catalog-menu__taxonomy section:not(.is-expanded) { display: none; }
-  .catalog-menu.is-drilled .catalog-menu__taxonomy section.is-expanded { border-bottom: 0; box-shadow: none; }
-  .catalog-menu.is-drilled .catalog-menu__taxonomy section.is-expanded .catalog-menu__children { display: grid; gap: 0; padding: 0 0 12px; }
-  .catalog-menu.is-drilled .catalog-menu__title { min-height: 48px; pointer-events: none; }
-  .catalog-menu.is-drilled .catalog-menu__title strong { font-size: 22px; letter-spacing: -.02em; }
-  .catalog-menu.is-drilled .catalog-menu__title > i { display: none; }
-  .catalog-menu.is-drilled .catalog-menu__back { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; border: 0; background: transparent; color: var(--text-secondary); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
-  .catalog-menu.is-drilled .catalog-menu__back::before { content: "←"; font-size: 18px; line-height: 1; }
-  .catalog-menu .catalog-menu__children a { display: flex; align-items: center; min-height: 50px; padding: 0 18px; border-top: 1px solid var(--divider); color: var(--text); font-size: 16px; font-weight: 600; line-height: 1.3; }
-  .catalog-menu .catalog-menu__children .catalog-menu__section-all { display: flex; font-weight: 750; }
   .catalog-menu__pages { order: 4; display: block; padding-bottom: 12px; }
   .catalog-menu__group p { margin: 0; padding: 22px 18px 6px; color: var(--text-subtle); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
   .catalog-menu .catalog-menu__group a { display: flex; align-items: center; min-height: 48px; padding: 0 18px; border: 0; color: var(--text); font-size: 16px; font-weight: 650; }
@@ -3836,3 +3815,19 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 @media (max-width: 900px) { .brand-directory-grid--flat { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .brand-directory-grid--flat { grid-template-columns: 1fr; } }
 .brand-alphabet[hidden], .brand-search-status:empty { display: none; }
+
+/* Phones: the same idea as the desktop menu — every section with its subcategories at once, in two balanced
+   columns, instead of a list of sections that opened one at a time. Site pages follow below. */
+@media (max-width: 640px) {
+  .catalog-menu__taxonomy { display: block; columns: 2; column-gap: 0; column-rule: 1px solid var(--divider); border-top: 1px solid var(--divider); border-bottom: 1px solid var(--divider); }
+  .catalog-menu .catalog-menu__taxonomy section { break-inside: avoid; padding: 12px 12px 10px 16px; border: 0; border-bottom: 1px solid var(--divider); }
+  .catalog-menu .catalog-menu__taxonomy section.is-current-section { box-shadow: inset 3px 0 0 var(--yellow); }
+  .catalog-menu .catalog-menu__title { display: block; min-height: 0; padding: 0; }
+  .catalog-menu .catalog-menu__title strong { font-size: 15px; line-height: 1.25; }
+  .catalog-menu .catalog-menu__title small,
+  .catalog-menu .catalog-menu__title > i { display: none; }
+  .catalog-menu .catalog-menu__children { display: grid; gap: 0; margin-top: 4px; }
+  .catalog-menu .catalog-menu__children a { display: flex; align-items: center; min-height: 32px; padding: 3px 0; border: 0; color: var(--text-secondary); font-size: 13px; font-weight: 500; line-height: 1.3; transform: none; }
+  .catalog-menu .catalog-menu__children a.is-current { color: var(--text); font-weight: 750; }
+  .catalog-menu .catalog-menu__children .catalog-menu__section-all { display: none; }
+}
