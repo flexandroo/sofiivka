@@ -1173,6 +1173,8 @@ body[data-page="product"] {
 .page-hero .page-kicker { display: none; }
 .page-hero h1 { max-width: 900px; margin-top: 0; font-size: clamp(30px, 3.4vw, 44px); line-height: 1.1; letter-spacing: -.03em; text-wrap: balance; }
 .page-hero__lead, .page-hero--light .page-hero__lead { max-width: 720px; margin-top: 10px; color: var(--text-secondary); font-size: clamp(16px, 1.2vw, 18px); line-height: 1.55; text-wrap: pretty; }
+/* A page without an intro (/about; /admin/pages can add one back) keeps no empty line under the headline. */
+.page-hero__lead:empty { display: none; }
 .page-hero .page-breadcrumbs a, .page-hero .page-breadcrumbs, .page-hero .page-breadcrumbs span { color: var(--text-subtle); }
 .page-hero .page-breadcrumbs a:hover { color: var(--graphite); }
 

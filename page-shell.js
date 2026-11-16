@@ -1379,8 +1379,9 @@
     return `<ul class="co-projects">${COMPANY_PROJECTS.map(([image, name, work]) => `<li><img src="${image}" alt="${name}: обладнання на об’єкті" width="1280" height="853" loading="lazy" decoding="async"><h3>${name}</h3><p>${work}</p></li>`).join("")}</ul>`;
   }
 
-  // /about: who we are with the figures and the showroom, what a customer gets, objects, brands, the catalogue
-  // sections and the shop. The article («Хто ми») is the part /admin/pages edits; the rest is built here.
+  // /about: who we are with the figures and the showroom right under the headline, what a customer gets, objects,
+  // brands, the catalogue sections and the shop. The article (two paragraphs, no heading of its own) is the part
+  // /admin/pages edits; the rest is built here.
   const ABOUT_REASONS = [
     ["Офіційна продукція", "Лише обладнання з гарантією виробника та сервісною підтримкою в Україні. Допомагаємо з гарантійним зверненням."],
     ["2 роки гарантії на монтаж", "Гарантія на монтажні роботи, а на обладнання — гарантія виробника."],
@@ -1426,8 +1427,8 @@
     const brands = aboutBrands();
     const logoSrc = logo => (/^(https:\/\/|\/)/.test(logo) ? logo : `/${logo}`);
     const sectionSlug = href => String(href).split("?")[0].replace(/\/+$/, "").split("/").pop();
-    return hero("Про компанію", "Про компанію", "З 2000 року продаємо, проєктуємо, монтуємо й обслуговуємо інженерні системи: опалення, водопостачання, водопідготовку та каналізацію.")
-      + coSection(`<div class="co-split co-about"><div class="co-about__text"><article class="prose"><h2>Хто ми</h2><p>«Софіївка» починала з котельних систем і досі вважає їх своєю головною спеціалізацією. Сьогодні ми ведемо весь шлях обладнання: допомагаємо обрати, постачаємо, встановлюємо, запускаємо й обслуговуємо його після гарантії.</p><p>Серед наших клієнтів власники будинків і квартир, забудовники, монтажники, проєктанти й архітектори. Ми розраховуємо на довгу співпрацю, тому радимо те, що підходить саме вашому об’єкту.</p></article><dl class="co-facts">${facts.map(([value, label]) => `<div><dt${label === "товарів у каталозі" ? " data-catalog-total" : ""}>${value}</dt><dd>${label}</dd></div>`).join("")}</dl></div>${coPhoto("/assets/images/showroom.webp", "Торговий зал магазину з котлами, насосами й арматурою", "co-photo--tall")}</div>`)
+    return hero("Про компанію", "Про компанію", "")
+      + coSection(`<div class="co-split co-about"><div class="co-about__text"><article class="prose"><p>«Софіївка» починала з котельних систем і досі вважає їх своєю головною спеціалізацією. Сьогодні ми ведемо весь шлях обладнання: допомагаємо обрати, постачаємо, встановлюємо, запускаємо й обслуговуємо його після гарантії.</p><p>Серед наших клієнтів власники будинків і квартир, забудовники, монтажники, проєктанти й архітектори. Ми розраховуємо на довгу співпрацю, тому радимо те, що підходить саме вашому об’єкту.</p></article><dl class="co-facts">${facts.map(([value, label]) => `<div><dt${label === "товарів у каталозі" ? " data-catalog-total" : ""}>${value}</dt><dd>${label}</dd></div>`).join("")}</dl></div>${coPhoto("/assets/images/showroom.webp", "Торговий зал магазину з котлами, насосами й арматурою", "co-photo--tall")}</div>`)
       + coSection(`${coHeading("Чому з нами просто")}<ul class="co-reasons">${ABOUT_REASONS.map(([title, text]) => `<li><h3>${title}</h3><p>${text}</p></li>`).join("")}</ul>`, { white: true })
       + coSection(`${coHeadingRow("Наші об’єкти", "Від квартири до логістичного центру. Кілька проєктів, які ми реалізували й обслуговуємо.", "/portfolio", "Усі об’єкти")}${projectListMarkup()}`)
       + (brands.length ? coSection(`${coHeadingRow("Бренди", "Співпрацюємо з виробниками, яким довіряємо.", "/brands", "Усі бренди")}<ul class="co-brand-logos">${brands.map(brand => `<li><a href="${escapeHtml(window.sofievkaCatalog?.brandUrl?.(brand.id || brand.slug) || `/brands/${brand.slug}`)}"><span class="brand-media${brand.logoTheme === "dark" ? " brand-media--dark" : ""}"><img src="${escapeHtml(logoSrc(brand.logo))}" alt="${escapeHtml(brand.name)}" loading="lazy" decoding="async"></span></a></li>`).join("")}</ul>`, { white: true }) : "")

@@ -229,5 +229,19 @@ export async function run(db) {
   await db.exec(whoSql);
   assert.deepEqual((await one(db, "select body from public.site_pages where slug = 'about'")).body, [], "an empty article stays empty");
 
-  console.log(JSON.stringify({ status: "ok", scenarios: 11, suite: "pages" }));
+  // 12. 20261116000200_about_page_no_intro: no intro and no «Хто ми» heading; another first heading stays.
+  const noIntroSql = fs.readFileSync(path.join(MIGRATIONS_DIR, "20261116000200_about_page_no_intro.sql"), "utf8");
+  const whoWeAre = [{ type: "heading", text: "Хто ми" }, { type: "paragraph", text: "Перший." }, { type: "paragraph", text: "Другий." }];
+  await db.query("update public.site_pages set lead = 'Вступ', body = $1 where slug = 'about'", [JSON.stringify(whoWeAre)]);
+  await db.exec(noIntroSql);
+  const noIntro = await one(db, "select lead, body, updated_at from public.site_pages where slug = 'about'");
+  assert.deepEqual([noIntro.lead, noIntro.body], ["", whoWeAre.slice(1)]);
+  await db.exec(noIntroSql);
+  assert.deepEqual((await one(db, "select updated_at from public.site_pages where slug = 'about'")).updated_at, noIntro.updated_at, "re-run is a no-op");
+  const otherHeading = [{ type: "heading", text: "Наша історія" }, { type: "paragraph", text: "Текст." }];
+  await db.query("update public.site_pages set body = $1 where slug = 'about'", [JSON.stringify(otherHeading)]);
+  await db.exec(noIntroSql);
+  assert.deepEqual((await one(db, "select body from public.site_pages where slug = 'about'")).body, otherHeading, "another heading stays");
+
+  console.log(JSON.stringify({ status: "ok", scenarios: 12, suite: "pages" }));
 }
