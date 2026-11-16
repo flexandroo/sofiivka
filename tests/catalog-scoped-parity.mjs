@@ -35,7 +35,7 @@ for (const layer of ['categories', 'brands', 'attributeDefinitions', 'categoryCo
 
 const scopes = [
   'gas-boilers', 'solid-fuel-boilers', 'system-circulation-pumps', 'borehole-pumps',
-  'sewage-pumps', 'reverse-osmosis', 'water-softening', 'smart-lighting', 'feed-grinders',
+  'sewage-pumps', 'reverse-osmosis', 'water-softening', 'smart-lighting',
   'heating', 'water-supply', 'all',
 ];
 const plp = {};

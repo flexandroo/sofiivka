@@ -69,8 +69,7 @@ const canonicalCases = [
   ["/catalog/water-treatment/drinking-water/reverse-osmosis", "", "catalog", "reverse-osmosis"],
   ["/catalog/smart-home", "", "catalog", "smart-home"],
   ["/catalog/plumbing", "", "catalog", "plumbing"],
-  ["/catalog/climate", "", "catalog", "climate"],
-  ["/catalog/household-equipment", "", "catalog", "household-equipment"]
+  ["/catalog/climate", "", "catalog", "climate"]
 ];
 for (const [pathname, query, pageName, expected] of canonicalCases) {
   const resolved = routing.resolveLocation(pathname, query, pageName);
@@ -97,7 +96,7 @@ assert.equal(catalog.productsForSection("water-treatment").length, 184, "water t
 assert.equal(catalog.productsForSection("smart-home").length, 110, "smart home section distribution changed");
 assert.equal(catalog.productsForCategory("sewage-lifting-units").length, 83, "sewage lifting units must include the seven corrected Termojet positions");
 assert.equal(catalog.productsForCategory("uv-disinfection").length, 8, "TECH UV-C water disinfection products changed");
-assert.equal(catalog.activeSections.map(section => section.id).join(","), "heating,water-supply,water-treatment,smart-home,climate,household-equipment", "active catalog sections changed");
+assert.equal(catalog.activeSections.map(section => section.id).join(","), "heating,water-supply,water-treatment,smart-home,climate", "active catalog sections changed");
 assert.equal(state.sofievkaNormalizationReport.waterSourceCount, 176, "water product count changed");
 assert.equal(state.sofievkaNormalizationReport.heatingSourceCount, 343, "Termojet product count changed");
 assert.equal(state.sofievkaNormalizationReport.wiloSourceCount, 1020, "Wilo product count changed");

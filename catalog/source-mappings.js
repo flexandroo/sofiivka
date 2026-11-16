@@ -93,7 +93,6 @@
       "tekkhaus-pressure-tanks": freezeMapping({ categoryId: "pressure-tanks" }),
       "tekkhaus-automation": freezeMapping({ categoryId: "pump-automation" }),
       "tekkhaus-accessories": freezeMapping({ categoryId: "pump-accessories" }),
-      "tekkhaus-feed-grinders": freezeMapping({ categoryId: "feed-grinders" })
     }),
     tech: Object.freeze({
       "tech-automation": freezeMapping({ classifier: "tech-automation", mappingStatus: "classifier" }),

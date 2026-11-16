@@ -31,6 +31,13 @@ function decodeEntities(value = "") {
     .replace(/&gt;/gi, ">");
 }
 
+// Not sold: Gardia products and, since 2026-11-16, the feed grinders (the «Обладнання для господарства» section
+// was removed from the catalogue).
+function isDroppedRecord(record) {
+  const name = clean(record.name);
+  return /gardia/i.test(name) || /кормоподрібнювач|зерноподрібнювач/i.test(name);
+}
+
 function clean(value = "") {
   return decodeEntities(String(value))
     .replace(/<br\s*\/?>/gi, "; ")
@@ -197,7 +204,6 @@ function classify(record) {
   const lower = name.toLocaleLowerCase("uk");
   const categoryText = (record.categories || []).map(category => clean(category.name)).join(" ").toLocaleLowerCase("uk");
   const series = seriesName(record);
-  if (/кормоподрібнювач|зерноподрібнювач/.test(lower)) return { category: "household-equipment", sourceCategoryId: "tekkhaus-feed-grinders", type: "Кормоподрібнювач", series, kind: "feed-grinder" };
   if (/басейн/.test(lower)) return { category: "water-supply", sourceCategoryId: "tekkhaus-pool", type: /фільтруюча станція/.test(lower) ? "Фільтрувальна станція для басейну" : "Насос для басейну", series, kind: "pool" };
   if (/^бак |гідроакумулятор/.test(lower) && !/мембрана/.test(lower)) return { category: "water-supply", sourceCategoryId: "tekkhaus-pressure-tanks", type: "Гідроакумулятор", series, kind: "tank" };
   if (/робоче колесо|крильчатк|дифузор|ежектор|шнек у зборі|зворотний клапан|антивібраційний шланг|п.?ятерник|манометр|змінна мембрана/.test(lower)) return { category: "water-supply", sourceCategoryId: "tekkhaus-accessories", type: /мембрана/.test(lower) ? "Мембрана гідроакумулятора" : "Комплектуючі для насосів", series, kind: "accessory" };
@@ -387,10 +393,10 @@ async function main() {
     grouped.get(sku).push(product);
   }
   const selected = [...grouped.values()].flatMap(group => {
-    if (group.some(product => /gardia/i.test(clean(product.name)))) return [];
+    if (group.some(isDroppedRecord)) return [];
     return [group.find(product => !String(product.permalink || "").includes("/ru/")) || group[0]];
   });
-  if (selected.length !== 112) throw new Error(`Expected 112 TEKK HAUS SKU, received ${selected.length}`);
+  if (selected.length !== 109) throw new Error(`Expected 109 TEKK HAUS SKU, received ${selected.length}`);
 
   await fs.mkdir(MEDIA_DIR, { recursive: true });
   const imageRows = [...new Map(selected.flatMap(product => product.images || []).map(image => [image.src, image])).values()];
@@ -526,6 +532,6 @@ async function main() {
 }
 
 // Reused by scripts/import/tekkhaus-batch.mjs (product import standard).
-export { clean, classify, extractModel, technicalDetails, normalizedFeatures, keyFeatures, extractApplications, description, extractDocuments, downloadImage, imageFileName, isDimensionImage };
+export { clean, isDroppedRecord, classify, extractModel, technicalDetails, normalizedFeatures, keyFeatures, extractApplications, description, extractDocuments, downloadImage, imageFileName, isDimensionImage };
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();

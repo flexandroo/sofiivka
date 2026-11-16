@@ -47,7 +47,7 @@ function prepareRepresentativeFacets(catalog) {
   const categoryIds = [
     'gas-boilers', 'solid-fuel-boilers', 'system-circulation-pumps',
     'borehole-pumps', 'sewage-pumps', 'reverse-osmosis',
-    'water-softening', 'smart-lighting', 'feed-grinders',
+    'water-softening', 'smart-lighting',
   ];
   let checksum = 0;
   for (const categoryId of categoryIds) {

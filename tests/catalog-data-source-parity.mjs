@@ -111,7 +111,7 @@ assert.equal(
 );
 
 const requiredCategories = [
-  'gas-boilers', 'borehole-pumps', 'reverse-osmosis', 'smart-lighting', 'feed-grinders',
+  'gas-boilers', 'borehole-pumps', 'reverse-osmosis', 'smart-lighting',
   'circulation-pumps', 'mainline-cartridges', 'automation'
 ];
 const searchQueries = [

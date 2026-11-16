@@ -25,7 +25,6 @@
     category({ id: "water-treatment", slug: "water-treatment", parentId: null, level: 1, title: "Водоочищення", shortTitle: "Водоочищення", description: "Питні фільтри, системи очищення всього будинку, картриджі, матеріали та UV-C знезараження.", menuDescription: "Фільтри, осмос, пом’якшення, картриджі та UV-C", order: 30, allowedFacetIds: treatmentFacets, seo: { title: "Водоочищення | ТД «Софіївка»", description: "Системи водоочищення, питні фільтри, картриджі, матеріали й UV-C знезараження." } }),
     category({ id: "smart-home", slug: "smart-home", parentId: null, level: 1, title: "Розумний будинок і автоматизація", shortTitle: "Розумний будинок", description: "Центральні блоки, освітлення, реле, датчики, захист від протікання та керування кліматом.", menuDescription: "Sinum, освітлення, реле, датчики та клімат", order: 40, seo: { title: "Розумний будинок і автоматизація | ТД «Софіївка»", description: "Компоненти TECH Sinum для автоматизації будинку, освітлення, клімату та безпеки." } }),
     category({ id: "climate", slug: "climate", parentId: null, level: 1, title: "Клімат", shortTitle: "Клімат", description: "Кондиціонери та системи туманоутворення для охолодження й зволоження повітря.", menuDescription: "Кондиціонери та туманоутворення", order: 50, seo: { title: "Кліматичне обладнання | ТД «Софіївка»", description: "Кондиціонери та системи туманоутворення для житлових і комерційних об’єктів." } }),
-    category({ id: "household-equipment", slug: "household-equipment", parentId: null, level: 1, title: "Обладнання для господарства", shortTitle: "Для господарства", description: "Електричне обладнання для підготовки кормів та повсякденних господарських задач.", menuDescription: "Подрібнення та підготовка кормів", order: 60, seo: { title: "Обладнання для господарства | ТД «Софіївка»", description: "Електричне обладнання для приватного та фермерського господарства." } }),
     category({ id: "plumbing", slug: "plumbing", parentId: null, level: 1, title: "Сантехніка", shortTitle: "Сантехніка", description: "Напрям готується до наповнення перевіреним асортиментом.", menuDescription: "Рішення під замовлення", order: 70, status: "future", visibility: "landing", seo: { title: "Сантехніка | ТД «Софіївка»", description: "Сантехнічні рішення під замовлення з підбором і комплектацією." } }),
 
     category({ id: "heat-generation", slug: "heat-generation", parentId: "heating", level: 2, title: "Теплогенерація", shortTitle: "Теплогенерація", description: "Котли, пальники, теплогенератори та парогенератори за типом палива й призначенням.", order: 110 }),
@@ -116,7 +115,6 @@
     category({ id: "humidification", slug: "humidification", parentId: "climate", level: 2, title: "Туманоутворення та зволоження", shortTitle: "Туманоутворення", description: "Готові системи та комплектуючі для туманоутворення й охолодження повітря.", order: 520 }),
     category({ id: "misting-systems", slug: "systems", parentId: "humidification", level: 3, title: "Системи туманоутворення", shortTitle: "Готові системи", description: "Комплектні системи туманоутворення за кількістю форсунок.", order: 521, allowedFacetIds: pumpFacets }),
     category({ id: "misting-components", slug: "components", parentId: "humidification", level: 3, title: "Компоненти туманоутворення", shortTitle: "Компоненти", description: "Форсунки, трубки, з’єднання та монтажні компоненти систем.", order: 522, allowedFacetIds: accessoryFacets }),
-    category({ id: "feed-grinders", slug: "feed-grinders", parentId: "household-equipment", level: 2, title: "Кормоподрібнювачі", shortTitle: "Кормоподрібнювачі", description: "Електричні подрібнювачі зернових культур і коренеплодів.", order: 610, allowedFacetIds: ["productType", "powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"] })
   ];
 
   const rawById = Object.fromEntries(definitions.map(item => [item.id, item]));
@@ -294,7 +292,6 @@
     "pump-accessories": Object.freeze(["compatibility", "connection", "material", "pressureBar", "weightKg"]),
     "pump-services": Object.freeze(["productType", "compatibility"]),
     "pool-pumps-filtration": Object.freeze(["flowM3h", "headM", "powerKw", "connection", "voltage", "protectionClass", "filtrationMicron"]),
-    "feed-grinders": Object.freeze(["powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"]),
     "solid-fuel-boilers": Object.freeze(["heatOutputKw", "fuel", "efficiencyPercent", "fireboxVolumeL", "waterVolumeL", "chimneyDiameterMm"]),
     "gas-boilers": Object.freeze(["heatOutputKw", "type", "dhwFlowLMin", "efficiencyPercent", "installation", "energyClass"]),
     "heat-pumps": Object.freeze(["heatOutputKw", "coolingCapacityKw", "refrigerant", "cop", "scop", "energyClass"]),
@@ -346,7 +343,6 @@
     "pump-accessories": Object.freeze(["compatibility", "connection", "material", "pressureBar", "weightKg"]),
     "pump-services": Object.freeze(["productType", "compatibility"]),
     "pool-pumps-filtration": Object.freeze(["flowM3h", "headM", "powerKw", "connection", "voltage", "protectionClass", "filtrationMicron"]),
-    "feed-grinders": Object.freeze(["powerKw", "capacityKgh", "rotationRpm", "voltage", "protectionClass", "weightKg"]),
     "solid-fuel-boilers": Object.freeze(["heatOutputKw", "fuel", "efficiencyPercent", "fireboxVolumeL", "waterVolumeL", "pressureBar", "maxWaterTemperatureC", "chimneyDiameterMm", "chimneyHeightM", "weightKg"]),
     "gas-boilers": Object.freeze(["heatOutputKw", "type", "dhwFlowLMin", "efficiencyPercent", "installation", "energyClass", "dimensions", "weightKg", "voltage", "protectionClass"]),
     "heat-pumps": Object.freeze(["heatOutputKw", "coolingCapacityKw", "refrigerant", "cop", "scop", "energyClass", "voltage", "soundLevelDb", "maxWaterTemperatureC", "dimensions", "weightKg"]),
@@ -529,7 +525,6 @@
       "tekkhaus-pressure-tanks": freezeMapping({ categoryId: "pressure-tanks" }),
       "tekkhaus-automation": freezeMapping({ categoryId: "pump-automation" }),
       "tekkhaus-accessories": freezeMapping({ categoryId: "pump-accessories" }),
-      "tekkhaus-feed-grinders": freezeMapping({ categoryId: "feed-grinders" })
     }),
     tech: Object.freeze({
       "tech-automation": freezeMapping({ classifier: "tech-automation", mappingStatus: "classifier" }),
@@ -1970,7 +1965,6 @@
     "pump-accessories": ["комплектуючі насоса", "аксесуари насоса", "монтажний комплект"],
     "pump-services": ["сервіс насосів", "пусконалагодження", "введення в експлуатацію"],
     "pool-pumps-filtration": ["насос для басейну", "фільтр для басейну", "фільтрувальна станція", "оборудование для бассейна"],
-    "feed-grinders": ["кормоподрібнювач", "зерноподрібнювач", "корморізка", "кормоизмельчитель"]
   });
 
   const WORD_GROUPS = Object.freeze([

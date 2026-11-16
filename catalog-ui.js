@@ -956,7 +956,7 @@ window.sofievkaCatalogUIReady = (async function () {
     if (!toggle || !menu || toggle.dataset.catalogMenuBound === "true") return;
     toggle.dataset.catalogMenuBound = "true";
     toggle.setAttribute("aria-haspopup", "true");
-    const catalogRoute = /^\/catalog(?:\/|$)/.test(location.pathname) || ["heating", "water-supply", "water-treatment", "sewerage", "smart-home", "climate", "household-equipment"].includes(document.body.dataset.page);
+    const catalogRoute = /^\/catalog(?:\/|$)/.test(location.pathname) || ["heating", "water-supply", "water-treatment", "sewerage", "smart-home", "climate"].includes(document.body.dataset.page);
     toggle.classList.toggle("is-active", catalogRoute);
     if (catalogRoute) toggle.setAttribute("aria-label", "Каталог, поточний розділ. Відкрити меню");
 
@@ -1237,7 +1237,7 @@ window.sofievkaCatalogUIReady = (async function () {
   }
 
   function homeCards() {
-    const imageBySection = { heating: "assets/images/solution-boiler-room.webp", "water-supply": "assets/images/hero-water.webp", "water-treatment": "assets/images/home-hero-ecosoft-water-v1.jpg", "smart-home": "assets/images/home-hero-termojet-automation-v1.jpg", climate: "assets/images/hero-climate.webp", "household-equipment": "assets/images/showroom.webp" };
+    const imageBySection = { heating: "assets/images/solution-boiler-room.webp", "water-supply": "assets/images/hero-water.webp", "water-treatment": "assets/images/home-hero-ecosoft-water-v1.jpg", "smart-home": "assets/images/home-hero-termojet-automation-v1.jpg", climate: "assets/images/hero-climate.webp" };
     const homeSections = catalog.activeSections;
     return homeSections.map(section => {
       const children = catalog.availableCategories(section.id).slice(0, 4);

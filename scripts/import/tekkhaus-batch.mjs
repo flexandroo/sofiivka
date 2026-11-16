@@ -6,7 +6,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import {
-  clean, classify, extractModel, technicalDetails, normalizedFeatures, keyFeatures, extractApplications,
+  clean, isDroppedRecord, classify, extractModel, technicalDetails, normalizedFeatures, keyFeatures, extractApplications,
   description, extractDocuments, downloadImage, imageFileName
 } from "../build-tekkhaus-catalog.mjs";
 
@@ -19,8 +19,7 @@ const CATEGORY_BY_SOURCE = {
   "tekkhaus-pressure": "pressure-boosting", "tekkhaus-borehole": "borehole-pumps",
   "tekkhaus-drainage": "drainage-pumps", "tekkhaus-sewage": "sewage-pumps",
   "tekkhaus-pool": "pool-pumps-filtration", "tekkhaus-pressure-tanks": "pressure-tanks",
-  "tekkhaus-automation": "pump-automation", "tekkhaus-accessories": "pump-accessories",
-  "tekkhaus-feed-grinders": "feed-grinders"
+  "tekkhaus-automation": "pump-automation", "tekkhaus-accessories": "pump-accessories"
 };
 const DROPPED_LABELS = /^(?:артикул виробника|офіційна назва|категорія виробника)$/i;
 
@@ -28,7 +27,7 @@ const feed = JSON.parse(fs.readFileSync(SOURCE_FILE, "utf8"));
 const bySku = new Map();
 for (const record of feed.products) {
   const sku = clean(record.sku);
-  if (!sku || /gardia/i.test(clean(record.name))) continue;
+  if (!sku || isDroppedRecord(record)) continue;
   const current = bySku.get(sku);
   if (!current || (String(current.permalink).includes("/ru/") && !String(record.permalink).includes("/ru/"))) bySku.set(sku, record);
 }

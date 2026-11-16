@@ -113,7 +113,7 @@ for (let index = 0; index < canonical.length; index += 1) {
 const knownPriceCount = canonical.filter(product => product.pricing.priceStatus === "known").length;
 const unknownPriceCount = canonical.filter(product => product.pricing.priceStatus === "unknown").length;
 const onRequestPriceCount = canonical.filter(product => product.pricing.priceStatus === "on_request").length;
-assert.equal(knownPriceCount, 631, "known price count changed");
+assert.equal(knownPriceCount, 628, "known price count changed");
 assert.equal(unknownPriceCount, 2584, "unknown price count changed");
 assert.equal(onRequestPriceCount, 0, "on-request prices must not be inferred without evidence");
 assert.ok(canonical.filter(product => product.pricing.amount === null).every(product => product.pricing.priceStatus !== "known"), "null prices cannot be known");
@@ -124,7 +124,7 @@ for (const direction of ["asc", "desc"]) {
   assert.equal(firstUnknownIndex, knownPriceCount, `${direction} price sorting must place unknown prices after known prices`);
 }
 
-assert.equal(canonical.filter(product => product.publicationStatus === "published").length, 3214, "catalog publication mapping changed");
+assert.equal(canonical.filter(product => product.publicationStatus === "published").length, 3211, "catalog publication mapping changed");
 assert.equal(canonical.filter(product => product.publicationStatus === "hidden").length, 1, "service publication mapping changed");
 assert.equal(state.sofievkaCatalogValidation.validateCatalog(catalog).valid, true, "full validator must pass in dual snapshot QA");
 
@@ -157,7 +157,7 @@ console.log(JSON.stringify({
   productIdHashAfter: productIdHash,
   knownPrices: knownPriceCount,
   unknownPrices: unknownPriceCount,
-  publication: { published: 3214, hidden: 1 },
+  publication: { published: 3211, hidden: 1 },
   categoryReview: {
     products: categoryReview.items.length,
     highConfidenceSuggestions: categoryReview.items.filter(item => item.confidence >= 0.85 && item.suggestedCategory !== item.currentCategory).length,

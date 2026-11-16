@@ -81,7 +81,6 @@ const STOREFRONT_CATEGORY_ICONS = {
   sewerage: '<circle cx="16" cy="16" r="12"/><circle cx="16" cy="16" r="8.5"/><path d="M8.1 13h15.8M8.1 19h15.8"/><path class="storefront-icon-blue" d="M7.5 16h17"/>',
   "smart-home": '<path d="M4.5 15 16 5.5 27.5 15M8 12.5V27h16V12.5"/><path class="storefront-icon-blue" d="M12.6 19.6a4.8 4.8 0 0 1 6.8 0M10.2 17.2a8.2 8.2 0 0 1 11.6 0"/><circle class="storefront-icon-blue-fill" cx="16" cy="22.6" r="1.4"/>',
   climate: '<rect x="3.5" y="6" width="25" height="10.5" rx="2.5"/><path d="M8 13h16"/><circle class="storefront-icon-red-fill" cx="24.2" cy="9.3" r="1"/><path class="storefront-icon-blue" d="M10.5 20l-1.2 4.5M16 20v5.5M21.5 20l1.2 4.5"/>',
-  "household-equipment": '<path d="M16 28.5V8.5"/><path d="M16 23.5c-3.3 0-5.3-2-5.3-5.3 3.3 0 5.3 2 5.3 5.3zM16 23.5c3.3 0 5.3-2 5.3-5.3-3.3 0-5.3 2-5.3 5.3zM16 17c-3.3 0-5.3-2-5.3-5.3 3.3 0 5.3 2 5.3 5.3zM16 17c3.3 0 5.3-2 5.3-5.3-3.3 0-5.3 2-5.3 5.3zM16 8.5c-1.6-1.6-1.6-3.9 0-5.5 1.6 1.6 1.6 3.9 0 5.5z"/>',
   catalog: '<rect x="5" y="5" width="9" height="9" rx="2"/><rect x="18" y="5" width="9" height="9" rx="2"/><rect x="5" y="18" width="9" height="9" rx="2"/><rect x="18" y="18" width="9" height="9" rx="2"/>'
 };
 

@@ -2,22 +2,22 @@
   "version": "catalog-contract-baseline-v1",
   "capturedAt": "2026-09-28",
   "counts": {
-    "products": 3215,
-    "catalogProducts": 3214,
+    "products": 3212,
+    "catalogProducts": 3211,
     "serviceItems": 1,
     "brands": 36,
-    "categories": 87
+    "categories": 85
   },
   "hashes": {
-    "productIds": "215e59e333ecf48b89e0a75971c3a6743cb05fa9a9f85dced9f9cb4e65e85733",
-    "skus": "db35ee4047f6d170229e9fe9d8fac43e6be91f71ea212fd6bf93f3d28af50e6f",
-    "slugs": "a54a4571c1c9b350b9fc10548143465c7c5bdc99c75902b70f4ea85fa81c1f6f",
-    "brandCategoryAssignments": "e3faf046c84b2566fae7e0985cd8c285626d039dc40f186c9e178abfdccad76f",
+    "productIds": "7de9af4f37be52b5f8dbbe55dbe444ccba95ad696ac99eb8499fa44eb2a12e0c",
+    "skus": "474cfce3000a42a61a34e5c74cba22bdac8034cc412366d40e7effc20fbd279f",
+    "slugs": "9c44251d2b8921ce8685162aa78b40e4ae9ceef750bef7fe11581277d671a149",
+    "brandCategoryAssignments": "08486139d6cd8a166cc736c3c834029710f2cdf681f17cea37c08d00f4878d70",
     "brandIds": "453337dab34ed6ce11a1cb0487d9bcd09fa0199592305797147c69c2fe6d5076",
-    "categoryIds": "34d60d23a3a866628f083351f2ebe4f81b0f4378df54652db1172fb6aa298fd6",
-    "publicUrls": "f48c310df744f385623591848582ec25f3070c89f1060fdeacd3c76111743b18",
-    "plpCounts": "ea04b3c267be3dd87028c7583aaaa76b4a865085db3dba0ec60e02324dafa8e7",
-    "facetAvailability": "220acebb30720e054b050cde297e73b0d456e6c4350ac6e604f81cfe419e99e4",
+    "categoryIds": "3856afa9d155d45cbafedb110701d142b39b90aa62a8ea901e0f528226b79ed6",
+    "publicUrls": "a5544c7271eb032ab468d031957a40ed582f47d41115f39f2d15cfb003c99bb0",
+    "plpCounts": "11e26832366a132c8bd4f39212b1a35b1b664f8aa52b1545c2d25d50becdd2ef",
+    "facetAvailability": "fced2fc1a2ca0bba304f301208142dcb4663f3182879ab15af40ebab7cab19f6",
     "searchAvailability": "9cad45b2408f0dafbad15a0f67abaae7accca4915f398cefdafada8869e5a3f8"
   },
   "searchQueries": [
