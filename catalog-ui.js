@@ -419,9 +419,10 @@ window.sofievkaCatalogUIReady = (async function () {
       const logo = ctx.brand.logo ? `<div class="catalog-brand-mark${darkLogo ? " catalog-brand-mark--dark" : ""}"><img src="/${ctx.brand.logo.replace(/^\//, "")}" alt="${escapeHtml(ctx.brand.name)}"></div>` : `<div class="catalog-brand-mark catalog-brand-mark--text" aria-hidden="true">${escapeHtml(ctx.brand.name.slice(0, 2).toUpperCase())}</div>`;
       return `<section class="catalog-intro catalog-intro--brand"><div class="container">${breadcrumb(ctx)}<div class="catalog-intro__line">${logo}<div><p class="page-kicker">Виробник</p><h1>${escapeHtml(ctx.brand.name)}</h1><p>${escapeHtml(ctx.brand.description || `Товари ${ctx.brand.name} у каталозі інженерного обладнання.`)}</p></div><strong>${countLabel(total)}</strong></div></div></section>`;
     }
-    // Category pages show the headline and the count only; the description stays in the meta tags and the server first paint.
+    // Category pages open with the breadcrumbs and the section tabs: the headline is only for search engines and screen
+    // readers, the count is in the toolbar, the description in the meta tags and the server first paint.
     const title = ctx.currentCategory?.name || ctx.section.title;
-    return `<section class="catalog-intro"><div class="container">${breadcrumb(ctx)}<div class="catalog-intro__line catalog-intro__line--category"><div><div class="catalog-intro__heading"><h1>${escapeHtml(title)}</h1><strong>${countLabel(total)}</strong></div></div></div></div></section>`;
+    return `<section class="catalog-intro"><div class="container">${breadcrumb(ctx)}<h1 class="sr-only">${escapeHtml(title)}</h1></div></section>`;
   }
 
   function render({ pageName = "catalog" } = {}) {

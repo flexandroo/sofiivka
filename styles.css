@@ -1772,12 +1772,6 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
   color: var(--text);
 }
 
-.brand-directory-hero h1 {
-  font-size: clamp(30px, 3.4vw, 44px);
-  line-height: 1.1;
-  letter-spacing: -.03em;
-}
-
 .brand-directory-featured {
   padding-block: clamp(44px, 5vw, 68px);
   background: var(--surface-soft);
