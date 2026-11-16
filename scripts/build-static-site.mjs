@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { transform } from "esbuild";
 import { resolveSiteUrl, writeSeoFiles } from "./generate-sitemap.mjs";
-import { prerenderCompanyPages } from "./prerender-company-pages.mjs";
+import { framePages, prerenderCompanyPages } from "./prerender-company-pages.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputArgument = process.argv.find(argument => argument.startsWith("--output-dir="))?.split("=").slice(1).join("=") || "dist";
@@ -248,6 +248,8 @@ for (const filePath of scriptFiles) {
 
 // Company pages get their first paint in the HTML (pure Node, see scripts/prerender-company-pages.mjs).
 const prerendered = skipPrerender ? [] : await prerenderCompanyPages({ outputDirectory, siteUrl, log: message => console.warn(message) });
+// The remaining page-shell pages open with the real header and footer around placeholders (same module).
+const framed = skipPrerender ? [] : await framePages({ outputDirectory, siteUrl, log: message => console.warn(message) });
 
 const seo = await writeSeoFiles({ root, outputDirectory, config });
 
@@ -265,6 +267,8 @@ const manifest = {
   stampingPasses,
   prerendered: prerendered.filter(item => item.status === "ok").map(item => item.page),
   prerenderFailures: prerendered.filter(item => item.status !== "ok"),
+  framed: framed.filter(item => item.status === "ok").map(item => item.page),
+  frameFailures: framed.filter(item => item.status !== "ok"),
   sitemap: seo
 };
 await fs.writeFile(path.join(outputDirectory, "catalog-build-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");

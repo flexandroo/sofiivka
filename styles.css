@@ -266,7 +266,7 @@ ul {
 
 .site-header__inner {
   display: grid;
-  grid-template-columns: 210px 138px minmax(260px, 1fr) auto;
+  grid-template-columns: 178px 138px minmax(260px, 1fr) auto;
   align-items: center;
   gap: 16px;
   min-height: 76px;
@@ -380,16 +380,19 @@ ul {
   color: var(--yellow);
 }
 
+/* The box is exactly as wide as the logo, so the logo starts on the page line like the menu and the content. */
 .brand {
   display: inline-flex;
-  width: 194px;
+  width: auto;
   height: 54px;
+  aspect-ratio: 1942 / 809;
 }
 
 .brand img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  object-position: left center;
 }
 
 .catalog-button {
@@ -1045,10 +1048,6 @@ ul {
   background: var(--surface);
 }
 
-.category-card:hover > img {
-  transform: scale(1.035);
-}
-
 .category-card__shade {
   display: none;
 }
@@ -1142,14 +1141,9 @@ ul {
   border-radius: 6px;
   background: #fff;
   box-shadow: 0 1px 0 rgba(35, 35, 32, .025);
-  transition: border-color .2s var(--ease), transform .2s var(--ease), box-shadow .2s var(--ease);
 }
 
-.product-card:hover {
-  border-color: #9e9a90;
-  box-shadow: 0 9px 24px rgba(35, 35, 32, .08);
-  transform: translateY(-1px);
-}
+/* Tiles (product, category, brand cards) do not change on hover: no frame, shadow, lift or photo zoom. */
 
 .product-card__image {
   --product-card-image-inset: clamp(10px, 1.25vw, 18px);
@@ -1190,10 +1184,6 @@ ul {
 }
 
 .product-card__image img[hidden] { display: none !important; }
-
-.product-card:hover .product-card__image img {
-  transform: scale(1.025);
-}
 
 .product-card__image-fallback {
   display: none;
@@ -1266,17 +1256,13 @@ ul {
   color: var(--text-secondary);
 }
 
+/* «Наявність уточнюйте» (pending) is green like «В наявності»: the item can be ordered and the manager confirms it. */
+.product-card__status--available,
 .product-card__status--pending {
-  background: var(--surface);
-  color: #605d55;
-}
-
-.product-card__status--available {
   color: var(--success);
 }
 
-.product-card__status--unavailable,
-.product-card__status--pending {
+.product-card__status--unavailable {
   color: #767168;
 }
 
@@ -1431,9 +1417,13 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
 
 .product-card__buy--consult:hover { background: var(--graphite-deep); }
 
+/* The heart sits in the middle of a square button: a block-level icon on a grid, so no text baseline shifts it. */
 .product-card__favorite {
-  width: 38px;
-  min-height: 38px;
+  display: inline-grid;
+  place-items: center;
+  width: var(--tap-target);
+  height: var(--tap-target);
+  min-height: 0;
   margin-left: auto;
   padding: 0;
   border: 1px solid #d4d0c6;
@@ -1443,8 +1433,9 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
 }
 
 .product-card__favorite svg {
-  width: 19px;
-  height: 19px;
+  display: block;
+  width: 18px;
+  height: 18px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.8;
@@ -1525,12 +1516,6 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
   transition: border-color .25s var(--ease), transform .25s var(--ease), box-shadow .25s var(--ease);
 }
 
-.system-card:hover {
-  border-color: #c9c5bb;
-  box-shadow: var(--shadow-soft);
-  transform: translateY(-3px);
-}
-
 .system-card--primary {
   grid-column: 1 / -1;
   grid-template-columns: minmax(260px, .72fr) minmax(460px, 1.28fr);
@@ -1594,10 +1579,6 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
   min-height: 0;
 }
 
-.system-card:hover .system-card__media img {
-  transform: scale(1.025);
-}
-
 .system-card--primary .system-card__media {
   grid-column: 2;
   grid-row: 1 / 3;
@@ -1620,10 +1601,6 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
 
 .system-card__link b {
   transition: transform .2s var(--ease);
-}
-
-.system-card:hover .system-card__link b {
-  transform: translateX(4px);
 }
 
 .brands {
@@ -1717,7 +1694,6 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
   }
 }
 
-.brand-wall:hover .brand-wall__track,
 .brand-wall:focus-within .brand-wall__track {
   animation-play-state: paused;
 }
@@ -1731,11 +1707,6 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
   background: var(--surface);
 }
 
-.brand-wall .brand-logo-cell:hover {
-  box-shadow: inset 0 0 0 1px var(--divider);
-  background: var(--surface);
-}
-
 .brand-logo-cell {
   min-width: 0;
   min-height: 96px;
@@ -1744,11 +1715,6 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
   border-radius: var(--radius-control);
   background: var(--surface);
   transition: border-color .2s var(--ease), background .2s var(--ease);
-}
-
-.brand-logo-cell:hover {
-  border-color: #c8c3b8;
-  background: var(--surface);
 }
 
 .brand-media {
@@ -1785,8 +1751,7 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
 }
 
 .brand-directory-hero {
-  padding-block: 20px clamp(24px, 3vw, 36px);
-  border-bottom: 1px solid var(--divider);
+  padding-block: 20px 0;
   background: var(--surface);
 }
 
@@ -1811,12 +1776,6 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
   font-size: clamp(30px, 3.4vw, 44px);
   line-height: 1.1;
   letter-spacing: -.03em;
-}
-
-.brand-directory-hero p {
-  max-width: 720px;
-  color: var(--text-secondary);
-  font-size: clamp(16px, 1.2vw, 18px);
 }
 
 .brand-directory-featured {
@@ -1959,7 +1918,6 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
   transition: border-color .15s ease, box-shadow .15s ease;
 }
 
-a.brand-directory-card:hover,
 a.brand-directory-card:focus-visible {
   border-color: var(--graphite);
   box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
@@ -2613,12 +2571,11 @@ a.brand-directory-card:focus-visible {
   }
 
   .site-header__inner {
-    grid-template-columns: 170px 124px minmax(220px, 1fr) auto;
+    grid-template-columns: 145px 124px minmax(220px, 1fr) auto;
     gap: 10px;
   }
 
   .brand {
-    width: 160px;
     height: 46px;
   }
 
@@ -2684,7 +2641,7 @@ a.brand-directory-card:focus-visible {
   }
 
   .site-header__inner {
-    grid-template-columns: 152px 46px minmax(180px, 1fr) 48px;
+    grid-template-columns: 127px 46px minmax(180px, 1fr) 48px;
     min-height: 70px;
   }
 
@@ -2862,7 +2819,6 @@ a.brand-directory-card:focus-visible {
   }
 
   .brand {
-    width: 136px;
     height: 40px;
   }
 
@@ -3352,14 +3308,6 @@ a.brand-directory-card:focus-visible {
   transform: translate3d(16%, 0, 0);
 }
 
-.brand-wall .brand-logo-cell .brand-media {
-  transition: transform .35s var(--ease);
-}
-
-.brand-wall .brand-logo-cell:hover .brand-media {
-  transform: translate3d(0, -4px, 0) scale(1.035);
-}
-
 [data-motion="process"].motion-ready .service-process::before {
   transform: scaleX(0);
   transform-origin: left center;
@@ -3619,13 +3567,13 @@ a.brand-directory-card:focus-visible {
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.35;
-  transition: border-color .2s var(--ease), color .2s var(--ease), transform .2s var(--ease);
+  transition: border-color .2s var(--ease), color .2s var(--ease);
 }
 
+/* Subcategories keep their place on hover; only the colour changes. */
 .catalog-menu .catalog-menu__children a:hover {
   background: transparent;
   color: var(--text);
-  transform: translateX(3px);
 }
 
 .catalog-menu__taxonomy section.is-current-section {

@@ -60,7 +60,65 @@ export async function prerenderCompanyPages({ outputDirectory, siteUrl, pages = 
   }
 }
 
-async function renderPage({ page, siteUrl, scripts }) {
+// The other page-shell pages (catalogue, product, cart, …) need the catalogue or the visitor's data, so the build
+// cannot render them; they used to open as a blank page until every catalogue script had loaded. They get a frame
+// instead: the real header and footer (the same markup the client renders, so nothing jumps when it replaces the
+// frame) around grey placeholders shaped like the page. api/seo-page.mjs puts its server content for crawlers at
+// <!--first-paint--> inside <main>; pages.css hides that content while the script draws the page, and the
+// <noscript> style shows it to visitors without JavaScript.
+const CATALOG_PAGES = new Set(["catalog", "brand", "heating", "water-supply", "climate", "plumbing"]);
+const LISTING_PAGES = new Set(["search", "favorites", "compare"]);
+// `html` raises the specificity over the hiding rule api/seo-page.mjs adds later in <head>.
+const FRAME_NOSCRIPT = "<noscript><style>html [data-page-frame] .ssr-page{display:block;min-height:0;padding:24px 0 48px}html [data-page-frame] .page-frame{display:none}</style></noscript>";
+
+function frameSkeleton(page) {
+  const bar = modifier => `<span class="page-frame__bar page-frame__bar--${modifier}"></span>`;
+  if (page === "product") {
+    return `${bar("crumbs")}<div class="page-frame__pdp"><span class="page-frame__media"></span><div>${bar("title")}${bar("text")}${bar("text")}${bar("price")}${bar("button")}</div></div>`;
+  }
+  const cards = count => '<span class="page-frame__card"></span>'.repeat(count);
+  if (CATALOG_PAGES.has(page)) {
+    return `${bar("crumbs")}${bar("title")}${bar("tabs")}<div class="page-frame__catalog"><div>${bar("filter")}${bar("filter")}${bar("filter")}</div><div class="page-frame__grid page-frame__grid--three">${cards(6)}</div></div>`;
+  }
+  if (LISTING_PAGES.has(page)) return `${bar("crumbs")}${bar("title")}<div class="page-frame__grid">${cards(8)}</div>`;
+  return `${bar("crumbs")}${bar("title")}${bar("text")}${bar("text")}${bar("text")}`;
+}
+
+export async function framePages({ outputDirectory, siteUrl, log = () => {} }) {
+  const read = name => fs.readFile(path.join(outputDirectory, name), "utf8");
+  const [siteSettings, pageShell] = await Promise.all([read("site-settings.js"), read("page-shell.js")]);
+  const brandsData = await read("brands-data.js").catch(() => "");
+  const scripts = [["site-settings.js", siteSettings], ["brands-data.js", brandsData], ["page-shell.js", pageShell]];
+  const results = [];
+  const ignoreRejection = reason => { if (process.env.SOFIEVKA_PRERENDER_DEBUG) console.error("frame rejection:", reason); };
+  process.on("unhandledRejection", ignoreRejection);
+  try {
+    for (const entry of await fs.readdir(outputDirectory, { withFileTypes: true })) {
+      if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== ".html") continue;
+      const file = path.join(outputDirectory, entry.name);
+      const html = await fs.readFile(file, "utf8");
+      const page = html.match(/<body\b[^>]*\bdata-page="([^"]+)"/)?.[1];
+      // Only pages still left empty: the company pages already carry their full first paint.
+      if (!page || !ROOT_PATTERN.test(html) || !/page-shell\.js/.test(html)) continue;
+      try {
+        const { header, footer } = await renderPage({ page, siteUrl, scripts, frame: true });
+        if (!/<header\b/.test(header) || !/<footer\b/.test(footer)) throw new Error("page-shell returned no header or footer");
+        const frame = `<div data-page-root data-page-frame>${header}<main id="main" class="page-main" aria-busy="true"><div class="container page-frame" aria-hidden="true">${frameSkeleton(page)}</div><!--first-paint--></main>${footer}</div>`;
+        await fs.writeFile(file, html.replace("</head>", () => `${FRAME_NOSCRIPT}</head>`).replace(ROOT_PATTERN, () => frame), "utf8");
+        results.push({ page, status: "ok" });
+      } catch (error) {
+        log(`frame ${page}: ${error.message}`);
+        results.push({ page, status: "failed", error: error.message });
+      }
+    }
+  } finally {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    process.off("unhandledRejection", ignoreRejection);
+  }
+  return results;
+}
+
+async function renderPage({ page, siteUrl, scripts, frame = false }) {
   let captured = null;
   const noop = () => {};
   const element = (tag = "div") => {
@@ -110,6 +168,7 @@ async function renderPage({ page, siteUrl, scripts }) {
     ResizeObserver: class { observe() {} unobserve() {} disconnect() {} },
     MutationObserver: class { observe() {} disconnect() {} },
     fetch: () => Promise.reject(new Error("offline prerender")),
+    URL, URLSearchParams,
     setTimeout: (callback, delay, ...rest) => setTimeout(() => { try { callback(...rest); } catch {} }, Math.min(Number(delay) || 0, 50)),
     clearTimeout, setInterval: () => 0, clearInterval: noop,
     requestAnimationFrame: () => 0, cancelAnimationFrame: noop, requestIdleCallback: () => 0,
@@ -134,6 +193,12 @@ async function renderPage({ page, siteUrl, scripts }) {
       if (name === "page-shell.js") throw error;
       errors.push(`${name}: ${error.message}`);
     }
+  }
+  // A frame needs only the header and footer, which page-shell exposes before it renders anything.
+  if (frame) {
+    const shell = window.sofievkaPageShell;
+    if (!shell) throw new Error(`page-shell exposed no header${errors.length ? ` (${errors.join("; ")})` : ""}`);
+    return { header: shell.header(), footer: shell.footer() };
   }
   // initialize() is async; wait until it has written the root (bindings after that may fail on the stand-in DOM).
   const started = Date.now();

@@ -60,6 +60,17 @@ assert.equal(schema.brand.name, "Wilo");
 const crumbs = JSON.parse(/id="schema-breadcrumbs">(.*?)<\/script>/.exec(html)[1]);
 assert.deepEqual(crumbs.itemListElement.map(item => item.name).slice(0, 4), ["Головна", "Каталог", "Опалення", "Котли"]);
 
+// A framed shell (the build's header, placeholders and footer): the content goes into <main> at the slot, the frame
+// stays around it, and the content is hidden until the client render (shown by the shell's <noscript> style).
+{
+  const framed = '<!doctype html><html><head><title>Товар</title></head><body data-page="product"><div data-page-root data-page-frame><header class="site-header"></header><main id="main" class="page-main" aria-busy="true"><div class="container page-frame" aria-hidden="true"></div><!--first-paint--></main><footer class="footer"></footer></div></body></html>';
+  const filled = applyToShell(framed, page);
+  assert.match(filled, /<div data-page-root data-prerendered data-page-frame><header class="site-header"><\/header><main[^>]*><div class="container page-frame" aria-hidden="true"><\/div><article class="ssr-page">/);
+  assert.match(filled, /<\/article><\/main><footer class="footer"><\/footer><\/div>/, "the content closes before the footer");
+  assert.doesNotMatch(filled, /<!--first-paint-->/);
+  assert.match(filled, /\[data-page-frame\] \.ssr-page\{display:none\}/);
+}
+
 // A product on request has no price in the schema or the page.
 const onRequest = renderProduct({ product: { ...product, pricing: { amount: null, priceStatus: "on_request" }, inventory: { status: "unknown" } }, bootstrap, origin });
 assert.equal(onRequest.schemas["schema-product"].offers, undefined);

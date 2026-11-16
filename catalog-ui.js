@@ -243,7 +243,7 @@ window.sofievkaCatalogUIReady = (async function () {
       ? `<img src="${escapeHtml(image)}" width="800" height="800" loading="lazy" decoding="async" data-product-image onerror="this.hidden=true;this.parentElement.classList.add('is-fallback')" alt="${escapeHtml(title)}">`
       : "";
 
-    return `<article class="product-card catalog-product product-card--${variant}" data-product-card="${escapeHtml(product.id)}"><div class="product-card__media-actions">${isSale ? '<span class="product-card__badge">Акція</span>' : ""}<button class="product-card__favorite${favoriteActive ? " is-active" : ""}" type="button" data-favorite="${escapeHtml(product.id)}" aria-label="${favoriteActive ? "Видалити з обраного" : "Додати в обране"}: ${escapeHtml(title)}" aria-pressed="${favoriteActive}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.5a5.5 5.5 0 0 0-.2-7.9Z"/></svg></button></div><a class="product-card__image${image ? "" : " is-fallback"}" href="${productHref}" aria-label="Відкрити товар: ${escapeHtml(title)}">${imageMarkup}<span class="product-card__image-fallback" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 8h22v17H5zM9 20l5-5 4 4 3-3 6 6M11 12h.01"/></svg>Фото готується</span></a><div class="product-card__identity"><a class="product-card__brand" href="${escapeHtml(brandHref)}">${escapeHtml(product.brand || "Виробник")}</a>${series ? `<span class="product-card__series">Серія ${escapeHtml(series)}</span>` : ""}</div><h3><a href="${productHref}" title="${escapeHtml(title)}">${escapeHtml(title)}</a></h3>${attributes.length ? `<dl class="product-card__specs" aria-label="Ключові характеристики">${attributes.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl>` : `<p class="product-card__specs-empty">Характеристики уточнюються</p>`}${sku ? `<span class="product-card__code">Код: ${escapeHtml(sku)}</span>` : `<span class="product-card__code" aria-hidden="true"></span>`}${commercialMarkup}<div class="product-card__actions">${primaryAction}${showCompare ? `<button class="compare-button${compareActive ? " is-active" : ""}" type="button" data-compare="${escapeHtml(product.id)}" aria-label="${compareActive ? "Видалити з порівняння" : "Додати до порівняння"}: ${escapeHtml(title)}" aria-pressed="${compareActive}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h10v10M16 19H6V9"/></svg><span>${compareActive ? "У порівнянні" : "Порівняти"}</span></button>` : ""}</div></article>`;
+    return `<article class="product-card catalog-product product-card--${variant}" data-product-card="${escapeHtml(product.id)}"><div class="product-card__media-actions">${isSale ? '<span class="product-card__badge">Акція</span>' : ""}<button class="product-card__favorite${favoriteActive ? " is-active" : ""}" type="button" data-favorite="${escapeHtml(product.id)}" aria-label="${favoriteActive ? "Видалити з обраного" : "Додати в обране"}: ${escapeHtml(title)}" aria-pressed="${favoriteActive}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg></button></div><a class="product-card__image${image ? "" : " is-fallback"}" href="${productHref}" aria-label="Відкрити товар: ${escapeHtml(title)}">${imageMarkup}<span class="product-card__image-fallback" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 8h22v17H5zM9 20l5-5 4 4 3-3 6 6M11 12h.01"/></svg>Фото готується</span></a><div class="product-card__identity"><a class="product-card__brand" href="${escapeHtml(brandHref)}">${escapeHtml(product.brand || "Виробник")}</a>${series ? `<span class="product-card__series">Серія ${escapeHtml(series)}</span>` : ""}</div><h3><a href="${productHref}" title="${escapeHtml(title)}">${escapeHtml(title)}</a></h3>${attributes.length ? `<dl class="product-card__specs" aria-label="Ключові характеристики">${attributes.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl>` : `<p class="product-card__specs-empty">Характеристики уточнюються</p>`}${sku ? `<span class="product-card__code">Код: ${escapeHtml(sku)}</span>` : `<span class="product-card__code" aria-hidden="true"></span>`}${commercialMarkup}<div class="product-card__actions">${primaryAction}${showCompare ? `<button class="compare-button${compareActive ? " is-active" : ""}" type="button" data-compare="${escapeHtml(product.id)}" aria-label="${compareActive ? "Видалити з порівняння" : "Додати до порівняння"}: ${escapeHtml(title)}" aria-pressed="${compareActive}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h10v10M16 19H6V9"/></svg><span>${compareActive ? "У порівнянні" : "Порівняти"}</span></button>` : ""}</div></article>`;
   }
 
   const showProductImageFallback = image => {
@@ -419,9 +419,9 @@ window.sofievkaCatalogUIReady = (async function () {
       const logo = ctx.brand.logo ? `<div class="catalog-brand-mark${darkLogo ? " catalog-brand-mark--dark" : ""}"><img src="/${ctx.brand.logo.replace(/^\//, "")}" alt="${escapeHtml(ctx.brand.name)}"></div>` : `<div class="catalog-brand-mark catalog-brand-mark--text" aria-hidden="true">${escapeHtml(ctx.brand.name.slice(0, 2).toUpperCase())}</div>`;
       return `<section class="catalog-intro catalog-intro--brand"><div class="container">${breadcrumb(ctx)}<div class="catalog-intro__line">${logo}<div><p class="page-kicker">Виробник</p><h1>${escapeHtml(ctx.brand.name)}</h1><p>${escapeHtml(ctx.brand.description || `Товари ${ctx.brand.name} у каталозі інженерного обладнання.`)}</p></div><strong>${countLabel(total)}</strong></div></div></section>`;
     }
+    // Category pages show the headline and the count only; the description stays in the meta tags and the server first paint.
     const title = ctx.currentCategory?.name || ctx.section.title;
-    const description = ctx.currentCategory?.description || ctx.section.description;
-    return `<section class="catalog-intro"><div class="container">${breadcrumb(ctx)}<div class="catalog-intro__line catalog-intro__line--category"><div><div class="catalog-intro__heading"><h1>${escapeHtml(title)}</h1><strong>${countLabel(total)}</strong></div><p>${escapeHtml(description)}</p></div></div></div></section>`;
+    return `<section class="catalog-intro"><div class="container">${breadcrumb(ctx)}<div class="catalog-intro__line catalog-intro__line--category"><div><div class="catalog-intro__heading"><h1>${escapeHtml(title)}</h1><strong>${countLabel(total)}</strong></div></div></div></div></section>`;
   }
 
   function render({ pageName = "catalog" } = {}) {
@@ -1030,7 +1030,7 @@ window.sofievkaCatalogUIReady = (async function () {
     const items = [
       ["/", "Головна", icon('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>'), path === "/" || path === "/index"],
       ["/catalog", "Каталог", icon('<rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 10h16M4 15h16M10 4v16M15 4v16"/>'), /^\/(catalog|brands|product)(\/|$)/.test(path)],
-      ["/favorites", "Обране", icon('<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l7.8-7.5a5.5 5.5 0 0 0 1-8.9Z"/>'), path === "/favorites"],
+      ["/favorites", "Обране", icon('<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/>'), path === "/favorites"],
       ["/cart", "Кошик", icon('<path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 8H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>'), path === "/cart" || path === "/checkout"],
       ["/contact", "Контакти", icon('<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>'), path === "/contact"]
     ];
@@ -1071,6 +1071,36 @@ window.sofievkaCatalogUIReady = (async function () {
     phone.addEventListener?.("change", apply);
   }
 
+  // The search placeholder types example queries in grey and erases them, one after another. It stops and
+  // shows the plain hint while the field has focus or text, waits while the tab is hidden, and stays plain for
+  // visitors who prefer reduced motion.
+  const TYPED_SEARCH_HINTS = ["котел", "насос", "фільтр", "бойлер", "радіатор", "кондиціонер", "гідроакумулятор", "зворотний осмос"];
+  function typeSearchHints(input) {
+    if (!input || input.dataset.typedHints === "true" || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    input.dataset.typedHints = "true";
+    const hint = input.placeholder;
+    let word = 0;
+    let length = 0;
+    let erasing = false;
+    let timer = 0;
+    const idle = () => !input.value && document.activeElement !== input && !document.hidden;
+    const schedule = delay => { clearTimeout(timer); timer = setTimeout(tick, delay); };
+    function tick() {
+      if (!idle()) { input.placeholder = hint; return; }
+      const text = TYPED_SEARCH_HINTS[word];
+      length += erasing ? -1 : 1;
+      input.placeholder = text.slice(0, length);
+      if (!erasing && length === text.length) { erasing = true; schedule(1500); return; }
+      if (erasing && length === 0) { erasing = false; word = (word + 1) % TYPED_SEARCH_HINTS.length; schedule(450); return; }
+      schedule(erasing ? 55 : 115);
+    }
+    const restart = () => { length = 0; erasing = false; input.placeholder = hint; schedule(1600); };
+    input.addEventListener("focus", () => { clearTimeout(timer); input.placeholder = hint; });
+    input.addEventListener("blur", () => { if (!input.value) restart(); });
+    document.addEventListener("visibilitychange", () => { if (document.hidden) { clearTimeout(timer); input.placeholder = hint; } else if (idle()) restart(); });
+    restart();
+  }
+
   function bindSearch(form = document.querySelector("[data-search]"), options = {}) {
     const search = window.sofievkaCatalogSearch;
     const scopedSource = window.sofievkaCatalogScopedDataSource;
@@ -1078,6 +1108,7 @@ window.sofievkaCatalogUIReady = (async function () {
     const results = form?.querySelector(".search-results");
     if ((!search && !scopedSource) || !form || !input || !results || form.dataset.searchBound === "true") return;
     form.dataset.searchBound = "true";
+    typeSearchHints(input);
     const instanceId = input.id || `catalog-search-${Math.random().toString(36).slice(2, 8)}`;
     const minLength = Number(options.minLength) || 2;
     let timer = 0;

@@ -72,7 +72,9 @@ const LEGACY_CATALOG_PATHS = new Set([
   "/catalog/water-treatment/water-softening"
 ]);
 
-const FIRST_PAINT_STYLE = `<style>.ssr-page{min-height:100vh;padding:132px 0 48px;line-height:1.5}.ssr-page h1{margin:12px 0}.ssr-page img{display:block;max-width:320px;height:auto;margin:16px 0}.ssr-page dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 16px;max-width:720px}.ssr-page dd{margin:0}.ssr-page ul{padding-left:20px}.ssr-price{font-size:24px;font-weight:700}</style>`;
+// In a framed shell (header, placeholders and footer from the build) the content waits hidden for the client
+// render; the shell's <noscript> style shows it to visitors without JavaScript.
+const FIRST_PAINT_STYLE = `<style>[data-page-frame] .ssr-page{display:none}.ssr-page{min-height:100vh;padding:132px 0 48px;line-height:1.5}.ssr-page h1{margin:12px 0}.ssr-page img{display:block;max-width:320px;height:auto;margin:16px 0}.ssr-page dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 16px;max-width:720px}.ssr-page dd{margin:0}.ssr-page ul{padding-left:20px}.ssr-price{font-size:24px;font-weight:700}</style>`;
 
 export const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, character => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -341,7 +343,9 @@ export function applyToShell(shell, page) {
     .replace(/<link\s+rel="canonical"[^>]*>/i, "")
     .replace(/<meta\s+name="robots"[^>]*>/i, "")
     .replace(/<\/head>/i, () => `${head}</head>`)
-    .replace(/<div data-page-root><\/div>/, () => `<div data-page-root data-prerendered>${page.body}</div>`);
+    .replace(/<div data-page-root><\/div>/, () => `<div data-page-root data-prerendered>${page.body}</div>`)
+    // A framed shell (scripts/prerender-company-pages.mjs) takes the content at its slot inside <main>.
+    .replace(/<div data-page-root data-page-frame>([\s\S]*?)<!--first-paint-->/, (match, frame) => `<div data-page-root data-prerendered data-page-frame>${frame}${page.body}`);
 }
 
 function createCatalogApi({ url, key, fetchImpl }) {
@@ -382,8 +386,8 @@ async function loadShell(path, requestOrigin, fetchImpl, now) {
   // 404.html is itself served with 404.
   if (!response.ok && path !== "/404.html") throw new Error(`${path}: HTTP ${response.status}`);
   const html = await response.text();
-  // An empty root proves this is the static shell, not a page this function already rendered.
-  if (!html.includes("<div data-page-root></div>")) throw new Error(`${path}: not an empty page shell`);
+  // An empty root or an unfilled frame proves this is the static shell, not a page this function already rendered.
+  if (!html.includes("<div data-page-root></div>") && !html.includes("<div data-page-root data-page-frame>")) throw new Error(`${path}: not an empty page shell`);
   memory.shells.set(path, { html, at: now });
   return html;
 }

@@ -465,7 +465,11 @@ const homepageProductMediaFit = {
 
 function createProductCard(product, favoriteIds) {
   const productName = product.title || product.model;
-  const available = product.availability === "in_stock" || product.inventory?.status === "in_stock" || product.availabilityLabel === "В наявності";
+  const stockStatus = product.inventory?.status || product.stockStatus || product.availability || "unknown";
+  const available = stockStatus === "in_stock" || product.availabilityLabel === "В наявності";
+  // Out of stock and discontinued are grey; «Наявність уточнюйте» is green like «В наявності» (the manager confirms it).
+  const unavailable = !available && ["out_of_stock", "discontinued"].includes(stockStatus);
+  const statusLabel = product.availabilityLabel || (available ? "В наявності" : stockStatus === "out_of_stock" ? "Немає в наявності" : "Наявність уточнюйте");
   const price = Number(product.pricing?.amount ?? product.price);
   const oldPrice = Number(product.pricing?.oldAmount ?? product.oldPrice ?? 0);
   const money = amount => `${new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 0 }).format(Math.round(Number(amount) || 0))} грн`;
@@ -478,7 +482,7 @@ function createProductCard(product, favoriteIds) {
   if (mediaFit) card.dataset.mediaFit = mediaFit;
   card.innerHTML = `
     <a class="product-card__image" href="${productHref(product)}"><img src="${escapeMarkup(product.image || product.images?.[0] || "")}" width="1536" height="1536" loading="lazy" alt="${escapeMarkup(productName)}"></a>
-    <span class="product-card__status product-card__status--${available ? "available" : "unavailable"}">${escapeMarkup(product.availabilityLabel || (available ? "В наявності" : "Немає в наявності"))}</span>
+    <span class="product-card__status product-card__status--${available ? "available" : unavailable ? "unavailable" : "pending"}">${escapeMarkup(statusLabel)}</span>
     <span class="product-card__brand">${escapeMarkup(product.brand)}</span>
     <h3><a href="${productHref(product)}">${escapeMarkup(productName)}</a></h3>
     <span class="product-card__code">${escapeMarkup(product.code || product.sku || product.id)}</span>
@@ -486,7 +490,7 @@ function createProductCard(product, favoriteIds) {
     <div class="product-card__price-group">${oldPrice > price ? `<del class="product-card__old-price">${money(oldPrice)}</del>` : ""}<strong class="product-card__price">${money(price)}</strong></div>
     <div class="product-card__actions">
       <button class="product-card__buy" type="button" data-buy="${escapeMarkup(product.id)}">До кошика</button>
-      <button class="product-card__favorite${favoriteIds.has(product.id) ? " is-active" : ""}" type="button" data-favorite="${escapeMarkup(product.id)}" aria-label="Додати ${escapeMarkup(productName)} в обране" aria-pressed="${favoriteIds.has(product.id)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg></button>
+      <button class="product-card__favorite${favoriteIds.has(product.id) ? " is-active" : ""}" type="button" data-favorite="${escapeMarkup(product.id)}" aria-label="Додати ${escapeMarkup(productName)} в обране" aria-pressed="${favoriteIds.has(product.id)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg></button>
     </div>`;
   return card;
 }
@@ -810,7 +814,34 @@ function setupHomepageBrands() {
   const track = document.createElement("div");
   track.className = "brand-wall__track";
   track.append(createGroup(false), createGroup(true));
+  // Every logo loads up front: a lazy logo that loads and decodes while the strip moves makes it stutter.
+  track.querySelectorAll("img").forEach(image => { image.loading = "eager"; });
   wall.replaceChildren(track);
+  easeBrandWallOnHover(wall, track);
+}
+
+// Under the pointer the strip slows down to a stop and speeds up again when the pointer leaves, instead of
+// freezing and jumping on (a CSS animation-play-state pause cannot ease). Without the CSS animation (reduced
+// motion) there is nothing to ease.
+function easeBrandWallOnHover(wall, track) {
+  const animation = track.getAnimations?.()[0];
+  if (!animation) return;
+  let rate = 1;
+  let target = 1;
+  let frame = 0;
+  const setRate = value => (animation.updatePlaybackRate ? animation.updatePlaybackRate(value) : (animation.playbackRate = value));
+  const step = () => {
+    rate += (target - rate) * 0.12;
+    if (Math.abs(target - rate) < 0.01) rate = target;
+    setRate(rate);
+    frame = rate === target ? 0 : requestAnimationFrame(step);
+  };
+  const easeTo = value => {
+    target = value;
+    if (!frame) frame = requestAnimationFrame(step);
+  };
+  wall.addEventListener("pointerenter", event => { if (event.pointerType === "mouse") easeTo(0); });
+  wall.addEventListener("pointerleave", () => easeTo(1));
 }
 
 // Stores come from the shop settings (site-settings.js, edited in /admin/settings).

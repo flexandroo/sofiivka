@@ -3,31 +3,33 @@
    engineering-storefront layout selected for the homepage. */
 
 .home-page {
-  --home-edge: clamp(10px, 1.2vw, 18px);
   --home-gap: clamp(6px, .7vw, 10px);
-  --home-product-gap: clamp(6px, .8vw, 12px);
+  --home-product-gap: clamp(16px, 2vw, 28px);
   --home-border: #d9d7d1;
   --home-muted: #75736d;
   --home-control-height: 40px;
   background: #fff;
 }
 
-/* The homepage uses the same header as every other page (styles.css). */
+/* The homepage uses the same header as every other page (styles.css), and its sections sit on the header's
+   lines: the same width and gutter as .container, with the visible content (texts, buttons, photos) starting
+   right at the gutter. */
 
 .storefront {
-  padding: var(--home-gap) var(--home-edge) 0;
+  padding: var(--home-gap) 0 0;
   background: #fff;
 }
 
 .storefront__shell {
   position: relative;
   display: grid;
-  grid-template-columns: clamp(204px, 20.6vw, 274px) minmax(0, 1fr) clamp(262px, 26vw, 348px);
+  grid-template-columns: clamp(186px, calc(20.6vw - 18px), 256px) minmax(0, 1fr) clamp(262px, 26vw, 348px);
   grid-template-rows: clamp(440px, 40vw, 520px) auto auto;
   gap: var(--home-gap);
-  width: min(100%, 1440px);
+  width: min(100%, var(--container));
   height: auto;
   margin-inline: auto;
+  padding-inline: var(--gutter);
 }
 
 .storefront-categories {
@@ -38,7 +40,7 @@
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: repeat(var(--storefront-category-count, 6), 1fr);
   min-width: 0;
-  padding: 6px 18px 4px;
+  padding: 6px 18px 4px 0;
   background: #fff;
 }
 
@@ -553,16 +555,17 @@
   left: clamp(18px, 2vw, 28px);
   z-index: 3;
   min-height: var(--button-height-compact);
-  padding-inline: 14px;
+  padding-inline: 16px;
   border-radius: var(--radius-button);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .home-products,
 .home-brands,
 .home-contact {
-  width: min(calc(100% - (var(--home-edge) * 2)), 1440px);
+  width: min(100%, var(--container));
   margin-inline: auto;
+  padding-inline: var(--gutter);
 }
 
 .home-products {
@@ -575,6 +578,7 @@
   grid-column: 1 / -1;
   width: 100%;
   margin-inline: 0;
+  padding-inline: 0;
 }
 
 .home-products--popular {
@@ -593,7 +597,7 @@
 
 .home-products__head {
   min-height: 58px;
-  padding: 0 24px 10px;
+  padding: 0 0 10px;
 }
 
 .home-products h2 {
@@ -635,19 +639,12 @@
 .home-page .home-products .product-card {
   --home-product-media-scale: 1;
   min-height: 336px;
-  padding: 15px 15px 13px;
+  padding: 15px 0 13px;
   scroll-snap-align: start;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-}
-
-.home-page .home-products .product-card:hover {
-  z-index: 2;
-  background: transparent;
-  box-shadow: none;
-  transform: none;
 }
 
 .home-page .home-products .product-card[data-media-fit="dominant"] {
@@ -674,10 +671,6 @@
   width: calc(100% - 20px);
   height: calc(100% - 20px);
   transform: scale(var(--home-product-media-scale));
-}
-
-.home-page .home-products .product-card:hover .product-card__image img {
-  transform: scale(calc(var(--home-product-media-scale) * 1.02));
 }
 
 .home-page .home-products .product-card__status {
@@ -729,20 +722,21 @@
 }
 
 .home-page .home-products .product-card__actions {
-  grid-template-columns: minmax(0, 1fr) 38px;
+  grid-template-columns: minmax(0, 1fr) var(--button-height-compact);
   gap: 8px;
   margin-top: 10px;
 }
 
-.home-page .home-products .product-card__buy,
-.home-page .home-products .product-card__favorite {
+.home-page .home-products .product-card__buy {
   min-height: var(--button-height-compact);
-  min-width: var(--tap-target);
   border-radius: var(--radius-button);
+  font-size: 14px;
 }
 
-.home-page .home-products .product-card__buy {
-  font-size: 11px;
+/* Beside the buy button the heart button is a square of the same height. */
+.home-page .home-products .product-card__favorite {
+  width: var(--button-height-compact);
+  height: var(--button-height-compact);
 }
 
 .home-brands {
@@ -765,9 +759,12 @@
   line-height: 1.2;
 }
 
+/* The strip ends on the page lines; the logos fade in and out there instead of being cut off. */
 .home-page .home-brands .brand-wall {
   overflow: hidden;
   border: 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent);
 }
 
 .home-page .home-brands .brand-wall__track {
@@ -785,7 +782,7 @@
   padding-right: clamp(24px, 3.4vw, 52px);
 }
 
-.home-page .home-brands .brand-wall:hover .brand-wall__track,
+/* The mouse eases the strip to a stop in script.js; keyboard focus stops it at once. */
 .home-page .home-brands .brand-wall:focus-within .brand-wall__track {
   animation-play-state: paused;
 }
@@ -803,11 +800,6 @@
   height: 60px;
   padding: 8px;
   filter: none;
-}
-
-.home-page .home-brands .brand-wall .brand-logo-cell:hover {
-  box-shadow: none;
-  background: transparent;
 }
 
 .home-page .home-brands .brand-media img {
@@ -830,7 +822,7 @@
   flex-direction: column;
   align-items: flex-start;
   min-width: 0;
-  padding: clamp(28px, 4vw, 52px);
+  padding: clamp(28px, 4vw, 52px) clamp(28px, 4vw, 52px) clamp(28px, 4vw, 52px) 0;
   background: #fff;
 }
 
@@ -1036,7 +1028,6 @@
   width: 100%;
   margin: clamp(64px, 7vw, 104px) 0 0;
   padding-block: clamp(56px, 6vw, 88px);
-  border-top: 6px solid var(--yellow);
   background: var(--graphite-deep);
 }
 
@@ -1050,8 +1041,9 @@
   gap: clamp(64px, 8vw, 124px);
 }
 
+/* Two lines: «Для монтажників» / «і бізнесу» (the line break is in the markup). */
 .home-b2b h2 {
-  max-width: 9ch;
+  max-width: none;
   font-size: clamp(42px, 4.6vw, 64px);
   line-height: .98;
 }
@@ -1263,7 +1255,6 @@
 
 @media (max-width: 640px) {
   .home-page {
-    --home-edge: 0px;
     --home-gap: 0px;
   }
 
@@ -1282,6 +1273,7 @@
 
   .storefront__shell {
     grid-template-rows: none;
+    padding-inline: 0;
   }
 
   .storefront-showcase {
@@ -1444,6 +1436,7 @@
   .home-products {
     width: 100%;
     padding-top: 26px;
+    padding-inline: 0;
   }
 
   .home-products__head {
@@ -1474,7 +1467,7 @@
 
   .home-page .home-products .product-card {
     min-height: 350px;
-    padding-top: 12px;
+    padding: 12px var(--gutter) 13px;
   }
 
   .home-page .home-products .product-card__image {
@@ -1490,6 +1483,7 @@
     width: 100%;
     margin-top: 36px;
     padding-top: 4px;
+    padding-inline: 0;
   }
 
   .home-page .home-brands .brand-wall .brand-logo-cell {
@@ -1501,6 +1495,7 @@
   .home-contact {
     width: 100%;
     margin-top: 38px;
+    padding-inline: 0;
   }
 
   .home-contact__grid {
@@ -1558,7 +1553,6 @@
   }
 
   .home-b2b h2 {
-    max-width: 10ch;
     font-size: 36px;
   }
 
