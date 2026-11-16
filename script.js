@@ -298,9 +298,9 @@ function setupHeroSlider() {
   start();
 }
 
-// The two small banners next to the slider take turns: every 2.5 s one of them shows its next tile, so each changes
-// every 5 s and they never change together. A hidden tab, keyboard focus inside a place and reduced motion hold them.
-const PROMO_TURN_MS = 2500;
+// The two small banners next to the slider take turns: every 5 s one of them shows its next tile (top, then bottom,
+// then top …), so they never change together. A hidden tab, keyboard focus inside a place and reduced motion hold them.
+const PROMO_TURN_MS = 5000;
 
 function showPromo(stack, index) {
   const tiles = [...stack.querySelectorAll(":scope > .storefront-promo")];
