@@ -72,6 +72,11 @@ const rendererStart = script.indexOf("const HOMEPAGE_BANNERS_CACHE");
 assert.ok(rendererStart > 0);
 const renderer = script.slice(rendererStart);
 assert.doesNotMatch(renderer, /innerHTML|insertAdjacentHTML|outerHTML|document\.write/, "banner text never renders as HTML");
+// The text is drawn on the banner images: the site shows the picture, the title only names the link.
+assert.doesNotMatch(index, /storefront-slide__content|storefront-promo__copy|storefront-promo__action/, "no text over the static banners");
+assert.match(renderer, /link\.setAttribute\("aria-label", banner\.title\)/);
+assert.doesNotMatch(renderer, /banner\.(kicker|text|buttonLabel|logoUrl)\b/, "overlay fields stay off the storefront");
+assert.match(view, /\.\.\.RETIRED,/, "the editor clears the overlay fields");
 
 // URL guard, run in isolation.
 const guardSource = renderer.match(/function bannerSafeUrl[\s\S]*?\n}\n/)[0];

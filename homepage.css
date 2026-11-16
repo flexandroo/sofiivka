@@ -273,17 +273,15 @@
 
 .storefront-slide {
   position: relative;
-  isolation: isolate;
   flex: 0 0 100%;
   overflow: hidden;
-  color: #fff;
 }
 
+/* The text and the button are part of the banner image; the whole slide is the link. */
 .storefront-slide__link {
   display: block;
   width: 100%;
   height: 100%;
-  color: inherit;
 }
 
 .storefront-slide__link:focus-visible {
@@ -291,19 +289,9 @@
   outline-offset: -5px;
 }
 
-.storefront-slide::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(90deg, rgba(19, 19, 19, .88) 0%, rgba(19, 19, 19, .58) 43%, rgba(19, 19, 19, .04) 69%);
-  pointer-events: none;
-}
-
 .storefront-slide__image {
   position: absolute;
   inset: 0;
-  z-index: -2;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -319,75 +307,6 @@
 
 .storefront-slide--automation .storefront-slide__image {
   object-position: 64% center;
-}
-
-.storefront-slide__content {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: min(62%, 490px);
-  height: 100%;
-  padding: clamp(28px, 3vw, 46px) clamp(26px, 3vw, 48px) 88px;
-}
-
-.storefront-slide__brand {
-  width: clamp(88px, 10vw, 138px);
-  height: 46px;
-  object-fit: contain;
-  object-position: left center;
-  filter: brightness(0) saturate(100%) invert(56%) sepia(76%) saturate(482%) hue-rotate(121deg) brightness(90%);
-}
-
-.storefront-slide__brand--original {
-  filter: none;
-}
-
-.storefront-slide__technical {
-  position: absolute;
-  top: clamp(40px, 4vw, 60px);
-  left: min(69%, 370px);
-  width: 160px;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: .14em;
-  line-height: 1.45;
-  text-transform: uppercase;
-}
-
-.storefront-slide__kicker {
-  margin-top: 10px;
-  color: var(--yellow);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
-
-.storefront-slide h1,
-.storefront-slide h2 {
-  max-width: 480px;
-  margin-top: clamp(58px, 7vw, 96px);
-  font-size: clamp(28px, 3.15vw, 46px);
-  font-weight: 750;
-  letter-spacing: -.05em;
-  line-height: .99;
-}
-
-.storefront-slide__lead {
-  max-width: 390px;
-  margin-top: 14px;
-  color: rgba(255, 255, 255, .92);
-  font-size: clamp(13px, 1.3vw, 18px);
-  line-height: 1.3;
-}
-
-.storefront-slide .button {
-  min-height: var(--button-height);
-  margin-top: clamp(22px, 3vw, 36px);
-  padding-inline: 20px;
-  border-radius: var(--radius-button);
-  font-size: 13px;
 }
 
 .storefront-showcase__footer {
@@ -533,78 +452,29 @@
   background: #fff;
 }
 
-.storefront-promo__copy {
-  position: relative;
-  z-index: 2;
-  width: 72%;
-  padding: clamp(18px, 2vw, 28px);
-}
-
-.storefront-promo__brand {
-  color: #77736d;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: .16em;
-}
-
-.storefront-promo h2 {
-  margin-top: 5px;
-  font-size: clamp(19px, 2vw, 27px);
-  font-weight: 750;
-  letter-spacing: -.045em;
-  line-height: 1.02;
-}
-
-.storefront-promo p {
-  max-width: 180px;
-  margin-top: 6px;
-  color: #67645e;
-  font-size: clamp(10px, .9vw, 13px);
-  line-height: 1.28;
-}
-
-.storefront-promo > img,
-.storefront-promo > picture > img {
+.storefront-promo__link {
   position: absolute;
-}
-
-.storefront-promo--water > img,
-.storefront-promo--water > picture > img {
-  right: -2%;
-  bottom: -19%;
-  width: 70%;
-  height: 78%;
-  object-fit: contain;
-  mix-blend-mode: multiply;
-}
-
-.storefront-promo--climate > img,
-.storefront-promo--climate > picture > img {
   inset: 0;
-  z-index: -1;
+}
+
+.storefront-promo__link:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: -4px;
+}
+
+.storefront-promo__link img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 73% center;
 }
 
-.storefront-promo--climate::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(90deg, rgba(255, 255, 255, .97), rgba(255, 255, 255, .74) 54%, rgba(255, 255, 255, 0) 78%);
-}
-
-.storefront-promo__action {
-  position: absolute;
-  bottom: 18px;
-  left: clamp(18px, 2vw, 28px);
-  z-index: 3;
-  min-height: var(--button-height-compact);
-  padding-inline: 16px;
-  border-radius: var(--radius-button);
-  font-size: 13px;
+/* A product photo on a white background stays whole. */
+.storefront-promo--product .storefront-promo__link img {
+  padding: clamp(14px, 1.6vw, 24px);
+  object-fit: contain;
+  mix-blend-mode: multiply;
 }
 
 .home-products,
@@ -1166,24 +1036,6 @@
   .storefront__shell {
     grid-template-columns: 210px minmax(0, 1fr) 268px;
   }
-
-  .storefront-slide__content {
-    width: 67%;
-    padding-inline: 30px;
-  }
-
-  .storefront-slide__technical {
-    left: 61%;
-  }
-
-  .storefront-promo__copy {
-    width: 84%;
-    padding: 18px;
-  }
-
-  .storefront-promo__action {
-    left: 18px;
-  }
 }
 
 @media (max-width: 900px) {
@@ -1265,10 +1117,6 @@
     order: 5;
   }
 
-  .storefront-slide__content {
-    width: min(58%, 480px);
-  }
-
   .home-page .home-products .product-grid {
     grid-auto-columns: calc((100% - (var(--home-product-gap) * 2)) / 3);
   }
@@ -1329,45 +1177,8 @@
     border-top: 1px solid rgba(255, 255, 255, .12);
   }
 
-  .storefront-slide::after {
-    background: linear-gradient(90deg, rgba(17, 17, 17, .9), rgba(17, 17, 17, .57) 58%, rgba(17, 17, 17, .08));
-  }
-
   .storefront-slide--pumps .storefront-slide__image {
     object-position: 57% center;
-  }
-
-  .storefront-slide__content {
-    width: 88%;
-    padding: 22px var(--gutter) 72px;
-  }
-
-  .storefront-slide__brand {
-    width: 96px;
-    height: 40px;
-  }
-
-  .storefront-slide__technical {
-    display: none;
-  }
-
-  .storefront-slide h1,
-  .storefront-slide h2 {
-    margin-top: auto;
-    max-width: 9.4em;
-    font-size: clamp(30px, 8.5vw, 35px);
-    line-height: 1.02;
-  }
-
-  .storefront-slide__lead {
-    max-width: 290px;
-    margin-top: 12px;
-    font-size: 12px;
-    line-height: 1.42;
-  }
-
-  .storefront-slide .button {
-    margin-top: 18px;
   }
 
   .storefront-showcase__footer {
@@ -1474,21 +1285,6 @@
 
   .storefront-promos {
     grid-template: repeat(2, 214px) / 1fr;
-  }
-
-  .storefront-promo__copy {
-    width: 68%;
-    padding: 20px var(--gutter);
-  }
-
-  .storefront-promo h2 {
-    font-size: 22px;
-  }
-
-  .storefront-promo__action {
-    bottom: 14px;
-    left: var(--gutter);
-    min-height: var(--tap-target);
   }
 
   .home-products {
