@@ -39,16 +39,26 @@ assert.match(migration, /can_manage_content\(\)/);
 assert.match(migration, /Statements the Supabase MCP connector cannot run[\s\S]*delete from public\.homepage_banners/, "header names SQL Editor statements");
 assert.doesNotMatch(migration, /taxonomy_admin_audit/, "own audit table, shared taxonomy audit untouched");
 assert.doesNotMatch(migration, /^begin;|^commit;/m);
-// Seed mirrors index.html.
+// The seeded slides are still on the page; the seeded tiles were replaced on PROD on 2026-11-16.
 for (const text of ["Насоси для стабільної роботи системи", "Чиста вода для щоденного використання", "Автоматика, що керує комфортом",
-  "Чиста вода у вашому домі", "Комфорт у будь-який сезон", "assets/images/home-hero-termojet-pumps-v1.jpg",
-  "assets/products/ecosoft/mo650mecostd/01.webp", "assets/images/hero-climate.webp"]) {
+  "assets/images/home-hero-termojet-pumps-v1.jpg"]) {
   assert.ok(migration.includes(text), `seed has ${text}`);
   assert.ok(index.includes(text), `index.html still has ${text}`);
 }
-// The promo product (MO650MECOSTD in the seed) is linked by its slug since 20261002002000.
 assert.ok(migration.includes("MO650MECOSTD"));
-assert.match(index, /href="\/product\/filtr-zvorotnoho-osmosu-ecosoft-standard-z-mineralizatorom"/);
+// Static banners: five 2:1 slides, two places with a Wilo and an Ecosoft square tile each, every image in the repo.
+assert.equal((index.match(/<article class="storefront-slide[ "]/g) || []).length, 5);
+assert.equal((index.match(/data-slide-dot="/g) || []).length, 5);
+const places = index.split("data-promo-stack>").slice(1).map(place => place.split("</div>")[0]);
+assert.equal(places.length, 2);
+for (const place of places) {
+  const tiles = [...place.matchAll(/<img src="([^"]+)" width="(\d+)" height="(\d+)"/g)];
+  assert.equal(tiles.length, 2, "two tiles in each place");
+  assert.deepEqual(tiles.map(([, src]) => src.match(/banners\/(wilo|ecosoft)-/)?.[1]).sort(), ["ecosoft", "wilo"], "one per brand");
+  for (const [, , width, height] of tiles) assert.equal(width, height, "tiles are square");
+}
+for (const [, src] of index.matchAll(/src="(assets\/images\/banners\/[^"]+)"/g)) assert.ok(fs.existsSync(path.join(root, src)), `${src} exists`);
+assert.match(read("homepage.css"), /\.storefront-showcase \{[^}]*aspect-ratio: 2 \/ 1;/, "the slider keeps the banners' 2:1");
 
 // Admin wiring.
 assert.match(app, /import \{ createBannersView \} from "\/admin\/admin-banners\.mjs"/);

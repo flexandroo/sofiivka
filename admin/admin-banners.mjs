@@ -12,7 +12,7 @@ const PLACEMENTS = Object.freeze({
   },
   promo: {
     kicker: "ПЛИТКИ", title: "Плитки праворуч від банера", add: "Додати плитку", newTitle: "Нова плитка",
-    note: "Сайт показує дві перші активні плитки. Якщо активних немає, лишаються стандартні плитки."
+    note: "Сайт показує дві перші активні плитки: першу вгорі, другу внизу. У кожному місці з нею чергується ще одна, вбудована в сайт. Якщо активних немає, лишаються вбудовані."
   }
 });
 const LAYOUTS = Object.freeze({
@@ -68,7 +68,7 @@ function editorDialog(canEdit) {
       <form data-banner-form novalidate>
         <header><p class="admin-kicker" data-banner-dialog-kicker>БАНЕР</p><h2 id="banner-dialog-title" data-banner-dialog-title>Банер</h2>
           <p>Текст і кнопка мають бути намальовані на самому зображенні: сайт показує лише картинку, і весь банер веде за посиланням.
-            JPG, PNG, WebP або AVIF; слайд — від 1632×1040, плитка — від 700×510. Краї на вужчих екранах обрізаються, тож текст тримайте ближче до центру.</p></header>
+            JPG, PNG, WebP або AVIF. Слайд — 2:1 (від 1600×800), плитка — квадрат (від 800×800): у цих пропорціях сайт показує банер цілком.</p></header>
         <div class="admin-form-grid">
           <label class="admin-field"><span>Місце показу</span><select name="placement">
             ${Object.entries(PLACEMENTS).map(([value, meta]) => `<option value="${value}">${escape(meta.title)}</option>`).join("")}</select></label>
@@ -76,7 +76,7 @@ function editorDialog(canEdit) {
             ${Object.entries(LAYOUTS).map(([value, item]) => `<option value="${value}">${escape(item.label)}</option>`).join("")}</select></label>
           ${urlField("imageUrl", "Зображення", { required: true, upload: canEdit, hint: URL_HINT })}
           <div class="admin-field admin-banner-preview" aria-hidden="true"><span>Попередній перегляд</span><div data-banner-preview></div></div>
-          ${urlField("mobileImageUrl", "Зображення для телефона", { upload: canEdit, hint: "Необов’язково. Порожнє поле: те саме зображення." })}
+          ${urlField("mobileImageUrl", "Зображення для телефона", { upload: canEdit, hint: "Необов’язково, у тих самих пропорціях. Порожнє поле: те саме зображення." })}
           ${textField("imageFocus", "Фокус фото по горизонталі, %", "number", { hint: "0 — тримати в кадрі лівий край, 100 — правий, 50 — центр." })}
           ${textField("imageAlt", "Опис зображення", "text", { maxLength: 200, full: true, hint: "Для незрячих і пошуковиків. Порожнє поле: фото декоративне." })}
           ${textField("title", "Назва банера", "text", { maxLength: 160, full: true, required: true, hint: "Впишіть головний текст з картинки. Поверх неї на сайті він не виводиться: його читають програми для незрячих." })}

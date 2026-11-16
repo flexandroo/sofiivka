@@ -23,8 +23,9 @@
 .storefront__shell {
   position: relative;
   display: grid;
-  grid-template-columns: clamp(186px, calc(20.6vw - 18px), 256px) minmax(0, 1fr) clamp(262px, 26vw, 348px);
-  grid-template-rows: clamp(440px, 40vw, 520px) auto auto;
+  /* The slider is 2:1 like its banners; the tile column, a quarter of its width, makes the two stacked tiles square. */
+  grid-template-columns: clamp(186px, calc(20.6vw - 18px), 256px) minmax(0, 4fr) minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
   gap: var(--home-gap);
   width: min(100%, var(--container));
   height: auto;
@@ -252,6 +253,7 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  aspect-ratio: 2 / 1;
   background: #252525;
 }
 
@@ -321,10 +323,15 @@
   pointer-events: none;
 }
 
+/* Over a light banner the bars need the same dark backing as the arrows. */
 .storefront-showcase__dots {
   display: flex;
   align-items: center;
   gap: 5px;
+  min-height: 40px;
+  padding-inline: 8px;
+  border-radius: 3px;
+  background: rgba(25, 25, 25, .55);
   pointer-events: auto;
 }
 
@@ -1034,7 +1041,7 @@
 
 @media (max-width: 1080px) {
   .storefront__shell {
-    grid-template-columns: 210px minmax(0, 1fr) 268px;
+    grid-template-columns: 210px minmax(0, 4fr) minmax(0, 1fr);
   }
 }
 
@@ -1053,7 +1060,6 @@
     grid-column: 1;
     grid-row: auto;
     order: 1;
-    height: min(60vw, 480px);
   }
 
   .storefront-categories {
@@ -1113,8 +1119,12 @@
   .storefront-promos {
     grid-column: 1;
     grid-row: auto;
-    grid-template: 260px / repeat(2, 1fr);
+    grid-template: auto / repeat(2, minmax(0, 1fr));
     order: 5;
+  }
+
+  .storefront-promo-stack {
+    aspect-ratio: 1;
   }
 
   .home-page .home-products .product-grid {
@@ -1173,8 +1183,13 @@
   }
 
   .storefront-showcase {
-    height: 380px;
+    aspect-ratio: auto;
     border-top: 1px solid rgba(255, 255, 255, .12);
+  }
+
+  .storefront-showcase__viewport {
+    height: auto;
+    aspect-ratio: 2 / 1;
   }
 
   .storefront-slide--pumps .storefront-slide__image {
@@ -1182,14 +1197,15 @@
   }
 
   .storefront-showcase__footer {
-    right: var(--gutter);
-    bottom: 10px;
-    left: var(--gutter);
+    position: static;
     gap: 12px;
+    padding: 2px var(--gutter);
   }
 
   .storefront-showcase__dots {
     gap: 3px;
+    padding-inline: 0;
+    background: none;
   }
 
   .storefront-showcase__dots button {
@@ -1281,10 +1297,6 @@
   .storefront-subcategories__list a {
     min-height: 44px;
     padding: 13px 0 12px;
-  }
-
-  .storefront-promos {
-    grid-template: repeat(2, 214px) / 1fr;
   }
 
   .home-products {
