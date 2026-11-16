@@ -476,6 +476,27 @@
   min-height: 0;
 }
 
+/* Each place holds several tiles in one grid cell; the active one shows and the next fades in over it. */
+.storefront-promo-stack {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+}
+
+.storefront-promo-stack > .storefront-promo {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .7s var(--ease), visibility 0s linear .7s;
+}
+
+.storefront-promo-stack > .storefront-promo.is-active {
+  z-index: 1;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .7s var(--ease);
+}
+
 .storefront-promo {
   position: relative;
   isolation: isolate;
@@ -1583,6 +1604,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .storefront-showcase__track,
+  .storefront-promo-stack > .storefront-promo,
   .home-page .home-products .product-grid {
     scroll-behavior: auto;
     transition: none;
@@ -1599,19 +1621,4 @@
   }
 }
 
-/* Homepage banners from /admin/banners: one live promo tile takes the whole column. */
-.storefront-promos--single {
-  grid-template-rows: 1fr;
-}
 
-@media (max-width: 900px) {
-  .storefront-promos--single {
-    grid-template: 260px / 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .storefront-promos--single {
-    grid-template: 214px / 1fr;
-  }
-}

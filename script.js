@@ -170,7 +170,7 @@ function setupHeroSlider() {
   const slides = [...(slider?.querySelectorAll("[data-slide]") || [])];
   const dots = [...(slider?.querySelectorAll("[data-slide-dot]") || [])];
   const live = slider?.querySelector("[data-slide-live]");
-  if (!slider || !track || !slides.length) return;
+  if (!slider || !track || !slides.length || slider.dataset.sliderReady === "true") return;
   slider.dataset.sliderReady = "true";
 
   let index = 0;
@@ -239,17 +239,10 @@ function setupHeroSlider() {
     start();
   }));
 
-  slider.addEventListener("mouseenter", () => {
-    paused = true;
-    slider.classList.add("is-paused");
-    stop();
-  });
-  slider.addEventListener("mouseleave", () => {
-    paused = false;
-    slider.classList.remove("is-paused");
-    start();
-  });
-  slider.addEventListener("focusin", () => {
+  // Only keyboard focus pauses the slides. Hovering did too, and a click or tap on an arrow or dot left the button
+  // focused: a cursor resting on the banner after a reload, or one tap on a phone, stopped the slider for good.
+  slider.addEventListener("focusin", event => {
+    if (!event.target.matches?.(":focus-visible")) return;
     paused = true;
     slider.classList.add("is-paused");
     stop();
@@ -284,7 +277,13 @@ function setupHeroSlider() {
     start();
   });
 
-  document.addEventListener("visibilitychange", () => {
+  const onVisibility = () => {
+    // A slider replaced by the banners from /admin/banners lets go of the page.
+    if (!slider.isConnected) {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
+      return;
+    }
     if (document.hidden) {
       slider.classList.add("is-paused");
       stop();
@@ -292,10 +291,48 @@ function setupHeroSlider() {
       slider.classList.toggle("is-paused", paused);
       start();
     }
-  });
+  };
+  document.addEventListener("visibilitychange", onVisibility);
 
   render(0, false);
   start();
+}
+
+// The two small banners next to the slider take turns: every 2.5 s one of them shows its next tile, so each changes
+// every 5 s and they never change together. A hidden tab, keyboard focus inside a place and reduced motion hold them.
+const PROMO_TURN_MS = 2500;
+
+function showPromo(stack, index) {
+  const tiles = [...stack.querySelectorAll(":scope > .storefront-promo")];
+  if (!tiles.length) return;
+  const next = (index + tiles.length) % tiles.length;
+  tiles.forEach((tile, tileIndex) => {
+    const active = tileIndex === next;
+    tile.classList.toggle("is-active", active);
+    tile.toggleAttribute("inert", !active);
+    if (active) tile.removeAttribute("aria-hidden");
+    else tile.setAttribute("aria-hidden", "true");
+  });
+  stack.dataset.promoIndex = String(next);
+}
+
+function setupPromoRotation() {
+  const promos = document.querySelector(".storefront-promos");
+  if (!promos || promos.dataset.promoRotation === "true") return;
+  promos.dataset.promoRotation = "true";
+  document.querySelectorAll("[data-promo-stack]").forEach(stack => showPromo(stack, Number(stack.dataset.promoIndex) || 0));
+  if (reducedMotion) return;
+  let turn = 0;
+  window.setInterval(() => {
+    if (document.hidden) return;
+    // Looked up every time: /admin/banners may have replaced tiles since the last turn.
+    const stacks = [...document.querySelectorAll("[data-promo-stack]")];
+    if (!stacks.length) return;
+    const stack = stacks[turn % stacks.length];
+    turn += 1;
+    if (stack.querySelectorAll(":scope > .storefront-promo").length < 2 || stack.querySelector(":focus-visible")) return;
+    showPromo(stack, (Number(stack.dataset.promoIndex) || 0) + 1);
+  }, PROMO_TURN_MS);
 }
 
 function productHref(product) {
@@ -1143,7 +1180,6 @@ function renderHomepageCatalogFailure() {
   if (window.sofievkaCatalogUIReady) await window.sofievkaCatalogUIReady;
   setupCatalogMenu();
   setupStorefrontCategories();
-  setupHeroSlider();
   setupSearch();
   if (catalogLoadError && window.sofievkaCatalogRemoteRequested) renderHomepageCatalogFailure();
   else setupProducts();
@@ -1267,7 +1303,7 @@ function isValidBanner(banner) {
 
 function applyHomepageBanners(data) {
   const hero = (Array.isArray(data?.hero) ? data.hero : []).filter(isValidBanner).slice(0, 8);
-  const promo = (Array.isArray(data?.promo) ? data.promo : []).filter(isValidBanner).slice(0, 2);
+  const promo = (Array.isArray(data?.promo) ? data.promo : []).filter(isValidBanner).slice(0, 6);
   const slider = document.querySelector("[data-slider]");
   if (slider && hero.length) {
     // A fresh copy of the section drops the old listeners; setupHeroSlider binds the new one.
@@ -1297,10 +1333,17 @@ function applyHomepageBanners(data) {
     slider.replaceWith(fresh);
     if (wasReady) setupHeroSlider();
   }
-  const promos = document.querySelector(".storefront-promos");
-  if (promos && promo.length) {
-    promos.replaceChildren(...promo.map(buildPromoTile));
-    promos.classList.toggle("storefront-promos--single", promo.length === 1);
+  // Promo banners fill the two places in turn (1st, 3rd, 5th → top; 2nd, 4th, 6th → bottom) and take the first
+  // tiles there; the built-in tiles after them stay in the rotation.
+  const stacks = [...document.querySelectorAll("[data-promo-stack]")];
+  if (stacks.length && promo.length) {
+    stacks.forEach((stack, place) => {
+      const own = promo.filter((banner, index) => index % stacks.length === place).map(buildPromoTile);
+      if (!own.length) return;
+      const tiles = [...stack.querySelectorAll(":scope > .storefront-promo")];
+      stack.replaceChildren(...own, ...tiles.slice(own.length));
+      showPromo(stack, 0);
+    });
   }
 }
 
@@ -1329,4 +1372,7 @@ function setupHomepageBanners() {
     .catch(() => { /* keep the static or cached banners */ });
 }
 
+// The banners do not wait for the catalogue: a slow or failed catalogue request used to hold the slider still.
 setupHomepageBanners();
+setupHeroSlider();
+setupPromoRotation();

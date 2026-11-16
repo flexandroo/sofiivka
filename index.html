@@ -169,26 +169,68 @@
           <p class="sr-only" aria-live="polite" data-slide-live></p>
         </section>
 
+        <!-- Two rotating places (script.js setupPromoRotation): the first tile of each is the one /admin/banners
+             replaces; the next ones are placeholders until their own banners are made. -->
         <aside class="storefront-promos" aria-label="Актуальні пропозиції">
-          <article class="storefront-promo storefront-promo--water">
-            <div class="storefront-promo__copy">
-              <span class="storefront-promo__brand">ECOSOFT</span>
-              <h2>Чиста вода у вашому домі</h2>
+          <div class="storefront-promo-stack" data-promo-stack>
+            <article class="storefront-promo storefront-promo--water is-active">
+              <div class="storefront-promo__copy">
+                <span class="storefront-promo__brand">ECOSOFT</span>
+                <h2>Чиста вода у вашому домі</h2>
                 <p>Система з мінералізацією для питної води</p>
-            </div>
-            <img src="assets/products/ecosoft/mo650mecostd/01.webp" width="1536" height="1536" alt="Фільтр зворотного осмосу Ecosoft" loading="eager">
+              </div>
+              <img src="assets/products/ecosoft/mo650mecostd/01.webp" width="1536" height="1536" alt="Фільтр зворотного осмосу Ecosoft" loading="eager">
               <a class="button button--primary storefront-promo__action" href="/product/filtr-zvorotnoho-osmosu-ecosoft-standard-z-mineralizatorom">До товару <span class="arrow-mark" aria-hidden="true"></span></a>
-          </article>
+            </article>
+            <article class="storefront-promo storefront-promo--water" aria-hidden="true" inert>
+              <div class="storefront-promo__copy">
+                <span class="storefront-promo__brand">TERMOJET</span>
+                <h2>Циркуляційні насоси</h2>
+                <p>Тихі й енергоощадні для системи опалення</p>
+              </div>
+              <img src="assets/products/termojet/spe12-1-4-0a6355f57c.webp" width="1200" height="1280" alt="Циркуляційний насос Termojet" loading="lazy">
+              <a class="button button--primary storefront-promo__action" href="/catalog/heating/system-circulation">Переглянути <span class="arrow-mark" aria-hidden="true"></span></a>
+            </article>
+            <article class="storefront-promo storefront-promo--water" aria-hidden="true" inert>
+              <div class="storefront-promo__copy">
+                <span class="storefront-promo__brand">BAXI</span>
+                <h2>Газові котли для дому</h2>
+                <p>Конденсаційні та класичні моделі</p>
+              </div>
+              <img src="assets/products/baxi/duo-teccompactefront-2019-46a862fe1c.webp" width="540" height="500" alt="Газовий котел BAXI" loading="lazy">
+              <a class="button button--primary storefront-promo__action" href="/catalog/heating/heat-generation/gas-boilers">Переглянути <span class="arrow-mark" aria-hidden="true"></span></a>
+            </article>
+          </div>
 
-          <article class="storefront-promo storefront-promo--climate">
-            <img src="assets/images/hero-climate.webp" width="1536" height="1024" alt="" aria-hidden="true" loading="lazy">
-            <div class="storefront-promo__copy">
-              <span class="storefront-promo__brand">КЛІМАТ</span>
-              <h2>Комфорт у будь-який сезон</h2>
-              <p>Підбір за площею та режимом роботи</p>
-            </div>
-            <a class="button button--primary storefront-promo__action" href="/catalog/climate">Переглянути <span class="arrow-mark" aria-hidden="true"></span></a>
-          </article>
+          <div class="storefront-promo-stack" data-promo-stack>
+            <article class="storefront-promo storefront-promo--climate is-active">
+              <img src="assets/images/hero-climate.webp" width="1536" height="1024" alt="" aria-hidden="true" loading="lazy">
+              <div class="storefront-promo__copy">
+                <span class="storefront-promo__brand">КЛІМАТ</span>
+                <h2>Комфорт у будь-який сезон</h2>
+                <p>Підбір за площею та режимом роботи</p>
+              </div>
+              <a class="button button--primary storefront-promo__action" href="/catalog/climate">Переглянути <span class="arrow-mark" aria-hidden="true"></span></a>
+            </article>
+            <article class="storefront-promo storefront-promo--climate" aria-hidden="true" inert>
+              <img src="assets/images/projects/service-boiler.webp" width="1280" height="853" alt="" aria-hidden="true" loading="lazy">
+              <div class="storefront-promo__copy">
+                <span class="storefront-promo__brand">СЕРВІС</span>
+                <h2>Обслуговування котлів</h2>
+                <p>Діагностика, ремонт і сезонне ТО</p>
+              </div>
+              <a class="button button--primary storefront-promo__action" href="/service-center">Детальніше <span class="arrow-mark" aria-hidden="true"></span></a>
+            </article>
+            <article class="storefront-promo storefront-promo--climate" aria-hidden="true" inert>
+              <img src="assets/images/projects/installation-boiler-room.webp" width="1280" height="853" alt="" aria-hidden="true" loading="lazy">
+              <div class="storefront-promo__copy">
+                <span class="storefront-promo__brand">МОНТАЖ</span>
+                <h2>Котельні під ключ</h2>
+                <p>Проєкт, монтаж і 2 роки гарантії</p>
+              </div>
+              <a class="button button--primary storefront-promo__action" href="/installation">Детальніше <span class="arrow-mark" aria-hidden="true"></span></a>
+            </article>
+          </div>
         </aside>
 
         <section class="home-products home-products--popular" id="products" aria-labelledby="home-products-title" data-product-section data-product-group="popular">
