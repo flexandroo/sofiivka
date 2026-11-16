@@ -67,8 +67,10 @@
   --button-weight: 800;
   /* Smallest touch target for icon buttons and secondary actions (AUD-047, WCAG 2.5.8 needs 24px, we aim for 40px). */
   --tap-target: 40px;
-  --container: 1440px;
-  --gutter: clamp(20px, 4vw, 64px);
+  /* One page width for the header and every page: up to 1440px of content with narrow side gutters (the dense
+     storefront width of the homepage). */
+  --container: 1476px;
+  --gutter: clamp(16px, 1.25vw, 18px);
   --section-space: clamp(76px, 8vw, 128px);
   --ease: cubic-bezier(.16, 1, .3, 1);
   --shadow-soft: 0 16px 48px rgba(58, 53, 43, .09);
