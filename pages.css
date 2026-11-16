@@ -502,7 +502,11 @@ body[data-page="brand"] { background: var(--canvas); }
 .catalog-workspace .active-filters button { display: inline-flex; align-items: center; gap: 6px; min-height: 27px; padding: 3px 8px; border: 1px solid #cbc7bb; border-radius: 3px; background: #fff; color: var(--text-secondary); font: inherit; font-size: 9px; cursor: pointer; }
 .catalog-workspace .active-filters button span { color: var(--text); font-size: 13px; line-height: 1; }
 .catalog-workspace .active-filters .active-filters__clear { border-color: transparent; background: transparent; text-decoration: underline; text-underline-offset: 3px; }
-.catalog-workspace .catalog-products { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+/* Four cards a row beside the filters on desktop, three on small laptops, two below 1080px. */
+.catalog-workspace .catalog-products { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 1279px) {
+  .catalog-workspace .catalog-products { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 .catalog-products .product-skeleton { aspect-ratio: auto; min-width: 0; }
 @media (max-width: 620px) {
   .catalog-products .product-skeleton { min-height: 340px; padding: 10px; }
@@ -628,6 +632,15 @@ body[data-page="brand"] { background: var(--canvas); }
 .catalog-product .product-card__code { margin-top: auto; }
 .catalog-product .product-card__actions { grid-template-columns: minmax(0, 1fr) minmax(92px, auto); }
 .catalog-product .compare-button { min-height: 42px; padding: 0 10px; }
+/* Four a row: the card measures itself, and in a narrow one «Порівняти» keeps only its icon so «До кошика» stays on
+   one line. */
+.catalog-workspace .catalog-product { container-type: inline-size; }
+.catalog-workspace .catalog-product .product-card__buy { font-size: 14px; }
+@container (max-width: 225px) {
+  .catalog-workspace .catalog-product .product-card__actions { grid-template-columns: minmax(0, 1fr) var(--button-height-compact); }
+  .catalog-workspace .catalog-product .compare-button { padding: 0; }
+  .catalog-workspace .catalog-product .compare-button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+}
 
 @media (max-width: 620px) {
   .catalog-workspace .catalog-products { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -1350,7 +1363,10 @@ body[data-page="product"] {
 .page-frame__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 28px; }
 .page-frame__catalog { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 24px; margin-top: 28px; }
 .page-frame__catalog .page-frame__grid { margin-top: 0; }
-.page-frame__grid--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.page-frame__grid--catalog { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1279px) {
+  .page-frame__grid--catalog { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 .page-frame__card { aspect-ratio: 3 / 4; }
 .page-frame__pdp { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); margin-top: 18px; }
 .page-frame__pdp .page-frame__bar--title { margin-top: 0; }

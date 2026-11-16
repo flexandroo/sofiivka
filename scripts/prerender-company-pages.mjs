@@ -79,7 +79,7 @@ function frameSkeleton(page) {
   const cards = count => '<span class="page-frame__card"></span>'.repeat(count);
   if (CATALOG_PAGES.has(page)) {
     // Category pages have no visible headline (catalog-ui.js); a brand page shows the brand's name.
-    return `${bar("crumbs")}${page === "brand" ? bar("title") : ""}${bar("tabs")}<div class="page-frame__catalog"><div>${bar("filter")}${bar("filter")}${bar("filter")}</div><div class="page-frame__grid page-frame__grid--three">${cards(6)}</div></div>`;
+    return `${bar("crumbs")}${page === "brand" ? bar("title") : ""}${bar("tabs")}<div class="page-frame__catalog"><div>${bar("filter")}${bar("filter")}${bar("filter")}</div><div class="page-frame__grid page-frame__grid--catalog">${cards(8)}</div></div>`;
   }
   if (LISTING_PAGES.has(page)) return `${bar("crumbs")}${bar("title")}<div class="page-frame__grid">${cards(8)}</div>`;
   return `${bar("crumbs")}${bar("title")}${bar("text")}${bar("text")}${bar("text")}`;
