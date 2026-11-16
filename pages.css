@@ -1291,10 +1291,28 @@ body[data-page="product"] {
 /* The text and the figures set the height; the photo fills it instead of stretching the block to its own 3:2. */
 .co-about > .co-photo { position: relative; grid-area: photo; min-height: 320px; max-height: none; }
 .co-about > .co-photo img { position: absolute; inset: 0; }
-/* No rules between the figures: space alone keeps them apart. */
-.co-about .co-facts { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px clamp(16px, 2vw, 28px); margin: 0; border-top: 0; }
-.co-about .co-facts > div:nth-child(n) { padding: 0; border: 0; }
-.co-about .co-facts dt { font-size: clamp(26px, 2.6vw, 40px); }
+/* Figures without rules between them (/about, /installation): space alone keeps them apart. */
+.co-facts.co-facts--plain { gap: 18px clamp(16px, 2vw, 28px); margin: 0; border-top: 0; }
+.co-facts.co-facts--plain > div:nth-child(n) { padding: 0; border: 0; }
+.co-facts--plain dt { font-size: clamp(26px, 2.6vw, 40px); }
+.co-about .co-facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* /installation: three facts right under the headline, what we install as tiles, four numbered steps. */
+.page-hero:has(+ .co-facts-section) { padding-bottom: 8px; }
+.page-hero + .co-facts-section { padding-top: 12px; padding-bottom: 0; }
+.co-facts--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.co-tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.co-tiles li { padding: 18px 18px 20px; border-radius: var(--radius-card); background: var(--co-tint); }
+.co-tiles h3 { margin: 0; font-size: 17px; line-height: 1.3; }
+.co-tiles p { margin-top: 8px; color: var(--text-secondary); font-size: 14px; line-height: 1.45; }
+@media (max-width: 1100px) {
+  .co-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.co-flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(20px, 3vw, 40px); margin: 0; padding: 0; list-style: none; counter-reset: co-flow; }
+.co-flow li { counter-increment: co-flow; }
+.co-flow li::before { content: counter(co-flow); display: grid; place-items: center; width: 36px; height: 36px; margin-bottom: 14px; border-radius: 50%; background: var(--yellow); color: var(--graphite); font-weight: 700; font-variant-numeric: tabular-nums; }
+.co-flow h3 { margin: 0; }
+.co-flow p { margin-top: 6px; color: var(--text-secondary); font-size: 15px; line-height: 1.5; }
 .co-heading-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 32px; margin-bottom: clamp(20px, 2.4vw, 32px); }
 .co-heading-row .co-heading { margin-bottom: 0; }
 .co-heading-row .text-link { white-space: nowrap; }
@@ -1360,6 +1378,7 @@ body[data-page="product"] {
   .co-visit { grid-template-columns: minmax(0, 1fr); grid-template-areas: "intro" "stores" "actions"; }
   .co-about { grid-template-rows: none; grid-template-areas: "photo" "facts" "text"; }
   .co-about > .co-photo { min-height: 0; max-height: none; aspect-ratio: 16 / 9; }
+  .co-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 620px) {
   .co-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1371,6 +1390,14 @@ body[data-page="product"] {
   .co-reasons, .co-sections { grid-template-columns: minmax(0, 1fr); }
   .co-reasons li { padding: 14px 0 16px; }
   .co-about .co-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+  .co-facts.co-facts--three { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .co-tiles { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .co-tiles li { padding: 14px 16px 16px; }
+  .co-tiles p { margin-top: 4px; }
+  .co-flow { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .co-flow li { display: grid; grid-template-columns: 36px minmax(0, 1fr); column-gap: 14px; }
+  .co-flow li > * { grid-column: 2; }
+  .co-flow li::before { grid-row: 1 / span 2; margin: 0; }
   .co-brand-logos { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .co-brand-logos .brand-media { height: 64px; padding: 10px; }
   .co-brand-logos .brand-media img { max-height: 40px; }
