@@ -424,8 +424,47 @@ ul {
   transform: translateY(1px);
 }
 
-.catalog-button__mark {
+/* Catalogue icon: four tiles, a cross while the menu is open. Phones show the menu lines (.catalog-button__mark). */
+.catalog-button__icon {
   display: grid;
+  width: 20px;
+  height: 20px;
+}
+
+.catalog-button__icon svg {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.catalog-button__grid,
+.catalog-button__close {
+  transform-origin: 12px 12px;
+  transition: opacity .18s var(--ease), transform .25s var(--ease);
+}
+
+.catalog-button__close {
+  opacity: 0;
+  transform: rotate(-45deg) scale(.6);
+}
+
+.catalog-button[aria-expanded="true"] .catalog-button__grid {
+  opacity: 0;
+  transform: rotate(45deg) scale(.6);
+}
+
+.catalog-button[aria-expanded="true"] .catalog-button__close {
+  opacity: 1;
+  transform: none;
+}
+
+.catalog-button__mark {
+  display: none;
   gap: 4px;
   width: 16px;
 }
@@ -437,24 +476,36 @@ ul {
   background: currentColor;
 }
 
+/* The search is one white field: the text, then a magnifier button inside the same frame, on the same 4px inset
+   with matching corners. The focus ring belongs to the whole field. */
 .search {
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
+  align-items: center;
   min-width: 0;
-}
-
-.search input {
-  width: 100%;
   height: 46px;
-  min-width: 0;
-  padding: 0 92px 0 17px;
+  padding: 4px;
   border: 1px solid var(--divider);
   border-radius: var(--radius-control);
   background: var(--surface);
+  transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
+}
+
+.search:focus-within {
+  border-color: var(--yellow);
+  box-shadow: 0 0 0 3px rgba(255, 200, 8, .38);
+}
+
+.search input {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  padding: 0 8px 0 13px;
+  border: 0;
+  background: transparent;
   color: var(--text);
   outline: none;
-  transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
 }
 
 .search input::placeholder {
@@ -462,28 +513,38 @@ ul {
   opacity: 1;
 }
 
-.search input:focus {
-  border-color: var(--yellow);
-  box-shadow: 0 0 0 3px rgba(255, 200, 8, .38);
-}
-
-.search > button {
-  position: absolute;
-  top: 1px;
-  right: 1px;
-  height: 44px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 6px;
-  background: var(--yellow);
-  color: var(--graphite);
-  font-size: 13px;
-  font-weight: 700;
+.search input::-webkit-search-cancel-button {
   cursor: pointer;
 }
 
-.search > button:hover {
-  background: var(--yellow-hover);
+.search > button {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--radius-control) - 4px);
+  background: transparent;
+  color: var(--graphite);
+  cursor: pointer;
+  transition: background .2s var(--ease), color .2s var(--ease);
+}
+
+.search > button svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.search > button:hover,
+.search > button:focus-visible {
+  background: var(--yellow);
+  outline: none;
 }
 
 .search-results {
@@ -2647,6 +2708,7 @@ a.brand-directory-card:focus-visible {
     grid-column: 2;
     width: 46px;
     min-height: 44px;
+    gap: 0;
     padding: 0;
     font-size: 0;
   }
@@ -2822,29 +2884,22 @@ a.brand-directory-card:focus-visible {
   .search {
     grid-column: 1 / -1;
     grid-row: 2;
-    padding-bottom: 10px;
+    height: 42px;
+    margin-bottom: 10px;
   }
 
   /* The field keeps 16px from the 900px block (AUD-026); the placeholder stays compact so it fits. */
-  .search input {
-    height: 42px;
-    padding-right: 78px;
-  }
-
   .search input::placeholder {
     font-size: 14px;
   }
 
   .search > button {
-    top: 4px;
-    right: 4px;
-    height: 34px;
-    padding-inline: 12px;
-    border-radius: 6px;
+    width: 32px;
+    height: 32px;
   }
 
   .search-results {
-    top: calc(100% - 2px);
+    top: calc(100% + 6px);
     width: 100%;
     max-height: min(68vh, 520px);
   }
@@ -3421,11 +3476,6 @@ a.brand-directory-card:focus-visible {
 .catalog-button.is-active,
 .catalog-button[aria-expanded="true"] {
   background: var(--yellow-hover);
-  box-shadow: inset 0 -3px 0 var(--graphite);
-}
-
-.catalog-button[aria-expanded="true"] .catalog-button__mark i:nth-child(2) {
-  transform: translateX(3px);
 }
 
 .catalog-menu {
@@ -3712,7 +3762,8 @@ a.brand-directory-card:focus-visible {
   .catalog-button:active,
   .catalog-button.is-active,
   .catalog-button[aria-expanded="true"] { background: transparent; box-shadow: none; color: #fff; transform: none; }
-  .catalog-button__mark { width: 24px; gap: 5px; }
+  .catalog-button__icon { display: none; }
+  .catalog-button__mark { display: grid; width: 24px; gap: 5px; }
   .catalog-button__mark i { height: 2px; }
   .catalog-button__mark i { transition: transform .2s ease, opacity .2s ease; }
   .catalog-button[aria-expanded="true"] .catalog-button__mark i:nth-child(1) { transform: translateY(7px) rotate(45deg); }
