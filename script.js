@@ -72,6 +72,29 @@ function storefrontCategoryGroups() {
   }));
 }
 
+// Line icons for the homepage categories, chosen by the section's address (/catalog/<slug>): black strokes, red for
+// heat and blue for water and air. A section without its own icon gets the catalogue tiles.
+const STOREFRONT_CATEGORY_ICONS = {
+  heating: '<rect x="5" y="13" width="22" height="13" rx="2"/><path d="M10.5 13v13M16 13v13M21.5 13v13M8 26v2.5M24 26v2.5"/><path class="storefront-icon-red" d="M10.5 10c-1.2-1.1-1.2-2.3 0-3.4s1.2-2.3 0-3.4M16 10c-1.2-1.1-1.2-2.3 0-3.4s1.2-2.3 0-3.4M21.5 10c-1.2-1.1-1.2-2.3 0-3.4s1.2-2.3 0-3.4"/>',
+  "water-supply": '<path d="M3.5 9.5v8M3.5 11h13.5a6 6 0 0 1 6 6v2h-5v-2a1 1 0 0 0-1-1H3.5M12 11V7M8.5 7h7"/><path class="storefront-icon-blue-fill" d="M20.5 22.5c-1.3 1.7-1.9 2.8-1.9 3.6a1.9 1.9 0 0 0 3.8 0c0-.8-.6-1.9-1.9-3.6z"/>',
+  "water-treatment": '<rect x="7" y="4" width="18" height="4.5" rx="1.5"/><path d="M7 6.25H4M25 6.25h3M10 8.5V24a4 4 0 0 0 4 4h4a4 4 0 0 0 4-4V8.5"/><path class="storefront-icon-blue-fill" d="M16 13c-2.1 2.8-3.1 4.5-3.1 5.9a3.1 3.1 0 0 0 6.2 0c0-1.4-1-3.1-3.1-5.9z"/>',
+  sewerage: '<circle cx="16" cy="16" r="12"/><circle cx="16" cy="16" r="8.5"/><path d="M8.1 13h15.8M8.1 19h15.8"/><path class="storefront-icon-blue" d="M7.5 16h17"/>',
+  "smart-home": '<path d="M4.5 15 16 5.5 27.5 15M8 12.5V27h16V12.5"/><path class="storefront-icon-blue" d="M12.6 19.6a4.8 4.8 0 0 1 6.8 0M10.2 17.2a8.2 8.2 0 0 1 11.6 0"/><circle class="storefront-icon-blue-fill" cx="16" cy="22.6" r="1.4"/>',
+  climate: '<rect x="3.5" y="6" width="25" height="10.5" rx="2.5"/><path d="M8 13h16"/><circle class="storefront-icon-red-fill" cx="24.2" cy="9.3" r="1"/><path class="storefront-icon-blue" d="M10.5 20l-1.2 4.5M16 20v5.5M21.5 20l1.2 4.5"/>',
+  "household-equipment": '<path d="M16 28.5V8.5"/><path d="M16 23.5c-3.3 0-5.3-2-5.3-5.3 3.3 0 5.3 2 5.3 5.3zM16 23.5c3.3 0 5.3-2 5.3-5.3-3.3 0-5.3 2-5.3 5.3zM16 17c-3.3 0-5.3-2-5.3-5.3 3.3 0 5.3 2 5.3 5.3zM16 17c3.3 0 5.3-2 5.3-5.3-3.3 0-5.3 2-5.3 5.3zM16 8.5c-1.6-1.6-1.6-3.9 0-5.5 1.6 1.6 1.6 3.9 0 5.5z"/>',
+  catalog: '<rect x="5" y="5" width="9" height="9" rx="2"/><rect x="18" y="5" width="9" height="9" rx="2"/><rect x="5" y="18" width="9" height="9" rx="2"/><rect x="18" y="18" width="9" height="9" rx="2"/>'
+};
+
+function storefrontCategoryIcon(href) {
+  const slug = String(href || "").split("?")[0].replace(/\/+$/, "").split("/").pop();
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "storefront-category__icon");
+  svg.setAttribute("viewBox", "0 0 32 32");
+  svg.setAttribute("aria-hidden", "true");
+  svg.innerHTML = STOREFRONT_CATEGORY_ICONS[slug] || STOREFRONT_CATEGORY_ICONS.catalog;
+  return svg;
+}
+
 function setupStorefrontCategories() {
   const navigation = document.querySelector("[data-storefront-categories]");
   const panel = navigation?.querySelector("[data-storefront-subcategories]");
@@ -107,7 +130,7 @@ function setupStorefrontCategories() {
     strong.textContent = group.title;
     const description = document.createElement("span");
     description.textContent = group.description;
-    item.append(strong, description);
+    item.append(storefrontCategoryIcon(group.href), strong, description);
     navigation.insertBefore(item, panel);
   });
   const buttons = [...navigation.querySelectorAll("[data-storefront-category]")];
