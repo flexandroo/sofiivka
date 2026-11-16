@@ -1777,8 +1777,9 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
   background: var(--surface-soft);
 }
 
+/* The page opens with the breadcrumbs, so «Усі бренди» follows them as closely as the catalogue's section tabs do. */
 .brand-directory-all {
-  padding-block: clamp(32px, 4vw, 56px) var(--section-space);
+  padding-block: 28px var(--section-space);
 }
 
 .brand-directory-section {
