@@ -1275,17 +1275,20 @@ body[data-page="product"] {
 .co-methods p { margin-top: 6px; color: var(--text-secondary); font-size: 15px; line-height: 1.5; }
 .co-methods small { margin-top: auto; padding-top: 14px; color: var(--text); font-size: 14px; font-weight: 600; }
 
-/* /about */
-.co-about__text { display: flex; flex-direction: column; justify-content: space-between; gap: clamp(24px, 3vw, 40px); }
-.co-about .co-facts { margin-top: 0; }
-/* Beside the photo the four figures stand 2 × 2. */
-@media (min-width: 961px) {
-  .co-about .co-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .co-about .co-facts > div { padding: 18px 16px 18px 0; }
-  .co-about .co-facts > div + div { padding-left: 0; border-left: 0; }
-  .co-about .co-facts > div:nth-child(even) { padding-left: 24px; border-left: 1px solid var(--divider); }
-  .co-about .co-facts > div:nth-child(n+3) { border-top: 1px solid var(--divider); }
-}
+/* /about: the text, the figures and the showroom photo sit right under the headline, so the figures are on the first
+   screen: beside the photo on a computer (text on top, figures in one row at the photo's foot), under it on a phone. */
+.page-hero:has(+ .co-about-section) { padding-bottom: 8px; }
+.page-hero + .co-about-section { padding-top: 12px; }
+.co-about { grid-template-rows: auto 1fr; grid-template-areas: "text photo" "facts photo"; row-gap: clamp(20px, 2.4vw, 28px); }
+.co-about > .prose { grid-area: text; }
+.co-about > .co-facts { grid-area: facts; align-self: end; }
+/* The text and the figures set the height; the photo fills it instead of stretching the block to its own 3:2. */
+.co-about > .co-photo { position: relative; grid-area: photo; min-height: 320px; max-height: none; }
+.co-about > .co-photo img { position: absolute; inset: 0; }
+/* No rules between the figures: space alone keeps them apart. */
+.co-about .co-facts { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px clamp(16px, 2vw, 28px); margin: 0; border-top: 0; }
+.co-about .co-facts > div:nth-child(n) { padding: 0; border: 0; }
+.co-about .co-facts dt { font-size: clamp(26px, 2.6vw, 40px); }
 .co-heading-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 32px; margin-bottom: clamp(20px, 2.4vw, 32px); }
 .co-heading-row .co-heading { margin-bottom: 0; }
 .co-heading-row .text-link { white-space: nowrap; }
@@ -1349,6 +1352,8 @@ body[data-page="product"] {
   .co-reasons, .co-sections { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .co-brand-logos { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .co-visit { grid-template-columns: minmax(0, 1fr); grid-template-areas: "intro" "stores" "actions"; }
+  .co-about { grid-template-rows: none; grid-template-areas: "photo" "facts" "text"; }
+  .co-about > .co-photo { min-height: 0; max-height: none; aspect-ratio: 16 / 9; }
 }
 @media (max-width: 620px) {
   .co-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1359,6 +1364,7 @@ body[data-page="product"] {
   .co-compare { grid-template-columns: minmax(0, 1fr); }
   .co-reasons, .co-sections { grid-template-columns: minmax(0, 1fr); }
   .co-reasons li { padding: 14px 0 16px; }
+  .co-about .co-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
   .co-brand-logos { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .co-brand-logos .brand-media { height: 64px; padding: 10px; }
   .co-brand-logos .brand-media img { max-height: 40px; }

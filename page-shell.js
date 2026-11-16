@@ -131,7 +131,7 @@
     }
     if (catalogDown && pageContent === catalogFailureMarkup()) setNoindex();
     root.innerHTML = headerExtended() + `<main id="main" class="page-main">${pageContent}</main>` + footerExtended() + `<div class="toast" data-page-toast role="status" aria-live="polite"></div>`;
-    if (page === "about") refreshCatalogTotal();
+    if (page === "about") { countUpFacts(); refreshCatalogTotal(); }
     window.sofievkaCatalogUI?.trackProductImages(root);
     window.sofievkaSiteSettings?.applyHooks(root);
     window.sofievkaAccount?.decorateHeader(root);
@@ -1362,8 +1362,48 @@
         signal: AbortSignal.timeout(10000)
       });
       const total = response.ok ? Number((await response.json())?.total) : 0;
-      if (total >= 100) node.textContent = `${new Intl.NumberFormat("uk-UA").format(Math.floor(total / 100) * 100)}+`;
+      if (total < 100) return;
+      const figure = `${new Intl.NumberFormat("uk-UA").format(Math.floor(total / 100) * 100)}+`;
+      // While the figures count up (countUpFacts) the live total becomes the target of the count.
+      if (node.dataset.count) node.dataset.count = figure;
+      else node.textContent = figure;
     } catch { /* The first paint figure stays. */ }
+  }
+
+  // The /about figures count up from zero, fast, the first time they are on screen (at once on opening the page).
+  // Each frame reads the target from data-count, so the live catalogue total can land mid-count.
+  function countUpFacts() {
+    const nodes = [...root.querySelectorAll(".co-facts dt")];
+    if (!nodes.length || !("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const parse = text => ({ value: Number(String(text).replace(/\D/g, "")) || 0, suffix: /\+\s*$/.test(text) ? "+" : "", grouped: /\d\s\d/.test(text) });
+    const show = (node, value) => {
+      const target = parse(node.dataset.count);
+      node.textContent = `${target.grouped ? new Intl.NumberFormat("uk-UA").format(value) : value}${target.suffix}`;
+    };
+    const run = node => {
+      const start = performance.now();
+      const step = now => {
+        const progress = Math.min(1, (now - start) / 1200);
+        if (progress < 1) {
+          show(node, Math.round(parse(node.dataset.count).value * (1 - (1 - progress) ** 3)));
+          requestAnimationFrame(step);
+          return;
+        }
+        node.textContent = node.dataset.count;
+        delete node.dataset.count;
+      };
+      requestAnimationFrame(step);
+    };
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      observer.unobserve(entry.target);
+      run(entry.target);
+    }), { threshold: .5 });
+    nodes.forEach(node => {
+      node.dataset.count = node.textContent;
+      show(node, 0);
+      observer.observe(node);
+    });
   }
 
   // Objects the company built and services; shared by /about and /portfolio.
@@ -1428,7 +1468,7 @@
     const logoSrc = logo => (/^(https:\/\/|\/)/.test(logo) ? logo : `/${logo}`);
     const sectionSlug = href => String(href).split("?")[0].replace(/\/+$/, "").split("/").pop();
     return hero("Про компанію", "Про компанію", "")
-      + coSection(`<div class="co-split co-about"><div class="co-about__text"><article class="prose"><p>«Софіївка» починала з котельних систем і досі вважає їх своєю головною спеціалізацією. Сьогодні ми ведемо весь шлях обладнання: допомагаємо обрати, постачаємо, встановлюємо, запускаємо й обслуговуємо його після гарантії.</p><p>Серед наших клієнтів власники будинків і квартир, забудовники, монтажники, проєктанти й архітектори. Ми розраховуємо на довгу співпрацю, тому радимо те, що підходить саме вашому об’єкту.</p></article><dl class="co-facts">${facts.map(([value, label]) => `<div><dt${label === "товарів у каталозі" ? " data-catalog-total" : ""}>${value}</dt><dd>${label}</dd></div>`).join("")}</dl></div>${coPhoto("/assets/images/showroom.webp", "Торговий зал магазину з котлами, насосами й арматурою", "co-photo--tall")}</div>`)
+      + coSection(`<div class="co-split co-about"><article class="prose"><p>«Софіївка» починала з котельних систем і досі вважає їх своєю головною спеціалізацією. Сьогодні ми ведемо весь шлях обладнання: допомагаємо обрати, постачаємо, встановлюємо, запускаємо й обслуговуємо його після гарантії.</p><p>Серед наших клієнтів власники будинків і квартир, забудовники, монтажники, проєктанти й архітектори. Ми розраховуємо на довгу співпрацю, тому радимо те, що підходить саме вашому об’єкту.</p></article><dl class="co-facts">${facts.map(([value, label]) => `<div><dt${label === "товарів у каталозі" ? " data-catalog-total" : ""}>${value}</dt><dd>${label}</dd></div>`).join("")}</dl>${coPhoto("/assets/images/showroom.webp", "Торговий зал магазину з котлами, насосами й арматурою", "co-photo--tall")}</div>`, { className: "co-about-section" })
       + coSection(`${coHeading("Чому з нами просто")}<ul class="co-reasons">${ABOUT_REASONS.map(([title, text]) => `<li><h3>${title}</h3><p>${text}</p></li>`).join("")}</ul>`, { white: true })
       + coSection(`${coHeadingRow("Наші об’єкти", "Від квартири до логістичного центру. Кілька проєктів, які ми реалізували й обслуговуємо.", "/portfolio", "Усі об’єкти")}${projectListMarkup()}`)
       + (brands.length ? coSection(`${coHeadingRow("Бренди", "Співпрацюємо з виробниками, яким довіряємо.", "/brands", "Усі бренди")}<ul class="co-brand-logos">${brands.map(brand => `<li><a href="${escapeHtml(window.sofievkaCatalog?.brandUrl?.(brand.id || brand.slug) || `/brands/${brand.slug}`)}"><span class="brand-media${brand.logoTheme === "dark" ? " brand-media--dark" : ""}"><img src="${escapeHtml(logoSrc(brand.logo))}" alt="${escapeHtml(brand.name)}" loading="lazy" decoding="async"></span></a></li>`).join("")}</ul>`, { white: true }) : "")
