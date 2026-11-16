@@ -1217,7 +1217,7 @@ function renderHomepageCatalogFailure() {
 // Homepage banners from /admin/banners, served by the public RPC get_homepage_banners.
 // index.html keeps the static slides and tiles as first paint and fallback; the copy saved on
 // the last visit renders straight away and the fresh copy replaces it when it arrives. Every
-// text goes in as an attribute value, never as markup, and every address through bannerSafeUrl.
+// text goes in through textContent and every address through bannerSafeUrl.
 const HOMEPAGE_BANNERS_CACHE = "sofievka.homepageBanners.v1";
 
 function bannerSafeUrl(value) {
@@ -1259,32 +1259,62 @@ function bannerImage(banner, className, { eager = false, lazy = !eager, focus = 
   return picture;
 }
 
-// The text and the button are drawn on the banner image itself, so the site shows the picture only: the whole
-// banner is the link, and the title names it for screen readers.
-function bannerLink(banner, className) {
-  const link = bannerElement("a", className);
-  link.href = bannerSafeUrl(banner.linkUrl) || "/catalog";
-  link.setAttribute("aria-label", banner.title);
-  return link;
+function bannerButtonContent(label) {
+  const arrow = bannerElement("span", "arrow-mark");
+  arrow.setAttribute("aria-hidden", "true");
+  return [label, " ", arrow];
 }
 
 function buildHeroSlide(banner, index, total) {
   const slide = bannerElement("article", `storefront-slide${index === 0 ? " is-active" : ""}`);
   slide.dataset.slide = "";
   slide.setAttribute("aria-label", `Слайд ${index + 1} з ${total}`);
-  const link = bannerLink(banner, "storefront-slide__link");
-  link.append(bannerImage(banner, "storefront-slide__image", { eager: index === 0 }));
+  const link = bannerElement("a", "storefront-slide__link");
+  link.href = bannerSafeUrl(banner.linkUrl) || "/catalog";
+  const content = bannerElement("div", "storefront-slide__content");
+  const logo = bannerSafeUrl(banner.logoUrl);
+  if (logo) {
+    const brand = bannerElement("img", "storefront-slide__brand storefront-slide__brand--original");
+    brand.src = logo;
+    brand.alt = banner.logoAlt || "";
+    brand.width = 180;
+    brand.height = 72;
+    content.append(brand);
+  }
+  if (banner.kicker) {
+    const kicker = bannerElement("p", "storefront-slide__technical");
+    String(banner.kicker).split("\n").forEach((line, lineIndex) => {
+      if (lineIndex) kicker.append(document.createElement("br"));
+      kicker.append(line);
+    });
+    content.append(kicker);
+  }
+  // The page heading is a hidden h1 above the storefront; slides carry h2.
+  content.append(bannerElement("h2", "", banner.title));
+  if (banner.text) content.append(bannerElement("p", "storefront-slide__lead", banner.text));
+  if (banner.buttonLabel) {
+    const button = bannerElement("span", "button button--primary");
+    button.append(...bannerButtonContent(banner.buttonLabel));
+    content.append(button);
+  }
+  link.append(bannerImage(banner, "storefront-slide__image", { eager: index === 0 }), content);
   slide.append(link);
   return slide;
 }
 
 function buildPromoTile(banner) {
   const product = banner.layout === "product";
-  const tile = bannerElement("article", `storefront-promo storefront-promo--${product ? "product" : "cover"}`);
-  const link = bannerLink(banner, "storefront-promo__link");
+  const tile = bannerElement("article", `storefront-promo storefront-promo--${product ? "water" : "climate"}`);
+  const copy = bannerElement("div", "storefront-promo__copy");
+  if (banner.kicker) copy.append(bannerElement("span", "storefront-promo__brand", banner.kicker));
+  copy.append(bannerElement("h2", "", banner.title));
+  if (banner.text) copy.append(bannerElement("p", "", banner.text));
+  const link = bannerElement("a", "button button--primary storefront-promo__action");
+  link.href = bannerSafeUrl(banner.linkUrl) || "/catalog";
+  link.append(...bannerButtonContent(banner.buttonLabel || "Детальніше"));
   // The tiles sit on the first screen next to the slider, so their images load right away.
-  link.append(bannerImage(banner, "", { focus: !product, lazy: false }));
-  tile.append(link);
+  const image = bannerImage(banner, "", { focus: !product, lazy: false });
+  tile.append(...(product ? [copy, image, link] : [image, copy, link]));
   return tile;
 }
 

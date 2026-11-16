@@ -12,12 +12,12 @@ const PLACEMENTS = Object.freeze({
   },
   promo: {
     kicker: "ПЛИТКИ", title: "Плитки праворуч від банера", add: "Додати плитку", newTitle: "Нова плитка",
-    note: "Сайт показує дві перші активні плитки: першу вгорі, другу внизу. У кожному місці з нею чергується ще одна, вбудована в сайт. Якщо активних немає, лишаються вбудовані."
+    note: "Сайт показує дві перші активні плитки. Якщо активних немає, лишаються стандартні плитки."
   }
 });
 const LAYOUTS = Object.freeze({
-  cover: { label: "Зображення на всю плитку" },
-  product: { label: "Фото товару на білому тлі, цілком" }
+  cover: { label: "Фото на всю площу, текст зліва" },
+  product: { label: "Фото товару праворуч на світлому тлі" }
 });
 const STATE = Object.freeze({
   live: { label: "На сайті", tone: "success" },
@@ -34,8 +34,6 @@ const FIELD_LABELS = Object.freeze({
 });
 const EDITABLE = Object.freeze(["placement", "layout", "imageUrl", "mobileImageUrl", "imageAlt", "imageFocus", "logoUrl", "logoAlt",
   "kicker", "title", "text", "buttonLabel", "linkUrl", "active", "dateFrom", "dateTo"]);
-// The banner text is part of the image now; these old overlay fields are cleared on the next save.
-const RETIRED = Object.freeze({ logoUrl: "", logoAlt: "", kicker: "", text: "", buttonLabel: "" });
 const URL_HINT = "https://… або шлях сайту: /catalog/heating, /product/<назва-товару>, assets/images/…";
 
 export async function createBannersView({ api, signal }) {
@@ -67,8 +65,7 @@ function editorDialog(canEdit) {
     <dialog class="admin-dialog admin-create-dialog admin-banner-dialog" data-banner-dialog aria-labelledby="banner-dialog-title">
       <form data-banner-form novalidate>
         <header><p class="admin-kicker" data-banner-dialog-kicker>БАНЕР</p><h2 id="banner-dialog-title" data-banner-dialog-title>Банер</h2>
-          <p>Текст і кнопка мають бути намальовані на самому зображенні: сайт показує лише картинку, і весь банер веде за посиланням.
-            JPG, PNG, WebP або AVIF. Слайд — 2:1 (від 1600×800), плитка — квадрат (від 800×800): у цих пропорціях сайт показує банер цілком.</p></header>
+          <p>Зображення: JPG, PNG, WebP або AVIF. Для слайда найкраще горизонтальне фото від 1536×1024.</p></header>
         <div class="admin-form-grid">
           <label class="admin-field"><span>Місце показу</span><select name="placement">
             ${Object.entries(PLACEMENTS).map(([value, meta]) => `<option value="${value}">${escape(meta.title)}</option>`).join("")}</select></label>
@@ -76,10 +73,16 @@ function editorDialog(canEdit) {
             ${Object.entries(LAYOUTS).map(([value, item]) => `<option value="${value}">${escape(item.label)}</option>`).join("")}</select></label>
           ${urlField("imageUrl", "Зображення", { required: true, upload: canEdit, hint: URL_HINT })}
           <div class="admin-field admin-banner-preview" aria-hidden="true"><span>Попередній перегляд</span><div data-banner-preview></div></div>
-          ${urlField("mobileImageUrl", "Зображення для телефона", { upload: canEdit, hint: "Необов’язково, у тих самих пропорціях. Порожнє поле: те саме зображення." })}
+          ${urlField("mobileImageUrl", "Зображення для телефона", { upload: canEdit, hint: "Необов’язково. Порожнє поле: те саме зображення." })}
           ${textField("imageFocus", "Фокус фото по горизонталі, %", "number", { hint: "0 — тримати в кадрі лівий край, 100 — правий, 50 — центр." })}
           ${textField("imageAlt", "Опис зображення", "text", { maxLength: 200, full: true, hint: "Для незрячих і пошуковиків. Порожнє поле: фото декоративне." })}
-          ${textField("title", "Назва банера", "text", { maxLength: 160, full: true, required: true, hint: "Впишіть головний текст з картинки. Поверх неї на сайті він не виводиться: його читають програми для незрячих." })}
+          ${urlField("logoUrl", "Логотип бренду", { upload: canEdit, hint: "Необов’язково. Показується над заголовком слайда.", heroOnly: true })}
+          <label class="admin-field" data-hero-only><span>Назва бренду на логотипі</span><input name="logoAlt" maxlength="80"></label>
+          <label class="admin-field admin-field--full"><span>Надзаголовок</span><textarea name="kicker" maxlength="120" rows="2"></textarea>
+            <small data-hero-only>Дрібний текст над заголовком; можна 2–3 рядки. На телефоні в слайді не показується.</small></label>
+          ${textField("title", "Заголовок", "text", { maxLength: 160, full: true, required: true })}
+          <label class="admin-field admin-field--full"><span>Текст</span><textarea name="text" maxlength="300" rows="2"></textarea></label>
+          ${textField("buttonLabel", "Текст кнопки", "text", { maxLength: 40, hint: "Порожнє поле: слайд без кнопки (клікабельний увесь), плитка з кнопкою «Детальніше»." })}
           ${textField("linkUrl", "Посилання", "text", { maxLength: 1000, required: true, hint: URL_HINT })}
           <label class="admin-field admin-settings-check"><input type="checkbox" name="active"><span>Показувати на сайті</span></label>
           <span aria-hidden="true"></span>
@@ -123,7 +126,7 @@ function bindBanners(container, api, initial) {
           thumb(banner.imageUrl, banner.layout),
           element("div", { className: "admin-banner-item__info" },
             element("strong", {}, banner.title),
-            element("small", {}, banner.linkUrl),
+            element("small", {}, [banner.kicker.replace(/\n/g, " "), banner.linkUrl].filter(Boolean).join(" · ")),
             element("span", { className: "admin-banner-item__meta" },
               badge(status),
               status === "live" && !shown ? element("span", { className: "admin-muted" }, `не вміщається: показуються перші ${limit}`) : null,
@@ -199,6 +202,7 @@ function bindBanners(container, api, initial) {
   const preview = dialog.querySelector("[data-banner-preview]");
   const syncPlacement = () => {
     const hero = field("placement").value === "hero";
+    dialog.querySelectorAll("[data-hero-only]").forEach(node => { node.hidden = !hero; });
     dialog.querySelectorAll("[data-promo-only]").forEach(node => { node.hidden = hero; });
     if (hero) field("layout").value = "cover";
     syncPreview();
@@ -346,8 +350,12 @@ function readForm(form) {
     mobileImageUrl: value("mobileImageUrl"),
     imageAlt: value("imageAlt"),
     imageFocus: value("imageFocus") === "" ? null : Number(value("imageFocus")),
-    ...RETIRED,
+    logoUrl: placement === "hero" ? value("logoUrl") : "",
+    logoAlt: placement === "hero" ? value("logoAlt") : "",
+    kicker: value("kicker"),
     title: value("title"),
+    text: value("text"),
+    buttonLabel: value("buttonLabel"),
     linkUrl: value("linkUrl"),
     active: Boolean(form.elements.namedItem("active")?.checked),
     dateFrom: fromLocalInput(value("dateFrom")),
@@ -426,8 +434,8 @@ function iconButton(label, text, data, disabled) {
   return element("button", { className: "admin-icon-button", type: "button", "aria-label": label, title: label, disabled, ...data }, text);
 }
 
-function urlField(name, label, { required = false, upload = false, hint = "" } = {}) {
-  return `<div class="admin-field admin-field--full"><span><label for="banner-${name}">${escape(label)}</label></span>
+function urlField(name, label, { required = false, upload = false, hint = "", heroOnly = false } = {}) {
+  return `<div class="admin-field admin-field--full"${heroOnly ? " data-hero-only" : ""}><span><label for="banner-${name}">${escape(label)}</label></span>
     <div class="admin-banner-url"><input id="banner-${name}" name="${name}" maxlength="1000" autocomplete="off" spellcheck="false" ${required ? "required" : ""}>
       ${upload ? `<span class="admin-banner-url__actions"><button class="admin-button admin-button--secondary" type="button" data-media-pick="${name}">Медіатека</button>
       <button class="admin-button admin-button--secondary" type="button" data-upload-button="${name}">Завантажити</button></span>
