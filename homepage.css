@@ -814,10 +814,11 @@
   mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent);
 }
 
+/* 70 s per six logos (script.js sets --brand-count): the strip keeps its speed however many brands there are. */
 .home-page .home-brands .brand-wall__track {
   display: flex;
   width: max-content;
-  animation: homepage-brand-scroll 70s linear infinite;
+  animation: homepage-brand-scroll calc(var(--brand-count, 6) * 70s / 6) linear infinite;
   will-change: transform;
 }
 
@@ -849,9 +850,10 @@
   filter: none;
 }
 
+/* The 60px box minus its padding: a percentage does not hold a logo in the grid box, and a tall one (FOCUS) spilled out. */
 .home-page .home-brands .brand-media img {
   max-width: 100%;
-  max-height: 100%;
+  max-height: 44px;
   object-fit: contain;
 }
 
@@ -1653,8 +1655,21 @@
   }
 
   .home-page .home-brands .brand-wall__track {
+    width: auto;
     animation: none;
     transform: none;
+  }
+
+  /* Without the movement every logo has to be in view, so the strip wraps into rows. */
+  .home-page .home-brands .brand-wall__group {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-right: 0;
+  }
+
+  .home-page .home-brands .brand-wall__group[aria-hidden="true"] {
+    display: none;
   }
 }
 

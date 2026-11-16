@@ -763,10 +763,10 @@ function catalogBrandList() {
     .filter(brand => brand.type === "catalog" && brand.visibility !== "hidden" && hasProducts(brand));
 }
 
-function featuredCatalogBrands() {
-  return catalogBrandList()
-    .filter(brand => brand.featured)
-    .sort((first, second) => (first.featuredOrder ?? 999) - (second.featuredOrder ?? 999) || first.name.localeCompare(second.name, "uk"));
+// The homepage strip shows every brand with products: the recommended ones first, in their order, then the rest by name.
+function homepageBrandList() {
+  const rank = brand => (brand.featured ? brand.featuredOrder ?? 999 : Infinity);
+  return catalogBrandList().sort((first, second) => rank(first) - rank(second) || first.name.localeCompare(second.name, "uk"));
 }
 
 function createBrandMedia(brand, fallbackTarget) {
@@ -850,7 +850,7 @@ function setupHomepageBrands() {
   const wall = document.querySelector("[data-homepage-brands]");
   if (!wall) return;
 
-  const brands = featuredCatalogBrands().slice(0, 9);
+  const brands = homepageBrandList();
   const createGroup = decorativeDuplicate => {
     const group = document.createElement("div");
     group.className = "brand-wall__group";
@@ -872,6 +872,7 @@ function setupHomepageBrands() {
 
   const track = document.createElement("div");
   track.className = "brand-wall__track";
+  track.style.setProperty("--brand-count", String(brands.length));
   track.append(createGroup(false), createGroup(true));
   // Every logo loads up front: a lazy logo that loads and decodes while the strip moves makes it stutter.
   track.querySelectorAll("img").forEach(image => { image.loading = "eager"; });
