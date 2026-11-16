@@ -208,5 +208,26 @@ export async function run(db) {
   await db.exec(aboutSql);
   assert.deepEqual((await one(db, "select updated_at from public.site_pages where slug = 'about'")).updated_at, stamp, "re-run is a no-op");
 
-  console.log(JSON.stringify({ status: "ok", scenarios: 10, suite: "pages" }));
+  // 11. 20261116000100_about_page_who_we_are: the article keeps «Хто ми» as edited and loses the later sections.
+  const whoSql = fs.readFileSync(path.join(MIGRATIONS_DIR, "20261116000100_about_page_who_we_are.sql"), "utf8");
+  const editedAbout = [
+    { type: "heading", text: "Хто ми" },
+    { type: "paragraph", text: "Змінений в адмінці абзац." },
+    { type: "list", ordered: false, items: ["Пункт під «Хто ми»"] },
+    { type: "heading", text: "Що ми гарантуємо" },
+    { type: "list", ordered: false, items: ["Лише офіційна продукція."] },
+    { type: "heading", text: "Магазин" },
+    { type: "paragraph", text: "Адреса." }
+  ];
+  await db.query("update public.site_pages set body = $1 where slug = 'about'", [JSON.stringify(editedAbout)]);
+  await db.exec(whoSql);
+  assert.deepEqual((await one(db, "select body from public.site_pages where slug = 'about'")).body, editedAbout.slice(0, 3));
+  const trimmedStamp = (await one(db, "select updated_at from public.site_pages where slug = 'about'")).updated_at;
+  await db.exec(whoSql);
+  assert.deepEqual((await one(db, "select updated_at from public.site_pages where slug = 'about'")).updated_at, trimmedStamp, "re-run is a no-op");
+  await db.query("update public.site_pages set body = '[]' where slug = 'about'");
+  await db.exec(whoSql);
+  assert.deepEqual((await one(db, "select body from public.site_pages where slug = 'about'")).body, [], "an empty article stays empty");
+
+  console.log(JSON.stringify({ status: "ok", scenarios: 11, suite: "pages" }));
 }

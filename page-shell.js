@@ -1379,19 +1379,60 @@
     return `<ul class="co-projects">${COMPANY_PROJECTS.map(([image, name, work]) => `<li><img src="${image}" alt="${name}: обладнання на об’єкті" width="1280" height="853" loading="lazy" decoding="async"><h3>${name}</h3><p>${work}</p></li>`).join("")}</ul>`;
   }
 
+  // /about: who we are with the figures and the showroom, what a customer gets, objects, brands, the catalogue
+  // sections and the shop. The article («Хто ми») is the part /admin/pages edits; the rest is built here.
+  const ABOUT_REASONS = [
+    ["Офіційна продукція", "Лише обладнання з гарантією виробника та сервісною підтримкою в Україні. Допомагаємо з гарантійним зверненням."],
+    ["2 роки гарантії на монтаж", "Гарантія на монтажні роботи, а на обладнання — гарантія виробника."],
+    ["Власний сервісний центр", "Обслуговує котли та інженерні системи, зокрема після закінчення гарантії."],
+    ["Підбір фахівцем", "Підбираємо за технічними параметрами й радимо перед покупкою. Фахівці регулярно навчаються у виробників."],
+    ["Власне виробництво", "Виготовляємо комплектуючі для котельного обладнання."],
+    ["Усе для монтажу й доставка", "Комплектуючі й аксесуари до основного обладнання в одному місці, доставка по всій Україні."]
+  ];
+  // Until the catalogue is there (the build's first paint) the sections come from this list.
+  const ABOUT_SECTIONS = [
+    ["heating", "Опалення", "Котли, циркуляційні насоси, бойлери, гідравліка та автоматика"],
+    ["water-supply", "Водопостачання", "Свердловинні насоси, насосні станції, баки та автоматика"],
+    ["water-treatment", "Водопідготовка та очистка", "Фільтри, зворотний осмос, пом’якшення, картриджі та УФ"],
+    ["sewerage", "Каналізація та дренаж", "Дренажні, фекальні насоси та каналізаційні установки"],
+    ["smart-home", "Розумний будинок і автоматизація", "Sinum, освітлення, реле, датчики та клімат"],
+    ["climate", "Клімат", "Кондиціонери та туманоутворення"]
+  ];
+  function aboutSections() {
+    const catalog = window.sofievkaCatalog;
+    const live = Array.isArray(catalog?.activeSections) ? catalog.activeSections : [];
+    if (!live.length) return ABOUT_SECTIONS.map(([slug, title, text]) => ({ title, text, href: `/catalog/${slug}` }));
+    return live.map(section => ({ title: section.title || section.name, text: section.menuDescription || section.description || "", href: catalog.getCategoryPath?.(section.id) || `/catalog/${section.id}` }));
+  }
+  // Brands with products on sale, the recommended ones first (as on the homepage strip); before the catalogue
+  // is there, the recommended brands stand in.
+  function aboutBrands() {
+    const registry = Array.isArray(window.sofievkaBrandRegistry) ? window.sofievkaBrandRegistry : [];
+    const fallback = new Map(registry.map(brand => [brand.slug, brand]));
+    const live = Array.isArray(window.sofievkaBrands) ? window.sofievkaBrands : registry;
+    const catalog = window.sofievkaCatalog;
+    const counted = typeof catalog?.countForBrand === "function";
+    const rank = brand => (brand.featured ? brand.featuredOrder ?? 999 : Infinity);
+    return live
+      .map(brand => ({ ...fallback.get(brand.slug), ...brand, logo: brand.logo || fallback.get(brand.slug)?.logo || "" }))
+      .filter(brand => brand.type === "catalog" && brand.visibility !== "hidden" && brand.logo
+        && (counted ? catalog.countForBrand(brand.id || brand.slug) > 0 : brand.featured))
+      .sort((first, second) => rank(first) - rank(second) || first.name.localeCompare(second.name, "uk"));
+  }
+  const coHeadingRow = (title, lead, href, label) => `<div class="co-heading-row">${coHeading(title, lead)}<a class="text-link" href="${href}">${label} <span aria-hidden="true">→</span></a></div>`;
+
   function renderAboutExtended() {
     const facts = [["2000", "рік заснування компанії"], ["4 500+", "реалізованих проєктів"], ["3 100+", "товарів у каталозі"], ["5 500+", "клієнтів"]];
-    const directions = [
-      ["/catalog/heating", "/assets/images/solution-boiler-room.webp", "Опалення", "Котли, бойлери, насоси, колектори й автоматика"],
-      ["/catalog/water-supply", "/assets/images/hero-water.webp", "Водопостачання", "Насоси, станції та гідроакумулятори"],
-      ["/catalog/water-treatment", "/assets/images/home-hero-ecosoft-water-v1.jpg", "Водопідготовка", "Фільтри, пом’якшення й зворотний осмос"],
-      ["/catalog/climate", "/assets/images/hero-climate.webp", "Клімат", "Кондиціонери та туманоутворення"]
-    ];
+    const brands = aboutBrands();
+    const logoSrc = logo => (/^(https:\/\/|\/)/.test(logo) ? logo : `/${logo}`);
+    const sectionSlug = href => String(href).split("?")[0].replace(/\/+$/, "").split("/").pop();
     return hero("Про компанію", "Про компанію", "З 2000 року продаємо, проєктуємо, монтуємо й обслуговуємо інженерні системи: опалення, водопостачання, водопідготовку та каналізацію.")
-      + coSection(`<div class="co-split"><article class="prose"><h2>Хто ми</h2><p>«Софіївка» починала з котельних систем і досі вважає їх своєю головною спеціалізацією. Сьогодні ми ведемо весь шлях обладнання: допомагаємо обрати, постачаємо, встановлюємо, запускаємо й обслуговуємо його після гарантії.</p><p>Серед наших клієнтів власники будинків і квартир, забудовники, монтажники, проєктанти й архітектори. Ми розраховуємо на довгу співпрацю, тому радимо те, що підходить саме вашому об’єкту.</p><h2>Що ми гарантуємо</h2><ul><li>Лише офіційна продукція з гарантією та сервісною підтримкою в Україні.</li><li>2 роки гарантії на монтажні роботи.</li><li>Гарантія виробника, допомога з гарантійним зверненням, післягарантійне обслуговування.</li><li>Підбір за технічними параметрами й консультація фахівця перед покупкою.</li></ul><h2>Як ми працюємо</h2><ul><li>Сертифіковані фахівці регулярно проходять навчання й тренінги виробників.</li><li>Власний сервісний центр обслуговує котли та інженерні системи.</li><li>Власне виробництво комплектуючих для котельного обладнання.</li><li>Комплектуючі й аксесуари до основного обладнання в одному місці.</li><li>Доставка по всій Україні.</li></ul><h2>Бренди</h2><p>Співпрацюємо з виробниками, яким довіряємо: Termojet, Buderus, BAXI, Wilo, Grundfos, Ecosoft, TEKK HAUS, Altep, FENIKS, FOCUS, TECH та іншими.</p><h2>Магазин</h2><p>с. Софіївська Борщагівка, вул. Київська, 3. Пн–Пт 9:00–18:00, Сб 9:00–14:00.</p></article>${coPhoto("/assets/images/showroom.webp", "Торговий зал магазину з котлами, насосами й арматурою", "co-photo--tall co-photo--sticky")}</div><dl class="co-facts">${facts.map(([value, label]) => `<div><dt${label === "товарів у каталозі" ? " data-catalog-total" : ""}>${value}</dt><dd>${label}</dd></div>`).join("")}</dl>`)
-      + coSection(`${coHeading("Що ми продаємо", "Основні напрямки каталогу. Усередині — обладнання, комплектуючі й матеріали для монтажу.")}<div class="co-mosaic">${directions.map(([href, src, title, text]) => `<a href="${href}"><img src="${src}" alt="" width="1536" height="1024" loading="lazy" decoding="async"><span><strong>${title}</strong><small>${text}</small></span></a>`).join("")}</div>`, { white: true })
-      + coSection(`${coHeading("Наші об’єкти", "Від квартири до логістичного центру. Кілька проєктів, які ми реалізували й обслуговуємо.")}${projectListMarkup()}`)
-      + coCta("Потрібна порада щодо обладнання?", "Опишіть задачу або надішліть список — відповімо телефоном чи листом.");
+      + coSection(`<div class="co-split co-about"><div class="co-about__text"><article class="prose"><h2>Хто ми</h2><p>«Софіївка» починала з котельних систем і досі вважає їх своєю головною спеціалізацією. Сьогодні ми ведемо весь шлях обладнання: допомагаємо обрати, постачаємо, встановлюємо, запускаємо й обслуговуємо його після гарантії.</p><p>Серед наших клієнтів власники будинків і квартир, забудовники, монтажники, проєктанти й архітектори. Ми розраховуємо на довгу співпрацю, тому радимо те, що підходить саме вашому об’єкту.</p></article><dl class="co-facts">${facts.map(([value, label]) => `<div><dt${label === "товарів у каталозі" ? " data-catalog-total" : ""}>${value}</dt><dd>${label}</dd></div>`).join("")}</dl></div>${coPhoto("/assets/images/showroom.webp", "Торговий зал магазину з котлами, насосами й арматурою", "co-photo--tall")}</div>`)
+      + coSection(`${coHeading("Чому з нами просто")}<ul class="co-reasons">${ABOUT_REASONS.map(([title, text]) => `<li><h3>${title}</h3><p>${text}</p></li>`).join("")}</ul>`, { white: true })
+      + coSection(`${coHeadingRow("Наші об’єкти", "Від квартири до логістичного центру. Кілька проєктів, які ми реалізували й обслуговуємо.", "/portfolio", "Усі об’єкти")}${projectListMarkup()}`)
+      + (brands.length ? coSection(`${coHeadingRow("Бренди", "Співпрацюємо з виробниками, яким довіряємо.", "/brands", "Усі бренди")}<ul class="co-brand-logos">${brands.map(brand => `<li><a href="${escapeHtml(window.sofievkaCatalog?.brandUrl?.(brand.id || brand.slug) || `/brands/${brand.slug}`)}"><span class="brand-media${brand.logoTheme === "dark" ? " brand-media--dark" : ""}"><img src="${escapeHtml(logoSrc(brand.logo))}" alt="${escapeHtml(brand.name)}" loading="lazy" decoding="async"></span></a></li>`).join("")}</ul>`, { white: true }) : "")
+      + coSection(`${coHeadingRow("Що ми продаємо", "Обладнання, комплектуючі й матеріали для монтажу.", "/catalog", "Увесь каталог")}<ul class="co-sections">${aboutSections().map(section => `<li><a href="${escapeHtml(section.href)}">${window.sofievkaCatalogUI?.sectionIcon?.(sectionSlug(section.href), "co-sections__icon") || ""}<strong>${escapeHtml(section.title)}</strong>${section.text ? `<small>${escapeHtml(section.text)}</small>` : ""}</a></li>`).join("")}</ul>`)
+      + coSection(`<div class="co-visit"><div class="co-visit__intro"><h2>Приїжджайте в магазин</h2><p>Перед візитом уточніть наявність моделі: менеджер перевірить склад і підготує товар або консультацію. Або опишіть задачу — відповімо телефоном чи листом.</p></div><div class="co-visit__stores" data-site-stores>${contactStoresMarkup()}</div><div class="co-visit__actions"><div class="contact-routes" data-site-routes>${contactRoutesMarkup()}</div><a class="button button--secondary" href="/contact#contact-form">Залишити заявку</a></div></div>`, { className: "co-section--flush" });
   }
 
   function renderInstallationExtended() {

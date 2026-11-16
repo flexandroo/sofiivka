@@ -111,10 +111,6 @@
   stroke-linejoin: round;
 }
 
-.storefront-category__icon .storefront-icon-red { stroke: #d6312b; }
-.storefront-category__icon .storefront-icon-blue { stroke: #1f6fd1; }
-.storefront-category__icon .storefront-icon-red-fill { fill: #d6312b; stroke: none; }
-.storefront-category__icon .storefront-icon-blue-fill { fill: #1f6fd1; stroke: none; }
 
 .storefront-category strong,
 .storefront-category > span {

@@ -1780,6 +1780,12 @@ a.product-card__brand { display: inline-flex; align-items: center; min-height: 2
   transition: border-color .2s var(--ease), background .2s var(--ease);
 }
 
+/* Colour details of the catalogue section icons (catalog-ui.js sectionIcon): red for heat, blue for water and air. */
+.storefront-icon-red { stroke: #d6312b; }
+.storefront-icon-blue { stroke: #1f6fd1; }
+.storefront-icon-red-fill { fill: #d6312b; stroke: none; }
+.storefront-icon-blue-fill { fill: #1f6fd1; stroke: none; }
+
 .brand-media {
   width: 100%;
   height: 62px;
