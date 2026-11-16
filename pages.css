@@ -1297,9 +1297,9 @@ body[data-page="product"] {
 .co-facts--plain dt { font-size: clamp(26px, 2.6vw, 40px); }
 .co-about .co-facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
-/* /installation: three facts right under the headline, what we install as tiles, four numbered steps. */
-.page-hero:has(+ .co-facts-section) { padding-bottom: 8px; }
-.page-hero + .co-facts-section { padding-top: 12px; padding-bottom: 0; }
+/* /installation, /service-center: the block right under the headline (facts, the service phone), tiles, steps. */
+.page-hero:has(+ .co-lead-section) { padding-bottom: 8px; }
+.page-hero + .co-lead-section { padding-top: 12px; padding-bottom: 0; }
 .co-facts--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .co-tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
 .co-tiles li { padding: 18px 18px 20px; border-radius: var(--radius-card); background: var(--co-tint); }
@@ -1308,11 +1308,30 @@ body[data-page="product"] {
 @media (max-width: 1100px) {
   .co-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+.co-tiles--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .co-flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(20px, 3vw, 40px); margin: 0; padding: 0; list-style: none; counter-reset: co-flow; }
 .co-flow li { counter-increment: co-flow; }
 .co-flow li::before { content: counter(co-flow); display: grid; place-items: center; width: 36px; height: 36px; margin-bottom: 14px; border-radius: 50%; background: var(--yellow); color: var(--graphite); font-weight: 700; font-variant-numeric: tabular-nums; }
 .co-flow h3 { margin: 0; }
 .co-flow p { margin-top: 6px; color: var(--text-secondary); font-size: 15px; line-height: 1.5; }
+
+/* /service-center */
+.co-callout { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; }
+.co-callout__call { gap: 10px; font-size: 18px; font-variant-numeric: tabular-nums; }
+.co-callout__call .co-icon { width: 22px; height: 22px; color: currentColor; }
+.co-callout__mail { color: var(--graphite); font-weight: 600; }
+.co-callout__area { color: var(--text-secondary); }
+.co-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.co-chips li { padding: 8px 16px; border: 1px solid var(--divider); border-radius: 999px; background: var(--surface); font-size: 15px; font-weight: 600; }
+.co-facts__note { margin-top: 18px; color: var(--text-secondary); font-size: 15px; }
+/* What to send and what not to do stand side by side: each heading of the article starts a column. */
+.co-before .prose { max-width: none; columns: 2; column-gap: clamp(32px, 5vw, 72px); }
+.co-before .prose h2 { font-size: clamp(22px, 2vw, 28px); }
+.co-before .prose h2:not(:first-child) { margin-top: 0; break-before: column; }
+.co-before .prose ol { gap: 12px; padding: 0; list-style: none; counter-reset: co-before; }
+.co-before .prose ol li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; align-items: start; counter-increment: co-before; line-height: 1.5; }
+.co-before .prose ol li::before { content: counter(co-before); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--yellow); color: var(--graphite); font-size: 14px; font-weight: 700; }
+.co-before__note { margin-top: clamp(20px, 3vw, 32px); color: var(--text-secondary); font-size: 15px; }
 .co-heading-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 32px; margin-bottom: clamp(20px, 2.4vw, 32px); }
 .co-heading-row .co-heading { margin-bottom: 0; }
 .co-heading-row .text-link { white-space: nowrap; }
@@ -1398,6 +1417,10 @@ body[data-page="product"] {
   .co-flow li { display: grid; grid-template-columns: 36px minmax(0, 1fr); column-gap: 14px; }
   .co-flow li > * { grid-column: 2; }
   .co-flow li::before { grid-row: 1 / span 2; margin: 0; }
+  .co-callout { flex-direction: column; align-items: stretch; gap: 10px; }
+  .co-callout__call { justify-content: center; }
+  .co-before .prose { columns: 1; }
+  .co-before .prose h2:not(:first-child) { margin-top: 28px; break-before: auto; }
   .co-brand-logos { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .co-brand-logos .brand-media { height: 64px; padding: 10px; }
   .co-brand-logos .brand-media img { max-height: 40px; }

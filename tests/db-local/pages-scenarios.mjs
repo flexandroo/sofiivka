@@ -254,5 +254,14 @@ export async function run(db) {
   await db.exec(solutionsSql);
   assert.equal((await one(db, "select lead from public.site_pages where slug = 'solutions'")).lead, "Свій вступ", "an edited intro stays");
 
-  console.log(JSON.stringify({ status: "ok", scenarios: 13, suite: "pages" }));
+  // 14. 20261116000400_service_center_title: «Сервіс і гарантія» becomes «Сервісний центр»; an edited headline stays.
+  const serviceSql = fs.readFileSync(path.join(MIGRATIONS_DIR, "20261116000400_service_center_title.sql"), "utf8");
+  await db.query("update public.site_pages set title = 'Сервіс і гарантія' where slug = 'service-center'");
+  await db.exec(serviceSql);
+  assert.equal((await one(db, "select title from public.site_pages where slug = 'service-center'")).title, "Сервісний центр");
+  await db.query("update public.site_pages set title = 'Свій заголовок' where slug = 'service-center'");
+  await db.exec(serviceSql);
+  assert.equal((await one(db, "select title from public.site_pages where slug = 'service-center'")).title, "Свій заголовок", "an edited headline stays");
+
+  console.log(JSON.stringify({ status: "ok", scenarios: 14, suite: "pages" }));
 }

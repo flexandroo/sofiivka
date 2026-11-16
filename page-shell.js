@@ -1495,19 +1495,33 @@
   function renderInstallationExtended() {
     const facts = [["2 роки", "гарантії на монтажні роботи"], ["4 500+", "проєктів з 2000 року"], ["Власний сервіс", "запуск, обслуговування й ремонт"]];
     return hero("Монтаж", "Монтаж обладнання", "Проєктуємо, монтуємо й запускаємо інженерні системи по всій Україні. На монтажні роботи даємо гарантію 2 роки.")
-      + coSection(`<dl class="co-facts co-facts--plain co-facts--three">${facts.map(([value, label]) => `<div><dt>${value}</dt><dd>${label}</dd></div>`).join("")}</dl>`, { className: "co-facts-section" })
+      + coSection(`<dl class="co-facts co-facts--plain co-facts--three">${facts.map(([value, label]) => `<div><dt>${value}</dt><dd>${label}</dd></div>`).join("")}</dl>`, { className: "co-lead-section" })
       + coSection(`${coHeading("Що ми монтуємо")}<ul class="co-tiles">${INSTALLATION_WORKS.map(([title, text]) => `<li><h3>${title}</h3><p>${text}</p></li>`).join("")}</ul>`)
       + coSection(`${coHeadingRow("Наші об’єкти", "Котельні й системи, які ми змонтували й обслуговуємо.", "/portfolio", "Усі об’єкти")}${projectListMarkup()}`, { className: "co-section--flush" })
       + coSection(`${coHeading("Як проходить робота")}<ol class="co-flow">${INSTALLATION_STEPS.map(([title, text]) => `<li><h3>${title}</h3><p>${text}</p></li>`).join("")}</ol>`, { white: true })
       + coCta("Порахуємо монтаж для вашого об’єкта", "Надішліть фото, план або проєкт — повернемося з оцінкою робіт і вартості.");
   }
 
+  // /service-center: the service phone right under the headline, what we do as tiles, the boiler brands, the parts
+  // facts and what to prepare before calling (the article /admin/pages edits), then the call to action.
+  const SERVICE_PHONE = "+38 (067) 412-02-55";
+  const SERVICE_EMAIL = "sofievkaservise@gmail.com";
+  const SERVICE_WORKS = [
+    ["Введення в експлуатацію", "Перевіряємо монтаж, герметичність і заземлення, налаштовуємо пальник і режими. Складаємо акт і ставимо котел на гарантію."],
+    ["Планове обслуговування", "Сезонне ТО: чистка, заміна фільтрів, перевірка режимів. Подовжує термін служби й обходиться дешевше за ремонт."],
+    ["Діагностика й ремонт", "Знаходимо причину несправності, ремонтуємо або міняємо пальники й датчики. Ставимо оригінальні запчастини."]
+  ];
+  const SERVICE_BRANDS = ["Baxi", "Vaillant", "Buderus", "Westen", "Altep", "SWaG", "De Dietrich", "Baymak", "Protherm", "Nova Florida", "Termojet", "Focus"];
+
   function renderServiceCenterExtended() {
-    return hero("Сервісний центр", "Сервіс і гарантія", "Обслуговуємо й ремонтуємо газові, твердопаливні та електричні котли й теплові насоси. Майстри виїжджають по Києву та Київській області.")
-      + coSection(`<div class="co-split"><div>${coHeading("Що ми робимо")}${coRows([["Введення в експлуатацію", "Перевіряємо монтаж, герметичність і заземлення, запускаємо котел у тестовому режимі, регулюємо пальник і всі режими. Складаємо акт, проводимо інструктаж і ставимо обладнання на гарантію."], ["Планове обслуговування", "Навіть якісний котел залежить від тиску газу взимку та жорсткості води. Регулярне обслуговування подовжує термін служби й обходиться дешевше за ремонт."], ["Діагностика й ремонт", "Міняємо фільтри, чистимо забруднені елементи, ремонтуємо чи замінюємо пальники й датчики. Використовуємо оригінальні запчастини."], ["Поради з енергоефективності", "Підкажемо, що покращити в будинку чи квартирі, щоб тепло не втрачалось: утеплення, вікна, двері, протяги."]])}</div>${coPhoto("/assets/images/projects/service-boiler.webp", "Настінні котли й обв’язка на об’єкті, який ми обслуговуємо", "co-photo--tall")}</div>`)
-      + coSection(`<div class="co-compare"><div>${coHeading("Котли, які ми обслуговуємо", "Працюємо з найпоширенішими в Україні марками, зокрема:")}<p class="co-brands">Baxi, Vaillant, Buderus, Westen, Altep, SWaG, De Dietrich, Baymak, Protherm, Nova Florida, Termojet, Focus</p></div><div>${coHeading("Запчастини")}${coChecks(["Власний склад запчастин до котлів популярних марок", "Оригінальні деталі, в наявності та під замовлення", "6 місяців гарантії на придбані запчастини", "Знижка для постійних клієнтів"])}</div></div>`, { white: true })
-      + coSection(`<div class="co-split co-split--article"><article class="prose"><h2>Що надіслати</h2><ol><li>Фото шильдика й серійного номера.</li><li>Фото загального підключення без демонтажу корпусу.</li><li>Код помилки або точний опис індикації.</li><li>Коли й за яких умов виникає проблема.</li><li>Документ про покупку та запуск, якщо звернення гарантійне.</li></ol><h2>Чого не робити до консультації</h2><p>Не порушуйте пломби, не змінюйте налаштування без фіксації та не демонтуйте обладнання, якщо це може ускладнити діагностику або гарантійний розгляд.</p></article><aside class="co-note"><h2>Сервісний центр</h2><p><a class="co-note__contact" href="tel:+380674120255">+38 (067) 412-02-55</a><br><a href="mailto:sofievkaservise@gmail.com">sofievkaservise@gmail.com</a></p><p>Умови гарантії на обладнання залежать від бренду та моделі. Збережіть документ про покупку й акт запуску.</p><a class="text-link" href="/warranty">Умови гарантії →</a></aside></div>`)
-      + coCta("Обладнання потребує уваги?", "Не ремонтуйте котел самостійно — підкажемо наступний крок.", "+38 (067) 412-02-55");
+    const parts = [["6 місяців", "гарантії на придбані запчастини"], ["Власний склад", "запчастин до котлів популярних марок"], ["Оригінал", "деталі в наявності та під замовлення"]];
+    return hero("Сервісний центр", "Сервісний центр", "Обслуговуємо й ремонтуємо газові, твердопаливні та електричні котли й теплові насоси. Майстри виїжджають по Києву та Київській області.")
+      + coSection(`<div class="co-callout"><a class="button button--primary co-callout__call" href="tel:${SERVICE_PHONE.replace(/[^+\d]/g, "")}">${coIcon("phone")}${SERVICE_PHONE}</a><a class="co-callout__mail" href="mailto:${SERVICE_EMAIL}">${SERVICE_EMAIL}</a><span class="co-callout__area">Виїзд по Києву та Київській області</span></div>`, { className: "co-lead-section" })
+      + coSection(`${coHeading("Що ми робимо")}<ul class="co-tiles co-tiles--three">${SERVICE_WORKS.map(([title, text]) => `<li><h3>${title}</h3><p>${text}</p></li>`).join("")}</ul>`)
+      + coSection(`${coHeading("Котли, які ми обслуговуємо", "Працюємо з найпоширенішими в Україні марками, зокрема:")}<ul class="co-chips">${SERVICE_BRANDS.map(brand => `<li>${brand}</li>`).join("")}</ul>`, { white: true })
+      + coSection(`${coHeading("Запчастини")}<dl class="co-facts co-facts--plain co-facts--three">${parts.map(([value, label]) => `<div><dt>${value}</dt><dd>${label}</dd></div>`).join("")}</dl><p class="co-facts__note">Постійним клієнтам — знижка на запчастини.</p>`)
+      + coSection(`<div class="co-before"><article class="prose"><h2>Що надіслати</h2><ol><li>Фото шильдика й серійного номера.</li><li>Фото загального підключення без демонтажу корпусу.</li><li>Код помилки або точний опис індикації.</li><li>Коли й за яких умов виникає проблема.</li><li>Документ про покупку та запуск, якщо звернення гарантійне.</li></ol><h2>Чого не робити до консультації</h2><p>Не порушуйте пломби, не змінюйте налаштування без фіксації та не демонтуйте обладнання, якщо це може ускладнити діагностику або гарантійний розгляд.</p></article><p class="co-before__note">Умови гарантії на обладнання залежать від бренду та моделі. Збережіть документ про покупку й акт запуску. <a class="text-link" href="/warranty">Умови гарантії →</a></p></div>`, { white: true })
+      + coCta("Обладнання потребує уваги?", "Не ремонтуйте котел самостійно — підкажемо наступний крок.", SERVICE_PHONE);
   }
 
   function renderSolutionsExtended() {
