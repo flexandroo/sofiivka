@@ -243,5 +243,16 @@ export async function run(db) {
   await db.exec(noIntroSql);
   assert.deepEqual((await one(db, "select body from public.site_pages where slug = 'about'")).body, otherHeading, "another heading stays");
 
-  console.log(JSON.stringify({ status: "ok", scenarios: 12, suite: "pages" }));
+  // 13. 20261116000300_solutions_intro: the old intro gets the six solutions; an edited one stays.
+  const solutionsSql = fs.readFileSync(path.join(MIGRATIONS_DIR, "20261116000300_solutions_intro.sql"), "utf8");
+  const oldIntro = "Комплекти обладнання під конкретну задачу: котельня, вода зі свердловини, очищення води, клімат.";
+  await db.query("update public.site_pages set lead = $1 where slug = 'solutions'", [oldIntro]);
+  await db.exec(solutionsSql);
+  assert.equal((await one(db, "select lead from public.site_pages where slug = 'solutions'")).lead,
+    "Комплекти обладнання під конкретну задачу: котельня, вода зі свердловини, очищення води, каналізація, розумний будинок, клімат.");
+  await db.query("update public.site_pages set lead = 'Свій вступ' where slug = 'solutions'");
+  await db.exec(solutionsSql);
+  assert.equal((await one(db, "select lead from public.site_pages where slug = 'solutions'")).lead, "Свій вступ", "an edited intro stays");
+
+  console.log(JSON.stringify({ status: "ok", scenarios: 13, suite: "pages" }));
 }

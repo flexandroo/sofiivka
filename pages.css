@@ -1246,13 +1246,17 @@ body[data-page="product"] {
 .co-checks .co-icon { width: 20px; height: 20px; margin-top: 1px; color: var(--success, #18794e); }
 
 /* Solutions stand two in a row: photo on top, text under it, the buttons of a row on one line. */
-.co-solutions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(36px, 4vw, 56px) clamp(20px, 3vw, 40px); }
-.co-solution { display: flex; flex-direction: column; gap: clamp(16px, 2vw, 22px); scroll-margin-top: 120px; }
-.co-solution .co-photo { aspect-ratio: 16 / 9; }
+.co-solutions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(32px, 3.4vw, 48px) clamp(20px, 3vw, 40px); }
+.co-solution { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 120px; }
+.co-solution .co-photo { aspect-ratio: 2 / 1; }
+/* A product shot on white (no photo of the system yet) stands whole on the page tint. */
+.co-photo--product { background: #f5f4ef; }
+.co-photo--product img { object-fit: contain; padding: 12px; mix-blend-mode: multiply; }
 .co-solution__body { display: flex; flex: 1; flex-direction: column; }
-.co-solution .co-actions { margin-top: auto; padding-top: 22px; }
-.co-solution h2 { font-size: clamp(24px, 2.4vw, 32px); line-height: 1.15; letter-spacing: -.02em; }
-.co-solution__body > p { margin: 10px 0 18px; color: var(--text-secondary); line-height: 1.55; }
+.co-solution .co-actions { margin-top: auto; padding-top: 18px; }
+.co-solution h2 { font-size: clamp(21px, 1.9vw, 26px); line-height: 1.2; letter-spacing: -.02em; }
+.co-solution__body > p { margin: 6px 0 14px; color: var(--text-secondary); font-size: 15px; line-height: 1.5; }
+.co-solution .co-checks { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 20px; font-size: 15px; }
 .co-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 22px; }
 
 .co-compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(24px, 5vw, 72px); }
@@ -1347,6 +1351,7 @@ body[data-page="product"] {
 
 @media (max-width: 960px) {
   .co-split, .co-split--media-first, .co-split--article, .co-contact, .co-contact-form { grid-template-columns: minmax(0, 1fr); }
+  .co-solution .co-checks { grid-template-columns: minmax(0, 1fr); }
   .co-photo--tall { min-height: 0; max-height: none; aspect-ratio: 3 / 2; }
   .co-note { position: static; }
   .co-split > .co-photo { order: -1; }
