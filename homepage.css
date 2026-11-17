@@ -59,7 +59,6 @@
   min-height: 0;
   padding: 0 18px 0 0;
   border: 0;
-  border-bottom: 1px solid var(--home-border);
   border-radius: 0;
   background: transparent;
   color: inherit;
@@ -67,10 +66,6 @@
   text-align: left;
   text-decoration: none;
   cursor: pointer;
-}
-
-.storefront-category--last {
-  border-bottom: 0;
 }
 
 /* The open section is marked by its colour and the panel beside it; the bar is for the stacked tablet grid. */
@@ -942,8 +937,6 @@
   display: grid;
   grid-template-rows: auto minmax(300px, 1fr) auto;
   min-width: 0;
-  border: 1px solid var(--divider);
-  border-left: 0;
 }
 
 .home-contact__store-switcher {
@@ -1019,7 +1012,6 @@
   grid-template-columns: minmax(220px, 1fr) minmax(260px, .95fr);
   gap: clamp(28px, 4vw, 64px);
   padding: clamp(24px, 3vw, 38px);
-  border-top: 1px solid var(--divider);
   background: #fff;
   font-style: normal;
 }
@@ -1046,8 +1038,6 @@
   display: grid;
   grid-template-columns: 68px minmax(0, 1fr);
   gap: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--divider);
 }
 
 .home-contact__details dt {
@@ -1130,6 +1120,7 @@
   grid-template-columns: 48px 1fr;
   gap: 22px;
   padding-block: 24px;
+  border: 0;
 }
 
 .home-b2b .b2b__benefits article:first-child {
@@ -1214,20 +1205,6 @@
 
   .storefront-category {
     padding: 12px 34px 12px 15px;
-    border-right: 1px solid var(--home-border);
-    border-bottom: 1px solid var(--home-border);
-  }
-
-  .storefront-category--row-end-3 {
-    border-right: 0;
-  }
-
-  .storefront-category--last-row-3 {
-    border-bottom: 0;
-  }
-
-  .storefront-category--last {
-    border-right: 0;
   }
 
   .storefront-category::after {
@@ -1400,29 +1377,12 @@
     align-items: center;
     min-height: 54px;
     padding-inline: var(--gutter);
-    border-bottom: 1px solid var(--home-border);
     font-size: 24px;
     letter-spacing: -.04em;
   }
 
-  .storefront-category,
-  .storefront-category--row-end-3,
-  .storefront-category--last-row-3 {
+  .storefront-category {
     min-width: 0;
-    border-right: 1px solid var(--home-border);
-    border-bottom: 1px solid var(--home-border);
-  }
-
-  .storefront-category--row-end-2 {
-    border-right: 0;
-  }
-
-  .storefront-category--last-row-2 {
-    border-bottom: 0;
-  }
-
-  .storefront-category--last {
-    border-right: 0;
   }
 
   .storefront-category {
@@ -1583,8 +1543,6 @@
 
   .home-contact__location {
     grid-template-rows: auto 240px auto;
-    border-top: 0;
-    border-left: 1px solid var(--divider);
   }
 
   .home-contact__map,

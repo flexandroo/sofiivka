@@ -92,10 +92,8 @@ function setupStorefrontCategories() {
   if (!groups.length) return;
   navigation.querySelectorAll(".storefront-category").forEach(item => item.remove());
   // Categories without subcategories link straight to their page; the rest open the panel.
-  // Position classes drive the grid borders, which depend on how many items there are.
-  const count = groups.length;
-  navigation.style.setProperty("--storefront-category-count", String(count));
-  groups.forEach((group, index) => {
+  navigation.style.setProperty("--storefront-category-count", String(groups.length));
+  groups.forEach(group => {
     const item = document.createElement(group.items.length ? "button" : "a");
     item.className = "storefront-category";
     if (group.items.length) {
@@ -106,11 +104,6 @@ function setupStorefrontCategories() {
     } else {
       item.href = group.href;
     }
-    if (index === count - 1) item.classList.add("storefront-category--last");
-    if (index >= count - (count % 3 || 3)) item.classList.add("storefront-category--last-row-3");
-    if (index >= count - (count % 2 || 2)) item.classList.add("storefront-category--last-row-2");
-    if (index % 3 === 2) item.classList.add("storefront-category--row-end-3");
-    if (index % 2 === 1) item.classList.add("storefront-category--row-end-2");
     const strong = document.createElement("strong");
     strong.textContent = group.title;
     const description = document.createElement("span");
