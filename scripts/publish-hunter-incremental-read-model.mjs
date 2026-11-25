@@ -52,6 +52,11 @@ const oldHunterRows = baseRows.filter((row) => row.payload?.brandId === 'hunter'
 if (oldHunterRows.length !== 65 || !oldHunterRows.every((row) => row.legacy_id.startsWith('hunter-'))) {
   throw new Error(`Expected exactly 65 replaceable legacy Hunter family cards, received ${oldHunterRows.length}.`);
 }
+const canonicalIds = new Set((await service.fetchAll('products', { select: 'legacy_id' })).map((row) => row.legacy_id));
+const missingCanonicalHunter = hunterProducts.filter((product) => !canonicalIds.has(product.id));
+if (missingCanonicalHunter.length) {
+  throw new Error(`${missingCanonicalHunter.length} Hunter SKUs are missing from canonical products; run seed-hunter-canonical-prerequisites.mjs first.`);
+}
 const nonHunterRows = baseRows.filter((row) => row.payload?.brandId !== 'hunter');
 const nonHunterIds = new Set(nonHunterRows.map((row) => row.legacy_id));
 const collision = hunterProducts.find((product) => nonHunterIds.has(product.id));

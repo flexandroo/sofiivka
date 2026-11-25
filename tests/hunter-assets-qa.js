@@ -4,7 +4,6 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
-const sharp = require("sharp");
 
 const root = path.resolve(__dirname, "..");
 const context = { window: {}, console };
@@ -33,15 +32,38 @@ assert.equal(new Set(source.families.flatMap(family => family.models.map(model =
 const imagePaths = [...new Set(products.flatMap(product => product.images))];
 assert.equal(imagePaths.length, 117, "Hunter series photo coverage changed");
 
-Promise.all(imagePaths.map(async image => {
+const redirects = JSON.parse(fs.readFileSync(path.join(root, "vercel.json"), "utf8"))
+  .redirects.filter(redirect => redirect.source.startsWith("/product/hunter-"));
+const productPaths = new Set(products.map(product => `/product/${product.id}`));
+assert.equal(redirects.length, 59, "Legacy Hunter family redirect coverage changed");
+assert.equal(new Set(redirects.map(redirect => redirect.source)).size, redirects.length, "Legacy Hunter redirect sources must be unique");
+assert.ok(redirects.every(redirect => redirect.source !== redirect.destination), "Hunter redirects must not point to themselves");
+assert.ok(redirects.every(redirect => productPaths.has(redirect.destination)), "Every Hunter redirect must point to a published SKU");
+
+for (const image of imagePaths) {
   const filePath = path.join(root, image.replace(/^\//, ""));
   assert.ok(fs.existsSync(filePath), `${image}: local Hunter image is missing`);
-  const metadata = await sharp(filePath).metadata();
-  assert.equal(metadata.format, "webp", `${image}: Hunter image must be WebP`);
-  assert.ok(metadata.width > 0 && metadata.height > 0, `${image}: Hunter image dimensions are invalid`);
-})).then(() => {
-  console.log(JSON.stringify({ status: "ok", products: products.length, images: imagePaths.length, officialSources: products.length }, null, 2));
-}).catch(error => {
-  console.error(error);
-  process.exitCode = 1;
-});
+  const bytes = fs.readFileSync(filePath);
+  assert.ok(bytes.length >= 30, `${image}: Hunter image is empty or truncated`);
+  assert.equal(bytes.toString("ascii", 0, 4), "RIFF", `${image}: Hunter image lacks RIFF header`);
+  assert.equal(bytes.toString("ascii", 8, 12), "WEBP", `${image}: Hunter image must be WebP`);
+  const format = bytes.toString("ascii", 12, 16);
+  let width = 0;
+  let height = 0;
+  if (format === "VP8X") {
+    width = 1 + bytes.readUIntLE(24, 3);
+    height = 1 + bytes.readUIntLE(27, 3);
+  } else if (format === "VP8 ") {
+    width = bytes.readUInt16LE(26) & 0x3fff;
+    height = bytes.readUInt16LE(28) & 0x3fff;
+  } else if (format === "VP8L") {
+    const dimensions = bytes.readUInt32LE(21);
+    width = 1 + (dimensions & 0x3fff);
+    height = 1 + ((dimensions >>> 14) & 0x3fff);
+  } else {
+    assert.fail(`${image}: unsupported WebP format ${format}`);
+  }
+  assert.ok(width > 0 && height > 0, `${image}: Hunter image dimensions are invalid`);
+}
+
+console.log(JSON.stringify({ status: "ok", products: products.length, images: imagePaths.length, officialSources: products.length }, null, 2));
