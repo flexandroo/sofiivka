@@ -129,6 +129,42 @@ if (check(brand, "no brand with products")) {
   check(result.h1 === decode(brand.name).trim(), `/brands/${brand.id}: heading is "${result.h1}"`);
 }
 
+// Large brand scopes exercise the real facet RPC: a small first brand can hide a timeout
+// on a newly imported catalogue. Counts are the contract; elapsed time is not a benchmark.
+const visibleBrandCounts = bootstrap.brands
+  .filter(item => (!item.status || item.status === "active") && (item.visibility || item.type || "catalog") === "catalog")
+  .map(item => ({ id: item.id, count: Number(bootstrap.brandCounts?.[item.id]) }))
+  .filter(item => Number.isSafeInteger(item.count) && item.count > 0)
+  .sort((a, b) => b.count - a.count || a.id.localeCompare(b.id));
+const facetBrands = [...new Map([
+  ...visibleBrandCounts.slice(0, 3),
+  ...visibleBrandCounts.filter(item => item.id === brand?.id)
+].map(item => [item.id, item])).values()];
+const countObject = value => value && typeof value === "object" && !Array.isArray(value);
+check(facetBrands.length > 0, "no visible brand scopes for facet checks");
+const facetScopes = [{ id: null, count: bootstrap.totalProducts }, ...facetBrands];
+for (const scope of facetScopes) {
+  const label = `get_catalog_facets(${scope.id || "whole catalogue"}, ${scope.count} products)`;
+  try {
+    const facets = await rpc("get_catalog_facets", scope.id ? { scope_brand: scope.id } : {});
+    if (!check(countObject(facets), `${label}: response is not an object`)) continue;
+    check(typeof facets.version === "string" && facets.version.length > 0, `${label}: missing catalogue version`);
+    check(Number.isSafeInteger(facets.total) && facets.total === scope.count, `${label}: total is ${facets.total}, bootstrap says ${scope.count}`);
+    if (check(countObject(facets.brandCounts), `${label}: brandCounts is not an object`)) {
+      const counts = Object.entries(facets.brandCounts);
+      check(counts.every(([id, count]) => (!scope.id || id === scope.id) && Number.isSafeInteger(count) && count >= 0), `${label}: brandCounts contains an out-of-scope brand or invalid counts`);
+      check(counts.reduce((total, [, count]) => total + count, 0) === scope.count, `${label}: scoped brandCounts sum does not match bootstrap`);
+      if (scope.id) check(facets.brandCounts[scope.id] === scope.count, `${label}: the scoped brand count is incorrect`);
+    }
+    if (check(countObject(facets.technicalCounts), `${label}: technicalCounts is not an object`)) {
+      check(Object.values(facets.technicalCounts).every(options => countObject(options)
+        && Object.values(options).every(count => Number.isSafeInteger(count) && count >= 0)), `${label}: technicalCounts contains invalid option counts`);
+    }
+  } catch (error) {
+    check(false, `${label}: ${error.message}`);
+  }
+}
+
 // Unknown addresses are real 404s; old product links lead to the current address.
 for (const path of ["/product/live-smoke-missing", "/catalog/live-smoke-missing", "/brands/live-smoke-missing", "/live-smoke-missing"]) {
   const result = await page(path);
@@ -153,4 +189,4 @@ if (failures.length) {
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
-console.log(JSON.stringify({ status: "ok", suite: "live-smoke", base: BASE, checks, products: bootstrap.totalProducts }));
+console.log(JSON.stringify({ status: "ok", suite: "live-smoke", base: BASE, checks, products: bootstrap.totalProducts, wholeCatalogueFacets: true, facetBrands: facetBrands.map(item => item.id) }));
