@@ -13,7 +13,7 @@ import vm from "node:vm";
 // Pages page-shell renders without the catalogue. Blog/cases are filled from /admin/blog and account is private,
 // so they keep the client-only render.
 export const PRERENDER_PAGES = Object.freeze([
-  "about", "buyers", "contact", "delivery", "faq", "installation", "partnership", "payment", "privacy",
+  "about", "buyers", "contact", "delivery", "faq", "installation", "partnership", "privacy",
   "returns", "service-center", "services", "solutions", "terms", "warranty"
 ]);
 

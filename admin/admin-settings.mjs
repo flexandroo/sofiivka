@@ -14,7 +14,7 @@ const MAX_SEO_PAGES = 60;
 // Static storefront pages whose title/description can be overridden (catalogue, product and brand
 // pages take theirs from the catalogue cards).
 const SEO_PATHS = Object.freeze(["/", "/about", "/brands", "/blog", "/buyers", "/contact", "/delivery", "/faq", "/installation",
-  "/partnership", "/payment", "/portfolio", "/privacy", "/returns", "/service-center", "/services", "/solutions", "/terms", "/warranty"]);
+  "/partnership", "/portfolio", "/privacy", "/returns", "/service-center", "/services", "/solutions", "/terms", "/warranty"]);
 
 export async function createSettingsView({ api, signal }) {
   const { canEdit, sections } = await api.settings.get({ signal });

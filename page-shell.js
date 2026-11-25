@@ -55,7 +55,6 @@
     blog: renderBlogExtended,
     portfolio: renderPortfolioExtended,
     post: renderPostTemplate,
-    payment: renderPaymentExtended,
     buyers: renderBuyersExtended,
     search: renderSearchExtended,
     compare: renderCompareExtended,
@@ -88,7 +87,7 @@
   });
   // Info pages: the built-in texts below render first; site-pages.js then applies the copy edited
   // in /admin/pages (get_site_page). Pages that are mostly layout keep only their first screen editable.
-  const SITE_PAGE_SLUGS = new Set(["about", "services", "installation", "service-center", "solutions", "partnership", "buyers", "delivery", "payment", "warranty", "returns", "faq", "privacy", "terms"]);
+  const SITE_PAGE_SLUGS = new Set(["about", "services", "installation", "service-center", "solutions", "partnership", "buyers", "delivery", "warranty", "returns", "faq", "privacy", "terms"]);
   const sitePages = !SITE_PAGE_SLUGS.has(page) ? null : window.sofievkaSitePages ? Promise.resolve(window.sofievkaSitePages) : new Promise(resolve => {
     const script = document.createElement("script");
     script.src = "/site-pages.js?v=20261002-pages-2";
@@ -243,9 +242,8 @@
 
   function crumbs(current) { return `<nav class="page-breadcrumbs" aria-label="Хлібні крихти"><a href="/">Головна</a><span>/</span><span aria-current="page">${current}</span></nav>`; }
   // Breadcrumbs name the page, not its headline (the headline is editable in /admin/pages).
-  const PAGE_NAMES = { about: "Про нас", contact: "Контакти", solutions: "Комплексні рішення", services: "Послуги", installation: "Монтаж", "service-center": "Сервісний центр", delivery: "Доставка", payment: "Оплата", warranty: "Гарантія та сервіс", returns: "Обмін і повернення", faq: "Часті запитання", partnership: "Для монтажників", buyers: "Покупцям", blog: "Блог", portfolio: "Кейси", privacy: "Політика конфіденційності", terms: "Умови користування", compare: "Порівняння", cart: "Кошик" };
-  // `intro` goes between the breadcrumbs and the headline (the delivery/payment tabs: there they keep one place on both pages).
-  function hero(kicker, title, lead, light = false, intro = "") { return `<section class="page-hero${light ? " page-hero--light" : ""}"><div class="container">${crumbs(PAGE_NAMES[document.body.dataset.page] || title)}${intro}<div class="page-hero__grid"><div><p class="page-kicker">${kicker}</p><h1>${title}</h1></div><p class="page-hero__lead">${lead}</p></div></div></section>`; }
+  const PAGE_NAMES = { about: "Про нас", contact: "Контакти", solutions: "Комплексні рішення", services: "Послуги", installation: "Монтаж", "service-center": "Сервісний центр", delivery: "Доставка й оплата", warranty: "Гарантія та сервіс", returns: "Обмін і повернення", faq: "Часті запитання", partnership: "Для монтажників", buyers: "Покупцям", blog: "Блог", portfolio: "Кейси", privacy: "Політика конфіденційності", terms: "Умови користування", compare: "Порівняння", cart: "Кошик" };
+  function hero(kicker, title, lead, light = false) { return `<section class="page-hero${light ? " page-hero--light" : ""}"><div class="container">${crumbs(PAGE_NAMES[document.body.dataset.page] || title)}<div class="page-hero__grid"><div><p class="page-kicker">${kicker}</p><h1>${title}</h1></div><p class="page-hero__lead">${lead}</p></div></div></section>`; }
   function productCard(product) { return extendedProductCard(product); }
 
   function renderSolutions() { return hero("Готові комплектації", "Рішення для системи в цілому", "Обладнання, автоматика, арматура та монтажні матеріали розглядаються разом — до оформлення замовлення.") + `<section class="page-section"><div class="container"><div class="solution-grid"><article class="solution-card"><div class="solution-card__media"><img src="/assets/images/solution-boiler-room.webp" alt="Комплект обладнання котельні"></div><div class="solution-card__body"><h2>Опалення приватного будинку</h2><p>Котел, циркуляція, розподіл, автоматика й безпека.</p><a class="text-link" href="/contact">Запросити комплектацію →</a></div></article><article class="solution-card"><div class="solution-card__media"><img src="/assets/images/hero-water.webp" alt="Обладнання системи водопостачання"></div><div class="solution-card__body"><h2>Водопостачання</h2><p>Джерело, насос, автоматика, бак, фільтрація та споживачі.</p><a class="text-link" href="/contact">Запросити комплектацію →</a></div></article><article class="solution-card"><div class="solution-card__media"><img src="/assets/images/hero-climate.webp" alt="Обладнання кліматичної системи"></div><div class="solution-card__body"><h2>Клімат</h2><p>Обладнання, розподіл повітря, зони та керування.</p><a class="text-link" href="/contact">Запросити комплектацію →</a></div></article></div></div></section><section class="page-section page-section--white"><div class="container"><div class="page-heading"><h2>Як формується рішення</h2><p>Без квізів і автоматичних обіцянок: вихідні дані перевіряє спеціаліст, а результат фіксується у специфікації.</p></div><div class="process-list"><article><span>01</span><h3>Задача</h3><p>Площа, джерело, режими роботи та обмеження.</p></article><article><span>02</span><h3>Розрахунок</h3><p>Робочі параметри й технічна сумісність.</p></article><article><span>03</span><h3>Специфікація</h3><p>Основне обладнання та потрібні для монтажу позиції.</p></article><article><span>04</span><h3>Реалізація</h3><p>Доставка, монтаж, запуск і сервіс.</p></article></div></div></section>`; }
@@ -586,7 +584,7 @@
       siteNavLink("/solutions", "Рішення", ["solutions"]),
       siteNavLink("/installation", "Монтаж", ["installation"]),
       siteNavLink("/service-center", "Сервіс", ["service-center"]),
-      siteNavLink("/delivery", "Доставка й оплата", ["delivery", "payment"]),
+      siteNavLink("/delivery", "Доставка й оплата", ["delivery"]),
       siteNavLink("/contact", "Контакти", ["contact"])
     ].join("")}</div></nav>`;
   }
@@ -598,7 +596,7 @@
       <header class="site-header" data-page-header>${siteNavMarkup()}<div class="container site-header__inner">
         <a class="brand" href="/" aria-label="Софіївка, головна"><img src="/assets/logo-sofievka-transparent.png" width="1942" height="809" alt="Софіївка"></a>
         <div class="catalog-navigation"><button class="catalog-button" type="button" data-page-menu aria-expanded="false" aria-controls="page-catalog-menu" aria-haspopup="true" aria-label="Відкрити каталог і меню"><span class="catalog-button__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><g class="catalog-button__grid"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></g><path class="catalog-button__close" d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></span><span class="catalog-button__mark" aria-hidden="true"><i></i><i></i><i></i></span>Каталог</button>
-        <nav class="catalog-menu" id="page-catalog-menu" hidden aria-label="Каталог товарів">${window.sofievkaCatalogUI?.megaMenu() || `<div class="catalog-menu__panel"><a class="catalog-menu__all" href="/catalog">Увесь каталог <span aria-hidden="true">→</span></a></div>`}<div class="catalog-menu__support"><a href="/about">Про нас</a><a href="/delivery">Доставка</a><a href="/payment">Оплата</a><a href="/blog">Блог</a><a href="/installation">Монтаж</a><a href="/service-center">Сервіс</a><a href="/contact">Контакти</a></div></nav></div>
+        <nav class="catalog-menu" id="page-catalog-menu" hidden aria-label="Каталог товарів">${window.sofievkaCatalogUI?.megaMenu() || `<div class="catalog-menu__panel"><a class="catalog-menu__all" href="/catalog">Увесь каталог <span aria-hidden="true">→</span></a></div>`}<div class="catalog-menu__support"><a href="/about">Про нас</a><a href="/delivery">Доставка</a><a href="/delivery#payment">Оплата</a><a href="/blog">Блог</a><a href="/installation">Монтаж</a><a href="/service-center">Сервіс</a><a href="/contact">Контакти</a></div></nav></div>
         <form class="search" data-search action="/search" role="search"><label class="sr-only" for="page-search">Пошук товарів, брендів і категорій</label><input id="page-search" name="q" type="search" value="${escapeHtml(searchQuery)}" autocomplete="off" placeholder="Назва, бренд, модель або артикул" aria-controls="page-search-results" aria-expanded="false"><button type="submit" aria-label="Знайти"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg></button><div class="search-results" id="page-search-results" aria-live="polite" hidden></div></form>
         <div class="header-actions"><a class="header-action" href="/account" data-account-link aria-label="Увійти до особистого кабінету"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></svg><span class="header-action__label" data-account-label>Увійти</span></a><a class="header-action" href="/favorites" data-favorites aria-label="Обране"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg><span class="header-action__label">Обране</span><span class="header-action__count" data-fav-count>0</span></a><a class="header-action" href="/cart" data-cart aria-label="Кошик"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 7H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg><span class="header-action__label">Кошик</span><span class="header-action__count" data-cart-count>0</span></a></div>
       </div></header>`;
@@ -622,7 +620,7 @@
     const footerCatalogLinks = (window.sofievkaCatalog?.activeSections || []).map(section =>
       `<a href="${escapeHtml(window.sofievkaCatalog.sectionUrl(section.id))}">${escapeHtml(section.shortTitle || section.name)}</a>`
     ).join("") || `<a href="/catalog/heating">Опалення</a><a href="/catalog/water-supply">Водопостачання</a><a href="/catalog/water-treatment">Водопідготовка</a><a href="/catalog/sewerage">Каналізація</a><a href="/catalog/smart-home">Розумний будинок</a><a href="/catalog/climate">Клімат</a>`;
-    return `<footer class="footer"><div class="container footer__grid">${footerSection("Каталог", footerCatalogLinks)}<div class="footer__menu" data-site-footer-menu="accordion">${footerSection("Послуги", `<a href="/installation">Монтаж</a><a href="/service-center">Сервісний центр</a><a href="/solutions">Комплексні рішення</a><a href="/partnership">Для монтажників</a>`)}${footerSection("Покупцям", `<a href="/delivery">Доставка</a><a href="/payment">Оплата</a><a href="/warranty">Гарантія</a><a href="/returns">Обмін і повернення</a><a href="/account">Особистий кабінет</a>`)}${footerSection("Компанія", `<a href="/about">Про нас</a><a href="/brands">Бренди</a><a href="/contact">Контакти та графік</a><a href="/partnership">Надіслати специфікацію</a><a href="/faq">Часті запитання</a>`)}</div>${footerContactsMarkup()}</div><div class="container footer__bottom"><span>© 2026 Торговий дім «Софіївка»</span><div class="footer__bottom-meta"><div class="footer__socials" aria-hidden="true"><span class="footer__social" title="Instagram"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg></span><span class="footer__social" title="Facebook"><svg viewBox="0 0 24 24"><path d="M14.5 8H17V4.5h-2.5C11.7 4.5 10 6.2 10 9v2H7v3.5h3V21h4v-6.5h3L17.5 11H14V9c0-.7.3-1 1-1Z"></path></svg></span><span class="footer__social" title="YouTube"><svg viewBox="0 0 24 24"><path d="M20.2 7.1c-.2-.9-.9-1.6-1.8-1.8C16.8 5 12 5 12 5s-4.8 0-6.4.3c-.9.2-1.6.9-1.8 1.8C3.5 8.7 3.5 12 3.5 12s0 3.3.3 4.9c.2.9.9 1.6 1.8 1.8 1.6.3 6.4.3 6.4.3s4.8 0 6.4-.3c.9-.2 1.6-.9 1.8-1.8.3-1.6.3-4.9.3-4.9s0-3.3-.3-4.9Z"></path><path class="footer__social-play" d="m10 15.5 5-3.5-5-3.5v7Z"></path></svg></span></div><span><a href="/privacy">Конфіденційність</a> · <a href="/terms">Умови</a></span></div></div></footer>`;
+    return `<footer class="footer"><div class="container footer__grid">${footerSection("Каталог", footerCatalogLinks)}<div class="footer__menu" data-site-footer-menu="accordion">${footerSection("Послуги", `<a href="/installation">Монтаж</a><a href="/service-center">Сервісний центр</a><a href="/solutions">Комплексні рішення</a><a href="/partnership">Для монтажників</a>`)}${footerSection("Покупцям", `<a href="/delivery">Доставка</a><a href="/delivery#payment">Оплата</a><a href="/warranty">Гарантія</a><a href="/returns">Обмін і повернення</a><a href="/account">Особистий кабінет</a>`)}${footerSection("Компанія", `<a href="/about">Про нас</a><a href="/brands">Бренди</a><a href="/contact">Контакти та графік</a><a href="/partnership">Надіслати специфікацію</a><a href="/faq">Часті запитання</a>`)}</div>${footerContactsMarkup()}</div><div class="container footer__bottom"><span>© 2026 Торговий дім «Софіївка»</span><div class="footer__bottom-meta"><div class="footer__socials" aria-hidden="true"><span class="footer__social" title="Instagram"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg></span><span class="footer__social" title="Facebook"><svg viewBox="0 0 24 24"><path d="M14.5 8H17V4.5h-2.5C11.7 4.5 10 6.2 10 9v2H7v3.5h3V21h4v-6.5h3L17.5 11H14V9c0-.7.3-1 1-1Z"></path></svg></span><span class="footer__social" title="YouTube"><svg viewBox="0 0 24 24"><path d="M20.2 7.1c-.2-.9-.9-1.6-1.8-1.8C16.8 5 12 5 12 5s-4.8 0-6.4.3c-.9.2-1.6.9-1.8 1.8C3.5 8.7 3.5 12 3.5 12s0 3.3.3 4.9c.2.9.9 1.6 1.8 1.8 1.6.3 6.4.3 6.4.3s4.8 0 6.4-.3c.9-.2 1.6-.9 1.8-1.8.3-1.6.3-4.9.3-4.9s0-3.3-.3-4.9Z"></path><path class="footer__social-play" d="m10 15.5 5-3.5-5-3.5v7Z"></path></svg></span></div><span><a href="/privacy">Конфіденційність</a> · <a href="/terms">Умови</a></span></div></div></footer>`;
   }
 
   const FEATURE_LABELS = {
@@ -1329,8 +1327,6 @@
   // Company pages: About, Solutions, Installation, Service, Delivery and payment, Contacts.
   // Icons: Tabler Icons outline (MIT, https://tabler.io/icons), drawn in the site's 1.5 stroke.
   const CO_ICONS = {
-    "truck-delivery":"<path d=\"M7 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\"/><path d=\"M17 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0\"/><path d=\"M5 17h-2v-4m-1 -8h11v12m-4 0h6m4 0h2v-6h-8m0 -5h5l3 5\"/><path d=\"M3 9l4 0\"/>",
-    "receipt":"<path d=\"M5 21v-16a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v16l-3 -2l-2 2l-2 -2l-2 2l-2 -2l-3 2m4 -14h6m-6 4h6m-2 4h2\"/>",
     "phone":"<path d=\"M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2\"/>",
     "check":"<path d=\"M5 12l5 5l10 -10\"/>"
   };
@@ -1341,7 +1337,6 @@
   const coSteps = items => `<div class="co-steps"><div class="co-steps__head" aria-hidden="true"><span>Етап</span><span>Що відбувається</span><span>Результат</span></div><ol>${items.map(([title, text, result]) => `<li><h3>${title}</h3><p>${text}</p><p class="co-steps__result">${result}</p></li>`).join("")}</ol></div>`;
   const coRows = items => `<ul class="co-rows">${items.map(([title, text]) => `<li><h3>${title}</h3><p>${text}</p></li>`).join("")}</ul>`;
   const coChecks = items => `<ul class="co-checks">${items.map(item => `<li>${coIcon("check")}<span>${item}</span></li>`).join("")}</ul>`;
-  const coTabs = active => `<nav class="co-tabs" aria-label="Доставка й оплата">${[["/delivery", "Доставка", "delivery", "truck-delivery"], ["/payment", "Оплата", "payment", "receipt"]].map(([href, label, key, icon]) => `<a href="${href}"${key === active ? ' aria-current="page"' : ""}>${coIcon(icon)}${label}</a>`).join("")}</nav>`;
 
   function coCta(title, text, ownPhone = "") {
     const phone = ownPhone || siteSettings()?.stores?.find(store => store.phones?.length)?.phones[0] || "+38 (050) 358-22-84";
@@ -1539,18 +1534,31 @@
       + coCta("Не знайшли свій випадок?", "Опишіть об’єкт — запропонуємо комплект під нього.");
   }
 
-  function renderDeliveryExtended() {
-    return hero("Покупцям", "Доставка й оплата", "Доставляємо по Україні перевізником або видаємо замовлення в магазині. Оплата після підтвердження менеджером.", true, coTabs("delivery"))
-      + coSection(`${coHeading("Способи отримання", "Варіант і вартість менеджер підтверджує разом із наявністю та комплектністю.")}<div class="co-methods"><article><h3>Перевізником по Україні</h3><p>До відділення або за адресою, якщо габарити й правила перевізника це дозволяють.</p><small>За тарифами перевізника</small></article><article><h3>Самовивіз</h3><p>З магазину в Софіївській Борщагівці, щойно весь комплект зібрано.</p><small>Безкоштовно</small></article><article><h3>Великогабаритні вантажі</h3><p>Котли, ємності та палети відправляємо вантажним перевезенням. Умови узгоджуємо окремо.</p><small>Розраховуємо індивідуально</small></article></div>`)
-      + coSection(`<div class="co-split co-split--article"><article class="prose"><h2>Як формується строк</h2><ol><li>Перевіряємо фактичний склад відвантаження кожної позиції.</li><li>Уточнюємо, чи можна відправити комплект одним місцем або однією партією.</li><li>Звіряємо обмеження перевізника для довгомірних, важких і крихких товарів.</li><li>Підтверджуємо орієнтовну дату відправлення та спосіб отримання.</li></ol><h2>Що перевірити при отриманні</h2><ul><li>Кількість місць, цілісність упаковки й відсутність слідів удару або намокання.</li><li>Назву та модель на коробці, якщо вона доступна без пошкодження упаковки.</li><li>Комплектність за супровідними документами.</li><li>Пошкодження потрібно зафіксувати до завершення отримання за правилами перевізника.</li></ul><h2>Великогабаритні товари</h2><p>Радіатори, баки, котли, довгомірні труби та інше об'ємне обладнання можуть потребувати окремого тарифу, дерев'яного каркаса або адресної доставки. Такі умови погоджуємо до оплати.</p></article><aside class="co-note"><h2>Оплата</h2><p>Рахунок, післяплата або оплата в магазині. Платіть лише після підтвердження менеджером.</p><a class="text-link" href="/payment">Усі способи оплати →</a></aside></div>`, { white: true })
-      + coCta("Потрібно дізнатися вартість доставки?", "Назвіть місто й товар — порахуємо перед оформленням.");
-  }
+  // /delivery: delivery and payment on one page (/payment redirects to #payment). How an order goes first, then the
+  // delivery and payment options side by side with the card-payment warning, then the article /admin/pages edits.
+  const ORDER_STEPS = [
+    ["Оформлюєте замовлення", "На сайті, телефоном або в магазині."],
+    ["Менеджер підтверджує", "Перевіряє наявність, ціну, строк і спосіб доставки та зв’язується з вами."],
+    ["Оплачуєте й отримуєте", "Рахунком, при отриманні або в магазині, як погодили з менеджером."]
+  ];
+  const DELIVERY_OPTIONS = [
+    ["Перевізником по Україні", "До відділення або за адресою, якщо це дозволяють габарити й правила перевізника.", "За тарифами перевізника"],
+    ["Самовивіз", "З магазину в Софіївській Борщагівці, щойно весь комплект зібрано.", "Безкоштовно"],
+    ["Великогабаритні вантажі", "Котли, баки, радіатори й довгомірні труби — вантажним перевезенням, за потреби в дерев’яному каркасі. Умови погоджуємо до оплати.", "Розраховуємо окремо"]
+  ];
+  const PAYMENT_OPTIONS = [
+    ["Безготівковий рахунок", "Для фізичних осіб, ФОП і підприємств. Реквізити й строк резерву — у рахунку."],
+    ["Оплата при отриманні", "Доступність залежить від товару, суми й правил перевізника."],
+    ["Оплата в магазині", "Коли товар уже в точці видачі."]
+  ];
 
-  function renderPaymentExtended() {
-    return hero("Покупцям", "Оплата замовлень", "Оплачуйте після того, як менеджер підтвердить наявність, ціну й доставку.", true, coTabs("payment"))
-      + coSection(`${coHeading("Способи оплати")}<div class="co-methods"><article><h3>Безготівковий рахунок</h3><p>Для фізичних осіб, ФОП і підприємств. Реквізити та строк резерву вказані в рахунку.</p></article><article><h3>Оплата при отриманні</h3><p>Доступність залежить від товару, суми й правил перевізника.</p></article><article><h3>Оплата в магазині</h3><p>Після підтвердження, що товар уже в точці видачі.</p></article></div>`)
-      + coSection(`<div class="co-split co-split--article"><article class="prose"><h2>Безпечний порядок оплати</h2><ol><li>Менеджер перевіряє артикул, ціну, залишок і комплектність.</li><li>Ви отримуєте підсумок замовлення та погоджений спосіб доставки.</li><li>Для безготівкової оплати надсилається рахунок з актуальними реквізитами.</li><li>Після зарахування коштів замовлення переходить до комплектування або відправлення.</li></ol><h2>Для підприємств і монтажних організацій</h2><p>Документи формуються за підтвердженими реквізитами та номенклатурою. Якщо об'єкт постачається частинами, порядок рахунків і відвантажень узгоджується до першої оплати.</p><h2>Поточний порядок оформлення</h2><p>Замовлення можна оформити на сайті: менеджер перевірить наявність, ціну й доставку та зв’яжеться з вами. Онлайн-оплати карткою поки немає, реквізити для оплати надсилаємо після підтвердження. Не здійснюйте переказ до отримання підтвердження.</p></article><aside class="co-note"><h2>Доставка</h2><p>Перевізником по Україні або самовивіз із магазину.</p><a class="text-link" href="/delivery">Умови доставки →</a></aside></div>`, { white: true })
-      + coCta("Є питання щодо оплати?", "Підкажемо зручний спосіб і надішлемо рахунок.");
+  function renderDeliveryExtended() {
+    const options = items => `<ul class="co-options">${items.map(([title, text, note]) => `<li><h3>${title}</h3>${note ? `<small>${note}</small>` : ""}<p>${text}</p></li>`).join("")}</ul>`;
+    return hero("Покупцям", "Доставка й оплата", "Доставляємо по Україні перевізником або видаємо замовлення в магазині. Оплата після підтвердження менеджером.")
+      + coSection(`<ol class="co-flow co-flow--three">${ORDER_STEPS.map(([title, text]) => `<li><h3>${title}</h3><p>${text}</p></li>`).join("")}</ol>`, { className: "co-lead-section" })
+      + coSection(`<div class="co-pair"><section id="delivery-options" aria-labelledby="delivery-options-title"><h2 id="delivery-options-title">Доставка</h2>${options(DELIVERY_OPTIONS)}</section><section id="payment" aria-labelledby="payment-title"><h2 id="payment-title">Оплата</h2>${options(PAYMENT_OPTIONS)}<p class="co-warning"><strong>Онлайн-оплати карткою поки немає.</strong> Реквізити надсилаємо після підтвердження замовлення, не переказуйте гроші раніше.</p></section></div>`)
+      + coSection(`<div class="co-before"><article class="prose"><h2>Що перевірити при отриманні</h2><ul><li>Кількість місць, цілісність упаковки й відсутність слідів удару або намокання.</li><li>Назву та модель на коробці, якщо вона доступна без пошкодження упаковки.</li><li>Комплектність за супровідними документами.</li><li>Пошкодження потрібно зафіксувати до завершення отримання за правилами перевізника.</li></ul><h2>Для підприємств і монтажних організацій</h2><p>Документи формуються за підтвердженими реквізитами та номенклатурою. Якщо об'єкт постачається частинами, порядок рахунків і відвантажень узгоджується до першої оплати.</p></article></div>`, { white: true })
+      + coCta("Потрібно дізнатися вартість доставки?", "Назвіть місто й товар — порахуємо перед оформленням.");
   }
 
   function renderContactExtended() {
@@ -1560,7 +1568,7 @@
   }
 
   function renderBuyersExtended() {
-    const items = [["/delivery", "Доставка", "Способи отримання, перевірка вантажу та строки."], ["/payment", "Оплата", "Коли й за якими реквізитами оплачується замовлення."], ["/warranty", "Гарантія", "Документи, діагностика та маршрут звернення."], ["/returns", "Обмін і повернення", "Умови для товару належної якості та дії при пошкодженні."], ["/faq", "Часті запитання", "Короткі відповіді про підбір, покупку й сервіс."], ["/contact", "Контакти", "Телефони, графік і маршрут до магазину."]];
+    const items = [["/delivery", "Доставка", "Способи отримання, перевірка вантажу та строки."], ["/delivery#payment", "Оплата", "Коли й за якими реквізитами оплачується замовлення."], ["/warranty", "Гарантія", "Документи, діагностика та маршрут звернення."], ["/returns", "Обмін і повернення", "Умови для товару належної якості та дії при пошкодженні."], ["/faq", "Часті запитання", "Короткі відповіді про підбір, покупку й сервіс."], ["/contact", "Контакти", "Телефони, графік і маршрут до магазину."]];
     return hero("Покупцям", "Усе важливе до замовлення", "Умови отримання, оплати, гарантії та повернення зібрані в одному розділі.", true) + `<section class="page-section"><div class="container buyer-help-grid">${items.map(([href, title, text], index) => `<a href="${href}"><span>0${index + 1}</span><h2>${title}</h2><p>${text}</p><b>Перейти →</b></a>`).join("")}</div></section>`;
   }
 

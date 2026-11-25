@@ -52,7 +52,7 @@
         ] },
         { title: "Покупцям", links: [
           { label: "Доставка", href: "/delivery" },
-          { label: "Оплата", href: "/payment" },
+          { label: "Оплата", href: "/delivery#payment" },
           { label: "Гарантія", href: "/warranty" },
           { label: "Обмін і повернення", href: "/returns" },
           { label: "Особистий кабінет", href: "/account" }
@@ -135,14 +135,8 @@
     return path === "/index" ? "/" : path;
   };
   const pagePath = () => normalizePath(location.pathname);
-  // Pages that belong to a menu item with another address (the payment page sits under «Доставка й оплата»).
-  const ACTIVE_ALIASES = Object.freeze({ "/payment": "/delivery" });
-  const isCurrent = href => {
-    if (!String(href).startsWith("/")) return false;
-    const here = pagePath();
-    const target = normalizePath(href);
-    return target === here || target === ACTIVE_ALIASES[here];
-  };
+  // A link to a part of a page (/delivery#payment) marks that page.
+  const isCurrent = href => String(href).startsWith("/") && normalizePath(href) === pagePath();
   const menuLink = (item, className = "") => element("a", { href: item.href, class: className || null, text: item.label });
   const external = item => /^https:/i.test(item.href);
 

@@ -4,6 +4,8 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "redirects": [
+    { "source": "/payment", "destination": "/delivery#payment", "permanent": true },
+    { "source": "/payment.html", "destination": "/delivery#payment", "permanent": true },
     { "source": "/catalog.html", "has": [{ "type": "query", "key": "category", "value": "heating" }], "destination": "/catalog/heating", "permanent": true },
     { "source": "/catalog.html", "has": [{ "type": "query", "key": "category", "value": "water" }], "destination": "/catalog/water-supply", "permanent": true },
     { "source": "/catalog.html", "has": [{ "type": "query", "key": "category", "value": "plumbing" }], "destination": "/catalog", "permanent": true },
@@ -63,7 +65,6 @@
     { "source": "/favorites", "destination": "/favorites.html" },
     { "source": "/installation", "destination": "/installation.html" },
     { "source": "/partnership", "destination": "/partnership.html" },
-    { "source": "/payment", "destination": "/payment.html" },
     { "source": "/portfolio", "destination": "/portfolio.html" },
     { "source": "/post", "destination": "/post.html" },
     { "source": "/privacy", "destination": "/privacy.html" },

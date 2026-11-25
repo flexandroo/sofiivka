@@ -30,9 +30,11 @@ const body = sql => sql.slice(sql.indexOf("  if target_key = 'company' then"), s
 assert.ok(body(latest).length > 1000 && migration.includes(body(latest)), "_settings_clean body copied verbatim from 1300");
 
 const seed = name => JSON.parse(new RegExp(`\\('${name}', \\$json\\$([\\s\\S]*?)\\$json\\$\\)`).exec(migration)[1]);
-// 20261002001900 rewrites the seeded /page.html links to clean addresses (/page); the runtime defaults follow it.
-const cleanLinks = value => JSON.parse(JSON.stringify(value).replace(/"(\/[a-z-]+)\.html"/g, '"$1"'));
+// 20261002001900 rewrites the seeded /page.html links to clean addresses (/page) and 20261125000100 points «Оплата» at
+// /delivery#payment (the payment page is part of /delivery now); the runtime defaults follow both.
+const cleanLinks = value => JSON.parse(JSON.stringify(value).replace(/"(\/[a-z-]+)\.html"/g, '"$1"').replace(/"\/payment"/g, '"/delivery#payment"'));
 assert.match(read("supabase/migrations/20261002001900_product_slugs_v1.sql"), /where key in \('menus', 'cookies'\)/);
+assert.match(read("supabase/migrations/20261125000100_delivery_payment_one_page.sql"), /replace\(value::text, '"\/payment"', '"\/delivery#payment"'\)/);
 const seedMenus = cleanLinks(seed("menus"));
 const seedCookies = cleanLinks(seed("cookies"));
 

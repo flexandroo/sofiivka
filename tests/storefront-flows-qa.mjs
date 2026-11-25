@@ -440,7 +440,7 @@ await check("buyers-links", async () => {
   const protocolRelative = await page.$$eval('a[href^="//"]', links => links.map(link => link.getAttribute("href")));
   assert.deepEqual(protocolRelative, [], `/buyers: protocol-relative links ${protocolRelative.join(", ")}`);
   const cards = await page.$$eval(".buyer-help-grid a", links => links.map(link => link.getAttribute("href")));
-  assert.deepEqual(cards, ["/delivery", "/payment", "/warranty", "/returns", "/faq", "/contact"], "/buyers: card links");
+  assert.deepEqual(cards, ["/delivery", "/delivery#payment", "/warranty", "/returns", "/faq", "/contact"], "/buyers: card links");
   await page.context().close();
   return { cards };
 });

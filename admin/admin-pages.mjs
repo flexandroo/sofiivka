@@ -121,7 +121,7 @@ export async function createPageEditorView({ api, slug, signal }) {
             <ul>
               <li>Підзаголовок відкриває новий розділ тексту.</li>
               <li>У списку кожен пункт пишіть з нового рядка.</li>
-              <li>Посилання: <code>[текст](/payment.html)</code>, <code>[текст](https://…)</code>, <code>[пошта](mailto:…)</code>.</li>
+              <li>Посилання: <code>[текст](/delivery)</code>, <code>[текст](https://…)</code>, <code>[пошта](mailto:…)</code>.</li>
               <li>HTML-теги не працюють: сайт показує їх як звичайний текст.</li>
               <li>Сайт покаже зміни після оновлення сторінки.</li>
             </ul>

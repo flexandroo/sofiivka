@@ -17,7 +17,6 @@ export const PAGE_SOURCES = Object.freeze([
   { slug: "partnership", renderer: "renderPartnershipExtended", hasBody: true },
   { slug: "buyers", renderer: "renderBuyersExtended", hasBody: false },
   { slug: "delivery", renderer: "renderDeliveryExtended", hasBody: true },
-  { slug: "payment", renderer: "renderPaymentExtended", hasBody: true },
   { slug: "warranty", renderer: "renderWarrantyExtended", hasBody: true },
   { slug: "returns", renderer: "renderReturnsExtended", hasBody: true },
   { slug: "faq", renderer: "renderFaqExtended", hasBody: false },

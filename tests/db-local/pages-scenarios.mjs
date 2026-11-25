@@ -43,7 +43,7 @@ export async function run(db) {
 
   // 1. The seed is exactly what page-shell.js renders without the database (and the static SEO tags).
   const fallback = extractFallbackPages();
-  assert.equal(fallback.length, 14);
+  assert.equal(fallback.length, 13);
   for (const page of fallback) {
     const stored = await anon(db, "select public.get_site_page($1) r", [page.slug]);
     assert.ok(stored, `${page.slug}: seeded`);
@@ -60,7 +60,7 @@ export async function run(db) {
     const cleaned = (await one(db, "select public._site_pages_clean_body($1) r", [JSON.stringify(page.body)])).r;
     assert.deepEqual(cleaned, page.body, `${page.slug}: seed is clean`);
   }
-  assert.equal(PAGE_SOURCES.filter(page => page.hasBody).length, 9);
+  assert.equal(PAGE_SOURCES.filter(page => page.hasBody).length, 8);
 
   // 2. Tables and staff RPCs are closed to visitors.
   for (const table of ["site_pages", "site_faq_items", "site_faq_state", "site_pages_audit"]) {
@@ -74,7 +74,7 @@ export async function run(db) {
   // 3. Roles: every staff member reads; owner/admin/content manager write; manager is read-only.
   const managerList = await asUser(db, "manager", "select public.admin_list_site_pages() r");
   assert.equal(managerList.canEdit, false);
-  assert.equal(managerList.pages.length, 14);
+  assert.equal(managerList.pages.length, 13);
   assert.deepEqual(managerList.faq, { total: 9, active: 9, updatedAt: managerList.faq.updatedAt });
   assert.equal((await asUser(db, "content", "select public.admin_list_site_pages() r")).canEdit, true);
   await expectError(savePage(db, "manager", "about", { title: "Інше" }), /власник, адміністратор і контент-менеджер/, "manager save");
@@ -263,5 +263,16 @@ export async function run(db) {
   await db.exec(serviceSql);
   assert.equal((await one(db, "select title from public.site_pages where slug = 'service-center'")).title, "Свій заголовок", "an edited headline stays");
 
-  console.log(JSON.stringify({ status: "ok", scenarios: 14, suite: "pages" }));
+  // 15. 20261125000100_delivery_payment_one_page: the «Оплата» page is gone, an edited delivery article stays.
+  assert.equal(await anon(db, "select public.get_site_page('payment') r"), null, "the payment page is gone");
+  const deliverySql = fs.readFileSync(path.join(MIGRATIONS_DIR, "20261125000100_delivery_payment_one_page.sql"), "utf8");
+  const editedDelivery = [{ type: "heading", text: "Свій розділ" }, { type: "paragraph", text: "Свій текст." }];
+  await db.query("update public.site_pages set body = $1 where slug = 'delivery'", [JSON.stringify(editedDelivery)]);
+  await db.exec(deliverySql);
+  const keptDelivery = await one(db, "select body, updated_at from public.site_pages where slug = 'delivery'");
+  assert.deepEqual(keptDelivery.body, editedDelivery, "an edited article stays");
+  await db.exec(deliverySql);
+  assert.deepEqual((await one(db, "select updated_at from public.site_pages where slug = 'delivery'")).updated_at, keptDelivery.updated_at, "re-run is a no-op");
+
+  console.log(JSON.stringify({ status: "ok", scenarios: 15, suite: "pages" }));
 }
