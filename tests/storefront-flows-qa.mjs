@@ -359,6 +359,48 @@ for (const [label, viewport] of [["desktop", VIEWPORTS.desktop], ["mobile", VIEW
   });
 }
 
+// 2c. A scoped product page loads only its own and related products. «Купити» and «В обране» there used to save the
+// cart and favourites filtered to the loaded products, wiping everything added on other pages.
+await check("scoped-pdp-keeps-saved-cart", async () => {
+  const page = await newPage(VIEWPORTS.desktop);
+  await useScopedCatalog(page);
+  await page.route(/\/rest\/v1\/rpc\/get_catalog_product_by_slug$/, route => route.fulfill({ contentType: "application/json",
+    body: JSON.stringify({ version: "storefront-flows-qa", product: facts.scoped.products[pricedProduct.id], relatedProducts: [] }) }));
+  const other = facts.unpricedProduct.id;
+  await seedStorage(page, { "sofievka-cart": { [other]: 2 }, "sofievka-favorites": [other] });
+  await open(page, productPath(pricedProduct));
+  assert.equal(normalize(await page.locator("header [data-cart-count]").first().textContent()), "2", "PDP (scoped): header cart count ignores products added on other pages");
+  await page.locator(`.pdp-buy[data-add="${pricedProduct.id}"]`).first().click();
+  await page.locator(`[data-favorite="${pricedProduct.id}"]`).first().click();
+  const stored = await page.evaluate(() => ({ cart: JSON.parse(localStorage.getItem("sofievka-cart") || "{}"), favorites: JSON.parse(localStorage.getItem("sofievka-favorites") || "[]") }));
+  assert.deepEqual(stored.cart, { [other]: 2, [pricedProduct.id]: 1 }, "PDP (scoped): «Купити» dropped a cart product this page has not loaded");
+  assert.deepEqual(stored.favorites, [other, pricedProduct.id], "PDP (scoped): «В обране» dropped a favourite this page has not loaded");
+  await page.context().close();
+  return stored;
+});
+
+// 2d. Cart lines: «−» stops at 1, a typed quantity is saved, «Видалити» can be undone and keeps the line's place.
+await check("cart-quantity-remove-undo", async () => {
+  const page = await newPage(VIEWPORTS.desktop);
+  const [a, b] = [pricedProduct.id, facts.unpricedProduct.id];
+  await seedStorage(page, { "sofievka-cart": { [a]: 1, [b]: 1 } });
+  await open(page, "/cart");
+  // Object key order, not the seeding order: numeric ids («6083317») always come first.
+  const order = await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem("sofievka-cart"))));
+  const line = page.locator(`[data-cart-line="${a}"]`);
+  assert.equal(await line.locator('[data-delta="-1"]').isDisabled(), true, "/cart: «−» is enabled at quantity 1 (it used to remove the line)");
+  await line.locator("[data-qty-input]").fill("4");
+  await line.locator("[data-qty-input]").press("Enter");
+  assert.equal(await page.evaluate(id => JSON.parse(localStorage.getItem("sofievka-cart"))[id], a), 4, "/cart: typed quantity not saved");
+  assert.equal(normalize(await line.locator(".cart-item__price strong").innerText()), normalize(formatMoney(pricedProduct.amount * 4)), "/cart: line total after typing 4");
+  await line.locator("[data-remove]").click();
+  assert.equal(await page.locator(".cart-item").count(), 1, "/cart: line not removed");
+  await page.locator("[data-page-toast] button").click();
+  assert.deepEqual(await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem("sofievka-cart")))), order, "/cart: «Повернути» did not put the line back in its place");
+  assert.deepEqual(await page.locator("[data-cart-line]").evaluateAll(nodes => nodes.map(node => node.dataset.cartLine)), order, "/cart: lines after «Повернути»");
+  await page.context().close();
+});
+
 // 3. Compare.
 for (const [label, viewport] of [["desktop", VIEWPORTS.desktop], ["mobile", VIEWPORTS.mobile]]) {
   await check(`compare-${label}`, async () => {

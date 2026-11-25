@@ -2606,11 +2606,22 @@ a.brand-directory-card:focus-visible {
   transform: translateY(0);
 }
 
-.toast a {
+.toast a,
+.toast button {
   color: #fff;
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.toast button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  cursor: pointer;
 }
 
 [data-reveal] {
