@@ -217,7 +217,12 @@ begin
   exception when others then
     headers := null;
   end;
-  address := btrim(coalesce(public._crm_client_address(headers), ''));
+  -- _crm_client_address arrives with 20261005000400; a database without it keys the guard like the order limit.
+  begin
+    address := btrim(coalesce(public._crm_client_address(headers), ''));
+  exception when undefined_function then
+    return public._crm_client_fingerprint();
+  end;
   if address = '' then return null; end if;
   begin
     parsed := address::inet;
