@@ -325,6 +325,21 @@ export async function run(db) {
   assert.equal(Number(detail.order.discountAmount), 300, "an added line does not grow it either");
   detail = await editLines(db, big.number, detail.items.filter(item => item.legacyId !== "p-cheap").map(item => ({ id: item.id, quantity: item.quantity })));
   assert.equal(Number(detail.order.discountAmount), 0, "without the discounted line there is no discount");
+  // The same product added back (a new line id) is discounted again: the discount follows the product.
+  detail = await editLines(db, big.number, [...detail.items.map(item => ({ id: item.id, quantity: item.quantity })), { productId: "p-cheap", quantity: 1 }]);
+  assert.equal(Number(detail.order.discountAmount), 300, "re-adding the discounted product restores its discount");
+
+  // 13b. Rounding never takes the discount above the discounted amount; fixed amounts are whole hryvnias.
+  await db.query(`insert into public.products (legacy_id, sku, slug, title, short_title, model, brand_id, primary_category_id,
+      amount, price_status, inventory_status, publication_status, archived_at)
+    values ('p-tiny', 'SKU-T', 'p-tiny', 'Прокладка', 'Прокладка', 'MT', $1, $2, 2.90, 'known', 'in_stock', 'published', null)`,
+    [cheap.brand_id, cheap.primary_category_id]);
+  await save(db, STAFF.owner, { code: "MEGA90", kind: "percent", value: 90 });
+  const tinyPreview = await check(db, { code: "MEGA90", items: [{ id: "p-tiny", quantity: 1 }] }, "203.0.113.31");
+  assert.equal(Number(tinyPreview.discount), 2.9, "90% of 2.90 rounds to 3 but is capped at 2.90");
+  const tiny = await order(db, { promoCode: "MEGA90", items: [{ id: "p-tiny", quantity: 1 }] }, "203.0.113.31");
+  assert.equal(Number(tiny.total), 0, "the amount to pay is never negative");
+  await expectError(save(db, STAFF.owner, { code: "HALF", kind: "fixed", value: "99,50" }), /цілих гривнях/, "fixed amount with kopecks");
 
   // 14. IPv6: guesses count per /64, so one host cannot rotate addresses inside its own network.
   await db.query("delete from public.crm_promo_attempts");

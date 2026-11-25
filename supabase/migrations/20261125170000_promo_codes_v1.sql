@@ -82,14 +82,16 @@ alter table public.crm_orders
   add column promo_kind text check (promo_kind is null or promo_kind in ('percent', 'fixed')),
   add column promo_value numeric(14, 2) check (promo_value is null or promo_value > 0),
   add column discount_base numeric(14, 2) check (discount_base is null or discount_base >= 0),
-  add column discount_lines uuid[],
-  add column discount_amount numeric(14, 2) not null default 0 check (discount_amount >= 0);
+  add column discount_lines text[],
+  add column discount_amount numeric(14, 2) not null default 0 check (discount_amount >= 0),
+  add constraint crm_orders_discount_within_total check (discount_amount <= items_total);
 create index crm_orders_promo_code on public.crm_orders (promo_code) where promo_code is not null;
 
--- The discount applies only to the lines that had a price when the code was accepted (discount_lines, the
--- crm_order_items ids; line edits keep them) and never to more than the total it was accepted for
--- (discount_base). A manager pricing an «за запитом» line or adding lines therefore never grows it, and
--- removing or reducing the discounted lines shrinks it. Whole hryvnias, like every price on the site.
+-- The discount applies only to the products that had a price when the code was accepted (discount_lines, their
+-- legacy ids; an order holds one line per product, so a line removed and added back keeps it) and never to more
+-- than the total it was accepted for (discount_base). A manager pricing an «за запитом» line or adding lines
+-- therefore never grows it, and removing or reducing the discounted lines shrinks it. Whole hryvnias, like every
+-- price on the site, and never above the discounted amount.
 create or replace function public._crm_order_discount()
 returns trigger
 language plpgsql
@@ -105,12 +107,12 @@ begin
   if new.discount_lines is not null then
     select coalesce(sum(item.line_total), 0) into discountable
     from public.crm_order_items item
-    where item.order_id = new.internal_id and item.internal_id = any (new.discount_lines);
+    where item.order_id = new.internal_id and item.legacy_id = any (new.discount_lines);
   end if;
   discountable := least(discountable, new.items_total, coalesce(new.discount_base, discountable));
   new.discount_amount := case
-    when new.promo_kind = 'percent' then round(discountable * new.promo_value / 100)
-    else least(new.promo_value, discountable)
+    when new.promo_kind = 'percent' then least(round(discountable * new.promo_value / 100), discountable)
+    else least(round(new.promo_value), discountable)
   end;
   return new;
 end;
@@ -163,7 +165,7 @@ begin
     'code', promo.code,
     'kind', promo.kind,
     'value', promo.value,
-    'discount', case when promo.kind = 'percent' then round(base * promo.value / 100) else least(promo.value, base) end,
+    'discount', case when promo.kind = 'percent' then least(round(base * promo.value / 100), base) else least(round(promo.value), base) end,
     'itemsTotal', base
   );
 end;
@@ -448,7 +450,7 @@ begin
     promo_kind = promo ->> 'kind',
     promo_value = (promo ->> 'value')::numeric,
     discount_base = (promo ->> 'itemsTotal')::numeric,
-    discount_lines = case when promo is null then null else (select array_agg(item.internal_id)
+    discount_lines = case when promo is null then null else (select array_agg(item.legacy_id)
       from public.crm_order_items item where item.order_id = new_order_id and item.line_total is not null) end
   where internal_id = new_order_id
   returning * into final_order;
@@ -601,6 +603,9 @@ begin
     raise exception using errcode = '22023', message = 'Вкажіть розмір знижки — число більше нуля.';
   end if;
   new_value := amount_text::numeric;
+  if new_kind = 'fixed' and new_value <> round(new_value) then
+    raise exception using errcode = '22023', message = 'Знижку сумою вкажіть у цілих гривнях.';
+  end if;
   if new_kind = 'percent' and new_value > 90 then
     raise exception using errcode = '22023', message = 'Знижка у відсотках — від 1 до 90.';
   end if;

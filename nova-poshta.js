@@ -109,10 +109,13 @@
       state("Шукаємо…");
       let found;
       try { found = await search(text); } catch {
+        // A failed search ends the Enter intent: the next Enter closes the error list, the one after submits.
+        if (id === requestId) { stale = false; pendingEnter = false; }
         if (id === requestId && document.activeElement === input) state("Не вдалося завантажити список — впишіть вручну");
         return;
       }
-      if (id !== requestId || document.activeElement !== input) return;
+      // An answer counts only for the text that is still in the field.
+      if (id !== requestId || document.activeElement !== input || input.value.trim() !== text) return;
       stale = false;
       const enter = pendingEnter;
       pendingEnter = false;
@@ -126,7 +129,7 @@
       if (enter && typed) { pick(0); return; }
       reveal();
     };
-    input.addEventListener("input", () => { onType(); typed = true; stale = true; clearTimeout(timer); timer = setTimeout(run, 250); });
+    input.addEventListener("input", () => { onType(); typed = true; stale = true; pendingEnter = false; clearTimeout(timer); timer = setTimeout(run, 250); });
     input.addEventListener("focus", () => { clearTimeout(blurTimer); typed = false; stale = false; if (input.value.trim().length >= minLength || minLength === 0) run(); });
     input.addEventListener("blur", () => { cancel(); clearTimeout(blurTimer); blurTimer = setTimeout(close, 150); });
     input.addEventListener("keydown", event => {

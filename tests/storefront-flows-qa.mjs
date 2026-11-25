@@ -1167,8 +1167,12 @@ await check("checkout-np-enter-fresh", async () => {
         { Present: "с. Бровари, Ніжинський р-н, Чернігівська обл.", Warehouses: 2, MainDescription: "Бровари", DeliveryCity: "city-nizhyn", Ref: "s2" }] }]
       : props.WarehouseId === "25" ? [{ Description: "Відділення №25: вул. Шевченка, 1", Ref: "w25" }]
       : [{ Description: "Відділення №1: вул. Київська, 100", Ref: "w1" }, { Description: "Відділення №2: вул. Київська, 302", Ref: "w2" }];
-    if (props.WarehouseId) await new Promise(resolve => setTimeout(resolve, 400));
-    await route.fulfill({ contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ success: true, data, errors: [] }) });
+    if (props.FindByString === "Збій") { await route.fulfill({ status: 500, body: "down" }); return; }
+    if (props.WarehouseId === "1") await new Promise(resolve => setTimeout(resolve, 700));
+    else if (props.WarehouseId) await new Promise(resolve => setTimeout(resolve, 400));
+    const answer = props.WarehouseId === "15" ? [{ Description: "Відділення №15: вул. Гагаріна, 15", Ref: "w15" }]
+      : props.WarehouseId === "1" ? [{ Description: "Відділення №1: вул. Київська, 100", Ref: "w1" }] : data;
+    await route.fulfill({ contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ success: true, data: answer, errors: [] }) });
   });
   await page.route(/\/rest\/v1\/rpc\/crm_submit_order$/, async route => {
     orders.push(JSON.parse(route.request().postData() || "{}").payload || null);
@@ -1176,6 +1180,9 @@ await check("checkout-np-enter-fresh", async () => {
   });
   await seedStorage(page, { "sofievka-cart": { [pricedProduct.id]: 1 } });
   await open(page, "/checkout");
+  // Valid contacts, so an Enter that wrongly submitted the form would really send an order.
+  await page.locator('[data-checkout] input[name="name"]').fill("QA Enter");
+  await page.locator('[data-checkout] input[name="phone"]').fill("067 123 45 67");
   const city = page.locator("[data-np-city]");
   const branch = page.locator("[data-np-branch]");
   await city.click();
@@ -1189,7 +1196,25 @@ await check("checkout-np-enter-fresh", async () => {
   await page.waitForFunction(() => document.querySelector("[data-np-branch]").value === "Відділення №25: вул. Шевченка, 1", null, { timeout: 5000 })
     .catch(async () => { throw new Error(`Enter right after typing took «${await branch.inputValue()}» instead of the result for «25»`); });
   assert.equal(calls.filter(call => call.methodProperties?.WarehouseId === "25").length >= 1, true);
+  // An answer for an older text does not count: «1» answers after «15» was typed, Enter takes №15.
+  await branch.fill("");
+  await branch.pressSequentially("1");
+  await until(() => calls.some(call => call.methodProperties?.WarehouseId === "1"), "no search for «1»");
+  await branch.pressSequentially("5");
   await branch.press("Enter");
+  await page.waitForFunction(() => document.querySelector("[data-np-branch]").value === "Відділення №15: вул. Гагаріна, 15", null, { timeout: 5000 })
+    .catch(async () => { throw new Error(`an older answer was taken: «${await branch.inputValue()}»`); });
+  await page.waitForTimeout(900);
+  assert.equal(await branch.inputValue(), "Відділення №15: вул. Гагаріна, 15", "the late «1» answer replaced the pick");
+  // A failed search: Enter closes the error list and does not pick anything later on its own.
+  await branch.fill("");
+  await branch.pressSequentially("Збій", { delay: 10 });
+  await page.waitForFunction(() => document.querySelector("#checkout-branch-options")?.textContent.includes("Не вдалося"), null, { timeout: 5000 });
+  await branch.press("Enter");
+  assert.equal(await page.locator("#checkout-branch-options").isHidden(), true, "Enter did not close the error list");
+  assert.equal(await branch.inputValue(), "Збій", "Enter after a failed search changed the field");
+  assert.equal(orders.length, 0, "Enter after a failed search sent the order");
+  await branch.fill("Відділення №25: вул. Шевченка, 1");
   // Back into the filled city field: the list opened by focus shows both «Бровари»; Enter keeps the picked one.
   await city.focus();
   await page.locator("#checkout-city-options [role=option]").first().waitFor({ timeout: 5000 });
