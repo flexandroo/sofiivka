@@ -15,6 +15,19 @@ const CAPTURE = path.join(OUT, "general-fittings-source.json");
 const DATE = "2026-11-25";
 const SERIES_UK = { "Angle valves": "Кутові крани", "Washing machine taps": "Крани для пральних машин", "Other valves and filters": "Клапани та фільтри", "Eurocone fittings": "Євроконус", "Adapters and inserts for radiator valves": "Адаптери радіаторної арматури", "Multilayer pipe systems accessories": "Комплектуючі металополімерних труб" };
 const seriesName = value => SERIES_UK[value] || value.replace(/^LINE /, "");
+const isPipeBend = form => /^AC00\.(?:70|80)(?:\s|$)/.test(form.title) && /\bBEND\b/.test(form.content);
+const documentType = url => /flyer|brochure|catalog|_BRO_/i.test(url) ? "catalog" : /technical|scheda|tech_|dati|datasheet|DTS_|_UK_2026/i.test(url) ? "datasheet" : "certificate";
+function documentModel(url) {
+  const file = decodeURIComponent(new URL(url).pathname.split("/").pop());
+  return file.match(/^DTS_([A-Z0-9]+(?:\.[A-Z0-9]+)+)(?:_|-|\.pdf$)/i)?.[1].toUpperCase() || null;
+}
+function applicableDocuments(form, family, manifest) {
+  const sources = [...new Set([...form.documents, ...family.documents])].filter(url => manifest.documents[url]);
+  const model = form.title.match(/^[A-Z0-9]+(?:\.[A-Z0-9]+)+/i)?.[0].toUpperCase();
+  const exact = url => documentModel(url) === model && (!/^AC00\.(70|80)$/.test(model || "") || isPipeBend(form));
+  const hasExact = sources.some(url => documentType(url) === "datasheet" && documentModel(url) && exact(url));
+  return sources.filter(url => documentType(url) !== "datasheet" || (documentModel(url) ? exact(url) : !hasExact && !isPipeBend(form)));
+}
 const hash = value => crypto.createHash("sha256").update(value).digest("hex");
 const canonicalImage = url => url.replace(/\.webp$/, "");
 const relativeFile = url => {
@@ -114,11 +127,12 @@ async function logo() {
   throw Error("Official logo symbol not found");
 }
 
-function pdfBodyEvidence(family, manifest) {
-  for (const url of family.documents.filter(u => /DTS_|_UK_2026/.test(u))) {
+const PDF_TEXT_CACHE = new Map();
+function pdfBodyEvidence(documents, manifest) {
+  for (const url of documents.filter(u => /DTS_|_UK_2026/.test(u))) {
     const local = manifest.documents[url]; if (!local) continue;
     let text;
-    try { text = execFileSync("pdftotext", ["-layout", path.join(ROOT, local.path), "-"], { encoding: "utf8", windowsHide: true, maxBuffer: 8 * 1024 * 1024 }); }
+    try { if (!PDF_TEXT_CACHE.has(url)) PDF_TEXT_CACHE.set(url, execFileSync("pdftotext", ["-layout", path.join(ROOT, local.path), "-"], { encoding: "utf8", windowsHide: true, maxBuffer: 8 * 1024 * 1024 })); text = PDF_TEXT_CACHE.get(url); }
     catch { continue; }
     const lines = text.split(/\r?\n/); const lineIndex = lines.findIndex(l => /^\s*\d+\s+Body\s{2,}/i.test(l)); const line = lines[lineIndex];
     if (!line) continue;
@@ -198,10 +212,10 @@ async function build() {
   const allowedFilters = new Set(Object.keys(reference.attributes || {}));
   const familyById = new Map(capture.families.map(f => [f.id, f]));
   const familyProperties = new Map(await pool(capture.families, 2, async family => [family.id, await applicationProperties(family)]));
-  const familyMaterialEvidence = new Map(capture.families.map(family => [family.id, pdfBodyEvidence(family, manifest)]));
+  const formDocumentUrls = new Map(capture.forms.map(form => [form.link, applicableDocuments(form, familyById.get(form.familyId), manifest)]));
   const productsBySku = new Map(), exclusions = [], issues = [], sourceVariants = [];
   for (const form of capture.forms) {
-    const kind = classify(clean(form.content), form.scope); const family = familyById.get(form.familyId);
+    const kind = classify(clean(form.content), form.scope); const family = familyById.get(form.familyId); const pipeBend = isPipeBend(form);
     if (form.familyTitle === "Multilayer pipe systems accessories") kind.excluded = "Монтажний інструмент і його деталі, поза запитом на крани та фітинги";
     const sourceCategory = `${SCOPE_NAMES[form.scope]} → ${form.familyTitle}`;
     const codeTables = form.tables.filter(table => table.headings.some(h => /^code$/i.test(h)));
@@ -236,15 +250,19 @@ async function build() {
       characteristics.push(...featureRows);
       const accessories = /Кільце|кільце|прокладка|Комплектуюча/.test(kind.type);
       const hasBody = !accessories && !/Гайка|гайка|Комплект різьбового/.test(kind.type);
-      const bodyEvidence = hasBody ? familyMaterialEvidence.get(form.familyId) : null;
-      const directMaterial = /STAINLESS STEEL/.test(form.content) ? "Нержавіюча сталь" : /PLASTIC/.test(form.content) ? "Пластик" : /BRASS/.test(form.content) ? "Латунь" : bodyEvidence?.genericMaterial || (!accessories && /brass/i.test(family.sourceText) ? "Латунь" : null);
+      const pdfSources = formDocumentUrls.get(form.link) || [];
+      const bodyEvidence = hasBody && !pipeBend ? pdfBodyEvidence(pdfSources, manifest) : null;
+      const directMaterial = pipeBend ? (/PLASTIC/.test(form.content) ? "Пластик" : "Сталь") : /STAINLESS STEEL/.test(form.content) ? "Нержавіюча сталь" : /PLASTIC/.test(form.content) ? "Пластик" : /BRASS/.test(form.content) ? "Латунь" : bodyEvidence?.genericMaterial || (!accessories && /brass/i.test(family.sourceText) ? "Латунь" : null);
       if (directMaterial) characteristics.push({ label: "Матеріал", value: directMaterial });
       if (bodyEvidence && !/PLASTIC|STAINLESS STEEL/.test(form.content)) characteristics.push({ label: "Матеріал корпусу за паспортом серії", value: bodyEvidence.material });
-      characteristics.push(...(familyProperties.get(form.familyId) || []));
+      if (pipeBend) {
+        characteristics.push({ label: "Матеріал напрямної за паспортом", value: /PLASTIC/.test(form.content) ? "Поліамід PA6, 30% скловолокна" : "Оцинкована сталь" }, { label: "Робоча температура", value: "110", unit: "°C" }, { label: "Термостійкість", value: ">165", unit: "°C" });
+      } else characteristics.push(...(familyProperties.get(form.familyId) || []));
       let construction = FAMILY_COPY[family.title];
+      if (pipeBend) construction = "Напрямна використовується для холодного вигинання труби, її підтримання та захисту від механічних впливів. Виріб не є з’єднанням для транспортування середовища. Матеріал стійкий до агресивних речовин у будівельних розчинах. Розмір вибирають відповідно до діаметра труби.";
       if (dimensions.some(row => /без контролю необтисненого/.test(row.value))) construction = construction?.replace(/ має функцію виявлення необтисненого з’єднання: до пресування вода виходить через негерметичну ділянку\./, ". Цей варіант не має функції контролю необтисненого з’єднання.");
       if (!construction) issues.push({ sourceUrl: form.link, sku, issue: `Немає українського опису серії ${family.title}` });
-      const purpose = kind.category === "shutoff-valves" ? "використовується для керування потоком у сумісній трубопровідній системі" : "використовується для монтажу сумісного трубопровідного з’єднання";
+      const purpose = pipeBend ? "використовується для вигинання, підтримання та механічного захисту сумісної труби" : kind.category === "shutoff-valves" ? "використовується для керування потоком у сумісній трубопровідній системі" : "використовується для монтажу сумісного трубопровідного з’єднання";
       const intro = `${title} ${purpose}.${size ? ` Розмір приєднання: ${size}.` : ""}`;
       const sections = [
         { title: "Застосування та конструкція", paragraphs: [construction || "", kind.features.length ? kind.features.join(". ") + "." : ""].filter(Boolean) },
@@ -265,18 +283,17 @@ async function build() {
         const pipeSizes = [...new Set(size.split("×").map(part => part.trim()).filter(part => /^\d+(?:[.,]\d+)?$/.test(part)).map(Number))];
         if (pipeSizes.length === 1 && pipeSizes[0] >= 6) filters.pipeDiameterMm = pipeSizes[0];
       }
-      const pressures = [...new Set((familyProperties.get(form.familyId) || []).filter(r => /Максимальний робочий тиск/.test(r.label) && /^\d+(?:[.,]\d+)? бар$/.test(r.value)).map(r => Number(r.value.replace(" бар", "").replace(",", "."))))];
+      const pressures = pipeBend ? [] : [...new Set((familyProperties.get(form.familyId) || []).filter(r => /Максимальний робочий тиск/.test(r.label) && /^\d+(?:[.,]\d+)? бар$/.test(r.value)).map(r => Number(r.value.replace(" бар", "").replace(",", "."))))];
       if (allowedFilters.has("pressureBar") && pressures.length === 1) filters.pressureBar = pressures[0];
       if (allowedFilters.has("angleDegrees") && kind.category === "pipe-fittings") {
         if (/90.DEGREE|90°/.test(form.content)) filters.angleDegrees = 90;
         else if (/45°/.test(form.content)) filters.angleDegrees = 45;
       }
-      const pdfSources = [...new Set([...form.documents, ...family.documents])].filter(url => manifest.documents[url]);
       const documents = pdfSources.map((url, i) => {
-        const type = /flyer|brochure|catalog|_BRO_/i.test(url) ? "catalog" : /technical|scheda|tech_|dati|datasheet|DTS_|_UK_2026/i.test(url) ? "datasheet" : "certificate";
-        return { title: `${type === "datasheet" ? "Технічний паспорт" : type === "catalog" ? "Каталог" : "Сертифікат"} серії ${seriesName(form.familyTitle)}${type === "certificate" ? " " + (i + 1) : ""}`, type, url: manifest.documents[url].path };
+        const type = documentType(url), model = documentModel(url);
+        return { title: type === "datasheet" && model ? `Технічний паспорт ${model}` : `${type === "datasheet" ? "Технічний паспорт" : type === "catalog" ? "Каталог" : "Сертифікат"} серії ${seriesName(form.familyTitle)}${type === "certificate" ? " " + (i + 1) : ""}`, type, url: manifest.documents[url].path };
       });
-      const record = { sourceId: sku, sourceUrl: form.link, sourceCategory, sku, model: sku, series: SERIES_UK[form.familyTitle] ? null : form.familyTitle.replace(/^LINE /, ""), brand: "general-fittings", title, category: kind.category, price: null, priceCurrency: "UAH", vatIncluded: null, shortDescription: intro.slice(0, 300), description, sections, characteristics, filters, images: [...new Set(images)], documents, ...makeSeo(title, characteristics), sourceEvidence: { manufacturerForm: form.title, manufacturerDescription: clean(form.content), familyUrl: form.familyUrl, capturedAt: capture.capturedAt, htmlSha256: form.htmlSha256, sourceImageUrls: form.images, sourceDocumentUrls: pdfSources, ...(bodyEvidence ? { bodyMaterialPdfEvidence: bodyEvidence } : {}) } };
+      const record = { sourceId: sku, sourceUrl: form.link, sourceCategory, sku, model: sku, series: pipeBend || SERIES_UK[form.familyTitle] ? null : form.familyTitle.replace(/^LINE /, ""), brand: "general-fittings", title, category: kind.category, price: null, priceCurrency: "UAH", vatIncluded: null, shortDescription: intro.slice(0, 300), description, sections, characteristics, filters, images: [...new Set(images)], documents, ...makeSeo(title, characteristics), sourceEvidence: { manufacturerForm: form.title, manufacturerDescription: clean(form.content), familyUrl: form.familyUrl, capturedAt: capture.capturedAt, htmlSha256: form.htmlSha256, sourceImageUrls: form.images, sourceDocumentUrls: pdfSources, ...(bodyEvidence ? { bodyMaterialPdfEvidence: bodyEvidence } : {}), ...(pipeBend ? { componentMaterialPdf: { sourceUrl: pdfSources.find(url => documentModel(url) === form.title.match(/^AC00\.\d+/)?.[0]), material: directMaterial === "Пластик" ? "POLYAMIDE PA6 30% FV" : "FE GALVANIZED", operatingTemperatureC: 110, thermalResistanceMinC: 165 } } : {}) } };
       if (productsBySku.has(sku)) {
         const prior = productsBySku.get(sku); prior.sourceEvidence.additionalSourceUrls ??= []; prior.sourceEvidence.additionalSourceUrls.push(form.link);
         continue;
