@@ -1058,8 +1058,14 @@ await check("checkout-promo", async () => {
   await page.waitForFunction(() => document.querySelector("[data-promo-status]")?.classList.contains("is-ok"), null, { timeout: 5000 });
   const totals = normalize(await page.locator("[data-checkout-totals]").innerText());
   assert.ok(totals.includes(`−${normalize(formatMoney(discount))}`), `discount row missing: ${totals}`);
-  assert.ok(totals.includes(normalize(formatMoney(pricedProduct.amount * 2 - discount))), `total after the discount missing: ${totals}`);
+  assert.ok(totals.includes(normalize(formatMoney(Math.round(pricedProduct.amount * 2) - Math.round(discount)))), `total after the discount missing: ${totals}`);
   assert.equal(await input.inputValue(), "SALE10");
+  // A second Enter in the applied (read-only) field keeps the code: only «Прибрати» removes it.
+  await input.press("Enter");
+  await page.waitForTimeout(300);
+  assert.equal(await input.inputValue(), "SALE10", "Enter in the applied promo field removed the code");
+  assert.match(normalize(await page.locator("[data-checkout-totals]").innerText()), /Знижка/, "Enter in the applied promo field dropped the discount");
+  assert.equal(normalize(await page.locator("[data-promo-apply]").innerText()), "Прибрати");
   const form = page.locator("[data-checkout]");
   await form.locator('input[name="name"]').fill("QA Промокод");
   await form.locator('input[name="phone"]').fill("067 123 45 67");
@@ -1071,6 +1077,297 @@ await check("checkout-promo", async () => {
   await page.context().close();
   return { discount };
 });
+
+const until = async (condition, message, timeout = 5000) => {
+  const end = Date.now() + timeout;
+  while (!condition()) {
+    if (Date.now() > end) throw new Error(message);
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+};
+// Shared by the promo checks below: crm_check_promo_code answered locally (SALE10 valid, anything else not).
+async function routePromoCheck(page, { discount, delay = 0, calls = [] }) {
+  await page.route(/\/rest\/v1\/rpc\/crm_check_promo_code$/, async route => {
+    const payload = JSON.parse(route.request().postData() || "{}").payload || {};
+    const code = String(payload.code || "").toUpperCase();
+    if (code) calls.push(code);
+    if (code && delay) await new Promise(resolve => setTimeout(resolve, delay));
+    const body = !code ? { available: true }
+      : code === "SALE10" ? { available: true, valid: true, code, kind: "percent", value: 10, discount, itemsTotal: pricedProduct.amount * 2 }
+      : { available: true, valid: false, message: "Такого промокоду немає або він уже не діє." };
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(body) }).catch(() => {});
+  });
+  return calls;
+}
+async function fillCheckoutContacts(form) {
+  await form.locator('input[name="name"]').fill("QA Промокод");
+  await form.locator('input[name="phone"]').fill("067 123 45 67");
+  await form.locator('input[name="city"]').fill("Житомир");
+  await form.locator('input[name="deliveryPoint"]').fill("Відділення №5");
+}
+
+// Enter with a Nova Poshta list open never submits the order: it picks the highlighted option, else the first one.
+await check("checkout-np-enter", async () => {
+  const page = await newPage(VIEWPORTS.mobile);
+  const calls = [];
+  const orders = [];
+  await page.route("https://api.novaposhta.ua/**", async route => {
+    const body = JSON.parse(route.request().postData() || "{}");
+    calls.push(body);
+    const data = body.calledMethod === "searchSettlements"
+      ? [{ TotalCount: 1, Addresses: [{ Present: "м. Бровари, Броварський р-н, Київська обл.", Warehouses: 412, MainDescription: "Бровари", DeliveryCity: "city-brovary", Ref: "s1" }] }]
+      : [{ Description: "Відділення №2: вул. Київська, 302", Ref: "w2" }, { Description: "Поштомат №3301: вул. Київська, 1", Ref: "w3" }];
+    await route.fulfill({ contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ success: true, data, errors: [] }) });
+  });
+  await page.route(/\/rest\/v1\/rpc\/crm_submit_order$/, async route => {
+    orders.push(JSON.parse(route.request().postData() || "{}").payload || null);
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ accepted: true, number: 4545 }) });
+  });
+  await seedStorage(page, { "sofievka-cart": { [pricedProduct.id]: 1 } });
+  await open(page, "/checkout");
+  const form = page.locator("[data-checkout]");
+  await form.locator('input[name="name"]').fill("QA Enter");
+  await form.locator('input[name="phone"]').fill("067 123 45 67");
+  const city = page.locator("[data-np-city]");
+  const branch = page.locator("[data-np-branch]");
+  await city.click();
+  await city.pressSequentially("бров", { delay: 20 });
+  await page.locator("#checkout-city-options [role=option]").first().waitFor({ timeout: 5000 });
+  await city.press("Enter");
+  assert.equal(await city.inputValue(), "м. Бровари, Броварський р-н, Київська обл.", "Enter without a highlighted settlement did not pick the first one");
+  await page.waitForFunction(() => document.activeElement?.matches("[data-np-branch]"), null, { timeout: 3000 });
+  // A typed street with the list open: Enter takes the first branch instead of sending the form with the typed text.
+  await branch.pressSequentially("Київська", { delay: 20 });
+  await until(() => calls.some(call => call.methodProperties?.FindByString === "Київська"), "no branch search for the typed street");
+  await page.locator("#checkout-branch-options [role=option]").first().waitFor({ timeout: 5000 });
+  await branch.press("Enter");
+  assert.equal(await branch.inputValue(), "Відділення №2: вул. Київська, 302", "Enter without a highlighted branch did not pick the first one");
+  assert.equal(await page.locator("#checkout-branch-options").isHidden(), true, "the branch list stays open after Enter");
+  await page.waitForTimeout(500);
+  assert.equal(orders.length, 0, "Enter in the open branch list sent the order");
+  assert.equal(await page.locator(".checkout-success").count(), 0);
+  await page.context().close();
+});
+
+// A city typed (or prefilled) without picking it: the full name must match, a bare name only when it is unique;
+// «смт» without a dot and typographic apostrophes still find the settlement.
+await check("checkout-np-city-match", async () => {
+  const page = await newPage(VIEWPORTS.desktop);
+  const calls = [];
+  await page.route("https://api.novaposhta.ua/**", async route => {
+    const body = JSON.parse(route.request().postData() || "{}");
+    calls.push(body);
+    const props = body.methodProperties || {};
+    const data = body.calledMethod === "searchSettlements"
+      ? [{ TotalCount: 2, Addresses: String(props.CityName).startsWith("Кам") ? [
+        { Present: "смт Кам'янка, Черкаський р-н, Черкаська обл.", Warehouses: 5, MainDescription: "Кам'янка", DeliveryCity: "city-kamianka", Ref: "s4" }] : [
+        { Present: "м. Бровари, Броварський р-н, Київська обл.", Warehouses: 412, MainDescription: "Бровари", DeliveryCity: "city-brovary", Ref: "s1" },
+        { Present: "с. Бровари, Ніжинський р-н, Чернігівська обл.", Warehouses: 2, MainDescription: "Бровари", DeliveryCity: "city-brovary-village", Ref: "s3" }] }]
+      : [{ Description: `Відділення №1: ${props.CityRef}`, Ref: "w1" }];
+    await route.fulfill({ contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ success: true, data, errors: [] }) });
+  });
+  await seedStorage(page, { "sofievka-cart": { [pricedProduct.id]: 1 } });
+  await open(page, "/checkout");
+  const city = page.locator("[data-np-city]");
+  const branch = page.locator("[data-np-branch]");
+  const warehouseCalls = () => calls.filter(call => call.calledMethod === "getWarehouses");
+  // Types the city without picking it, then moves to the branch field (which looks the city up).
+  const branchFor = async value => {
+    const count = warehouseCalls().length;
+    await city.fill(value);
+    await branch.click();
+    return count;
+  };
+  await branchFor("Бровари");
+  await until(() => calls.some(call => call.methodProperties?.CityName === "Бровари"), "no settlement lookup for «Бровари»");
+  await page.waitForTimeout(500);
+  assert.equal(warehouseCalls().length, 0, "an ambiguous bare name («Бровари» ×2) picked a settlement");
+  assert.equal(await page.locator("#checkout-branch-options").isHidden(), true, "branch list open without a settlement");
+  let count = await branchFor("с. Бровари, Ніжинський р-н, Чернігівська обл.");
+  await until(() => warehouseCalls().length > count, "the full settlement name was not resolved");
+  assert.equal(warehouseCalls().at(-1).methodProperties.CityRef, "city-brovary-village", "the full name did not pick its own settlement");
+  count = await branchFor("смт Кам’янка");
+  await until(() => warehouseCalls().length > count, "«смт Кам’янка» was not resolved");
+  assert.equal(warehouseCalls().at(-1).methodProperties.CityRef, "city-kamianka");
+  assert.ok(calls.some(call => call.methodProperties?.CityName === "Кам'янка"), `settlement query not normalised: ${JSON.stringify(calls.map(call => call.methodProperties?.CityName).filter(Boolean))}`);
+  await page.context().close();
+});
+
+// Leaving the city field before the (debounced or running) search answers must not leave a list open over the form.
+await check("checkout-np-blur", async () => {
+  const page = await newPage(VIEWPORTS.mobile);
+  await seedStorage(page, { "sofievka-cart": { [pricedProduct.id]: 1 } });
+  await open(page, "/checkout");
+  const city = page.locator("[data-np-city]");
+  const list = page.locator("#checkout-city-options");
+  // Offline API, the field left before the debounce fires (typed and left in one go, well inside the 250 ms).
+  await city.evaluate(node => { node.focus(); node.value = "Житомир"; node.dispatchEvent(new Event("input", { bubbles: true })); node.blur(); });
+  await page.waitForTimeout(800);
+  assert.equal(await list.isHidden(), true, "a list opened after the city field was left (debounce)");
+  // A slow failing request still running when the field is left.
+  const queries = [];
+  await page.route("https://api.novaposhta.ua/**", async route => {
+    queries.push(JSON.parse(route.request().postData() || "{}").methodProperties?.CityName);
+    await new Promise(resolve => setTimeout(resolve, 700));
+    await route.abort();
+  });
+  await city.fill("Полтава");
+  await until(() => queries.includes("Полтава"), "no settlement search for «Полтава»");
+  assert.equal(await list.isVisible(), true, "no «Шукаємо…» while the search runs");
+  await page.locator('input[name="name"]').click();
+  await page.waitForTimeout(1200);
+  assert.equal(await list.isHidden(), true, "the error state reopened the list after the city field was left");
+  await page.context().close();
+});
+
+// A code typed but not applied is checked at submit: a wrong one stops the order, a valid one goes with it, and a
+// check still running is awaited instead of being dropped.
+await check("checkout-promo-unapplied", async () => {
+  const page = await newPage(VIEWPORTS.mobile);
+  const orders = [];
+  const discount = Math.round(pricedProduct.amount * 2 * 10) / 100;
+  const calls = await routePromoCheck(page, { discount, delay: 600 });
+  await page.route(/\/rest\/v1\/rpc\/crm_submit_order$/, async route => {
+    orders.push(JSON.parse(route.request().postData() || "{}").payload || null);
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ accepted: true, number: 4646 }) });
+  });
+  await seedStorage(page, { "sofievka-cart": { [pricedProduct.id]: 2 } });
+  await open(page, "/checkout");
+  await page.locator("[data-promo]").waitFor({ state: "visible", timeout: 5000 });
+  const form = page.locator("[data-checkout]");
+  const input = page.locator("[data-promo-input]");
+  await fillCheckoutContacts(form);
+  await input.fill("wrong");
+  await form.locator("[data-checkout-submit]").click();
+  await page.waitForFunction(() => document.querySelector("[data-promo-status]")?.classList.contains("is-error"), null, { timeout: 5000 });
+  assert.match(await page.locator("[data-promo-status]").innerText(), /немає або він уже не діє/);
+  assert.equal(orders.length, 0, "an order went out with a wrong, not applied promo code");
+  assert.equal(await input.evaluate(node => document.activeElement === node), true, "the promo field is not focused after a wrong code");
+  assert.equal(await form.locator("[data-checkout-submit]").isEnabled(), true, "submit stays disabled after a wrong code");
+  await input.fill("sale10");
+  await form.locator("[data-checkout-submit]").click();
+  await page.locator(".checkout-success").waitFor({ timeout: 10000 });
+  assert.equal(orders.at(-1).promoCode, "SALE10", "a typed, not applied valid code was dropped");
+  // Enter starts the check; the order sent while it runs waits for it.
+  await seedStorage(page, { "sofievka-cart": { [pricedProduct.id]: 2 } });
+  await open(page, "/checkout");
+  await page.locator("[data-promo]").waitFor({ state: "visible", timeout: 5000 });
+  await fillCheckoutContacts(form);
+  const checksBefore = calls.length;
+  await input.fill("sale10");
+  await input.press("Enter");
+  await form.locator("[data-checkout-submit]").click();
+  await page.locator(".checkout-success").waitFor({ timeout: 10000 });
+  assert.equal(orders.length, 2);
+  assert.equal(orders.at(-1).promoCode, "SALE10", "the code being checked at submit was dropped");
+  assert.equal(calls.length - checksBefore, 1, "the running check was not reused");
+  await page.context().close();
+  return { checks: calls.length };
+});
+
+// crm_submit_order refuses the applied code ({accepted:false, promoError}): the form stays, the reason is shown, the
+// discount is taken off and the order can go without the code. The summary rounds the discount once.
+await check("checkout-promo-rejected", async () => {
+  const page = await newPage(VIEWPORTS.mobile);
+  const orders = [];
+  const itemsTotal = pricedProduct.amount * 2;
+  const discount = Math.floor(itemsTotal / 10) + 0.5;
+  const promoError = "Цей промокод уже використано. Приберіть промокод або введіть інший.";
+  await routePromoCheck(page, { discount });
+  await page.route(/\/rest\/v1\/rpc\/crm_submit_order$/, async route => {
+    const payload = JSON.parse(route.request().postData() || "{}").payload || null;
+    orders.push(payload);
+    const body = payload?.promoCode ? { accepted: false, promoError } : { accepted: true, number: 4747 };
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
+  });
+  await seedStorage(page, { "sofievka-cart": { [pricedProduct.id]: 2 } });
+  await open(page, "/checkout");
+  await page.locator("[data-promo]").waitFor({ state: "visible", timeout: 5000 });
+  const form = page.locator("[data-checkout]");
+  const input = page.locator("[data-promo-input]");
+  const totals = page.locator("[data-checkout-totals]");
+  await input.fill("sale10");
+  await page.locator("[data-promo-apply]").click();
+  await page.waitForFunction(() => document.querySelector("[data-promo-status]")?.classList.contains("is-ok"), null, { timeout: 5000 });
+  // «Товари − Знижка = Разом» adds up as shown: the discount is rounded once and the total follows from it.
+  const shown = normalize(await totals.innerText());
+  for (const part of [formatMoney(Math.round(itemsTotal)), `−${formatMoney(Math.round(discount))}`, formatMoney(Math.round(itemsTotal) - Math.round(discount))]) {
+    assert.ok(shown.includes(normalize(part)), `summary lacks ${part}: ${shown}`);
+  }
+  await fillCheckoutContacts(form);
+  await form.locator("[data-checkout-submit]").click();
+  const errorBox = form.locator("[data-checkout-error]");
+  await errorBox.waitFor({ state: "visible", timeout: 10000 });
+  assert.equal(normalize(await errorBox.innerText()), promoError);
+  assert.equal(normalize(await page.locator("[data-promo-status]").innerText()), promoError);
+  assert.equal(await page.locator("[data-promo-status]").evaluate(node => node.classList.contains("is-error")), true);
+  assert.equal(await page.locator(".checkout-success").count(), 0, "a refused promo code showed the success page");
+  assert.equal(await input.evaluate(node => node.readOnly), false, "the refused code stays applied (read-only)");
+  assert.equal(normalize(await page.locator("[data-promo-apply]").innerText()), "Застосувати");
+  const after = normalize(await totals.innerText());
+  assert.ok(!/Знижка/.test(after) && after.includes(normalize(formatMoney(itemsTotal))), `the discount stays in the summary: ${after}`);
+  assert.equal(await form.locator("[data-checkout-submit]").isEnabled(), true, "submit stays disabled after the refusal");
+  assert.equal(normalize(await form.locator("[data-checkout-submit]").innerText()), "Підтвердити замовлення");
+  await input.fill("");
+  await form.locator("[data-checkout-submit]").click();
+  await page.locator(".checkout-success").waitFor({ timeout: 10000 });
+  assert.equal(orders.length, 2);
+  assert.equal("promoCode" in orders[1], false, "the order without the code still carries promoCode");
+  await page.context().close();
+});
+
+// Order summary lines: only the title is clamped (3 lines, 2 on phones), «N шт. × ціна» always shows; below 400px the
+// line total goes under the name. On desktop the sticky summary scrolls inside itself so «Разом» is never cut off.
+for (const [label, viewport] of [["desktop", { width: 1280, height: 560 }], ["mobile", VIEWPORTS.mobile]]) {
+  await check(`checkout-summary-quantity-${label}`, async () => {
+    const page = await newPage(viewport);
+    const products = facts.pricedProducts.slice(0, 6);
+    await seedStorage(page, { "sofievka-cart": Object.fromEntries(products.map((product, index) => [product.id, index + 1])) });
+    await open(page, "/checkout");
+    const line = await page.evaluate(() => {
+      const item = document.querySelector(".checkout-summary .checkout-item");
+      const title = item?.querySelector(".checkout-item__title");
+      if (!title) return { error: "no .checkout-item__title in the summary line" };
+      title.textContent = "Насос циркуляційний з мокрим ротором для систем опалення та гарячого водопостачання ".repeat(4);
+      const quantity = item.querySelector(".checkout-item__name small");
+      // The site scrolls smoothly (html { scroll-behavior: smooth }); the measurements need the final position.
+      quantity.scrollIntoView({ block: "center", behavior: "instant" });
+      const box = quantity.getBoundingClientRect();
+      const hit = document.elementFromPoint(box.left + Math.min(10, box.width / 2), box.top + box.height / 2);
+      const name = item.querySelector(".checkout-item__name").getBoundingClientRect();
+      const total = item.querySelector("strong").getBoundingClientRect();
+      return { quantity: quantity.textContent, visible: Boolean(hit && quantity.contains(hit)), height: box.height,
+        lines: Math.round(title.getBoundingClientRect().height / parseFloat(getComputedStyle(title).lineHeight)),
+        clamped: title.scrollHeight > title.clientHeight + 1, totalBelow: total.top >= name.bottom - 1, totalRight: total.left >= name.right - 1 };
+    });
+    assert.equal(line.error, undefined, line.error);
+    assert.ok(line.visible && line.height > 0, `quantity line «${line.quantity}» hidden under a long title (${JSON.stringify(line)})`);
+    assert.match(normalize(line.quantity), /^1 шт\. × /);
+    assert.ok(line.clamped, "a long title is not clamped");
+    assert.equal(line.lines, label === "mobile" ? 2 : 3, `title clamp: ${line.lines} lines`);
+    if (label === "mobile") assert.ok(line.totalBelow, `line total is not under the name at ${viewport.width}px`);
+    else assert.ok(line.totalRight, "line total is not beside the name on desktop");
+    if (label === "desktop") {
+      const sticky = await page.evaluate(async () => {
+        const summary = document.querySelector(".checkout-summary");
+        window.scrollTo({ top: summary.getBoundingClientRect().top + window.scrollY - 40, behavior: "instant" });
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        summary.scrollTo({ top: summary.scrollHeight, behavior: "instant" });
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        const style = getComputedStyle(summary);
+        const box = summary.getBoundingClientRect();
+        const total = summary.querySelector(".order-summary__total").getBoundingClientRect();
+        return { overflowY: style.overflowY, maxHeight: parseFloat(style.maxHeight), innerHeight, top: box.top, bottom: box.bottom, totalTop: total.top, totalBottom: total.bottom };
+      });
+      assert.equal(sticky.overflowY, "auto", "sticky summary does not scroll inside itself");
+      assert.ok(Math.abs(sticky.maxHeight - (sticky.innerHeight - 124)) <= 1, `summary max-height ${sticky.maxHeight}px`);
+      assert.ok(sticky.bottom <= sticky.innerHeight + 1, `sticky summary runs past the viewport: ${JSON.stringify(sticky)}`);
+      assert.ok(sticky.totalTop >= sticky.top && sticky.totalBottom <= sticky.bottom + 1, `«Разом» cut off: ${JSON.stringify(sticky)}`);
+    }
+    await page.context().close();
+    return line;
+  });
+}
 
 await check("home-callback-form", async () => {
   const page = await newPage();

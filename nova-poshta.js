@@ -27,9 +27,12 @@
     return cache.get(key);
   }
 
+  // Typographic apostrophes (’ ʼ ‘ and the backtick) become the ASCII one before a search or a name comparison.
+  const apostrophes = text => String(text || "").replace(/[’ʼ‘`]/g, "'");
   // The API answers «CityName has invalid characters» for Latin letters and symbols.
-  const settlementQuery = text => String(text || "").replace(/^(м|с|смт|сел|селище)\.\s*/i, "").split(",")[0]
-    .replace(/[^0-9a-zа-яіїєґ'’ʼ\-\s]/gi, " ").replace(/\s+/g, " ").trim();
+  const settlementQuery = text => apostrophes(text).trim().replace(/^(м|с|смт|сел|селище)(\.\s*|\s+)/i, "").split(",")[0]
+    .replace(/[^0-9a-zа-яіїєґ'\-\s]/gi, " ").replace(/\s+/g, " ").trim();
+  const sameName = text => apostrophes(text).toLocaleLowerCase("uk").replace(/\s+/g, " ").trim();
 
   async function searchSettlements(text) {
     const query = settlementQuery(text);
@@ -63,7 +66,10 @@
     let options = [];
     let active = -1;
     let timer = 0;
+    let blurTimer = 0;
     let requestId = 0;
+    // A pending (debounced) or running search must not reopen a list the customer has already left or closed.
+    const cancel = () => { clearTimeout(timer); requestId += 1; };
     const close = () => { list.hidden = true; input.setAttribute("aria-expanded", "false"); input.removeAttribute("aria-activedescendant"); active = -1; };
     // On a phone the list opens below the fold (tab bar, keyboard): scroll just enough to show it, keeping the field
     // under the sticky header.
@@ -83,16 +89,21 @@
       const option = options[index];
       if (!option) return;
       input.value = option.value;
+      cancel();
       close();
       onPick(option);
     };
     const run = async () => {
+      if (document.activeElement !== input) return;
       const text = input.value.trim();
-      if (text.length < minLength) { close(); return; }
+      if (text.length < minLength) { cancel(); close(); return; }
       const id = ++requestId;
       state("Шукаємо…");
       let found;
-      try { found = await search(text); } catch { if (id === requestId) state("Не вдалося завантажити список — впишіть вручну"); return; }
+      try { found = await search(text); } catch {
+        if (id === requestId && document.activeElement === input) state("Не вдалося завантажити список — впишіть вручну");
+        return;
+      }
       if (id !== requestId || document.activeElement !== input) return;
       if (!found) { close(); return; }
       if (!found.length) { state("Нічого не знайдено"); return; }
@@ -104,14 +115,21 @@
       reveal();
     };
     input.addEventListener("input", () => { onType(); clearTimeout(timer); timer = setTimeout(run, 250); });
-    input.addEventListener("focus", () => { if (input.value.trim().length >= minLength || minLength === 0) run(); });
-    input.addEventListener("blur", () => setTimeout(close, 150));
+    input.addEventListener("focus", () => { clearTimeout(blurTimer); if (input.value.trim().length >= minLength || minLength === 0) run(); });
+    input.addEventListener("blur", () => { cancel(); clearTimeout(blurTimer); blurTimer = setTimeout(close, 150); });
     input.addEventListener("keydown", event => {
-      if (event.key === "Escape" && !list.hidden) { event.preventDefault(); close(); return; }
-      if (!options.length || list.hidden) { if (event.key === "ArrowDown") run(); return; }
+      if (event.key === "Escape") { if (!list.hidden) event.preventDefault(); cancel(); close(); return; }
+      if (list.hidden) { if (event.key === "ArrowDown") run(); return; }
+      // While the list is open Enter never submits the form: it takes the highlighted option, else the first one.
+      if (event.key === "Enter") {
+        event.preventDefault();
+        if (options.length) pick(active >= 0 ? active : 0);
+        else { cancel(); close(); }
+        return;
+      }
+      if (!options.length) return;
       if (event.key === "ArrowDown") { event.preventDefault(); highlight(Math.min(options.length - 1, active + 1)); }
       else if (event.key === "ArrowUp") { event.preventDefault(); highlight(Math.max(0, active - 1)); }
-      else if (event.key === "Enter" && active >= 0) { event.preventDefault(); pick(active); }
     });
     // mousedown keeps the focus in the input, so blur does not close the list before the click.
     list.addEventListener("mousedown", event => event.preventDefault());
@@ -125,12 +143,20 @@
     city.dataset.npBound = "1";
     let cityRef = "";
     const showHint = text => { if (!hint) return; hint.textContent = text || ""; hint.hidden = !text; };
-    // A city typed or prefilled without picking it from the list is looked up once the branch field is used.
+    // A city typed or prefilled without picking it from the list is looked up once the branch field is used: the
+    // whole value against each result's full name («м. Бровари, Броварський р-н, Київська обл.»), else a bare
+    // name («Бровари», «смт Гостомель») when exactly one settlement has it.
     const resolveCity = async () => {
-      if (cityRef || !city.value.trim()) return cityRef;
-      const found = await searchSettlements(city.value).catch(() => []);
-      const name = settlementQuery(city.value).toLocaleLowerCase("uk");
-      const match = found.find(item => item.name.toLocaleLowerCase("uk") === name);
+      const value = city.value.trim();
+      if (cityRef || !value) return cityRef;
+      const found = await searchSettlements(value).catch(() => []);
+      if (cityRef || city.value.trim() !== value) return cityRef;
+      let match = found.find(item => sameName(item.label) === sameName(value));
+      if (!match && !value.includes(",")) {
+        const name = sameName(settlementQuery(value));
+        const named = found.filter(item => sameName(item.name) === name);
+        if (named.length === 1) match = named[0];
+      }
       if (match && match.warehouses > 0) cityRef = match.ref;
       return cityRef;
     };

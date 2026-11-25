@@ -2509,6 +2509,7 @@ ol {
 .admin-crm-item a:hover { text-decoration: underline; }
 .admin-crm-item--total { background: var(--surface-soft); font-weight: 800; }
 .admin-crm-item--discount { color: var(--success); }
+.admin-crm-item--discount .admin-button { min-height: 32px; padding-inline: 10px; font-size: 11px; }
 
 .admin-crm-text { padding: 18px 20px; font-size: 13px; line-height: 1.6; }
 
@@ -3051,15 +3052,21 @@ img.admin-collection-item__thumb { padding: 3px; background: var(--surface); }
 .admin-promo-table td { vertical-align: middle; }
 .admin-promo-table tr.is-muted td { color: var(--text-subtle); }
 .admin-promo-code { font-size: 13px; letter-spacing: .04em; }
-.admin-promo-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+/* Code and note: the column stops at 320px and a long note wraps (max-width on the td itself is ignored by tables). */
+.admin-promo-table td:first-child > * { display: block; max-width: 320px; overflow-wrap: anywhere; }
+/* Actions: the cell stays a table cell and shrinks to the three buttons, which keep to one line. */
+.admin-promo-actions-cell { width: 1%; }
+.admin-promo-actions { display: flex; flex-wrap: nowrap; justify-content: flex-end; gap: 6px; }
 @media (max-width: 760px) {
   .admin-promo-grid { grid-template-columns: minmax(0, 1fr); }
   .admin-promo-table { min-width: 0; }
   .admin-promo-table thead { display: none; }
   .admin-promo-table, .admin-promo-table tbody, .admin-promo-table tr, .admin-promo-table td { display: block; width: 100%; }
   .admin-promo-table tr { padding: 12px 0; border-bottom: 1px solid var(--divider); }
-  .admin-promo-table td { padding: 4px 20px; border: 0; }
-  .admin-promo-actions { justify-content: flex-start; }
+  /* As specific as .admin-crm-table td:nth-child(even), which right-aligns every other cell, and later in the file. */
+  .admin-crm-table.admin-promo-table td { padding: 4px 20px; border: 0; text-align: left; }
+  .admin-promo-table td:first-child > * { max-width: none; }
+  .admin-promo-actions { flex-wrap: wrap; justify-content: flex-start; padding-top: 6px; }
 }
 
 /* Staff */

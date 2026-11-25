@@ -1041,18 +1041,35 @@ body[data-page="product"] {
 .checkout-item:hover, .checkout-item:focus-visible { background: rgba(255, 255, 255, .08); }
 .checkout-item__image { display: grid; place-items: center; width: 56px; height: 56px; overflow: hidden; border-radius: 6px; background: #fff; }
 .checkout-item__image img { width: 48px; height: 48px; object-fit: contain; }
-.checkout-item__name { display: -webkit-box; overflow: hidden; font-size: 13px; line-height: 1.35; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
-.checkout-item__name small { display: block; margin-top: 3px; color: rgba(255, 255, 255, .62); font-size: 12px; }
+.checkout-item__name { display: grid; gap: 3px; min-width: 0; font-size: 13px; line-height: 1.35; }
+/* Only the title is clamped; «N шт. × ціна» under it always shows. */
+.checkout-item__title { display: -webkit-box; overflow: hidden; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.checkout-item__name small { display: block; color: rgba(255, 255, 255, .62); font-size: 12px; font-variant-numeric: tabular-nums; }
 .checkout-item strong { font-size: 13px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* Sticky on desktop: the summary scrolls inside itself so «Разом» is never cut off on a short laptop screen. */
+@media (min-width: 901px) {
+  .checkout-summary { max-height: calc(100vh - 124px); overflow-y: auto; }
+}
+@media (max-width: 640px) {
+  .checkout-item__title { -webkit-line-clamp: 2; }
+}
+/* Narrow phones: the line total goes under the name, so the title gets the width. */
+@media (max-width: 400px) {
+  .checkout-item { grid-template-columns: 48px minmax(0, 1fr); column-gap: 10px; row-gap: 2px; }
+  .checkout-item__image { grid-row: span 2; width: 48px; height: 48px; }
+  .checkout-item__image img { width: 40px; height: 40px; }
+  .checkout-item strong { grid-column: 2; }
+}
 .checkout-summary dl { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, .18); }
 .checkout-summary .order-summary__total { padding-top: 0; border-top: 0; }
 .checkout-summary dl > div:first-child:not(:only-child) ~ .order-summary__total { padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, .18); }
 .order-summary__discount { color: #9fe0bd; }
 .checkout-summary > a { color: rgba(255, 255, 255, .82); font-size: 14px; }
 .checkout-summary > a:hover { color: #fff; }
-/* Nova Poshta settlement and branch pickers (nova-poshta.js). */
+/* Nova Poshta settlement and branch pickers (nova-poshta.js). The list sits above the following fields but under
+   the sticky site header (z-index 30), so it never covers the header while the page scrolls. */
 .np-field { position: relative; }
-.np-options { position: absolute; top: 100%; right: 0; left: 0; z-index: 30; max-height: 320px; margin: 4px 0 0; padding: 4px 0; overflow-y: auto; border: 1px solid var(--divider); border-radius: var(--radius-control); background: var(--surface); box-shadow: var(--shadow-soft); list-style: none; }
+.np-options { position: absolute; top: 100%; right: 0; left: 0; z-index: 5; max-height: 320px; margin: 4px 0 0; padding: 4px 0; overflow-y: auto; border: 1px solid var(--divider); border-radius: var(--radius-control); background: var(--surface); box-shadow: var(--shadow-soft); list-style: none; }
 .np-options[hidden] { display: none; }
 .np-options [role=option] { padding: 10px 14px; font-size: 14px; line-height: 1.35; cursor: pointer; }
 .np-options [role=option] small { display: block; margin-top: 2px; color: var(--text-secondary); font-size: 12px; }
@@ -1067,7 +1084,7 @@ body[data-page="product"] {
 .checkout-promo__row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
 .checkout-promo__row input { width: 100%; min-height: 50px; padding: 12px 14px; border: 1px solid var(--divider); border-radius: var(--radius-control); background: var(--surface); color: var(--text); font: inherit; text-transform: uppercase; }
 .checkout-promo__row input::placeholder { text-transform: none; }
-.checkout-promo__row input[readonly] { border-color: var(--success); background: #f1f8f4; }
+.checkout-promo__row input[readonly]:not([aria-busy="true"]) { border-color: var(--success); background: #f1f8f4; }
 .checkout-promo__row .button { min-height: 50px; }
 .checkout-promo__status { margin: 0; min-height: 0; color: var(--text-secondary); font-size: 13px; }
 .checkout-promo__status:empty { display: none; }

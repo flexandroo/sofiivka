@@ -216,6 +216,10 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     updateOrderItems: (number, lines, expectedUpdatedAt) => rpc("admin_crm_update_order_items", {
       order_number: Number(number), lines, expected_updated_at: expectedUpdatedAt || null
     }),
+    // Drops the promo discount; answers like getOrder.
+    removeOrderPromo: (number, expectedUpdatedAt) => rpc("admin_crm_remove_order_promo", {
+      order_number: Number(number), expected_updated_at: expectedUpdatedAt || null
+    }),
     createOrder: payload => rpc("admin_crm_create_order", { payload }),
     searchProducts: (query, { signal } = {}) => rpc("admin_crm_search_products", {
       query_text: String(query || "").trim(), max_rows: 12

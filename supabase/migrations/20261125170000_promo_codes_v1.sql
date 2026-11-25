@@ -2,20 +2,42 @@
 -- applied by crm_submit_order.
 --
 --   * crm_promo_codes: code (Latin letters, digits, - and _; stored upper-case), percent (1–90) or fixed
---     amount in UAH, optional minimum order, start/end, use limit; used_count grows with every order.
---     RLS on and no table grants: only the RPCs below read or change it.
---   * The discount is taken from the priced lines only (items_total); «за запитом» lines are priced by a
---     manager later and are not discounted. crm_orders keeps items_total as the sum of the lines and gets
---     promo_code / promo_kind / promo_value and discount_amount; to pay = items_total - discount_amount.
---     Trigger crm_orders_discount recomputes discount_amount whenever items_total changes (a manager
---     editing the lines keeps the percent, a fixed amount never exceeds the total).
+--     amount in UAH, optional minimum order, first and last day, use limit; used_count grows with every
+--     order and drops when a manager removes the code from one. RLS on and no table grants: only the RPCs
+--     below read or change it.
+--   * Dates are Kyiv calendar days: the admin sends startsOn / endsOn ("YYYY-MM-DD", endsOn is the last day
+--     the code works); starts_at is the first day's 00:00 Europe/Kyiv, ends_at the 00:00 Europe/Kyiv after
+--     the last day (so a DST day lasts 23 or 25 hours, as in Kyiv).
+--   * The discount is taken from the priced lines only; «за запитом» lines are priced by a manager later
+--     and are not discounted. crm_orders keeps items_total as the sum of the lines and gets promo_code /
+--     promo_kind / promo_value, discount_base (the priced total the discount was computed from at
+--     submission) and discount_amount; to pay = items_total - discount_amount. Trigger crm_orders_discount
+--     recomputes discount_amount whenever the total changes: a percent applies to
+--     min(items_total, discount_base), so a manager pricing an «за запитом» line or adding lines never grows
+--     the discount, while removing lines can shrink it; a fixed amount never exceeds the total.
 --   * crm_check_promo_code(payload) is public: { code: "" } only answers { available } (the field is shown
 --     while active codes exist); with a code it returns the discount for the posted cart, priced on the
---     server. Ten wrong codes per hour per client address, then it stops answering (brute-force guard).
---   * crm_submit_order: same as 20261002001700 plus payload.promoCode, checked again under a row lock.
+--     server.
+--   * Brute-force guard (crm_promo_attempts): every unknown code (not found, switched off, not started yet,
+--     expired) sent to crm_check_promo_code or crm_submit_order is logged. After 20 in an hour from one
+--     client address, or 200 in 10 minutes across the site (a bot rotating addresses), both stop checking
+--     codes. Real codes that merely do not apply yet (minimum order, used up, no priced items) are not
+--     logged, so customers behind one office address do not lock each other out.
+--   * crm_submit_order: same as 20261002001700 plus payload.promoCode, checked again under a row lock before
+--     anything is written. A code that does not apply returns { accepted: false, promoError } with HTTP 200:
+--     no order, no customer card, no submission rate-limit slot, and the logged guess is kept (an exception
+--     would roll it back).
+--   * admin_crm_remove_order_promo(order_number, expected_updated_at): CRM staff remove the code from an open
+--     order (the discount goes, used_count drops, the timeline says which code).
+--   * Customer totals (crm_customers.orders_total, admin_crm_overview revenue30d) are net of the discount;
+--     admin_crm_get_customer order rows carry discountAmount and promoCode.
 --   * admin_crm_get_order and _customer_order_json: same as before plus the promo fields.
 --
--- NOTE for the Supabase connector: crm_submit_order, crm_check_promo_code and admin_delete_promo_code
+-- Replaced functions (their PROD bodies equal the repo versions): crm_submit_order, admin_crm_get_order,
+-- admin_crm_list_orders, admin_crm_export_orders, _customer_order_json, _crm_refresh_customer_stats,
+-- admin_crm_overview, admin_crm_get_customer.
+--
+-- NOTE for the Supabase connector: crm_submit_order, _crm_promo_record_failure and admin_delete_promo_code
 -- contain `delete from`, and the file creates a trigger. Apply it through the Supabase SQL Editor (or the
 -- Management API) if the connector times out.
 
@@ -43,13 +65,15 @@ create table public.crm_promo_codes (
 alter table public.crm_promo_codes enable row level security;
 revoke all on table public.crm_promo_codes from anon, authenticated;
 
--- Wrong codes per client address (brute-force guard of crm_check_promo_code).
+-- Unknown codes per client address (brute-force guard of crm_check_promo_code and crm_submit_order);
+-- '' when the address is unknown (still counted by the site-wide backstop).
 create table public.crm_promo_attempts (
   id bigint generated always as identity primary key,
   client_fingerprint text not null,
   created_at timestamptz not null default now()
 );
 create index crm_promo_attempts_recent on public.crm_promo_attempts (client_fingerprint, created_at);
+create index crm_promo_attempts_created on public.crm_promo_attempts (created_at);
 alter table public.crm_promo_attempts enable row level security;
 revoke all on table public.crm_promo_attempts from anon, authenticated;
 
@@ -57,9 +81,12 @@ alter table public.crm_orders
   add column promo_code text check (promo_code is null or char_length(promo_code) <= 40),
   add column promo_kind text check (promo_kind is null or promo_kind in ('percent', 'fixed')),
   add column promo_value numeric(14, 2) check (promo_value is null or promo_value > 0),
+  add column discount_base numeric(14, 2) check (discount_base is null or discount_base >= 0),
   add column discount_amount numeric(14, 2) not null default 0 check (discount_amount >= 0);
 create index crm_orders_promo_code on public.crm_orders (promo_code) where promo_code is not null;
 
+-- A percent applies to the priced total the code was accepted for (discount_base) or to the current
+-- total when that is smaller: lines priced or added later are not discounted, removed lines shrink it.
 create or replace function public._crm_order_discount()
 returns trigger
 language plpgsql
@@ -67,7 +94,8 @@ set search_path = ''
 as $$
 begin
   new.discount_amount := case
-    when new.promo_kind = 'percent' then round(new.items_total * new.promo_value / 100, 2)
+    when new.promo_kind = 'percent'
+      then round(least(new.items_total, coalesce(new.discount_base, new.items_total)) * new.promo_value / 100, 2)
     when new.promo_kind = 'fixed' then least(new.promo_value, new.items_total)
     else 0
   end;
@@ -76,11 +104,13 @@ end;
 $$;
 revoke all on function public._crm_order_discount() from public, anon, authenticated;
 
-create trigger crm_orders_discount before insert or update of items_total, promo_kind, promo_value
+create trigger crm_orders_discount before insert or update of items_total, promo_kind, promo_value, discount_base
   on public.crm_orders for each row execute function public._crm_order_discount();
 
 -- ---------------------------------------------------------------------------
--- Evaluation: { valid, message } or { valid, id, code, kind, value, discount, itemsTotal }
+-- Evaluation: { valid, reason, message } or { valid, id, code, kind, value, discount, itemsTotal }.
+-- reason: 'empty' | 'unknown' (not found, off, not started, expired) | 'used_up' | 'no_priced' | 'min_order';
+-- only 'unknown' counts as a guess for the brute-force guard.
 -- ---------------------------------------------------------------------------
 create or replace function public._crm_promo_evaluate(raw_code text, priced_total numeric)
 returns jsonb
@@ -95,22 +125,23 @@ declare
   base numeric := coalesce(priced_total, 0);
 begin
   if normalized = '' then
-    return jsonb_build_object('valid', false, 'message', 'Введіть промокод.');
+    return jsonb_build_object('valid', false, 'reason', 'empty', 'message', 'Введіть промокод.');
   end if;
   select * into promo from public.crm_promo_codes promo_row where promo_row.code = normalized;
   if not found or not promo.active
       or (promo.starts_at is not null and promo.starts_at > now())
       or (promo.ends_at is not null and promo.ends_at <= now()) then
-    return jsonb_build_object('valid', false, 'message', 'Такого промокоду немає або він уже не діє.');
+    return jsonb_build_object('valid', false, 'reason', 'unknown', 'message', 'Такого промокоду немає або він уже не діє.');
   end if;
   if promo.max_uses is not null and promo.used_count >= promo.max_uses then
-    return jsonb_build_object('valid', false, 'message', 'Цей промокод уже використано.');
+    return jsonb_build_object('valid', false, 'reason', 'used_up', 'message', 'Цей промокод уже використано.');
   end if;
   if base <= 0 then
-    return jsonb_build_object('valid', false, 'message', 'Промокод діє на товари з ціною — у кошику таких немає.');
+    return jsonb_build_object('valid', false, 'reason', 'no_priced',
+      'message', 'Промокод діє на товари з ціною — у кошику таких немає.');
   end if;
   if promo.min_order_total is not null and base < promo.min_order_total then
-    return jsonb_build_object('valid', false,
+    return jsonb_build_object('valid', false, 'reason', 'min_order',
       'message', 'Промокод діє для замовлень від ' || to_char(promo.min_order_total, 'FM9999999990') || ' грн.');
   end if;
   return jsonb_build_object(
@@ -125,6 +156,36 @@ begin
 end;
 $$;
 revoke all on function public._crm_promo_evaluate(text, numeric) from public, anon, authenticated;
+
+-- Brute-force guard: 20 unknown codes per hour from one address, or 200 per 10 minutes across the site.
+create or replace function public._crm_promo_blocked(fingerprint text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select (_crm_promo_blocked.fingerprint is not null and (select count(*) from public.crm_promo_attempts attempt
+      where attempt.client_fingerprint = _crm_promo_blocked.fingerprint
+        and attempt.created_at > now() - interval '1 hour') >= 20)
+    or (select count(*) from public.crm_promo_attempts attempt
+      where attempt.created_at > now() - interval '10 minutes') >= 200
+$$;
+
+create or replace function public._crm_promo_record_failure(fingerprint text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  delete from public.crm_promo_attempts where created_at < now() - interval '1 day';
+  insert into public.crm_promo_attempts (client_fingerprint) values (coalesce(fingerprint, ''));
+end;
+$$;
+
+revoke all on function public._crm_promo_blocked(text) from public, anon, authenticated;
+revoke all on function public._crm_promo_record_failure(text) from public, anon, authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Storefront: preview on /checkout
@@ -157,8 +218,7 @@ begin
   if char_length(raw_code) > 40 then
     return jsonb_build_object('available', true, 'valid', false, 'message', 'Такого промокоду немає або він уже не діє.');
   end if;
-  if fingerprint is not null and (select count(*) from public.crm_promo_attempts attempt
-      where attempt.client_fingerprint = fingerprint and attempt.created_at > now() - interval '1 hour') >= 10 then
+  if public._crm_promo_blocked(fingerprint) then
     return jsonb_build_object('available', true, 'valid', false, 'message', 'Забагато спроб. Спробуйте пізніше або зателефонуйте нам.');
   end if;
   if jsonb_typeof(requested) <> 'array' or jsonb_array_length(requested) > 50 then
@@ -176,11 +236,11 @@ begin
   where item.quantity between 1 and 999;
 
   result := public._crm_promo_evaluate(raw_code, priced_total);
-  if not (result ->> 'valid')::boolean and fingerprint is not null then
-    delete from public.crm_promo_attempts where created_at < now() - interval '1 day';
-    insert into public.crm_promo_attempts (client_fingerprint) values (fingerprint);
+  -- Only guesses count: a real code below its minimum or used up does not lock the address out.
+  if result ->> 'reason' = 'unknown' then
+    perform public._crm_promo_record_failure(fingerprint);
   end if;
-  return (result - 'id') || jsonb_build_object('available', true);
+  return (result - 'id' - 'reason') || jsonb_build_object('available', true);
 end;
 $$;
 revoke all on function public.crm_check_promo_code(jsonb) from public;
@@ -216,6 +276,7 @@ declare
   resolved_count integer;
   totals record;
   promo_input text := upper(btrim(coalesce(payload ->> 'promoCode', '')));
+  promo_total numeric;
   promo jsonb;
   final_order public.crm_orders%rowtype;
 begin
@@ -271,6 +332,30 @@ begin
     raise exception using errcode = '22023', message = 'Деякі товари більше недоступні. Оновіть кошик.';
   end if;
 
+  -- Promo code: checked again under a row lock (/checkout only previews it) before anything is written.
+  -- A code that does not apply stops the order with the reason, so the customer never gets another total
+  -- without seeing it. It is returned, not raised, so a logged guess survives (brute-force guard).
+  if promo_input <> '' then
+    if public._crm_promo_blocked(fingerprint) then
+      return jsonb_build_object('accepted', false, 'promoError', 'Забагато спроб. Спробуйте пізніше або зателефонуйте нам.');
+    end if;
+    perform 1 from public.crm_promo_codes promo_row where promo_row.code = promo_input for update;
+    -- The same figure items_total gets below: priced lines only.
+    select coalesce(sum(round(product.amount * requested_item.quantity, 2)), 0) into promo_total
+    from pg_temp.crm_requested_items requested_item
+    join public.products product on product.legacy_id = requested_item.legacy_id
+      and product.publication_status = 'published' and product.price_status = 'known';
+    promo := public._crm_promo_evaluate(promo_input, promo_total);
+    if not (promo ->> 'valid')::boolean then
+      if promo ->> 'reason' = 'unknown' then
+        perform public._crm_promo_record_failure(fingerprint);
+      end if;
+      return jsonb_build_object('accepted', false,
+        'promoError', (promo ->> 'message') || ' Приберіть промокод або введіть інший.');
+    end if;
+    update public.crm_promo_codes set used_count = used_count + 1 where internal_id = (promo ->> 'id')::uuid;
+  end if;
+
   perform public._crm_enforce_rate_limit('order', normalized_phone, fingerprint);
 
   customer := public._crm_upsert_customer(normalized_phone, contact_name, contact_email, null,
@@ -306,17 +391,6 @@ begin
   into totals
   from public.crm_order_items item where item.order_id = new_order_id;
 
-  -- Promo code: checked again under a row lock (/checkout only previews it). A code that no longer applies
-  -- stops the order with the reason, so the customer never gets another total without seeing it.
-  if promo_input <> '' then
-    perform 1 from public.crm_promo_codes promo_row where promo_row.code = promo_input for update;
-    promo := public._crm_promo_evaluate(promo_input, totals.items_total);
-    if not (promo ->> 'valid')::boolean then
-      raise exception using errcode = '22023', message = (promo ->> 'message') || ' Приберіть промокод або введіть інший.';
-    end if;
-    update public.crm_promo_codes set used_count = used_count + 1 where internal_id = (promo ->> 'id')::uuid;
-  end if;
-
   -- discount_amount follows from items_total and the promo fields (trigger crm_orders_discount).
   update public.crm_orders set
     items_count = totals.items_count,
@@ -324,7 +398,8 @@ begin
     has_unpriced_items = coalesce(totals.has_unpriced, false),
     promo_code = promo ->> 'code',
     promo_kind = promo ->> 'kind',
-    promo_value = (promo ->> 'value')::numeric
+    promo_value = (promo ->> 'value')::numeric,
+    discount_base = (promo ->> 'itemsTotal')::numeric
   where internal_id = new_order_id
   returning * into final_order;
 
@@ -376,6 +451,9 @@ as $$
     'minOrderTotal', promo.min_order_total,
     'startsAt', promo.starts_at,
     'endsAt', promo.ends_at,
+    -- Kyiv calendar days; endsOn is the last day the code works (ends_at is the moment it stops).
+    'startsOn', to_char(promo.starts_at at time zone 'Europe/Kyiv', 'YYYY-MM-DD'),
+    'endsOn', to_char((promo.ends_at - interval '1 microsecond') at time zone 'Europe/Kyiv', 'YYYY-MM-DD'),
     'maxUses', promo.max_uses,
     'usedCount', promo.used_count,
     'active', promo.active,
@@ -425,7 +503,10 @@ begin
 end;
 $$;
 
--- payload: { id?, code, kind: percent|fixed, value, minOrderTotal?, startsAt?, endsAt?, maxUses?, active, note? }
+-- payload: { id?, code, kind: percent|fixed, value, minOrderTotal?, startsOn?, endsOn?, maxUses?, active, note? }
+-- startsOn / endsOn: Kyiv calendar days "YYYY-MM-DD" ("" for none), endsOn being the last day the code works;
+-- stored as starts_at = startsOn 00:00 Europe/Kyiv and ends_at = the 00:00 Europe/Kyiv after endsOn. Without
+-- those keys the older ISO startsAt / endsAt are read as they are.
 -- Without id a new code is created. Returns the saved code.
 create or replace function public.admin_save_promo_code(payload jsonb, expected_updated_at timestamptz default null)
 returns jsonb
@@ -446,6 +527,8 @@ declare
   current_row public.crm_promo_codes%rowtype;
   saved public.crm_promo_codes%rowtype;
   amount_text text;
+  day_text text;
+  by_days boolean;
 begin
   perform public._promo_require_admin();
   if jsonb_typeof(payload) is distinct from 'object' then
@@ -487,14 +570,33 @@ begin
     new_max := (payload ->> 'maxUses')::integer;
   end if;
 
+  by_days := payload ? 'startsOn' or payload ? 'endsOn';
   begin
-    new_starts := nullif(payload ->> 'startsAt', '')::timestamptz;
-    new_ends := nullif(payload ->> 'endsAt', '')::timestamptz;
+    if payload ? 'startsOn' then
+      day_text := btrim(coalesce(payload ->> 'startsOn', ''));
+      if day_text <> '' and day_text !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' then
+        raise exception 'bad day';
+      end if;
+      new_starts := nullif(day_text, '')::date::timestamp at time zone 'Europe/Kyiv';
+    else
+      new_starts := nullif(payload ->> 'startsAt', '')::timestamptz;
+    end if;
+    if payload ? 'endsOn' then
+      day_text := btrim(coalesce(payload ->> 'endsOn', ''));
+      if day_text <> '' and day_text !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' then
+        raise exception 'bad day';
+      end if;
+      new_ends := (nullif(day_text, '')::date + 1)::timestamp at time zone 'Europe/Kyiv';
+    else
+      new_ends := nullif(payload ->> 'endsAt', '')::timestamptz;
+    end if;
   exception when others then
     raise exception using errcode = '22023', message = 'Перевірте дати дії промокоду.';
   end;
   if new_starts is not null and new_ends is not null and new_ends <= new_starts then
-    raise exception using errcode = '22023', message = 'Дата завершення має бути пізніше за дату початку.';
+    raise exception using errcode = '22023', message = case when by_days
+      then 'Дата «Діє до» не може бути раніше за дату «Діє з».'
+      else 'Дата завершення має бути пізніше за дату початку.' end;
   end if;
   if char_length(new_note) > 500 then
     raise exception using errcode = '22023', message = 'Нотатка — до 500 символів.';
@@ -801,4 +903,155 @@ as $$
     'contactEmail', target_order.contact_email,
     'customerComment', target_order.customer_comment
   ) else '{}'::jsonb end
+$$;
+
+-- ---------------------------------------------------------------------------
+-- Staff: remove the promo code from an open order
+-- ---------------------------------------------------------------------------
+-- The trigger sets discount_amount to 0; the use goes back to the code; the timeline names the code.
+-- Returns admin_crm_get_order(order_number).
+create or replace function public.admin_crm_remove_order_promo(order_number bigint, expected_updated_at timestamptz default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  target public.crm_orders%rowtype;
+begin
+  perform public._crm_require_staff();
+
+  select * into target from public.crm_orders where number = order_number for update;
+  if not found then raise exception using errcode = 'P0002', message = 'Замовлення не знайдено.'; end if;
+  if expected_updated_at is not null and target.updated_at <> expected_updated_at then
+    raise exception using errcode = '40001', message = 'Замовлення вже змінив інший працівник. Оновіть сторінку.';
+  end if;
+  if target.promo_code is null then
+    raise exception using errcode = '22023', message = 'Замовлення без промокоду.';
+  end if;
+  if target.status in ('completed', 'cancelled') then
+    raise exception using errcode = '22023', message = 'Знижку виконаного або скасованого замовлення не змінюють. Спершу змініть статус.';
+  end if;
+
+  update public.crm_orders set
+    promo_code = null, promo_kind = null, promo_value = null, discount_base = null, updated_at = now()
+  where internal_id = target.internal_id;
+  -- Orders keep the code as text (a used code cannot be renamed).
+  update public.crm_promo_codes set used_count = greatest(used_count - 1, 0) where code = target.promo_code;
+
+  insert into public.crm_activity (customer_id, order_id, actor_id, kind, body, data)
+  values (target.customer_id, target.internal_id, auth.uid(), 'update',
+    'Прибрано промокод ' || target.promo_code || ' (знижка '
+      || replace(to_char(target.discount_amount, 'FM9999999990.00'), '.', ',') || ' грн)',
+    jsonb_build_object('promo', jsonb_build_object('code', target.promo_code, 'kind', target.promo_kind,
+      'value', target.promo_value, 'discount', target.discount_amount)));
+
+  perform public._crm_refresh_customer_stats(target.customer_id);
+  return public.admin_crm_get_order(order_number);
+end;
+$$;
+
+revoke all on function public.admin_crm_remove_order_promo(bigint, timestamptz) from public, anon;
+grant execute on function public.admin_crm_remove_order_promo(bigint, timestamptz) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Customer totals net of the discount: same as before except the summed amount
+-- (_crm_refresh_customer_stats and admin_crm_overview from 20261001000200, admin_crm_get_customer from
+-- 20261002001700, which also gains discountAmount and promoCode on its order rows).
+-- ---------------------------------------------------------------------------
+create or replace function public._crm_refresh_customer_stats(target_customer uuid)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  update public.crm_customers customer set
+    orders_count = (select count(*) from public.crm_orders o where o.customer_id = customer.internal_id),
+    leads_count = (select count(*) from public.crm_leads l where l.customer_id = customer.internal_id),
+    orders_total = coalesce((select sum(o.items_total - o.discount_amount) from public.crm_orders o
+      where o.customer_id = customer.internal_id and o.status <> 'cancelled'), 0),
+    last_activity_at = greatest(customer.last_activity_at,
+      coalesce((select max(o.updated_at) from public.crm_orders o where o.customer_id = customer.internal_id), customer.last_activity_at),
+      coalesce((select max(l.updated_at) from public.crm_leads l where l.customer_id = customer.internal_id), customer.last_activity_at))
+  where customer.internal_id = target_customer
+$$;
+revoke all on function public._crm_refresh_customer_stats(uuid) from public, anon, authenticated;
+
+create or replace function public.admin_crm_overview()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+begin
+  perform public._crm_require_staff();
+  return jsonb_build_object(
+    'newOrders', (select count(*) from public.crm_orders where status = 'new'),
+    'activeOrders', (select count(*) from public.crm_orders where status in ('confirmed', 'processing', 'shipped')),
+    'ordersToday', (select count(*) from public.crm_orders where created_at >= date_trunc('day', now() at time zone 'Europe/Kyiv') at time zone 'Europe/Kyiv'),
+    'revenue30d', (select coalesce(sum(items_total - discount_amount), 0) from public.crm_orders
+      where status = 'completed' and created_at >= now() - interval '30 days'),
+    'newLeads', (select count(*) from public.crm_leads where status = 'new'),
+    'customers', (select count(*) from public.crm_customers)
+  );
+end;
+$$;
+
+create or replace function public.admin_crm_get_customer(customer_id uuid)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  target public.crm_customers%rowtype;
+begin
+  perform public._crm_require_staff();
+  select * into target from public.crm_customers where internal_id = customer_id;
+  if not found then return null; end if;
+
+  return jsonb_build_object(
+    'customer', jsonb_build_object(
+      'id', target.internal_id,
+      'name', target.name,
+      'phone', target.phone,
+      'email', target.email,
+      'company', target.company,
+      'city', target.city,
+      'notes', target.notes,
+      'ordersCount', target.orders_count,
+      'leadsCount', target.leads_count,
+      'ordersTotal', target.orders_total,
+      'lastActivityAt', target.last_activity_at,
+      'createdAt', target.created_at,
+      'updatedAt', target.updated_at,
+      'hasAccount', exists (select 1 from public.customer_profiles profile where profile.crm_customer_id = target.internal_id),
+      'accountSince', (select min(profile.created_at) from public.customer_profiles profile where profile.crm_customer_id = target.internal_id)
+    ),
+    'orders', coalesce((select jsonb_agg(jsonb_build_object(
+        'number', crm_order.number, 'status', crm_order.status, 'itemsCount', crm_order.items_count,
+        'itemsTotal', crm_order.items_total, 'discountAmount', crm_order.discount_amount,
+        'promoCode', crm_order.promo_code, 'hasUnpricedItems', crm_order.has_unpriced_items,
+        'createdAt', crm_order.created_at
+      ) order by crm_order.created_at desc)
+      from public.crm_orders crm_order where crm_order.customer_id = target.internal_id), '[]'::jsonb),
+    'leads', coalesce((select jsonb_agg(jsonb_build_object(
+        'number', lead.number, 'type', lead.type, 'status', lead.status,
+        'preview', left(coalesce(nullif(lead.subject, ''), lead.message), 140), 'createdAt', lead.created_at
+      ) order by lead.created_at desc)
+      from public.crm_leads lead where lead.customer_id = target.internal_id), '[]'::jsonb),
+    'activity', public._crm_activity_json(null, null, target.internal_id, 100)
+  );
+end;
+$$;
+
+-- One-off: customers with a discounted order get their totals recounted (nothing to do on a fresh apply).
+do $$
+begin
+  perform public._crm_refresh_customer_stats(discounted.customer_id)
+  from (select distinct crm_order.customer_id from public.crm_orders crm_order
+    where crm_order.discount_amount > 0) discounted;
+end;
 $$;

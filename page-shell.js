@@ -419,19 +419,22 @@
     });
   }
 
-  // Promo code applied on /checkout ({ code, discount, kind, value, label }); the server checks it again with the order.
+  // Promo code applied on /checkout ({ code, discount }); the server checks it again with the order.
   let checkoutPromo = null;
   function checkoutItemsMarkup(lines) {
     return `<ul class="checkout-items">${lines.map(([id, q]) => {
       const p = productById(id);
       const price = linePrice(p);
-      return `<li><a class="checkout-item" href="${productUrl(p)}"><span class="checkout-item__image"><img src="${escapeHtml(p.image)}" alt="" loading="lazy"></span><span class="checkout-item__name">${escapeHtml(p.title)}<small>${q} шт.${price === null ? "" : ` × ${money(price)}`}</small></span><strong>${price === null ? "за запитом" : money(price * q)}</strong></a></li>`;
+      // Only the title is clamped: the quantity line under it always stays visible.
+      return `<li><a class="checkout-item" href="${productUrl(p)}"><span class="checkout-item__image"><img src="${escapeHtml(p.image)}" alt="" loading="lazy"></span><span class="checkout-item__name"><span class="checkout-item__title">${escapeHtml(p.title)}</span><small>${q} шт.${price === null ? "" : ` × ${money(price)}`}</small></span><strong>${price === null ? "за запитом" : money(price * q)}</strong></a></li>`;
     }).join("")}</ul>`;
   }
+  // Whole hryvnias, rounded once: «Товари − Знижка = Разом» adds up as shown (1 235 − 124 = 1 111).
   function checkoutTotalsRows(totals) {
-    const discount = checkoutPromo ? Math.min(Number(checkoutPromo.discount) || 0, totals.total) : 0;
-    const due = { ...totals, total: Math.max(0, totals.total - discount) };
-    return (discount ? `<div><dt>Товари, ${totals.count} шт.</dt><dd>${money(totals.total)}</dd></div><div class="order-summary__discount"><dt>Знижка · ${escapeHtml(checkoutPromo.code)}</dt><dd>−${money(discount)}</dd></div>` : "")
+    const itemsTotal = Math.round(totals.total);
+    const discount = checkoutPromo ? Math.min(Math.round(Number(checkoutPromo.discount) || 0), itemsTotal) : 0;
+    const due = { ...totals, total: Math.max(0, itemsTotal - discount) };
+    return (checkoutPromo ? `<div><dt>Товари, ${totals.count} шт.</dt><dd>${money(itemsTotal)}</dd></div><div class="order-summary__discount"><dt>Знижка · ${escapeHtml(checkoutPromo.code)}</dt><dd>−${money(discount)}</dd></div>` : "")
       + `<div class="order-summary__total"><dt>Разом</dt><dd>${totalLabel(due)}</dd></div>`;
   }
   function renderCheckout(){
@@ -505,11 +508,13 @@
     prefillCheckout(form);
     // Nova Poshta settlement and branch pickers; without them the two fields stay plain text inputs.
     loadScript("/nova-poshta.js?v=20261125-np-1").then(()=>window.sofievkaNovaPoshta?.bind({ city:form.querySelector("[data-np-city]"), branch:form.querySelector("[data-np-branch]"), hint:form.querySelector("[data-np-hint]") })).catch(error=>console.error("Nova Poshta pickers failed to load",error));
-    bindCheckoutPromo(form);
+    const promo=bindCheckoutPromo(form);
     const errorBox=form.querySelector("[data-checkout-error]");
     const submit=form.querySelector("[data-checkout-submit]");
+    const setBusy=busy=>{ submit.disabled=busy; if(busy) submit.setAttribute("aria-busy","true"); else submit.removeAttribute("aria-busy"); submit.textContent=busy?"Надсилаємо…":"Підтвердити замовлення"; };
     form.addEventListener("submit",async event=>{
       event.preventDefault();
+      if(submit.disabled) return;
       errorBox.hidden=true;
       const data=new FormData(form);
       const phoneDigits=String(data.get("phone")||"").replace(/\D/g,"");
@@ -523,7 +528,9 @@
       const delivery=data.get("delivery");
       const items=Object.entries(cart()).map(([id,quantity])=>({id,quantity}));
       if(!items.length){ errorBox.textContent="Кошик порожній."; errorBox.hidden=false; return; }
-      submit.disabled=true; submit.setAttribute("aria-busy","true"); submit.textContent="Надсилаємо…";
+      setBusy(true);
+      // A code typed but not applied (or still being checked) is checked now; a code that does not work stops the order.
+      if(promo&&!(await promo.ready())){ setBusy(false); return; }
       try{
         const result=await window.sofievkaCrm.submitOrder({
           name:data.get("name"), phone:data.get("phone"), email:data.get("email"),
@@ -538,19 +545,22 @@
         container.querySelector(".checkout-success")?.focus();
         window.scrollTo({top:0,behavior:"smooth"});
       }catch(error){
+        // The server no longer accepts the code (used up, expired): no order was created, the discount is taken off.
+        if(error?.code==="promo"){ if(promo) promo.reject(error.message); else checkoutPromo=null; }
         errorBox.textContent=error?.message||"Не вдалося надіслати замовлення. Спробуйте ще раз.";
         errorBox.hidden=false;
         errorBox.scrollIntoView({block:"center",behavior:"smooth"});
-        submit.disabled=false; submit.removeAttribute("aria-busy"); submit.textContent="Підтвердити замовлення";
+        setBusy(false);
       }
     });
   }
   // Promo code: the field shows only while the shop has active codes (crm_check_promo_code answers
   // { available }); the discount comes from the server for the items in the cart, never from the page.
+  // Returns { ready, reject } for the order form (null without the field).
   function bindCheckoutPromo(form){
     const box=form.querySelector("[data-promo]");
     const crm=window.sofievkaCrm;
-    if(!box||!crm?.checkPromo) return;
+    if(!box||!crm?.checkPromo) return null;
     const input=box.querySelector("[data-promo-input]");
     const apply=box.querySelector("[data-promo-apply]");
     const status=box.querySelector("[data-promo-status]");
@@ -564,23 +574,50 @@
       updateTotals();
     };
     crm.checkPromo({ code:"", items:[] }).then(result=>{ if(result?.available) box.hidden=false; }).catch(()=>{});
-    const run=async()=>{
-      if(checkoutPromo){ setApplied(null); input.value=""; show(""); input.focus(); return; }
+    // The running check resolves to true when the code got applied; the field is read-only meanwhile.
+    let checking=null;
+    const check=()=>{
+      if(checking) return checking;
       const code=input.value.trim();
-      if(!code){ show("Введіть промокод.","error"); input.focus(); return; }
-      apply.disabled=true; show("Перевіряємо…");
-      try{
-        const result=await crm.checkPromo({ code, items:items() });
-        if(result?.valid){
-          input.value=result.code;
-          setApplied({ code:result.code, discount:Number(result.discount)||0 });
-          show(`Знижку застосовано: ${result.kind==="percent"?`${Number(result.value)}%`:money(result.value)} — −${money(result.discount)}.`,"ok");
-        }else{ setApplied(null); show(result?.message||"Такого промокоду немає або він уже не діє.","error"); }
-      }catch(error){ show(error?.message||"Не вдалося перевірити промокод. Спробуйте ще раз.","error"); }
-      finally{ apply.disabled=false; }
+      if(!code){ show("Введіть промокод.","error"); input.focus(); return Promise.resolve(false); }
+      apply.disabled=true; input.readOnly=true; input.setAttribute("aria-busy","true"); show("Перевіряємо…");
+      checking=(async()=>{
+        try{
+          const result=await crm.checkPromo({ code, items:items() });
+          if(result?.valid){
+            input.value=result.code;
+            setApplied({ code:result.code, discount:Number(result.discount)||0 });
+            show(`Знижку застосовано: ${result.kind==="percent"?`${Number(result.value)}%`:money(result.value)} — −${money(result.discount)}.`,"ok");
+            return true;
+          }
+          setApplied(null); show(result?.message||"Такого промокоду немає або він уже не діє.","error");
+          return false;
+        }catch(error){ setApplied(null); show(error?.message||"Не вдалося перевірити промокод. Спробуйте ще раз.","error"); return false; }
+        finally{ apply.disabled=false; input.removeAttribute("aria-busy"); checking=null; }
+      })();
+      return checking;
     };
-    apply.addEventListener("click",run);
-    input.addEventListener("keydown",event=>{ if(event.key==="Enter"){ event.preventDefault(); run(); } });
+    apply.addEventListener("click",()=>{
+      if(checking) return;
+      if(checkoutPromo){ setApplied(null); input.value=""; show(""); input.focus(); return; }
+      check();
+    });
+    // Enter only applies a code (only the button removes it) and does nothing while a check is running.
+    input.addEventListener("keydown",event=>{ if(event.key!=="Enter") return; event.preventDefault(); if(!checking&&!checkoutPromo) check(); });
+    return {
+      // Before the order is sent: a typed but not applied code is checked (a running check is awaited); false stops
+      // the order with the message under the field.
+      async ready(){
+        if(box.hidden) return true;
+        let ok=checking?await checking:null;
+        if(checkoutPromo||!input.value.trim()) return true;
+        if(ok===null) ok=await check();
+        if(!ok) input.focus();
+        return ok;
+      },
+      // crm_submit_order refused the applied code: no discount, the field editable again, the reason under it.
+      reject(message){ setApplied(null); show(message||"Промокод більше не діє.","error"); }
+    };
   }
   // Generic lead form: [data-lead-form="contact|partner_spec|callback"].
   function bindLeadForms(){

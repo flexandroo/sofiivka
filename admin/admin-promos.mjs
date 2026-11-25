@@ -19,11 +19,11 @@ export async function createPromoCodesView({ api, signal }) {
       <td>${escape(periodLabel(promo))}</td>
       <td>${promo.usedCount}${promo.maxUses ? ` з ${promo.maxUses}` : ""}${promo.ordersCount ? `<small>знижок на ${escape(money(promo.discountTotal))}</small>` : ""}</td>
       <td><span class="admin-status${STATE_LABELS[promo.state]?.tone ? ` admin-status--${STATE_LABELS[promo.state].tone}` : ""}">${escape(STATE_LABELS[promo.state]?.label || promo.state)}</span></td>
-      <td class="admin-promo-actions">
+      <td class="admin-promo-actions-cell"><div class="admin-promo-actions">
         <button class="admin-button admin-button--secondary" type="button" data-promo-edit>Змінити</button>
         <button class="admin-button admin-button--secondary" type="button" data-promo-toggle>${promo.active ? "Вимкнути" : "Увімкнути"}</button>
         <button class="admin-button admin-button--ghost" type="button" data-promo-delete>Видалити</button>
-      </td>
+      </div></td>
     </tr>`).join("");
 
   const html = `
@@ -38,8 +38,8 @@ export async function createPromoCodesView({ api, signal }) {
           <label class="admin-field"><span>Знижка</span><div class="admin-promo-value"><input name="value" required inputmode="decimal" autocomplete="off"><select name="kind" aria-label="Тип знижки"><option value="percent">%</option><option value="fixed">грн</option></select></div><small>Відсоток — від 1 до 90; сума — не більша за вартість товарів.</small></label>
           <label class="admin-field"><span>Мінімальна сума замовлення, грн</span><input name="minOrderTotal" inputmode="decimal" autocomplete="off" placeholder="Без обмеження"></label>
           <label class="admin-field"><span>Скільки разів можна використати</span><input name="maxUses" inputmode="numeric" autocomplete="off" placeholder="Без обмеження"></label>
-          <label class="admin-field"><span>Діє з</span><input name="startsAt" type="date"></label>
-          <label class="admin-field"><span>Діє до (включно)</span><input name="endsAt" type="date"></label>
+          <label class="admin-field"><span>Діє з</span><input name="startsOn" type="date"></label>
+          <label class="admin-field"><span>Діє до (включно)</span><input name="endsOn" type="date"></label>
           <label class="admin-field admin-field--full"><span>Нотатка для себе</span><input name="note" maxlength="500" autocomplete="off" placeholder="Наприклад: розсилка листопада, партнер Х"></label>
           <label class="admin-staff-toggle admin-field--full"><input type="checkbox" name="active" checked><span>Код діє</span></label>
         </div>
@@ -76,9 +76,9 @@ function bindPromoCodes(container, api, codes) {
     fields.value.value = promo ? String(Number(promo.value)) : "";
     fields.minOrderTotal.value = promo?.minOrderTotal ? String(Number(promo.minOrderTotal)) : "";
     fields.maxUses.value = promo?.maxUses || "";
-    fields.startsAt.value = promo?.startsAt ? dateInput(promo.startsAt) : "";
-    // The end is stored as the start of the next day; the form shows the last day the code works.
-    fields.endsAt.value = promo?.endsAt ? dateInput(new Date(new Date(promo.endsAt).valueOf() - 1)) : "";
+    // Kyiv calendar days as "YYYY-MM-DD"; endsOn is the last day the code works.
+    fields.startsOn.value = promo?.startsOn || "";
+    fields.endsOn.value = promo?.endsOn || "";
     fields.note.value = promo?.note || "";
     fields.active.checked = promo ? promo.active : true;
     fields.code.readOnly = Boolean(promo?.usedCount);
@@ -95,13 +95,14 @@ function bindPromoCodes(container, api, codes) {
     value: fields.value.value.trim(),
     minOrderTotal: fields.minOrderTotal.value.trim(),
     maxUses: fields.maxUses.value.trim(),
-    startsAt: fields.startsAt.value ? new Date(`${fields.startsAt.value}T00:00:00`).toISOString() : "",
-    endsAt: fields.endsAt.value ? new Date(new Date(`${fields.endsAt.value}T00:00:00`).valueOf() + 86400000).toISOString() : "",
+    // The server turns the days into Kyiv midnights, so the browser's timezone never moves them.
+    startsOn: fields.startsOn.value,
+    endsOn: fields.endsOn.value,
     note: fields.note.value.trim(),
     active: fields.active.checked
   });
   const payloadOf = promo => ({ id: promo.id, code: promo.code, kind: promo.kind, value: String(promo.value), minOrderTotal: promo.minOrderTotal ? String(promo.minOrderTotal) : "",
-    maxUses: promo.maxUses ? String(promo.maxUses) : "", startsAt: promo.startsAt || "", endsAt: promo.endsAt || "", note: promo.note || "", active: promo.active });
+    maxUses: promo.maxUses ? String(promo.maxUses) : "", startsOn: promo.startsOn || "", endsOn: promo.endsOn || "", note: promo.note || "", active: promo.active });
   const reload = message => { showToast(container, message); setTimeout(() => goTo(location.pathname, { replace: true }), 600); };
 
   fields.code.addEventListener("input", () => { fields.code.value = fields.code.value.toUpperCase().replace(/\s+/g, ""); });
@@ -130,21 +131,24 @@ function bindPromoCodes(container, api, codes) {
   container.querySelectorAll("[data-promo-row]").forEach(row => {
     const promo = byId.get(row.dataset.promoRow);
     row.querySelector("[data-promo-edit]").addEventListener("click", () => { fill(promo); form.scrollIntoView({ behavior: "smooth", block: "start" }); fields.value.focus({ preventScroll: true }); });
-    row.querySelector("[data-promo-toggle]").addEventListener("click", async event => {
-      event.currentTarget.disabled = true;
+    // The buttons are kept in constants: event.currentTarget is already null after the await.
+    const toggle = row.querySelector("[data-promo-toggle]");
+    toggle.addEventListener("click", async () => {
+      toggle.disabled = true;
       try {
         await api.promoCodes.save({ ...payloadOf(promo), active: !promo.active }, promo.updatedAt);
         reload(promo.active ? `Промокод ${promo.code} вимкнено.` : `Промокод ${promo.code} увімкнено.`);
-      } catch (error) { showToast(container, error.message, true); event.currentTarget.disabled = false; }
+      } catch (error) { showToast(container, error.message, true); toggle.disabled = false; }
     });
-    row.querySelector("[data-promo-delete]").addEventListener("click", async event => {
+    const remove = row.querySelector("[data-promo-delete]");
+    remove.addEventListener("click", async () => {
       const used = promo.usedCount > 0 || promo.ordersCount > 0;
       if (!window.confirm(used ? `Код ${promo.code} уже є в замовленнях, тому його буде вимкнено, а не видалено. Продовжити?` : `Видалити промокод ${promo.code}?`)) return;
-      event.currentTarget.disabled = true;
+      remove.disabled = true;
       try {
         const result = await api.promoCodes.remove(promo.id);
         reload(result.deleted ? `Промокод ${promo.code} видалено.` : `Промокод ${promo.code} вимкнено.`);
-      } catch (error) { showToast(container, error.message, true); event.currentTarget.disabled = false; }
+      } catch (error) { showToast(container, error.message, true); remove.disabled = false; }
     });
   });
 }
@@ -154,23 +158,19 @@ function discountLabel(promo) {
 }
 
 function periodLabel(promo) {
-  const from = promo.startsAt ? formatDate(promo.startsAt) : "";
-  const to = promo.endsAt ? formatDate(new Date(new Date(promo.endsAt).valueOf() - 1)) : "";
+  const from = promo.startsOn ? formatDay(promo.startsOn) : "";
+  const to = promo.endsOn ? formatDay(promo.endsOn) : "";
   if (from && to) return `${from} — ${to}`;
   if (from) return `з ${from}`;
   if (to) return `до ${to}`;
   return "Без терміну";
 }
 
-function dateInput(value) {
-  const date = new Date(value);
-  const pad = number => String(number).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
-
-function formatDate(value) {
-  const date = new Date(value);
-  return Number.isNaN(date.valueOf()) ? "—" : new Intl.DateTimeFormat("uk-UA", { day: "numeric", month: "short", year: "numeric" }).format(date);
+// "YYYY-MM-DD" built from its parts: new Date("YYYY-MM-DD") reads UTC midnight and shows the day before west of UTC.
+function formatDay(value) {
+  const [year, month, day] = String(value).split("-").map(Number);
+  if (!year || !month || !day) return "—";
+  return new Intl.DateTimeFormat("uk-UA", { day: "numeric", month: "short", year: "numeric" }).format(new Date(year, month - 1, day));
 }
 
 function money(value) {

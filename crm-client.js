@@ -55,7 +55,12 @@
     submitOrder: async payload => {
       const account = window.sofievkaAccount;
       const accessToken = account && account.currentUser() ? await account.getFreshAccessToken().catch(() => null) : null;
-      return call("crm_submit_order", payload, accessToken);
+      const result = await call("crm_submit_order", payload, accessToken);
+      // A promo code the server no longer accepts comes back as { accepted:false, promoError }: no order was created.
+      if (result && result.accepted === false) {
+        throw new CrmSubmitError(result.promoError || "Не вдалося надіслати. Спробуйте ще раз або зателефонуйте нам.", result.promoError ? "promo" : "submit_error");
+      }
+      return result;
     },
     submitLead: payload => call("crm_submit_lead", payload),
     // { code, items:[{id, quantity}] } → { available, valid, code, kind, value, discount, itemsTotal, message };

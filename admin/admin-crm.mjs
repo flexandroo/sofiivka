@@ -100,7 +100,7 @@ function renderOrderDetail({ api, detail }) {
                     <span class="admin-crm-num">${number(item.quantity)} × ${item.unitAmount === null ? `<em>${escape(unpricedLabel(item))}</em>` : money(item.unitAmount)}</span>
                     <strong class="admin-crm-num">${item.lineTotal === null ? "—" : money(item.lineTotal)}</strong>
                   </div>`).join("")}
-                ${Number(order.discountAmount) > 0 ? `<div class="admin-crm-item admin-crm-item--discount"><span>Знижка за промокодом <strong>${escape(order.promoCode)}</strong>${order.promoKind === "percent" ? ` (${number(order.promoValue)}%)` : ""}</span><span></span><strong class="admin-crm-num">−${money(order.discountAmount)}</strong></div>` : ""}
+                ${order.promoCode || Number(order.discountAmount) > 0 ? `<div class="admin-crm-item admin-crm-item--discount"><span>Знижка за промокодом <strong>${escape(order.promoCode)}</strong>${order.promoKind === "percent" ? ` (${number(order.promoValue)}%)` : ""}</span><span>${order.itemsEditable ? `<button class="admin-button admin-button--ghost" type="button" data-promo-remove>Прибрати знижку</button>` : ""}</span><strong class="admin-crm-num">−${money(order.discountAmount)}</strong></div>` : ""}
                 <div class="admin-crm-item admin-crm-item--total"><span>Разом</span><span></span><strong class="admin-crm-num">${orderTotal(order)}</strong></div>
               </div>
               ${order.hasUnpricedItems ? `<p class="admin-panel-note">Є позиції без ціни — уточніть вартість і вкажіть її в складі замовлення.</p>` : ""}
@@ -145,8 +145,26 @@ function renderOrderDetail({ api, detail }) {
       });
       bindDeliveryLabel(container);
       bindLinesEdit(container, { api, order, items });
+      bindPromoRemove(container, { api, order });
     }
   };
+}
+
+// The promo stays on the order (and is recounted with the lines) until a manager drops it here.
+function bindPromoRemove(container, { api, order }) {
+  const button = container.querySelector("[data-promo-remove]");
+  button?.addEventListener("click", async () => {
+    if (!window.confirm(`Прибрати знижку за промокодом ${order.promoCode} із замовлення № ${order.number}? Повернути її тут не вийде.`)) return;
+    button.disabled = true;
+    try {
+      await api.crm.removeOrderPromo(order.number, order.updatedAt);
+      showToast(container, "Знижку прибрано.");
+      setTimeout(() => goTo(location.pathname, { replace: true }), 350);
+    } catch (error) {
+      showToast(container, error.message, true);
+      button.disabled = false;
+    }
+  });
 }
 
 function bindLinesEdit(container, { api, order, items }) {
