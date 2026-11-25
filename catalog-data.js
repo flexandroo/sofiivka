@@ -40,6 +40,11 @@
     category({ id: "irrigation-sensors", slug: "sensors", parentId: "irrigation-control", level: 3, title: "Датчики поливу", shortTitle: "Датчики", description: "Датчики дощу, вологості, витрати, вітру й температури для автоматичного коригування поливу.", order: 2522, allowedFacetIds: irrigationFacets }),
     category({ id: "irrigation-remotes", slug: "remotes", parentId: "irrigation-control", level: 3, title: "Пульти дистанційного керування", shortTitle: "Пульти", description: "Пульти Hunter для дистанційного запуску та сервісної перевірки зон поливу.", order: 2523, allowedFacetIds: irrigationFacets }),
     category({ id: "irrigation-control-accessories", slug: "components", parentId: "irrigation-control", level: 3, title: "Компоненти автоматики", shortTitle: "Компоненти", description: "Декодери, реле, бездротові модулі та сервісні компоненти керування поливом.", order: 2524, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-water-delivery", slug: "water-delivery", parentId: "irrigation", level: 2, title: "Подача води та монтаж", shortTitle: "Подача води", description: "Клапани, крапельний полив, з’єднання та інструменти Hunter.", order: 253, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-valves", slug: "valves", parentId: "irrigation-water-delivery", level: 3, title: "Клапани поливу", shortTitle: "Клапани", description: "Електромагнітні клапани та швидкорозбірні з’єднання Hunter.", order: 2531, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-drip", slug: "drip", parentId: "irrigation-water-delivery", level: 3, title: "Крапельний і мікрополив", shortTitle: "Крапельний полив", description: "Крапельні лінії, емітери, мікроспреї та компоненти прикореневого поливу.", order: 2532, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-installation", slug: "installation", parentId: "irrigation-water-delivery", level: 3, title: "Монтажні компоненти", shortTitle: "Монтаж", description: "З’єднання, поворотні коліна, гнучкі трубки та комплектуючі для монтажу поливу.", order: 2533, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-tools", slug: "tools", parentId: "irrigation-water-delivery", level: 3, title: "Інструменти для поливу", shortTitle: "Інструменти", description: "Монтажні та сервісні інструменти Hunter для систем поливу.", order: 2534, allowedFacetIds: irrigationFacets }),
 
     category({ id: "heat-generation", slug: "heat-generation", parentId: "heating", level: 2, title: "Теплогенерація", shortTitle: "Теплогенерація", description: "Котли, пальники, теплогенератори та парогенератори за типом палива й призначенням.", order: 110 }),
     category({ id: "gas-boilers", slug: "gas-boilers", parentId: "heat-generation", level: 3, title: "Газові котли", shortTitle: "Газові котли", description: "Побутові, комерційні та промислові газові котли.", order: 111, allowedFacetIds: ["productType", "type", "heatOutputKw", "efficiencyPercent", "dhwFlowLMin", "installation", "energyClass", "dimensions", "weightKg", "voltage", "protectionClass"] }),
@@ -603,7 +608,11 @@
       "irrigation-controllers": freezeMapping({ categoryId: "irrigation-controllers" }),
       "irrigation-control-accessories": freezeMapping({ categoryId: "irrigation-control-accessories" }),
       "irrigation-sensors": freezeMapping({ categoryId: "irrigation-sensors" }),
-      "irrigation-remotes": freezeMapping({ categoryId: "irrigation-remotes" })
+      "irrigation-remotes": freezeMapping({ categoryId: "irrigation-remotes" }),
+      "irrigation-valves": freezeMapping({ categoryId: "irrigation-valves" }),
+      "irrigation-drip": freezeMapping({ categoryId: "irrigation-drip" }),
+      "irrigation-installation": freezeMapping({ categoryId: "irrigation-installation" }),
+      "irrigation-tools": freezeMapping({ categoryId: "irrigation-tools" })
     })
   });
 

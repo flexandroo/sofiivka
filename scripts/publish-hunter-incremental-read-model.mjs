@@ -27,8 +27,8 @@ const service = new SupabaseRestClient({ projectRef, apiKey: keys.serviceRoleKey
 const publicClient = new SupabaseRestClient({ projectRef, apiKey: keys.publishableKey });
 const state = loadCatalogRuntime();
 const hunterProducts = state.sofievkaCatalogSnapshot.products.filter((product) => product.brandId === 'hunter');
-if (hunterProducts.length !== 65 || !hunterProducts.every((product) => product.publicationStatus === 'published')) {
-  throw new Error(`Expected 65 published Hunter products, received ${hunterProducts.length}.`);
+if (hunterProducts.length !== 962 || !hunterProducts.every((product) => product.publicationStatus === 'published' && product.images.length)) {
+  throw new Error(`Expected 962 published Hunter articles with photos, received ${hunterProducts.length}.`);
 }
 
 const [pointer] = await service.fetchAll('catalog_snapshot_pointer', { select: 'snapshot_version' });
@@ -48,9 +48,14 @@ baseRows.sort((left, right) => left.sort_order - right.sort_order);
 if (baseRows.length !== baseRelease.product_count) {
   throw new Error(`Active release row mismatch: release=${baseRelease.product_count}, rows=${baseRows.length}.`);
 }
-const baseIds = new Set(baseRows.map((row) => row.legacy_id));
-const duplicateHunterIds = hunterProducts.map((product) => product.id).filter((id) => baseIds.has(id));
-if (duplicateHunterIds.length) throw new Error(`Hunter already exists in active snapshot: ${duplicateHunterIds.join(', ')}.`);
+const oldHunterRows = baseRows.filter((row) => row.payload?.brandId === 'hunter');
+if (oldHunterRows.length !== 65 || !oldHunterRows.every((row) => row.legacy_id.startsWith('hunter-'))) {
+  throw new Error(`Expected exactly 65 replaceable legacy Hunter family cards, received ${oldHunterRows.length}.`);
+}
+const nonHunterRows = baseRows.filter((row) => row.payload?.brandId !== 'hunter');
+const nonHunterIds = new Set(nonHunterRows.map((row) => row.legacy_id));
+const collision = hunterProducts.find((product) => nonHunterIds.has(product.id));
+if (collision) throw new Error(`Hunter ID collides with another brand: ${collision.id}.`);
 
 const irrigationCategoryIds = new Set(['irrigation']);
 for (let level = 0; level < 3; level += 1) {
@@ -59,7 +64,7 @@ for (let level = 0; level < 3; level += 1) {
   }
 }
 const irrigationCategories = state.sofievkaCatalogSnapshot.categories.filter((category) => irrigationCategoryIds.has(category.id));
-if (irrigationCategories.length !== 12) throw new Error(`Expected 12 irrigation categories, received ${irrigationCategories.length}.`);
+if (irrigationCategories.length !== 17) throw new Error(`Expected 17 irrigation categories, received ${irrigationCategories.length}.`);
 const hunterBrand = state.sofievkaCatalogSnapshot.brands.find((brand) => brand.id === 'hunter');
 if (!hunterBrand) throw new Error('Hunter brand metadata is missing.');
 const radiusDefinition = state.sofievkaCatalogSnapshot.attributeDefinitions.radiusM;
@@ -79,12 +84,12 @@ const attributeDefinitions = {
 };
 
 const mergedProducts = [
-  ...baseRows.map((row) => cloneJson(row.payload)),
+  ...nonHunterRows.map((row) => cloneJson(row.payload)),
   ...hunterProducts.map(cloneJson),
 ];
 const snapshotVersion = sha256(stableStringify({
   baseSnapshotVersion: pointer.snapshot_version,
-  hunterProductIds: hunterProducts.map((product) => product.id),
+  hunterProducts: hunterProducts.map((product) => [product.id, product.images, product.shortDescription]),
   categories,
   brands,
   attributeDefinitions,
@@ -97,7 +102,7 @@ const productRows = mergedProducts.map((product, sortOrder) => ({
   payload: product,
   updated_at: now,
 }));
-const expectedPublicProducts = baseRelease.public_product_count + hunterProducts.length;
+const expectedPublicProducts = baseRelease.public_product_count - oldHunterRows.filter((row) => row.payload.publicationStatus === 'published').length + hunterProducts.length;
 const release = {
   snapshot_version: snapshotVersion,
   contract_version: baseRelease.contract_version,
@@ -112,12 +117,13 @@ const release = {
 };
 
 const preflight = {
-  reportVersion: 'hunter-incremental-read-model-v1',
+  reportVersion: 'hunter-sku-replacement-read-model-v2',
   mode,
   project: { ref: project.ref, name: project.name, environment: project.environment },
   baseSnapshotVersion: pointer.snapshot_version,
   targetSnapshotVersion: snapshotVersion,
   baseProducts: baseRows.length,
+  replacedHunterFamilies: oldHunterRows.length,
   hunterProducts: hunterProducts.length,
   targetProducts: productRows.length,
   basePublicProducts: baseRelease.public_product_count,
@@ -158,10 +164,10 @@ const rpc = async (name, body) => (await publicClient.request(`/rest/v1/rpc/${na
 })).payload;
 const bootstrap = await rpc('get_catalog_bootstrap', {});
 const irrigation = await rpc('get_catalog_products', { scope_category: 'irrigation', page_size: 96 });
-const pdp = await rpc('get_catalog_product', { legacy_id: 'hunter-pgp-ultra' });
-if (bootstrap.totalProducts !== expectedPublicProducts || bootstrap.brandCounts?.hunter !== 65
-    || bootstrap.categoryCounts?.irrigation !== 65 || irrigation.total !== 65
-    || pdp?.product?.id !== 'hunter-pgp-ultra') {
+const pdp = await rpc('get_catalog_product', { legacy_id: 'hunter-pgp-04' });
+if (bootstrap.totalProducts !== expectedPublicProducts || bootstrap.brandCounts?.hunter !== 962
+    || bootstrap.categoryCounts?.irrigation !== 962 || irrigation.total !== 962
+    || pdp?.product?.id !== 'hunter-pgp-04' || !pdp.product.images?.length) {
   throw new Error(`Public Hunter verification failed: total=${bootstrap.totalProducts}, brand=${bootstrap.brandCounts?.hunter}, irrigation=${irrigation.total}, pdp=${pdp?.product?.id}.`);
 }
 

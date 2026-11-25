@@ -57,7 +57,7 @@ const result = {
   slug: audit("slug")
 };
 
-assert.equal(products.length, 3277, "canonical product count changed");
+assert.equal(products.length, 4174, "canonical product count changed");
 for (const field of ["legacyId", "sku", "slug"]) {
   assert.equal(result[field].null, 0, `${field} contains null values`);
   assert.equal(result[field].empty, 0, `${field} contains empty values`);

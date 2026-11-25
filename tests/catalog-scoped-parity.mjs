@@ -108,7 +108,7 @@ const regressionQueries = [
   'FENIKS Серія C 12 кВт', 'FOCUS пелетний котел 120 кВт', 'BAXI DUO-TEC Compact E 24',
   '7736901204', 'Buderus Logalux', 'циркуляцыйний насос', 'power 0.37 кВт', 'Hunter PGP Ultra',
 ];
-const exactCases = [{ query: 'Hunter PGP Ultra', expectedId: 'hunter-pgp-ultra', type: 'hunter' }, ...snapshot.products.slice(0, 10).flatMap(product => [
+const exactCases = [{ query: 'PGP-04', expectedId: 'hunter-pgp-04', type: 'hunter' }, ...snapshot.products.slice(0, 10).flatMap(product => [
   { query: product.sku, expectedId: product.id, type: 'sku' },
   { query: product.model, expectedId: product.id, type: 'model' },
 ])];

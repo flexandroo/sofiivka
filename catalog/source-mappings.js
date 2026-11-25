@@ -154,7 +154,11 @@
       "irrigation-controllers": freezeMapping({ categoryId: "irrigation-controllers" }),
       "irrigation-control-accessories": freezeMapping({ categoryId: "irrigation-control-accessories" }),
       "irrigation-sensors": freezeMapping({ categoryId: "irrigation-sensors" }),
-      "irrigation-remotes": freezeMapping({ categoryId: "irrigation-remotes" })
+      "irrigation-remotes": freezeMapping({ categoryId: "irrigation-remotes" }),
+      "irrigation-valves": freezeMapping({ categoryId: "irrigation-valves" }),
+      "irrigation-drip": freezeMapping({ categoryId: "irrigation-drip" }),
+      "irrigation-installation": freezeMapping({ categoryId: "irrigation-installation" }),
+      "irrigation-tools": freezeMapping({ categoryId: "irrigation-tools" })
     })
   });
 

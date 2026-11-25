@@ -89,14 +89,14 @@ routeCheck(routing.resolveLocation("/catalog/heating/valves", "", "catalog").red
 
 assert.equal(routingAssertions, state.sofievkaTaxonomy.nodes.length * 3 + canonicalCases.length + 8, "taxonomy/route regression suite must cover every canonical and legacy path");
 
-assert.equal(products.length, 3277, "catalog must contain 3277 products");
-assert.equal(catalog.catalogProducts.length, 3276, "product listing must exclude the service-only commissioning position");
+assert.equal(products.length, 4174, "catalog must contain 4174 products");
+assert.equal(catalog.catalogProducts.length, 4173, "product listing must exclude the service-only commissioning position");
 assert.equal(catalog.serviceItems.length, 1, "service-only positions must remain available outside product listings");
 assert.equal(catalog.productsForSection("heating").length, 1788, "heating section distribution changed");
 assert.equal(catalog.productsForSection("water-supply").length, 1112, "water supply and sewage section distribution changed");
 assert.equal(catalog.productsForSection("water-treatment").length, 184, "water treatment section distribution changed");
 assert.equal(catalog.productsForSection("smart-home").length, 110, "smart home section distribution changed");
-assert.equal(catalog.productsForSection("irrigation").length, 65, "Hunter irrigation section distribution changed");
+assert.equal(catalog.productsForSection("irrigation").length, 962, "Hunter irrigation section distribution changed");
 assert.equal(catalog.productsForCategory("sewage-lifting-units").length, 83, "sewage lifting units must include the seven corrected Termojet positions");
 assert.equal(catalog.productsForCategory("uv-disinfection").length, 8, "TECH UV-C water disinfection products changed");
 assert.equal(catalog.activeSections.map(section => section.id).join(","), "heating,water-supply,irrigation,water-treatment,smart-home,climate", "active catalog sections changed");
@@ -108,12 +108,12 @@ assert.equal(state.sofievkaNormalizationReport.tekkhausSourceCount, 109, "TEKK H
 assert.equal(state.sofievkaNormalizationReport.techSourceCount, 257, "TECH Controllers range count changed");
 assert.equal(state.sofievkaNormalizationReport.heatingBrandsSourceCount, 864, "Altep, FENIKS and FOCUS range count changed");
 assert.equal(state.sofievkaNormalizationReport.baxiBuderusSourceCount, 130, "BAXI and domestic Buderus range count changed");
-assert.equal(state.sofievkaNormalizationReport.hunterSourceCount, 65, "Hunter irrigation range count changed");
+assert.equal(state.sofievkaNormalizationReport.hunterSourceCount, 962, "Hunter irrigation article count changed");
 assert.equal(state.sofievkaNormalizationReport.normalizationErrors.length, 0, "catalog validation errors found");
 assert.equal(new Set(products.map(product => product.id)).size, products.length, "product IDs must be unique");
 
 const productIdHash = crypto.createHash("sha256").update(products.map(product => product.id).sort().join("\n")).digest("hex");
-assert.equal(productIdHash, "efc91be0ad2a8321e5162ff1b388eb10f0b8d75b72ae418566028812b141fc5c", "product IDs changed");
+assert.equal(productIdHash, "dd0b142f41149a0974b3486ed6c9d7613ffa6b7118c0d0f9e861dae3acaac230", "product IDs changed");
 
 assert.ok(catalog.brands.every(brand => catalog.brandUrl(brand.id) === `/brands/${brand.slug}`), "brand URLs must be canonical");
 
@@ -339,7 +339,7 @@ const unmappedAttributeProducts = products.filter(product => product.unmappedAtt
 const brandsWithProducts = new Set(products.map(product => product.brandId));
 const brandsWithoutProducts = catalog.brands.filter(brand => !brandsWithProducts.has(brand.id)).length;
 assert.equal(reviewMappings, 29, "review mapping debt changed unexpectedly");
-assert.equal(unmappedAttributeProducts, 3093, "unmapped attribute debt changed unexpectedly");
+assert.equal(unmappedAttributeProducts, 4055, "unmapped attribute debt changed unexpectedly");
 
 const shellSource = fs.readFileSync(path.join(projectRoot, "page-shell.js"), "utf8");
 const uiSource = fs.readFileSync(path.join(projectRoot, "catalog-ui.js"), "utf8");
