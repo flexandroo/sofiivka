@@ -58,6 +58,9 @@
     maxWaterTemperatureC: define("maxWaterTemperatureC", { label: "Максимальна температура води, °C", type: "number", unit: "°C", rank: 11.8, aliases: [/^максимальна температура води/i, /^макс\.? температура теплоносія/i] }),
     mountingLengthMm: define("mountingLengthMm", { semanticId: "installationLengthMm", label: "Монтажна довжина, мм", type: "number", unit: "мм", rank: 12, aliases: [/^довжина насоса$/i, /^монтажна довжина$/i, /^будівельна довжина$/i] }),
     diameterMm: define("diameterMm", { label: "Діаметр, мм", type: "number", unit: "мм", rank: 13, aliases: [/^d\s*\(?мм\)?$/i, /^d\s*\(?mm\)?$/i, /^діаметр,?\s*мм$/i, /^диаметр,?\s*мм$/i] }),
+    pipeDiameterMm: define("pipeDiameterMm", { label: "Зовнішній діаметр труби, мм", type: "number", unit: "мм", rank: 13.1, aliases: [/^зовнішній діаметр труби(?:,?\s*мм)?$/i] }),
+    pipeLengthMm: define("pipeLengthMm", { label: "Довжина труби, мм", type: "number", unit: "мм", rank: 13.2, aliases: [/^довжина труби(?:,?\s*мм)?$/i] }),
+    angleDegrees: define("angleDegrees", { label: "Кут, °", type: "number", unit: "°", rank: 13.3, aliases: [/^кут(?:,?\s*°)?$/i] }),
     widthMm: define("widthMm", { label: "Ширина, мм", type: "number", unit: "мм", rank: 14, filterable: false, aliases: [/^ширина(?:\s*\(мм\))?$/i, /^w\s*\(?mm\)?$/i] }),
     heightMm: define("heightMm", { label: "Висота, мм", type: "number", unit: "мм", rank: 15, filterable: false, aliases: [/^висота(?:\s*\(мм\))?$/i, /^h\s*\(?mm\)?$/i, /^h\s*\(?мм\)?$/i] }),
     depthMm: define("depthMm", { label: "Глибина, мм", type: "number", unit: "мм", rank: 16, filterable: false, aliases: [/^глибина(?:\s*\(мм\))?$/i, /^глубина(?:\s*\(мм\))?$/i] }),
@@ -111,7 +114,20 @@
     complex: "Комплексне очищення"
   });
 
+  const pipePriority = Object.freeze(["pipeDiameterMm", "pipeLengthMm", "angleDegrees", "connection", "material", "pressureBar"]);
+  const pipePriorityByCategory = Object.freeze({
+    "internal-sewer-pipes": pipePriority,
+    "internal-sewer-fittings": pipePriority,
+    "external-sewer-pipes": pipePriority,
+    "external-sewer-fittings": pipePriority,
+    "drainage-pipes": pipePriority,
+    "sewer-installation-components": pipePriority,
+    "pipe-fittings": pipePriority,
+    "inspection-chambers": Object.freeze(["pipeDiameterMm", "heightMm", "connection", "material", "pressureBar"])
+  });
+
   const cardPriorityByCategory = Object.freeze({
+    ...pipePriorityByCategory,
     "circulation-pumps": Object.freeze(["headM", "flowM3h", "mountingLengthMm", "connection", "diameter", "powerKw"]),
     "underfloor-heating": Object.freeze(["diameter", "connection", "material", "pressureBar", "temperature", "outlets"]),
     "distribution-hydraulics": Object.freeze(["flowM3h", "heatOutputKw", "outlets", "connection", "diameter", "pressureBar", "mountingLengthMm"]),
@@ -159,10 +175,12 @@
     "purpose", "type", "technology", "capacityLh", "flowM3h", "headM", "kvs", "powerKw", "heatOutputKw",
     "connection", "diameter", "diameterMm", "mountingLengthMm", "pressureBar", "filtrationMicron", "material",
     "control", "communication", "zones", "voltage", "protectionClass", "compatibility", "waterSource", "installation", "format", "pump",
-    "mineralizer", "flowType", "scope", "volumeL", "weightKg", "capacityKgh", "rotationRpm", "widthMm", "heightMm", "depthMm", "dimensions", "eei", "selfPriming", "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "coolingCapacityKw", "dhwFlowLMin", "energyClass", "refrigerant", "cop", "scop", "seer", "soundLevelDb", "collectorAreaM2", "productType"
+    "mineralizer", "flowType", "scope", "volumeL", "weightKg", "capacityKgh", "rotationRpm", "widthMm", "heightMm", "depthMm", "dimensions", "eei", "selfPriming", "maxImmersionDepthM", "freePassageMm", "cableLengthM", "floatSwitch", "coolingCapacityKw", "dhwFlowLMin", "energyClass", "refrigerant", "cop", "scop", "seer", "soundLevelDb", "collectorAreaM2", "productType",
+    "pipeDiameterMm", "pipeLengthMm", "angleDegrees"
   ]);
 
   const pdpPriorityByCategory = Object.freeze({
+    ...pipePriorityByCategory,
     "circulation-pumps": Object.freeze(["headM", "flowM3h", "mountingLengthMm", "connection", "powerKw", "control"]),
     "underfloor-heating": Object.freeze(["diameter", "connection", "outlets", "material", "pressureBar", "temperature"]),
     "distribution-hydraulics": Object.freeze(["flowM3h", "heatOutputKw", "outlets", "connection", "diameter", "pressureBar"]),
@@ -242,6 +260,9 @@
     radiusM: "Радіус поливу",
     diameter: "Діаметр / DN",
     diameterMm: "Діаметр",
+    pipeDiameterMm: "Діаметр труби",
+    pipeLengthMm: "Довжина труби",
+    angleDegrees: "Кут",
     connection: "Підключення",
     protectionClass: "Клас захисту",
     outlets: "Кількість виходів",

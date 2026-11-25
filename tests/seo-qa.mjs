@@ -110,4 +110,105 @@ try {
   fs.rmSync(temp, { recursive: true, force: true });
 }
 
-console.log(JSON.stringify({ status: "ok", suite: "seo-qa" }));
+// Production must not turn an interrupted/partial hosted catalogue into a successful
+// (but stale) bundled-feed sitemap. The fixtures exercise real paging at 96 rows.
+const strictConfig = { source: "supabase", environment: "production", supabase: { url: "https://stub.supabase.co", publishableKey: "public-test-key" } };
+const ok = value => ({ ok: true, status: 200, json: async () => value });
+const failed = status => ({ ok: false, status, json: async () => ({}) });
+const productPage = (page, total = 200) => ({
+  total, page, pageSize: 96, hasMore: page * 96 < total,
+  products: Array.from({ length: Math.min(96, Math.max(0, total - (page - 1) * 96)) }, (_, index) => ({ id: `p-${(page - 1) * 96 + index + 1}`, slug: `product-${(page - 1) * 96 + index + 1}` }))
+});
+async function productionFixture({ intercept = () => null, expectedError = null, total = 200, config = strictConfig } = {}) {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "sitemap-completeness-"));
+  const site = path.join(directory, "site");
+  const out = path.join(directory, "out");
+  fs.mkdirSync(site);
+  fs.mkdirSync(out);
+  fs.writeFileSync(path.join(site, "about.html"), "<html><head></head></html>");
+  fs.writeFileSync(path.join(out, "index.html"), "<html><head></head></html>");
+  const calls = [];
+  const waits = [];
+  const fetchImpl = async (url, options) => {
+    const name = String(url).split("/rpc/")[1];
+    const body = JSON.parse(options.body);
+    const call = { name, page: body.page_number || null };
+    calls.push(call);
+    const attempt = calls.filter(item => item.name === name && item.page === call.page).length;
+    const intercepted = await intercept(name, body, attempt);
+    if (intercepted) return intercepted;
+    if (name === "get_catalog_bootstrap") return ok({ categories: [], brands: [], totalProducts: total });
+    if (name === "get_catalog_products") return ok(productPage(body.page_number, total));
+    if (name === "get_site_posts") return ok({ posts: [], hasMore: false });
+    return ok({});
+  };
+  const run = () => writeSeoFiles({ root: site, outputDirectory: out, config, env: {}, log: () => {}, fetchImpl, waitImpl: async delay => { waits.push(delay); } });
+  try {
+    if (expectedError) {
+      await assert.rejects(run, expectedError);
+      assert.ok(!fs.existsSync(path.join(out, "sitemap.xml")), "a failed production catalogue must not write a sitemap");
+      assert.ok(!fs.existsSync(path.join(out, "robots.txt")), "a failed production catalogue must not report a successful SEO build");
+      return { calls, waits };
+    }
+    const result = await run();
+    const xml = fs.readFileSync(path.join(out, "sitemap.xml"), "utf8");
+    return { result, xml, calls, waits };
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+}
+
+const recovered = await productionFixture({ intercept: (name, body, attempt) => {
+  if (name === "get_catalog_bootstrap" && attempt === 1) return failed(503);
+  if (name === "get_catalog_products" && body.page_number === 2 && attempt < 3) throw new TypeError("fetch failed");
+} });
+assert.equal(recovered.result.catalogSource, "supabase");
+assert.equal(recovered.result.products, 200);
+assert.equal((recovered.xml.match(/<loc>[^<]+\/product\//g) || []).length, 200, "every unique hosted product is in the sitemap after recovery");
+assert.deepEqual(recovered.waits, [250, 250, 500], "transient retries use bounded backoff");
+assert.equal(recovered.calls.filter(call => call.name === "get_catalog_products" && call.page === 2).length, 3);
+
+const denied = await productionFixture({ intercept: name => name === "get_catalog_bootstrap" ? failed(401) : null, expectedError: /refusing bundled fallback.*HTTP 401/ });
+assert.equal(denied.calls.length, 1, "permanent authentication errors are not retried");
+assert.equal(denied.waits.length, 0);
+const unavailable = await productionFixture({ intercept: name => name === "get_catalog_products" ? failed(503) : null, expectedError: /refusing bundled fallback.*HTTP 503 after 3 attempts/ });
+assert.equal(unavailable.calls.filter(call => call.name === "get_catalog_products").length, 3, "transient retries eventually fail closed");
+
+await productionFixture({ expectedError: /hasMore disagrees/, intercept: (name, body) => name === "get_catalog_products" ? ok({ ...productPage(body.page_number), hasMore: false }) : null });
+await productionFixture({ expectedError: /truncated page/, intercept: (name, body) => name === "get_catalog_products" ? ok({ ...productPage(body.page_number), products: productPage(body.page_number).products.slice(1) }) : null });
+await productionFixture({ expectedError: /duplicate product id/, intercept: (name, body) => {
+  if (name !== "get_catalog_products" || body.page_number !== 2) return null;
+  const page = productPage(2);
+  page.products[0].id = "p-1";
+  return ok(page);
+} });
+await productionFixture({ expectedError: /total changed/, intercept: (name, body) => name === "get_catalog_products" && body.page_number === 2 ? ok(productPage(2, 199)) : null });
+await productionFixture({ expectedError: /duplicate product URL/, intercept: (name, body) => {
+  if (name !== "get_catalog_products" || body.page_number !== 2) return null;
+  const page = productPage(2);
+  page.products[0].slug = "product-1";
+  return ok(page);
+} });
+await productionFixture({ expectedError: /Catalogue totals differ/, intercept: name => name === "get_catalog_bootstrap" ? ok({ categories: [], totalProducts: 201 }) : null });
+await productionFixture({ expectedError: /exceeds sitemap page cap/, total: 96 * 400 + 1 });
+await productionFixture({ expectedError: /missing valid total/, intercept: (name, body) => {
+  if (name !== "get_catalog_products") return null;
+  const page = productPage(body.page_number);
+  delete page.total;
+  return ok(page);
+} });
+await productionFixture({ expectedError: /product has no id/, intercept: (name, body) => {
+  if (name !== "get_catalog_products") return null;
+  const page = productPage(body.page_number);
+  delete page.products[0].id;
+  return ok(page);
+} });
+const empty = await productionFixture({ total: 0 });
+assert.equal(empty.result.products, 0, "a proven empty catalogue is distinct from a failed/truncated one");
+
+const fallbackPreview = await productionFixture({ config: { ...strictConfig, environment: "preview" }, intercept: () => failed(503) });
+assert.equal(fallbackPreview.result.indexable, false);
+assert.equal(fallbackPreview.result.catalogSource, "none", "preview may still fall back when this minimal fixture has no bundled catalogue");
+assert.match(fallbackPreview.xml, /\/about/);
+
+console.log(JSON.stringify({ status: "ok", suite: "seo-qa", productionSitemapCompleteness: "verified" }));

@@ -11,6 +11,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { createRequire } from 'node:module';
+import { curateTervixSpecifications } from './tervix-specification-quality.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
 const require = createRequire(path.join(ROOT, 'tmp', 'tervix-tools', 'package.json'));
@@ -115,14 +116,14 @@ function descriptionBlocks($) {
 async function rawProduct(card) {
   const $ = load(await html(card.sourceUrl)); const sourceTitle = clean($('h1').first().text());
   if (!sourceTitle) throw new Error(`Missing H1 ${card.sourceUrl}`);
-  const props = characteristics($);
+  const sourceProps = characteristics($);
   const sku = clean($('.props_table tr').map((_, row) => { const td = $(row).find('td'); return /^Артикул$/i.test(clean($(td[0]).text())) ? $(td[1]).text() : ''; }).get().find(Boolean)) || sourceTitle.match(/^([\dA-Za-z]+(?:-\d+)?)\s/)?.[1];
   if (!sku) throw new Error(`Missing SKU ${card.sourceUrl}`);
+  const { characteristics: props, sourceIssues } = curateTervixSpecifications(sourceProps, { sku, sourceUrl: card.sourceUrl });
   const gallery = unique($('a.fancybox[href]').map((_, e) => $(e).attr('href')).get().filter(x => /\/upload\/.*\.(?:jpg|png|jpeg|webp)(?:\?|$)/i.test(x)).map(url));
   const documentLinks = unique($('#inst a[href], #desc a[href]').map((_, e) => $(e).attr('href')).get().filter(x => /\.pdf(?:\?|$)/i.test(x)).map(url));
   const modelRow = $('.props_table tr').map((_, row) => { const td = $(row).find('td'); return /Тип\/модель|Модель/i.test(clean($(td[0]).text())) ? clean($(td[1]).text()) : ''; }).get().find(Boolean);
   const description = descriptionBlocks($);
-  const sourceIssues = [];
   // Two maker pages contain conflicting nominal-pressure rows; do not pick one arbitrarily.
   const nominal = props.filter(x=>/^Номінальний тиск$/i.test(x.label));
   if (unique(nominal.map(x=>x.value)).length > 1) {

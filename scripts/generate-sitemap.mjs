@@ -1,11 +1,13 @@
 // Build-time sitemap.xml + robots.txt (+ the Search Console verification meta on the homepage).
 // The project has no serverless functions, so the sitemap is generated when Vercel builds the site:
-// from the public catalogue RPCs when the build reads Supabase, otherwise (or if Supabase is not
-// reachable) from the bundled catalogue feeds. Published blog articles and cases are listed from
+// from the public catalogue RPCs when the build reads Supabase. Local/preview builds may fall
+// back to bundled feeds; a production Supabase build must never publish an incomplete fallback.
+// Published blog articles and cases are listed from
 // get_site_posts when the build reads Supabase. Products published after a deploy appear in the
 // sitemap on the next deploy.
 import fs from "node:fs/promises";
 import path from "node:path";
+import { setTimeout as wait } from "node:timers/promises";
 
 // Pages that must stay out of search: private, per-visitor or result pages and page templates.
 export const SITEMAP_EXCLUDED_PAGES = Object.freeze(new Set([
@@ -18,6 +20,8 @@ const PAGE_SIZE = 96;
 const MAX_PRODUCT_PAGES = 400;
 const POST_PAGE_SIZE = 48;
 const MAX_POST_PAGES = 50;
+const RPC_ATTEMPTS = 3;
+const TRANSIENT_HTTP_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504]);
 export const POST_BASES = Object.freeze({ article: "/blog", case: "/portfolio" });
 
 export function resolveSiteUrl(env = process.env) {
@@ -88,27 +92,70 @@ export async function staticPagePaths(root) {
   return paths;
 }
 
-async function rpc(supabase, name, body) {
-  const response = await fetch(`${supabase.url}/rest/v1/rpc/${name}`, {
-    method: "POST",
-    headers: { apikey: supabase.publishableKey, Authorization: `Bearer ${supabase.publishableKey}`, "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(20000)
-  });
-  if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
-  return response.json();
+async function rpc(supabase, name, body, { fetchImpl, waitImpl }) {
+  for (let attempt = 1; attempt <= RPC_ATTEMPTS; attempt += 1) {
+    let response;
+    try {
+      response = await fetchImpl(`${supabase.url}/rest/v1/rpc/${name}`, {
+        method: "POST",
+        headers: { apikey: supabase.publishableKey, Authorization: `Bearer ${supabase.publishableKey}`, "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(20000)
+      });
+    } catch (error) {
+      if (attempt === RPC_ATTEMPTS) throw new Error(`${name}: request failed after ${attempt} attempts (${error.message})`, { cause: error });
+      await waitImpl(250 * attempt);
+      continue;
+    }
+    if (response.ok) return response.json();
+    if (!TRANSIENT_HTTP_STATUSES.has(response.status) || attempt === RPC_ATTEMPTS) {
+      throw new Error(`${name}: HTTP ${response.status} after ${attempt} attempt${attempt === 1 ? "" : "s"}`);
+    }
+    await waitImpl(250 * attempt);
+  }
 }
 
-async function supabaseCatalog(supabase) {
-  const bootstrap = await rpc(supabase, "get_catalog_bootstrap", {});
-  if (!bootstrap?.categories) throw new Error("get_catalog_bootstrap returned no release");
+async function supabaseCatalog(supabase, options, { requireComplete = false } = {}) {
+  const bootstrap = await rpc(supabase, "get_catalog_bootstrap", {}, options);
+  if (!Array.isArray(bootstrap?.categories)) throw new Error("get_catalog_bootstrap returned no release");
+  const validTotal = value => Number.isSafeInteger(value) && value >= 0;
+  if (requireComplete && !validTotal(bootstrap.totalProducts)) throw new Error("get_catalog_bootstrap returned no valid totalProducts");
   const products = [];
+  const ids = new Set();
+  const addresses = new Set();
+  let total = null;
   for (let page = 1; page <= MAX_PRODUCT_PAGES; page += 1) {
-    const result = await rpc(supabase, "get_catalog_products", { page_number: page, page_size: PAGE_SIZE });
-    products.push(...(result?.products || []).map(product => ({ id: product.id, slug: product.slug })));
-    if (!result?.hasMore) break;
+    const result = await rpc(supabase, "get_catalog_products", { page_number: page, page_size: PAGE_SIZE }, options);
+    if (!Array.isArray(result?.products) || typeof result.hasMore !== "boolean") throw new Error(`get_catalog_products page ${page}: invalid products/hasMore`);
+    if (requireComplete && !validTotal(result.total)) throw new Error(`get_catalog_products page ${page}: missing valid total`);
+    if (result.total != null) {
+      if (!validTotal(result.total)) throw new Error(`get_catalog_products page ${page}: invalid total`);
+      if (total !== null && result.total !== total) throw new Error(`get_catalog_products page ${page}: total changed from ${total} to ${result.total}`);
+      total = result.total;
+      if (total > MAX_PRODUCT_PAGES * PAGE_SIZE) throw new Error(`get_catalog_products total ${total} exceeds sitemap page cap ${MAX_PRODUCT_PAGES}`);
+      if (validTotal(bootstrap.totalProducts) && total !== bootstrap.totalProducts) throw new Error(`Catalogue totals differ: bootstrap ${bootstrap.totalProducts}, products ${total}`);
+      if (result.hasMore !== (page * PAGE_SIZE < total)) throw new Error(`get_catalog_products page ${page}: hasMore disagrees with total ${total}`);
+      const expected = Math.min(PAGE_SIZE, Math.max(0, total - (page - 1) * PAGE_SIZE));
+      if (result.products.length !== expected) throw new Error(`get_catalog_products page ${page}: truncated page (${result.products.length}/${expected} products)`);
+    }
+    if (result.page != null && result.page !== page) throw new Error(`get_catalog_products returned page ${result.page} instead of ${page}`);
+    if (result.pageSize != null && result.pageSize !== PAGE_SIZE) throw new Error(`get_catalog_products returned pageSize ${result.pageSize} instead of ${PAGE_SIZE}`);
+    for (const product of result.products) {
+      if (typeof product?.id !== "string" || !product.id.trim()) throw new Error(`get_catalog_products page ${page}: product has no id`);
+      if (ids.has(product.id)) throw new Error(`get_catalog_products page ${page}: duplicate product id ${product.id}`);
+      if (product.slug != null && typeof product.slug !== "string") throw new Error(`get_catalog_products page ${page}: invalid product slug`);
+      const address = product.slug ? `/product/${encodeURIComponent(product.slug)}` : `/product?id=${encodeURIComponent(product.id)}`;
+      if (addresses.has(address)) throw new Error(`get_catalog_products page ${page}: duplicate product URL ${address}`);
+      ids.add(product.id);
+      addresses.add(address);
+      products.push({ id: product.id, slug: product.slug });
+    }
+    if (!result.hasMore) {
+      if (total !== null && ids.size !== total) throw new Error(`Incomplete sitemap catalogue: ${ids.size}/${total} unique products`);
+      return { ...bootstrap, products };
+    }
   }
-  return { ...bootstrap, products };
+  throw new Error(`get_catalog_products exceeded sitemap page cap ${MAX_PRODUCT_PAGES} with hasMore=true`);
 }
 
 // Published blog articles and cases (get_site_posts); anything unexpected is skipped, never thrown.
@@ -121,11 +168,11 @@ export function postPaths(posts) {
   return paths;
 }
 
-async function supabasePosts(supabase) {
+async function supabasePosts(supabase, options) {
   const posts = [];
   for (const kind of Object.keys(POST_BASES)) {
     for (let page = 1; page <= MAX_POST_PAGES; page += 1) {
-      const result = await rpc(supabase, "get_site_posts", { post_kind: kind, page_number: page, page_size: POST_PAGE_SIZE });
+      const result = await rpc(supabase, "get_site_posts", { post_kind: kind, page_number: page, page_size: POST_PAGE_SIZE }, options);
       if (!Array.isArray(result?.posts)) break;
       posts.push(...result.posts);
       if (!result.hasMore) break;
@@ -152,22 +199,26 @@ async function localCatalog(root) {
   return { categories: snapshot.categories, brands: snapshot.brands, categoryCounts, brandCounts, products: published.map(product => ({ id: product.id, slug: product.slug })) };
 }
 
-export async function writeSeoFiles({ root, outputDirectory, config, env = process.env, log = console.warn }) {
+export async function writeSeoFiles({ root, outputDirectory, config, env = process.env, log = console.warn, fetchImpl = globalThis.fetch, waitImpl = wait }) {
   const siteUrl = resolveSiteUrl(env);
   const indexable = config.environment !== "preview";
+  const requireComplete = config.environment === "production" && config.source === "supabase";
+  const rpcOptions = { fetchImpl, waitImpl };
   let catalog = null;
   let catalogSource = "local";
   let settings = null;
   let posts = [];
+  if (requireComplete && !config.supabase) throw new Error("Production Supabase sitemap requires Supabase configuration");
   if (config.supabase) {
     try {
-      catalog = await supabaseCatalog(config.supabase);
+      catalog = await supabaseCatalog(config.supabase, rpcOptions, { requireComplete });
       catalogSource = "supabase";
     } catch (error) {
+      if (requireComplete) throw new Error(`[sitemap] Production Supabase catalogue incomplete; refusing bundled fallback: ${error.message}`, { cause: error });
       log(`[sitemap] Supabase catalogue unavailable (${error.message}); using the bundled feeds.`);
     }
-    try { settings = await rpc(config.supabase, "get_site_settings", {}); } catch (error) { log(`[sitemap] get_site_settings: ${error.message}`); }
-    try { posts = await supabasePosts(config.supabase); } catch (error) { log(`[sitemap] get_site_posts: ${error.message}`); }
+    try { settings = await rpc(config.supabase, "get_site_settings", {}, rpcOptions); } catch (error) { log(`[sitemap] get_site_settings: ${error.message}`); }
+    try { posts = await supabasePosts(config.supabase, rpcOptions); } catch (error) { log(`[sitemap] get_site_posts: ${error.message}`); }
   }
   if (!catalog) {
     try { catalog = await localCatalog(root); } catch (error) {
@@ -192,5 +243,5 @@ export async function writeSeoFiles({ root, outputDirectory, config, env = proce
       verification = true;
     }
   }
-  return { siteUrl, urls: new Set(paths).size, catalogSource, posts: blogPaths.length, indexable, verification };
+  return { siteUrl, urls: new Set(paths).size, catalogSource, products: catalog.products?.length || 0, posts: blogPaths.length, indexable, verification };
 }
