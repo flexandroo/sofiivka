@@ -131,7 +131,7 @@ export async function run(db) {
   assert.equal(preview.valid, true);
   assert.equal(preview.code, "SALE10");
   assert.equal(Number(preview.itemsTotal), 2501);
-  assert.equal(Number(preview.discount), 250.1);
+  assert.equal(Number(preview.discount), 250, "whole hryvnias");
   assert.equal(preview.id, undefined, "the code id stays on the server");
   let before = await counts(db);
   const belowMinimum = await check(db, { code: "FIX500", items: [{ id: "p-known", quantity: 1 }] });
@@ -149,32 +149,33 @@ export async function run(db) {
   const placed = await order(db, { promoCode: "sale10" });
   assert.equal(placed.promoCode, "SALE10");
   assert.equal(Number(placed.itemsTotal), 2501);
-  assert.equal(Number(placed.discount), 250.1);
-  assert.equal(Number(placed.total), 2250.9);
+  assert.equal(Number(placed.discount), 250);
+  assert.equal(Number(placed.total), 2251);
   assert.equal(Number((await one(db, "select discount_base from public.crm_orders where number = $1", [placed.number])).discount_base), 2501);
   let detail = await getOrder(db, placed.number);
   assert.equal(detail.order.promoCode, "SALE10");
-  assert.equal(Number(detail.order.discountAmount), 250.1);
-  assert.equal(Number(detail.order.totalDue), 2250.9);
+  assert.equal(Number(detail.order.discountAmount), 250);
+  assert.equal(Number(detail.order.totalDue), 2251);
   assert.match(detail.activity.map(entry => entry.body).join(" "), /промокод SALE10/);
   assert.equal((await staff(db, STAFF.owner, "select public.admin_list_promo_codes() r")).r.find(item => item.code === "SALE10").usedCount, 1);
   const listed = (await staff(db, STAFF.manager, "select public.admin_crm_list_orders() r")).r.orders.find(item => item.number === placed.number);
-  assert.equal(Number(listed.discountAmount), 250.1);
+  assert.equal(Number(listed.discountAmount), 250);
 
-  // 5. A manager prices the «за запитом» line or adds more: the percent stays on the priced total the code was
-  //    accepted for. Removing the discounted line shrinks the discount.
+  // 5. A manager prices the «за запитом» line or adds more: the percent stays on the lines that had a price when
+  //    the code was accepted, up to the total it was accepted for. Removing those lines removes the discount; it
+  //    never moves to the formerly «за запитом» line.
   detail = await editLines(db, placed.number, detail.items.map(item => ({ id: item.id, quantity: item.quantity,
     unitAmount: item.legacyId === "p-request" ? 1000 : undefined })));
   assert.equal(Number(detail.order.itemsTotal), 3501);
-  assert.equal(Number(detail.order.discountAmount), 250.1, "pricing an on-request line does not grow the discount");
-  assert.equal(Number(detail.order.totalDue), 3250.9);
+  assert.equal(Number(detail.order.discountAmount), 250, "pricing an on-request line does not grow the discount");
+  assert.equal(Number(detail.order.totalDue), 3251);
   detail = await editLines(db, placed.number, detail.items.map(item => ({ id: item.id, quantity: item.legacyId === "p-known" ? 4 : item.quantity })));
   assert.equal(Number(detail.order.itemsTotal), 6002);
-  assert.equal(Number(detail.order.discountAmount), 250.1, "more of the product does not grow the discount");
+  assert.equal(Number(detail.order.discountAmount), 250, "more of the product does not grow the discount");
   detail = await editLines(db, placed.number, detail.items.filter(item => item.legacyId !== "p-known").map(item => ({ id: item.id, quantity: item.quantity })));
   assert.equal(Number(detail.order.itemsTotal), 1000);
-  assert.equal(Number(detail.order.discountAmount), 100, "removing the discounted line shrinks the discount");
-  assert.equal(Number(detail.order.totalDue), 900);
+  assert.equal(Number(detail.order.discountAmount), 0, "removing the discounted line does not move the discount to the other line");
+  assert.equal(Number(detail.order.totalDue), 1000);
 
   // 6. Without a code nothing changes.
   const plain = await order(db, {});
@@ -244,13 +245,14 @@ export async function run(db) {
 
   // 10. Customer order view carries the discount.
   const customerView = (await one(db, "select public._customer_order_json(o, false) r from public.crm_orders o where number = $1", [placed.number])).r;
-  assert.equal(Number(customerView.discountAmount), 100);
-  assert.equal(Number(customerView.totalDue), 900);
+  assert.equal(Number(customerView.discountAmount), 0);
+  assert.equal(Number(customerView.totalDue), 1000);
+  assert.equal(customerView.promoCode, "SALE10");
 
   // 11. Staff remove the code from an open order: no discount, the use goes back, the timeline names the code.
   await save(db, STAFF.owner, { code: "MINUS5", kind: "percent", value: 5 });
   const minus = await order(db, { promoCode: "MINUS5" }, "203.0.113.20");
-  assert.equal(Number(minus.discount), 125.05);
+  assert.equal(Number(minus.discount), 125);
   assert.equal(await usedCount(db, "MINUS5"), 1);
   detail = await getOrder(db, minus.number);
   await expectError(anon(db, "select public.admin_crm_remove_order_promo($1, null)", [minus.number]), /permission denied/, "anon removes");
@@ -265,20 +267,21 @@ export async function run(db) {
   assert.equal(Number(removed.order.totalDue), 2501);
   assert.ok(removed.order.updatedAt !== detail.order.updatedAt, "updated_at moves");
   assert.equal(removed.activity[0].kind, "update");
-  assert.equal(removed.activity[0].body, "Прибрано промокод MINUS5 (знижка 125,05 грн)");
+  assert.equal(removed.activity[0].body, "Прибрано промокод MINUS5 (знижка 125,00 грн)");
   assert.equal(await usedCount(db, "MINUS5"), 0);
   assert.deepEqual(await one(db, "select promo_value, discount_base from public.crm_orders where number = $1", [minus.number]), { promo_value: null, discount_base: null });
   assert.equal(Number((await one(db, "select orders_total from public.crm_customers where phone = $1", [removed.order.contactPhone])).orders_total), 2501);
   await expectError(removePromo(db, STAFF.manager, minus.number), /Замовлення без промокоду/, "second removal");
-  // A completed or cancelled order keeps its discount.
+  // A completed order keeps its discount; a cancelled one may give its use of the code back.
   const done = await order(db, { promoCode: "MINUS5" }, "203.0.113.20");
   const cancelled = await order(db, { promoCode: "MINUS5" }, "203.0.113.20");
   await staff(db, STAFF.manager, "select public.admin_crm_update_order($1, $2, null)", [done.number, { status: "completed" }]);
   await staff(db, STAFF.manager, "select public.admin_crm_update_order($1, $2, null)", [cancelled.number, { status: "cancelled" }]);
-  for (const number of [done.number, cancelled.number]) {
-    await expectError(removePromo(db, STAFF.manager, number), /виконаного або скасованого замовлення не змінюють/, `remove from ${number}`);
-  }
+  await expectError(removePromo(db, STAFF.manager, done.number), /виконаного замовлення не змінюють/, "remove from a completed order");
   assert.equal(await usedCount(db, "MINUS5"), 2);
+  const released = await removePromo(db, STAFF.manager, cancelled.number);
+  assert.equal(released.order.promoCode, null);
+  assert.equal(await usedCount(db, "MINUS5"), 1, "the cancelled order gave its use back");
   // used_count never drops below zero.
   const reset = await order(db, { promoCode: "MINUS5" }, "203.0.113.20");
   await db.query("update public.crm_promo_codes set used_count = 0 where code = 'MINUS5'");
@@ -288,20 +291,47 @@ export async function run(db) {
   // 12. Customer totals are net of the discount: the CRM card, its order rows and the 30-day revenue.
   const placedCustomer = (await one(db, "select customer_id from public.crm_orders where number = $1", [placed.number])).customer_id;
   const card = (await staff(db, STAFF.manager, "select public.admin_crm_get_customer($1) r", [placedCustomer])).r;
-  assert.equal(Number(card.customer.ordersTotal), 900);
+  assert.equal(Number(card.customer.ordersTotal), 1000);
   const cardOrder = card.orders.find(row => row.number === placed.number);
   assert.equal(cardOrder.promoCode, "SALE10");
-  assert.equal(Number(cardOrder.discountAmount), 100);
+  assert.equal(Number(cardOrder.discountAmount), 0);
   assert.equal(Number(cardOrder.itemsTotal), 1000);
   const plainCustomer = (await one(db, "select customer_id from public.crm_orders where number = $1", [plain.number])).customer_id;
   const plainRow = (await staff(db, STAFF.manager, "select public.admin_crm_get_customer($1) r", [plainCustomer])).r.orders[0];
   assert.deepEqual([plainRow.promoCode, Number(plainRow.discountAmount)], [null, 0]);
   const doneCustomer = await one(db, "select c.orders_total from public.crm_customers c join public.crm_orders o on o.customer_id = c.internal_id where o.number = $1", [done.number]);
-  assert.equal(Number(doneCustomer.orders_total), 2375.95);
+  assert.equal(Number(doneCustomer.orders_total), 2376);
   const cancelledCustomer = await one(db, "select c.orders_total from public.crm_customers c join public.crm_orders o on o.customer_id = c.internal_id where o.number = $1", [cancelled.number]);
   assert.equal(Number(cancelledCustomer.orders_total), 0, "cancelled orders stay out");
   const overview = (await staff(db, STAFF.manager, "select public.admin_crm_overview() r")).r;
-  assert.equal(Number(overview.revenue30d), 2375.95, "only the completed order, net of its discount");
+  assert.equal(Number(overview.revenue30d), 2376, "only the completed order, net of its discount");
+
+  // 13. A fixed code worth more than the priced part of the cart: the discount stays at what the customer was shown
+  //     when a manager prices the «за запитом» line, and goes when the priced line goes.
+  const cheap = await one(db, "select brand_id, primary_category_id from public.products where legacy_id = 'p-known'");
+  await db.query(`insert into public.products (legacy_id, sku, slug, title, short_title, model, brand_id, primary_category_id,
+      amount, price_status, inventory_status, publication_status, archived_at)
+    values ('p-cheap', 'SKU-C', 'p-cheap', 'Кран дешевий', 'Кран', 'MC', $1, $2, 300, 'known', 'in_stock', 'published', null)`,
+    [cheap.brand_id, cheap.primary_category_id]);
+  await save(db, STAFF.owner, { code: "BIG500", kind: "fixed", value: 500 });
+  const big = await order(db, { promoCode: "BIG500", items: [{ id: "p-cheap", quantity: 1 }, { id: "p-request", quantity: 1 }] }, "203.0.113.30");
+  assert.deepEqual([Number(big.itemsTotal), Number(big.discount), Number(big.total)], [300, 300, 0]);
+  detail = await getOrder(db, big.number);
+  detail = await editLines(db, big.number, detail.items.map(item => ({ id: item.id, quantity: item.quantity,
+    unitAmount: item.legacyId === "p-request" ? 20000 : undefined })));
+  assert.equal(Number(detail.order.itemsTotal), 20300);
+  assert.equal(Number(detail.order.discountAmount), 300, "a fixed code does not grow onto the priced «за запитом» line");
+  detail = await editLines(db, big.number, [...detail.items.map(item => ({ id: item.id, quantity: item.quantity })), { productId: "p-known", quantity: 1 }]);
+  assert.equal(Number(detail.order.discountAmount), 300, "an added line does not grow it either");
+  detail = await editLines(db, big.number, detail.items.filter(item => item.legacyId !== "p-cheap").map(item => ({ id: item.id, quantity: item.quantity })));
+  assert.equal(Number(detail.order.discountAmount), 0, "without the discounted line there is no discount");
+
+  // 14. IPv6: guesses count per /64, so one host cannot rotate addresses inside its own network.
+  await db.query("delete from public.crm_promo_attempts");
+  for (let i = 1; i <= 20; i += 1) await check(db, { code: `V6GUESS${i}`, items: [{ id: "p-known", quantity: 1 }] }, `2001:db8:1:2::${i.toString(16)}`);
+  assert.match((await check(db, { code: "SALE11", items: [{ id: "p-known", quantity: 2 }] }, "2001:db8:1:2::ffff")).message, /Забагато спроб/, "same /64");
+  await save(db, STAFF.owner, { code: "OTHERNET", kind: "percent", value: 5 });
+  assert.equal((await check(db, { code: "OTHERNET", items: [{ id: "p-known", quantity: 2 }] }, "2001:db8:1:3::1")).valid, true, "another /64 is not blocked");
 
   console.log(JSON.stringify({ status: "ok", suite: "promo-scenarios" }));
 }

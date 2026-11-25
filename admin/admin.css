@@ -3040,7 +3040,7 @@ img.admin-collection-item__thumb { padding: 3px; background: var(--surface); }
 }
 
 /* Promo codes */
-.admin-promos { display: grid; gap: 22px; }
+.admin-promos { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
 .admin-promos .admin-button[hidden] { display: none; }
 .admin-promos > .admin-panel { margin: 0; }
 .admin-promos .admin-form-grid .admin-field + .admin-field { margin-top: 0; }

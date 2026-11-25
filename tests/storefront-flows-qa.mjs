@@ -1141,11 +1141,66 @@ await check("checkout-np-enter", async () => {
   await until(() => calls.some(call => call.methodProperties?.FindByString === "Київська"), "no branch search for the typed street");
   await page.locator("#checkout-branch-options [role=option]").first().waitFor({ timeout: 5000 });
   await branch.press("Enter");
-  assert.equal(await branch.inputValue(), "Відділення №2: вул. Київська, 302", "Enter without a highlighted branch did not pick the first one");
+  await page.waitForFunction(() => document.querySelector("[data-np-branch]").value === "Відділення №2: вул. Київська, 302", null, { timeout: 5000 })
+    .catch(() => { throw new Error("Enter without a highlighted branch did not pick the first one"); });
   assert.equal(await page.locator("#checkout-branch-options").isHidden(), true, "the branch list stays open after Enter");
   await page.waitForTimeout(500);
   assert.equal(orders.length, 0, "Enter in the open branch list sent the order");
   assert.equal(await page.locator(".checkout-success").count(), 0);
+  await page.context().close();
+});
+
+// Enter right after typing takes the first result for the typed text (waiting for it), not the first item of the
+// older list; Enter in a list opened by focus alone keeps the settlement picked earlier and its branch; a typographic
+// apostrophe in a street search goes to the API as an ASCII one.
+await check("checkout-np-enter-fresh", async () => {
+  const page = await newPage(VIEWPORTS.desktop);
+  const calls = [];
+  const orders = [];
+  await page.route("https://api.novaposhta.ua/**", async route => {
+    const body = JSON.parse(route.request().postData() || "{}");
+    calls.push(body);
+    const props = body.methodProperties || {};
+    const data = body.calledMethod === "searchSettlements"
+      ? [{ TotalCount: 2, Addresses: [
+        { Present: "м. Бровари, Броварський р-н, Київська обл.", Warehouses: 412, MainDescription: "Бровари", DeliveryCity: "city-brovary", Ref: "s1" },
+        { Present: "с. Бровари, Ніжинський р-н, Чернігівська обл.", Warehouses: 2, MainDescription: "Бровари", DeliveryCity: "city-nizhyn", Ref: "s2" }] }]
+      : props.WarehouseId === "25" ? [{ Description: "Відділення №25: вул. Шевченка, 1", Ref: "w25" }]
+      : [{ Description: "Відділення №1: вул. Київська, 100", Ref: "w1" }, { Description: "Відділення №2: вул. Київська, 302", Ref: "w2" }];
+    if (props.WarehouseId) await new Promise(resolve => setTimeout(resolve, 400));
+    await route.fulfill({ contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ success: true, data, errors: [] }) });
+  });
+  await page.route(/\/rest\/v1\/rpc\/crm_submit_order$/, async route => {
+    orders.push(JSON.parse(route.request().postData() || "{}").payload || null);
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ accepted: true, number: 4646 }) });
+  });
+  await seedStorage(page, { "sofievka-cart": { [pricedProduct.id]: 1 } });
+  await open(page, "/checkout");
+  const city = page.locator("[data-np-city]");
+  const branch = page.locator("[data-np-branch]");
+  await city.click();
+  await city.pressSequentially("бров", { delay: 20 });
+  await page.locator("#checkout-city-options [role=option]").nth(1).waitFor({ timeout: 5000 });
+  await page.locator("#checkout-city-options [role=option]").nth(1).click();
+  await page.waitForFunction(() => document.activeElement?.matches("[data-np-branch]"), null, { timeout: 3000 });
+  await page.locator("#checkout-branch-options [role=option]").first().waitFor({ timeout: 5000 });
+  await branch.pressSequentially("25", { delay: 10 });
+  await branch.press("Enter");
+  await page.waitForFunction(() => document.querySelector("[data-np-branch]").value === "Відділення №25: вул. Шевченка, 1", null, { timeout: 5000 })
+    .catch(async () => { throw new Error(`Enter right after typing took «${await branch.inputValue()}» instead of the result for «25»`); });
+  assert.equal(calls.filter(call => call.methodProperties?.WarehouseId === "25").length >= 1, true);
+  await branch.press("Enter");
+  // Back into the filled city field: the list opened by focus shows both «Бровари»; Enter keeps the picked one.
+  await city.focus();
+  await page.locator("#checkout-city-options [role=option]").first().waitFor({ timeout: 5000 });
+  await city.press("Enter");
+  assert.equal(await city.inputValue(), "с. Бровари, Ніжинський р-н, Чернігівська обл.", "Enter in a refocused city swapped the settlement");
+  assert.equal(await branch.inputValue(), "Відділення №25: вул. Шевченка, 1", "Enter in a refocused city cleared the branch");
+  assert.equal(orders.length, 0, "an Enter in the pickers sent the order");
+  await branch.fill("");
+  await branch.focus();
+  await branch.pressSequentially("Солом’янська", { delay: 10 });
+  await until(() => calls.some(call => call.methodProperties?.FindByString === "Солом'янська"), "the street search kept the typographic apostrophe");
   await page.context().close();
 });
 

@@ -82,29 +82,42 @@ alter table public.crm_orders
   add column promo_kind text check (promo_kind is null or promo_kind in ('percent', 'fixed')),
   add column promo_value numeric(14, 2) check (promo_value is null or promo_value > 0),
   add column discount_base numeric(14, 2) check (discount_base is null or discount_base >= 0),
+  add column discount_lines uuid[],
   add column discount_amount numeric(14, 2) not null default 0 check (discount_amount >= 0);
 create index crm_orders_promo_code on public.crm_orders (promo_code) where promo_code is not null;
 
--- A percent applies to the priced total the code was accepted for (discount_base) or to the current
--- total when that is smaller: lines priced or added later are not discounted, removed lines shrink it.
+-- The discount applies only to the lines that had a price when the code was accepted (discount_lines, the
+-- crm_order_items ids; line edits keep them) and never to more than the total it was accepted for
+-- (discount_base). A manager pricing an «за запитом» line or adding lines therefore never grows it, and
+-- removing or reducing the discounted lines shrinks it. Whole hryvnias, like every price on the site.
 create or replace function public._crm_order_discount()
 returns trigger
 language plpgsql
 set search_path = ''
 as $$
+declare
+  discountable numeric := new.items_total;
 begin
+  if new.promo_kind is null then
+    new.discount_amount := 0;
+    return new;
+  end if;
+  if new.discount_lines is not null then
+    select coalesce(sum(item.line_total), 0) into discountable
+    from public.crm_order_items item
+    where item.order_id = new.internal_id and item.internal_id = any (new.discount_lines);
+  end if;
+  discountable := least(discountable, new.items_total, coalesce(new.discount_base, discountable));
   new.discount_amount := case
-    when new.promo_kind = 'percent'
-      then round(least(new.items_total, coalesce(new.discount_base, new.items_total)) * new.promo_value / 100, 2)
-    when new.promo_kind = 'fixed' then least(new.promo_value, new.items_total)
-    else 0
+    when new.promo_kind = 'percent' then round(discountable * new.promo_value / 100)
+    else least(new.promo_value, discountable)
   end;
   return new;
 end;
 $$;
 revoke all on function public._crm_order_discount() from public, anon, authenticated;
 
-create trigger crm_orders_discount before insert or update of items_total, promo_kind, promo_value, discount_base
+create trigger crm_orders_discount before insert or update of items_total, promo_kind, promo_value, discount_base, discount_lines
   on public.crm_orders for each row execute function public._crm_order_discount();
 
 -- ---------------------------------------------------------------------------
@@ -150,7 +163,7 @@ begin
     'code', promo.code,
     'kind', promo.kind,
     'value', promo.value,
-    'discount', case when promo.kind = 'percent' then round(base * promo.value / 100, 2) else least(promo.value, base) end,
+    'discount', case when promo.kind = 'percent' then round(base * promo.value / 100) else least(promo.value, base) end,
     'itemsTotal', base
   );
 end;
@@ -184,6 +197,39 @@ begin
 end;
 $$;
 
+-- The key of the guess limit: the client address like _crm_client_fingerprint, but an IPv6 address counts
+-- per /64, so one host cannot spread its guesses over the addresses of its own network.
+create or replace function public._crm_promo_client_key()
+returns text
+language plpgsql
+stable
+set search_path = ''
+as $$
+declare
+  headers jsonb;
+  address text;
+  parsed inet;
+begin
+  begin
+    headers := nullif(current_setting('request.headers', true), '')::jsonb;
+  exception when others then
+    headers := null;
+  end;
+  address := btrim(coalesce(public._crm_client_address(headers), ''));
+  if address = '' then return null; end if;
+  begin
+    parsed := address::inet;
+  exception when others then
+    parsed := null;
+  end;
+  if parsed is not null and family(parsed) = 6 then
+    address := host(network(set_masklen(parsed, 64))) || '/64';
+  end if;
+  return encode(extensions.digest('sofievka-promo:' || address, 'sha256'), 'hex');
+end;
+$$;
+
+revoke all on function public._crm_promo_client_key() from public, anon, authenticated;
 revoke all on function public._crm_promo_blocked(text) from public, anon, authenticated;
 revoke all on function public._crm_promo_record_failure(text) from public, anon, authenticated;
 
@@ -201,6 +247,7 @@ declare
   raw_code text := btrim(coalesce(payload ->> 'code', ''));
   requested jsonb := coalesce(payload -> 'items', '[]'::jsonb);
   fingerprint text := public._crm_client_fingerprint();
+  promo_key text := public._crm_promo_client_key();
   priced_total numeric;
   result jsonb;
 begin
@@ -218,7 +265,7 @@ begin
   if char_length(raw_code) > 40 then
     return jsonb_build_object('available', true, 'valid', false, 'message', 'Такого промокоду немає або він уже не діє.');
   end if;
-  if public._crm_promo_blocked(fingerprint) then
+  if public._crm_promo_blocked(promo_key) then
     return jsonb_build_object('available', true, 'valid', false, 'message', 'Забагато спроб. Спробуйте пізніше або зателефонуйте нам.');
   end if;
   if jsonb_typeof(requested) <> 'array' or jsonb_array_length(requested) > 50 then
@@ -238,7 +285,7 @@ begin
   result := public._crm_promo_evaluate(raw_code, priced_total);
   -- Only guesses count: a real code below its minimum or used up does not lock the address out.
   if result ->> 'reason' = 'unknown' then
-    perform public._crm_promo_record_failure(fingerprint);
+    perform public._crm_promo_record_failure(promo_key);
   end if;
   return (result - 'id' - 'reason') || jsonb_build_object('available', true);
 end;
@@ -266,6 +313,7 @@ declare
   delivery_point text := public._crm_clean_text(payload ->> 'deliveryPoint', 240);
   order_comment text := coalesce(public._crm_clean_text(payload ->> 'comment', 4000), '');
   fingerprint text := public._crm_client_fingerprint();
+  promo_key text := public._crm_promo_client_key();
   -- Signed-in storefront customer (null for anonymous checkout).
   signed_in_user uuid := (select account.id from auth.users account where account.id = auth.uid());
   customer uuid;
@@ -336,7 +384,7 @@ begin
   -- A code that does not apply stops the order with the reason, so the customer never gets another total
   -- without seeing it. It is returned, not raised, so a logged guess survives (brute-force guard).
   if promo_input <> '' then
-    if public._crm_promo_blocked(fingerprint) then
+    if public._crm_promo_blocked(promo_key) then
       return jsonb_build_object('accepted', false, 'promoError', 'Забагато спроб. Спробуйте пізніше або зателефонуйте нам.');
     end if;
     perform 1 from public.crm_promo_codes promo_row where promo_row.code = promo_input for update;
@@ -348,7 +396,7 @@ begin
     promo := public._crm_promo_evaluate(promo_input, promo_total);
     if not (promo ->> 'valid')::boolean then
       if promo ->> 'reason' = 'unknown' then
-        perform public._crm_promo_record_failure(fingerprint);
+        perform public._crm_promo_record_failure(promo_key);
       end if;
       return jsonb_build_object('accepted', false,
         'promoError', (promo ->> 'message') || ' Приберіть промокод або введіть інший.');
@@ -399,7 +447,9 @@ begin
     promo_code = promo ->> 'code',
     promo_kind = promo ->> 'kind',
     promo_value = (promo ->> 'value')::numeric,
-    discount_base = (promo ->> 'itemsTotal')::numeric
+    discount_base = (promo ->> 'itemsTotal')::numeric,
+    discount_lines = case when promo is null then null else (select array_agg(item.internal_id)
+      from public.crm_order_items item where item.order_id = new_order_id and item.line_total is not null) end
   where internal_id = new_order_id
   returning * into final_order;
 
@@ -929,12 +979,13 @@ begin
   if target.promo_code is null then
     raise exception using errcode = '22023', message = 'Замовлення без промокоду.';
   end if;
-  if target.status in ('completed', 'cancelled') then
-    raise exception using errcode = '22023', message = 'Знижку виконаного або скасованого замовлення не змінюють. Спершу змініть статус.';
+  -- A cancelled order may give its use of the code back; a completed one is settled.
+  if target.status = 'completed' then
+    raise exception using errcode = '22023', message = 'Знижку виконаного замовлення не змінюють. Спершу змініть статус.';
   end if;
 
   update public.crm_orders set
-    promo_code = null, promo_kind = null, promo_value = null, discount_base = null, updated_at = now()
+    promo_code = null, promo_kind = null, promo_value = null, discount_base = null, discount_lines = null, updated_at = now()
   where internal_id = target.internal_id;
   -- Orders keep the code as text (a used code cannot be renamed).
   update public.crm_promo_codes set used_count = greatest(used_count - 1, 0) where code = target.promo_code;

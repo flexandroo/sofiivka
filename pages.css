@@ -1061,6 +1061,9 @@ body[data-page="product"] {
   .checkout-item strong { grid-column: 2; }
 }
 .checkout-summary dl { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, .18); }
+/* A long promo code wraps inside its row instead of widening the summary (and the page on phones). */
+.checkout-layout > * { min-width: 0; }
+.checkout-summary dl div > dt { min-width: 0; overflow-wrap: anywhere; }
 .checkout-summary .order-summary__total { padding-top: 0; border-top: 0; }
 .checkout-summary dl > div:first-child:not(:only-child) ~ .order-summary__total { padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, .18); }
 .order-summary__discount { color: #9fe0bd; }

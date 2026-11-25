@@ -49,7 +49,7 @@
   }
 
   async function searchBranches(cityRef, text) {
-    const query = String(text || "").replace(/^№\s*/, "").trim();
+    const query = apostrophes(text).replace(/^№\s*/, "").trim();
     const properties = { CityRef: cityRef, Limit: "30", Page: "1", Language: "UA" };
     // «15» or «№15» is a branch number; anything else is a street or a name.
     if (/^\d{1,6}$/.test(query)) properties.WarehouseId = query;
@@ -68,8 +68,14 @@
     let timer = 0;
     let blurTimer = 0;
     let requestId = 0;
+    // typed: the customer typed since the list opened (a list opened by focus only shows the current value's matches);
+    // stale: the shown options belong to an older text, a search for the new one is pending or running;
+    // pendingEnter: Enter was pressed meanwhile, so the first fresh option is taken when it arrives.
+    let typed = false;
+    let stale = false;
+    let pendingEnter = false;
     // A pending (debounced) or running search must not reopen a list the customer has already left or closed.
-    const cancel = () => { clearTimeout(timer); requestId += 1; };
+    const cancel = () => { clearTimeout(timer); requestId += 1; pendingEnter = false; };
     const close = () => { list.hidden = true; input.setAttribute("aria-expanded", "false"); input.removeAttribute("aria-activedescendant"); active = -1; };
     // On a phone the list opens below the fold (tab bar, keyboard): scroll just enough to show it, keeping the field
     // under the sticky header.
@@ -91,12 +97,14 @@
       input.value = option.value;
       cancel();
       close();
+      typed = false;
       onPick(option);
     };
     const run = async () => {
       if (document.activeElement !== input) return;
       const text = input.value.trim();
       if (text.length < minLength) { cancel(); close(); return; }
+      clearTimeout(timer);
       const id = ++requestId;
       state("Шукаємо…");
       let found;
@@ -105,6 +113,9 @@
         return;
       }
       if (id !== requestId || document.activeElement !== input) return;
+      stale = false;
+      const enter = pendingEnter;
+      pendingEnter = false;
       if (!found) { close(); return; }
       if (!found.length) { state("Нічого не знайдено"); return; }
       options = found;
@@ -112,18 +123,25 @@
       list.hidden = false;
       input.setAttribute("aria-expanded", "true");
       active = -1;
+      if (enter && typed) { pick(0); return; }
       reveal();
     };
-    input.addEventListener("input", () => { onType(); clearTimeout(timer); timer = setTimeout(run, 250); });
-    input.addEventListener("focus", () => { clearTimeout(blurTimer); if (input.value.trim().length >= minLength || minLength === 0) run(); });
+    input.addEventListener("input", () => { onType(); typed = true; stale = true; clearTimeout(timer); timer = setTimeout(run, 250); });
+    input.addEventListener("focus", () => { clearTimeout(blurTimer); typed = false; stale = false; if (input.value.trim().length >= minLength || minLength === 0) run(); });
     input.addEventListener("blur", () => { cancel(); clearTimeout(blurTimer); blurTimer = setTimeout(close, 150); });
     input.addEventListener("keydown", event => {
       if (event.key === "Escape") { if (!list.hidden) event.preventDefault(); cancel(); close(); return; }
       if (list.hidden) { if (event.key === "ArrowDown") run(); return; }
-      // While the list is open Enter never submits the form: it takes the highlighted option, else the first one.
+      // While the list is open Enter never submits the form. It takes the highlighted option; after typing, the first
+      // option of the search for the typed text (waiting for it if it is still running); in a list opened by focus
+      // alone it keeps the current value («Бровари» picked earlier is not swapped for the first «Бровари»).
       if (event.key === "Enter") {
         event.preventDefault();
-        if (options.length) pick(active >= 0 ? active : 0);
+        if (stale && typed) { pendingEnter = true; if (input.value.trim().length >= minLength) run(); else { cancel(); close(); } return; }
+        if (active >= 0 && options[active]) { pick(active); return; }
+        const same = options.findIndex(option => option.value === input.value.trim());
+        if (same >= 0 && typed) pick(same);
+        else if (same < 0 && typed && options.length) pick(0);
         else { cancel(); close(); }
         return;
       }

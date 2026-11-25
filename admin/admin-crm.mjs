@@ -100,7 +100,7 @@ function renderOrderDetail({ api, detail }) {
                     <span class="admin-crm-num">${number(item.quantity)} × ${item.unitAmount === null ? `<em>${escape(unpricedLabel(item))}</em>` : money(item.unitAmount)}</span>
                     <strong class="admin-crm-num">${item.lineTotal === null ? "—" : money(item.lineTotal)}</strong>
                   </div>`).join("")}
-                ${order.promoCode || Number(order.discountAmount) > 0 ? `<div class="admin-crm-item admin-crm-item--discount"><span>Знижка за промокодом <strong>${escape(order.promoCode)}</strong>${order.promoKind === "percent" ? ` (${number(order.promoValue)}%)` : ""}</span><span>${order.itemsEditable ? `<button class="admin-button admin-button--ghost" type="button" data-promo-remove>Прибрати знижку</button>` : ""}</span><strong class="admin-crm-num">−${money(order.discountAmount)}</strong></div>` : ""}
+                ${order.promoCode || Number(order.discountAmount) > 0 ? `<div class="admin-crm-item admin-crm-item--discount"><span>Знижка за промокодом <strong>${escape(order.promoCode)}</strong>${order.promoKind === "percent" ? ` (${number(order.promoValue)}%)` : ""}</span><span>${order.itemsEditable || order.status === "cancelled" ? `<button class="admin-button admin-button--ghost" type="button" data-promo-remove>Прибрати знижку</button>` : ""}</span><strong class="admin-crm-num">−${money(order.discountAmount)}</strong></div>` : ""}
                 <div class="admin-crm-item admin-crm-item--total"><span>Разом</span><span></span><strong class="admin-crm-num">${orderTotal(order)}</strong></div>
               </div>
               ${order.hasUnpricedItems ? `<p class="admin-panel-note">Є позиції без ціни — уточніть вартість і вкажіть її в складі замовлення.</p>` : ""}
