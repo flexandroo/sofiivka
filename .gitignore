@@ -11,6 +11,7 @@ supabase/.env.*
 .agents/
 .codex/
 node_modules/
+__pycache__/
 tmp/
 artifacts/
 backups/

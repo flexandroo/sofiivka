@@ -1,0 +1,563 @@
+{
+  "12080211003": {
+    "title": "Колектор опалювальних контурів REHAU HKV-D із нержавіючої сталі, 2 контури",
+    "model": "HKV-D",
+    "sourceTitle": "Heizkreisverteiler HKV-D Edelstahl",
+    "heatingCircuits": 2,
+    "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+    "documentId": "10237499",
+    "localPdf": "assets/products/rehau/documents/10237499.pdf",
+    "page": 1,
+    "proof": "2                               12080211003             550          550          550           550           550        550   750    550   550   750",
+    "evidence": [
+      {
+        "documentId": "10237499",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+        "localPdf": "assets/products/rehau/documents/10237499.pdf",
+        "sha256": "cd8c49b5723a2dbfe0dad8ff89bfd84be135f25d2ae7cb8adad926703cc842bc",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 75",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "2                               12080211003             550          550          550           550           550        550   750    550   550   750",
+        "heatingCircuits": 2
+      },
+      {
+        "documentId": "10237500",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237500",
+        "localPdf": "assets/products/rehau/documents/10237500.pdf",
+        "sha256": "c2ad3bd996b867f69a7eb05d44dbaf03090600c63b105792b423958a535a0237",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 110",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "2                               12080211003           550 550 550 550 550 550 750 550 550 550 750 950 550 550 550",
+        "heatingCircuits": 2
+      },
+      {
+        "documentId": "10237501",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237501",
+        "localPdf": "assets/products/rehau/documents/10237501.pdf",
+        "sha256": "4e0b00996d3aa2807bfae55db66bfbab71a2942c35f76eace4938997532a3f43",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank AP 130",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "2                               12080211003           605 605 605 605 605 605 605 605 605 605 805 805 605 605 605",
+        "heatingCircuits": 2
+      }
+    ],
+    "scopeNote": "Bare HKV-D collector only. Cabinet types UP 75, UP 110, AP 130 are matrix compatibility columns, not included with this SKU.",
+    "remainingMediaGap": "The exact product API preview is a generic item_thumbnail_large.jpg placeholder. The PDF illustration is a family illustration, not a verified photo for every circuit count."
+  },
+  "12080411003": {
+    "title": "Колектор опалювальних контурів REHAU HKV-D із нержавіючої сталі, 4 контури",
+    "model": "HKV-D",
+    "sourceTitle": "Heizkreisverteiler HKV-D Edelstahl",
+    "heatingCircuits": 4,
+    "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+    "documentId": "10237499",
+    "localPdf": "assets/products/rehau/documents/10237499.pdf",
+    "page": 1,
+    "proof": "4                               12080411003             550          550          550           550           550        550   750    550   550   950",
+    "evidence": [
+      {
+        "documentId": "10237499",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+        "localPdf": "assets/products/rehau/documents/10237499.pdf",
+        "sha256": "cd8c49b5723a2dbfe0dad8ff89bfd84be135f25d2ae7cb8adad926703cc842bc",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 75",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "4                               12080411003             550          550          550           550           550        550   750    550   550   950",
+        "heatingCircuits": 4
+      },
+      {
+        "documentId": "10237500",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237500",
+        "localPdf": "assets/products/rehau/documents/10237500.pdf",
+        "sha256": "c2ad3bd996b867f69a7eb05d44dbaf03090600c63b105792b423958a535a0237",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 110",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "4                               12080411003           550 550 550 550 550 550 750 750 550 550 950 950 750 750 750",
+        "heatingCircuits": 4
+      },
+      {
+        "documentId": "10237501",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237501",
+        "localPdf": "assets/products/rehau/documents/10237501.pdf",
+        "sha256": "4e0b00996d3aa2807bfae55db66bfbab71a2942c35f76eace4938997532a3f43",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank AP 130",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "4                               12080411003           605 605 605 605 605 605 805 605 605 605 805 1005 605 605 605",
+        "heatingCircuits": 4
+      }
+    ],
+    "scopeNote": "Bare HKV-D collector only. Cabinet types UP 75, UP 110, AP 130 are matrix compatibility columns, not included with this SKU.",
+    "remainingMediaGap": "The exact product API preview is a generic item_thumbnail_large.jpg placeholder. The PDF illustration is a family illustration, not a verified photo for every circuit count."
+  },
+  "12080511003": {
+    "title": "Колектор опалювальних контурів REHAU HKV-D із нержавіючої сталі, 5 контурів",
+    "model": "HKV-D",
+    "sourceTitle": "Heizkreisverteiler HKV-D Edelstahl",
+    "heatingCircuits": 5,
+    "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+    "documentId": "10237499",
+    "localPdf": "assets/products/rehau/documents/10237499.pdf",
+    "page": 1,
+    "proof": "5                               12080511003             550          550           750          550           550        750   750    750   750   950",
+    "evidence": [
+      {
+        "documentId": "10237499",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+        "localPdf": "assets/products/rehau/documents/10237499.pdf",
+        "sha256": "cd8c49b5723a2dbfe0dad8ff89bfd84be135f25d2ae7cb8adad926703cc842bc",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 75",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "5                               12080511003             550          550           750          550           550        750   750    750   750   950",
+        "heatingCircuits": 5
+      },
+      {
+        "documentId": "10237500",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237500",
+        "localPdf": "assets/products/rehau/documents/10237500.pdf",
+        "sha256": "c2ad3bd996b867f69a7eb05d44dbaf03090600c63b105792b423958a535a0237",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 110",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "5                               12080511003           550 550 750 550 550 750 750 750 750 750 950 1150 750 750 750",
+        "heatingCircuits": 5
+      },
+      {
+        "documentId": "10237501",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237501",
+        "localPdf": "assets/products/rehau/documents/10237501.pdf",
+        "sha256": "4e0b00996d3aa2807bfae55db66bfbab71a2942c35f76eace4938997532a3f43",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank AP 130",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "5                               12080511003           605 605 605 605 605 605 805 805 605 605 1005 1005 805 805 805",
+        "heatingCircuits": 5
+      }
+    ],
+    "scopeNote": "Bare HKV-D collector only. Cabinet types UP 75, UP 110, AP 130 are matrix compatibility columns, not included with this SKU.",
+    "remainingMediaGap": "The exact product API preview is a generic item_thumbnail_large.jpg placeholder. The PDF illustration is a family illustration, not a verified photo for every circuit count."
+  },
+  "12080611003": {
+    "title": "Колектор опалювальних контурів REHAU HKV-D із нержавіючої сталі, 6 контурів",
+    "model": "HKV-D",
+    "sourceTitle": "Heizkreisverteiler HKV-D Edelstahl",
+    "heatingCircuits": 6,
+    "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+    "documentId": "10237499",
+    "localPdf": "assets/products/rehau/documents/10237499.pdf",
+    "page": 1,
+    "proof": "6                               12080611003             550          550           750          750           750        750   950    750   750   950",
+    "evidence": [
+      {
+        "documentId": "10237499",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+        "localPdf": "assets/products/rehau/documents/10237499.pdf",
+        "sha256": "cd8c49b5723a2dbfe0dad8ff89bfd84be135f25d2ae7cb8adad926703cc842bc",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 75",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "6                               12080611003             550          550           750          750           750        750   950    750   750   950",
+        "heatingCircuits": 6
+      },
+      {
+        "documentId": "10237500",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237500",
+        "localPdf": "assets/products/rehau/documents/10237500.pdf",
+        "sha256": "c2ad3bd996b867f69a7eb05d44dbaf03090600c63b105792b423958a535a0237",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 110",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "6                               12080611003           550 550 750 750 750 750 950 750 750 750 950 1150 750 750 750",
+        "heatingCircuits": 6
+      },
+      {
+        "documentId": "10237501",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237501",
+        "localPdf": "assets/products/rehau/documents/10237501.pdf",
+        "sha256": "4e0b00996d3aa2807bfae55db66bfbab71a2942c35f76eace4938997532a3f43",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank AP 130",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "6                               12080611003           605 605 805 605 605 805 805 805 805 805 1005 1005 805 805 805",
+        "heatingCircuits": 6
+      }
+    ],
+    "scopeNote": "Bare HKV-D collector only. Cabinet types UP 75, UP 110, AP 130 are matrix compatibility columns, not included with this SKU.",
+    "remainingMediaGap": "The exact product API preview is a generic item_thumbnail_large.jpg placeholder. The PDF illustration is a family illustration, not a verified photo for every circuit count."
+  },
+  "12080711003": {
+    "title": "Колектор опалювальних контурів REHAU HKV-D із нержавіючої сталі, 7 контурів",
+    "model": "HKV-D",
+    "sourceTitle": "Heizkreisverteiler HKV-D Edelstahl",
+    "heatingCircuits": 7,
+    "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+    "documentId": "10237499",
+    "localPdf": "assets/products/rehau/documents/10237499.pdf",
+    "page": 1,
+    "proof": "7                               12080711003             550           750          750          750           750        750   950    750   750   950",
+    "evidence": [
+      {
+        "documentId": "10237499",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+        "localPdf": "assets/products/rehau/documents/10237499.pdf",
+        "sha256": "cd8c49b5723a2dbfe0dad8ff89bfd84be135f25d2ae7cb8adad926703cc842bc",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 75",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "7                               12080711003             550           750          750          750           750        750   950    750   750   950",
+        "heatingCircuits": 7
+      },
+      {
+        "documentId": "10237500",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237500",
+        "localPdf": "assets/products/rehau/documents/10237500.pdf",
+        "sha256": "c2ad3bd996b867f69a7eb05d44dbaf03090600c63b105792b423958a535a0237",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 110",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "7                               12080711003           550 750 750 750 750 750 950 950 750 750 950 1150 950 950 950",
+        "heatingCircuits": 7
+      },
+      {
+        "documentId": "10237501",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237501",
+        "localPdf": "assets/products/rehau/documents/10237501.pdf",
+        "sha256": "4e0b00996d3aa2807bfae55db66bfbab71a2942c35f76eace4938997532a3f43",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank AP 130",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "7                               12080711003           605 605 805 805 805 805 1005 805 805 805 1005 1205 805 805 805",
+        "heatingCircuits": 7
+      }
+    ],
+    "scopeNote": "Bare HKV-D collector only. Cabinet types UP 75, UP 110, AP 130 are matrix compatibility columns, not included with this SKU.",
+    "remainingMediaGap": "The exact product API preview is a generic item_thumbnail_large.jpg placeholder. The PDF illustration is a family illustration, not a verified photo for every circuit count."
+  },
+  "12080811003": {
+    "title": "Колектор опалювальних контурів REHAU HKV-D із нержавіючої сталі, 8 контурів",
+    "model": "HKV-D",
+    "sourceTitle": "Heizkreisverteiler HKV-D Edelstahl",
+    "heatingCircuits": 8,
+    "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+    "documentId": "10237499",
+    "localPdf": "assets/products/rehau/documents/10237499.pdf",
+    "page": 1,
+    "proof": "8                               12080811003             750           750          750          750           750        750   950    750   750   1150",
+    "evidence": [
+      {
+        "documentId": "10237499",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+        "localPdf": "assets/products/rehau/documents/10237499.pdf",
+        "sha256": "cd8c49b5723a2dbfe0dad8ff89bfd84be135f25d2ae7cb8adad926703cc842bc",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 75",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "8                               12080811003             750           750          750          750           750        750   950    750   750   1150",
+        "heatingCircuits": 8
+      },
+      {
+        "documentId": "10237500",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237500",
+        "localPdf": "assets/products/rehau/documents/10237500.pdf",
+        "sha256": "c2ad3bd996b867f69a7eb05d44dbaf03090600c63b105792b423958a535a0237",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 110",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "8                               12080811003           750 750 750 750 750 750 950 950 750 750 1150 1150 950 950 950",
+        "heatingCircuits": 8
+      },
+      {
+        "documentId": "10237501",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237501",
+        "localPdf": "assets/products/rehau/documents/10237501.pdf",
+        "sha256": "4e0b00996d3aa2807bfae55db66bfbab71a2942c35f76eace4938997532a3f43",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank AP 130",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "8                               12080811003           605 805 805 805 805 805 1005 805 805 805 1005 1205 805 805 805",
+        "heatingCircuits": 8
+      }
+    ],
+    "scopeNote": "Bare HKV-D collector only. Cabinet types UP 75, UP 110, AP 130 are matrix compatibility columns, not included with this SKU.",
+    "remainingMediaGap": "The exact product API preview is a generic item_thumbnail_large.jpg placeholder. The PDF illustration is a family illustration, not a verified photo for every circuit count."
+  },
+  "12080911003": {
+    "title": "Колектор опалювальних контурів REHAU HKV-D із нержавіючої сталі, 9 контурів",
+    "model": "HKV-D",
+    "sourceTitle": "Heizkreisverteiler HKV-D Edelstahl",
+    "heatingCircuits": 9,
+    "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+    "documentId": "10237499",
+    "localPdf": "assets/products/rehau/documents/10237499.pdf",
+    "page": 1,
+    "proof": "9                               12080911003             750           750         950           750           750        950   950    950   950   1150",
+    "evidence": [
+      {
+        "documentId": "10237499",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+        "localPdf": "assets/products/rehau/documents/10237499.pdf",
+        "sha256": "cd8c49b5723a2dbfe0dad8ff89bfd84be135f25d2ae7cb8adad926703cc842bc",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 75",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "9                               12080911003             750           750         950           750           750        950   950    950   950   1150",
+        "heatingCircuits": 9
+      },
+      {
+        "documentId": "10237500",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237500",
+        "localPdf": "assets/products/rehau/documents/10237500.pdf",
+        "sha256": "c2ad3bd996b867f69a7eb05d44dbaf03090600c63b105792b423958a535a0237",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 110",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "9                               12080911003           750 750 950 750 750 950 950 950 950 950 1150 1300 950 950 950",
+        "heatingCircuits": 9
+      },
+      {
+        "documentId": "10237501",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237501",
+        "localPdf": "assets/products/rehau/documents/10237501.pdf",
+        "sha256": "4e0b00996d3aa2807bfae55db66bfbab71a2942c35f76eace4938997532a3f43",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank AP 130",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "9                               12080911003           805 805 805 805 805 805 1005 1005 805 805 1205 1205 1005 1005 1005",
+        "heatingCircuits": 9
+      }
+    ],
+    "scopeNote": "Bare HKV-D collector only. Cabinet types UP 75, UP 110, AP 130 are matrix compatibility columns, not included with this SKU.",
+    "remainingMediaGap": "The exact product API preview is a generic item_thumbnail_large.jpg placeholder. The PDF illustration is a family illustration, not a verified photo for every circuit count."
+  },
+  "12081011003": {
+    "title": "Колектор опалювальних контурів REHAU HKV-D із нержавіючої сталі, 10 контурів",
+    "model": "HKV-D",
+    "sourceTitle": "Heizkreisverteiler HKV-D Edelstahl",
+    "heatingCircuits": 10,
+    "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+    "documentId": "10237499",
+    "localPdf": "assets/products/rehau/documents/10237499.pdf",
+    "page": 1,
+    "proof": "10                              12081011003             750           750         950          950            950        950   1150   950   950   1150",
+    "evidence": [
+      {
+        "documentId": "10237499",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+        "localPdf": "assets/products/rehau/documents/10237499.pdf",
+        "sha256": "cd8c49b5723a2dbfe0dad8ff89bfd84be135f25d2ae7cb8adad926703cc842bc",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 75",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "10                              12081011003             750           750         950          950            950        950   1150   950   950   1150",
+        "heatingCircuits": 10
+      },
+      {
+        "documentId": "10237500",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237500",
+        "localPdf": "assets/products/rehau/documents/10237500.pdf",
+        "sha256": "c2ad3bd996b867f69a7eb05d44dbaf03090600c63b105792b423958a535a0237",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 110",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "10                              12081011003           750 750 950 950 950 950 1150 950 950 950 1150 1300 950 950 950",
+        "heatingCircuits": 10
+      },
+      {
+        "documentId": "10237501",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237501",
+        "localPdf": "assets/products/rehau/documents/10237501.pdf",
+        "sha256": "4e0b00996d3aa2807bfae55db66bfbab71a2942c35f76eace4938997532a3f43",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank AP 130",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "10                              12081011003           805 805 1005 805 805 1005 1005 1005 1005 1005 1205 1205 1005 1005 1005",
+        "heatingCircuits": 10
+      }
+    ],
+    "scopeNote": "Bare HKV-D collector only. Cabinet types UP 75, UP 110, AP 130 are matrix compatibility columns, not included with this SKU.",
+    "remainingMediaGap": "The exact product API preview is a generic item_thumbnail_large.jpg placeholder. The PDF illustration is a family illustration, not a verified photo for every circuit count."
+  },
+  "12081111003": {
+    "title": "Колектор опалювальних контурів REHAU HKV-D із нержавіючої сталі, 11 контурів",
+    "model": "HKV-D",
+    "sourceTitle": "Heizkreisverteiler HKV-D Edelstahl",
+    "heatingCircuits": 11,
+    "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+    "documentId": "10237499",
+    "localPdf": "assets/products/rehau/documents/10237499.pdf",
+    "page": 1,
+    "proof": "11                              12081111003             750          950          950          950            950        950   1150   950   950   1150",
+    "evidence": [
+      {
+        "documentId": "10237499",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+        "localPdf": "assets/products/rehau/documents/10237499.pdf",
+        "sha256": "cd8c49b5723a2dbfe0dad8ff89bfd84be135f25d2ae7cb8adad926703cc842bc",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 75",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "11                              12081111003             750          950          950          950            950        950   1150   950   950   1150",
+        "heatingCircuits": 11
+      },
+      {
+        "documentId": "10237500",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237500",
+        "localPdf": "assets/products/rehau/documents/10237500.pdf",
+        "sha256": "c2ad3bd996b867f69a7eb05d44dbaf03090600c63b105792b423958a535a0237",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 110",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "11                              12081111003           750 950 950 950 950 950 1150 1150 950 950 1150 1300 1150 1150 1150",
+        "heatingCircuits": 11
+      },
+      {
+        "documentId": "10237501",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237501",
+        "localPdf": "assets/products/rehau/documents/10237501.pdf",
+        "sha256": "4e0b00996d3aa2807bfae55db66bfbab71a2942c35f76eace4938997532a3f43",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank AP 130",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "11                              12081111003           805 805 1005 1005 1005 1005 1205 1005 1005 1005 1205 1353 1005 1005 1005",
+        "heatingCircuits": 11
+      }
+    ],
+    "scopeNote": "Bare HKV-D collector only. Cabinet types UP 75, UP 110, AP 130 are matrix compatibility columns, not included with this SKU.",
+    "remainingMediaGap": "The exact product API preview is a generic item_thumbnail_large.jpg placeholder. The PDF illustration is a family illustration, not a verified photo for every circuit count."
+  },
+  "12081211003": {
+    "title": "Колектор опалювальних контурів REHAU HKV-D із нержавіючої сталі, 12 контурів",
+    "model": "HKV-D",
+    "sourceTitle": "Heizkreisverteiler HKV-D Edelstahl",
+    "heatingCircuits": 12,
+    "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+    "documentId": "10237499",
+    "localPdf": "assets/products/rehau/documents/10237499.pdf",
+    "page": 1,
+    "proof": "12                              12081211003             950          950          950          950            950        950   1150   950   950    -",
+    "evidence": [
+      {
+        "documentId": "10237499",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+        "localPdf": "assets/products/rehau/documents/10237499.pdf",
+        "sha256": "cd8c49b5723a2dbfe0dad8ff89bfd84be135f25d2ae7cb8adad926703cc842bc",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 75",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "12                              12081211003             950          950          950          950            950        950   1150   950   950    -",
+        "heatingCircuits": 12
+      },
+      {
+        "documentId": "10237500",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237500",
+        "localPdf": "assets/products/rehau/documents/10237500.pdf",
+        "sha256": "c2ad3bd996b867f69a7eb05d44dbaf03090600c63b105792b423958a535a0237",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 110",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "12                              12081211003           950 950 950 950 950 950 1150 1150 950 950 1300                           -   1150 1150 1150",
+        "heatingCircuits": 12
+      },
+      {
+        "documentId": "10237501",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237501",
+        "localPdf": "assets/products/rehau/documents/10237501.pdf",
+        "sha256": "4e0b00996d3aa2807bfae55db66bfbab71a2942c35f76eace4938997532a3f43",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank AP 130",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "12                              12081211003           805 805 1005 1005 1005 1005 1205 1005 1005 1005 1205 1353 1005 1005 1005",
+        "heatingCircuits": 12
+      }
+    ],
+    "scopeNote": "Bare HKV-D collector only. Cabinet types UP 75, UP 110, AP 130 are matrix compatibility columns, not included with this SKU.",
+    "remainingMediaGap": "The exact product API preview is a generic item_thumbnail_large.jpg placeholder. The PDF illustration is a family illustration, not a verified photo for every circuit count."
+  },
+  "12080311003": {
+    "title": "Колектор опалювальних контурів REHAU HKV-D із нержавіючої сталі, 3 контури",
+    "model": "HKV-D",
+    "sourceTitle": "Heizkreisverteiler HKV-D Edelstahl",
+    "heatingCircuits": 3,
+    "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+    "documentId": "10237499",
+    "localPdf": "assets/products/rehau/documents/10237499.pdf",
+    "page": 1,
+    "proof": "3                               12080311003             550          550          550           550           550        550   750    550   550   750",
+    "evidence": [
+      {
+        "documentId": "10237499",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+        "localPdf": "assets/products/rehau/documents/10237499.pdf",
+        "sha256": "cd8c49b5723a2dbfe0dad8ff89bfd84be135f25d2ae7cb8adad926703cc842bc",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 75",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "3                               12080311003             550          550          550           550           550        550   750    550   550   750",
+        "heatingCircuits": 3
+      },
+      {
+        "documentId": "10237500",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237500",
+        "localPdf": "assets/products/rehau/documents/10237500.pdf",
+        "sha256": "c2ad3bd996b867f69a7eb05d44dbaf03090600c63b105792b423958a535a0237",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 110",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "3                               12080311003           550 550 550 550 550 550 750 750 550 550 750 950 750 750 750",
+        "heatingCircuits": 3
+      },
+      {
+        "documentId": "10237501",
+        "sourceUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237501",
+        "localPdf": "assets/products/rehau/documents/10237501.pdf",
+        "sha256": "4e0b00996d3aa2807bfae55db66bfbab71a2942c35f76eace4938997532a3f43",
+        "page": 1,
+        "sourceHeading": "Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank AP 130",
+        "sectionHeading": "Anzahl Heizkreise",
+        "columnHeading": "Material-Nr.",
+        "exactRow": "3                               12080311003           605 605 605 605 605 605 805 605 605 605 805 1005 605 605 605",
+        "heatingCircuits": 3
+      }
+    ],
+    "scopeNote": "Bare HKV-D collector only. Cabinet types UP 75, UP 110, AP 130 are matrix compatibility columns, not included with this SKU.",
+    "remainingMediaGap": "The exact product API preview is a generic item_thumbnail_large.jpg placeholder. The PDF illustration is a family illustration, not a verified photo for every circuit count."
+  }
+}

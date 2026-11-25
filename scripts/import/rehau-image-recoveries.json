@@ -1,0 +1,2542 @@
+[
+  {
+    "sku": "11105661001",
+    "sourceTitle": "REHAU Sanitärbox für Waschtisch Anschluss unten, RAUTITAN stabil 16",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11105661001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/KPf5j-UTr8U9N1CvHd_SDvuRUd4v1AWDJ7QsggTCThE/4BIJTI4IVPG19EBDAUF1DLH2I4/DDK5H7B4JPSMNSSDKBT7NET7T0/m-100095872.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/KPf5j-UTr8U9N1CvHd_SDvuRUd4v1AWDJ7QsggTCThE/4BIJTI4IVPG19EBDAUF1DLH2I4/DDK5H7B4JPSMNSSDKBT7NET7T0/m-100095872.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-100095872.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-100095872.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 11105661001 returns this exact m-100095872.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-ddk5h7b4jpsmnssdkbt7net7t0.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "40b021218ad6dbbf2301a1e1f7881a2e1f6876083f6f53ed4435526d2ce055bd"
+  },
+  {
+    "sku": "11105671001",
+    "sourceTitle": "REHAU Sanitärbox für Waschtisch Anschluss oben, RAUTITAN stabil 16",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11105671001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/PiokBGbziIWf7RsBeHUkUkVohDkA6-NnyNTido2OLoY/773LJ89ABDB56UI8FIQBSB9NDG/P34F6KMU7LJLMIPHR4TCFJU6HG/m-100095871.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/PiokBGbziIWf7RsBeHUkUkVohDkA6-NnyNTido2OLoY/773LJ89ABDB56UI8FIQBSB9NDG/P34F6KMU7LJLMIPHR4TCFJU6HG/m-100095871.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-100095871.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-100095871.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 11105671001 returns this exact m-100095871.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-p34f6kmu7ljlmiphr4tcfju6hg.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "5e90e4e17dae98862673aed1255a6c2a9ba13d54e71b0b27003ea5b06b608643"
+  },
+  {
+    "sku": "11680011001",
+    "sourceTitle": "REHAU Заглушка RAUTITAN LX 16",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11680011001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/4RprTevZprwljZECaHAIPhIJ2l8F_Z56XvIzcPFkj-0/4EQ3AKHLPRLEVJCSP4HNVAD2NG/4S10VKNV6JUQ1B01J1O7TI0P1S/m-35089.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/4RprTevZprwljZECaHAIPhIJ2l8F_Z56XvIzcPFkj-0/4EQ3AKHLPRLEVJCSP4HNVAD2NG/4S10VKNV6JUQ1B01J1O7TI0P1S/m-35089.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-35089.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-35089.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 11680011001 returns this exact m-35089.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-4s10vknv6juq1b01j1o7ti0p1s.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "1fda486ad6e970ec0b79b3f89d6e4247987c43131bb47fdbf357e9a465a79bd5"
+  },
+  {
+    "sku": "11680021001",
+    "sourceTitle": "REHAU Заглушка RAUTITAN LX 20",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11680021001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/4RprTevZprwljZECaHAIPhIJ2l8F_Z56XvIzcPFkj-0/4EQ3AKHLPRLEVJCSP4HNVAD2NG/4S10VKNV6JUQ1B01J1O7TI0P1S/m-35089.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/4RprTevZprwljZECaHAIPhIJ2l8F_Z56XvIzcPFkj-0/4EQ3AKHLPRLEVJCSP4HNVAD2NG/4S10VKNV6JUQ1B01J1O7TI0P1S/m-35089.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-35089.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-35089.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 11680021001 returns this exact m-35089.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-4s10vknv6juq1b01j1o7ti0p1s.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "1fda486ad6e970ec0b79b3f89d6e4247987c43131bb47fdbf357e9a465a79bd5"
+  },
+  {
+    "sku": "11680831001",
+    "sourceTitle": "REHAU Перехідник RAUTITAN LX 16 - G 1/2 з накидною гайкою",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11680831001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/_I0Jg-y9zjzulz2FGEGxBm9ZBNkvmZ1lMGTVBRyIMeg/788EBK5STQGMJC7CFOTLAHU0LO/KMJQKO6NA2BPDTLPNJHEC49CSO/m-35154.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/_I0Jg-y9zjzulz2FGEGxBm9ZBNkvmZ1lMGTVBRyIMeg/788EBK5STQGMJC7CFOTLAHU0LO/KMJQKO6NA2BPDTLPNJHEC49CSO/m-35154.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-35154.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-35154.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 11680831001 returns this exact m-35154.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-kmjqko6na2bpdtlpnjhec49cso.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "0597d32e87e856d9a85a921f990a3fc8954ddb5a2b55495065e835b96a676e81"
+  },
+  {
+    "sku": "11681361001",
+    "sourceTitle": "REHAU Кутник настінний RAUTITAN LX 16 - Rp 1/2 для гіпсокартонних плит",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11681361001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/psqDSLmld5zZxslvl8Me-im3TxQXVofsq0CDLka9Zu0/7UBJ4FGKJAO93LH5LQ4N0OU1V0/BS6UBDNCOPHBV6PAEN8FCPB65S/m-33466.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/psqDSLmld5zZxslvl8Me-im3TxQXVofsq0CDLka9Zu0/7UBJ4FGKJAO93LH5LQ4N0OU1V0/BS6UBDNCOPHBV6PAEN8FCPB65S/m-33466.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-33466.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-33466.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 11681361001 returns this exact m-33466.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-bs6ubdncophbv6paen8fcpb65s.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "d3e1ab80450f5528ab85a0836c69221295506bdecec535063b9858e9ccaf2bcc"
+  },
+  {
+    "sku": "11681561001",
+    "sourceTitle": "REHAU Кутник-перехідник RAUTITAN LX 16 - Rp 1/2 з внутрішньою різьбою",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11681561001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/PHrQ_XH1_laWwheZdPZK9U7dYXTBdDq4FOugjC_g818/LTAAQ2TQMJPT3USC6E1T89OIFS/O1T3ECG30ERSQGNI20G5DE884S/m-35145.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/PHrQ_XH1_laWwheZdPZK9U7dYXTBdDq4FOugjC_g818/LTAAQ2TQMJPT3USC6E1T89OIFS/O1T3ECG30ERSQGNI20G5DE884S/m-35145.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-35145.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-35145.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 11681561001 returns this exact m-35145.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-o1t3ecg30ersqgni20g5de884s.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "af484f928aeca60e174a675d57fa83b379ab34c6b47fe689079ee0504d24f295"
+  },
+  {
+    "sku": "11681571001",
+    "sourceTitle": "REHAU Кутник-перехідник RAUTITAN LX 16 - Rp 3/4 з внутрішньою різьбою",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11681571001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/PHrQ_XH1_laWwheZdPZK9U7dYXTBdDq4FOugjC_g818/LTAAQ2TQMJPT3USC6E1T89OIFS/O1T3ECG30ERSQGNI20G5DE884S/m-35145.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/PHrQ_XH1_laWwheZdPZK9U7dYXTBdDq4FOugjC_g818/LTAAQ2TQMJPT3USC6E1T89OIFS/O1T3ECG30ERSQGNI20G5DE884S/m-35145.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-35145.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-35145.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 11681571001 returns this exact m-35145.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-o1t3ecg30ersqgni20g5de884s.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "af484f928aeca60e174a675d57fa83b379ab34c6b47fe689079ee0504d24f295"
+  },
+  {
+    "sku": "12014111001",
+    "sourceTitle": "REHAU T-Stück, SDR 11 Stahl 125 - 125 - 125, vorisoliert",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12014111001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/V58dedeotcXMf_Tcqy7ywhw5HfDnBJ2A99mUC713Zwc/L4AA25RM5IVFNPRDKATDU8M3I8/2H1708AVOA6CESMDF5V3GA3B3K/m-523033.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/V58dedeotcXMf_Tcqy7ywhw5HfDnBJ2A99mUC713Zwc/L4AA25RM5IVFNPRDKATDU8M3I8/2H1708AVOA6CESMDF5V3GA3B3K/m-523033.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-523033.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-523033.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12014111001 returns this exact m-523033.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-2h1708avoa6cesmdf5v3ga3b3k.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "a7608cec7353a2b9015d30b1461a674d65f5ec6f48e86613a2f34fa09b98d714"
+  },
+  {
+    "sku": "12014131001",
+    "sourceTitle": "REHAU T-Stück, SDR 11 Stahl 160 - 160 - 160, vorisoliert",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12014131001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/V58dedeotcXMf_Tcqy7ywhw5HfDnBJ2A99mUC713Zwc/L4AA25RM5IVFNPRDKATDU8M3I8/2H1708AVOA6CESMDF5V3GA3B3K/m-523033.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/V58dedeotcXMf_Tcqy7ywhw5HfDnBJ2A99mUC713Zwc/L4AA25RM5IVFNPRDKATDU8M3I8/2H1708AVOA6CESMDF5V3GA3B3K/m-523033.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-523033.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-523033.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12014131001 returns this exact m-523033.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-2h1708avoa6cesmdf5v3ga3b3k.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "a7608cec7353a2b9015d30b1461a674d65f5ec6f48e86613a2f34fa09b98d714"
+  },
+  {
+    "sku": "12085341001",
+    "sourceTitle": "REHAU Anlegetemperaturfühler VL/RL FRTC-HC",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12085341001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/lK32XY3L2F_QRiOT8wErwZtCkNQFACNYk4hf_3YM-08/ROIJEF9V2P84C29MPHODL91MD8/8477O9D21LNI8HOMVO7IGAPJBS/m-284442.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/lK32XY3L2F_QRiOT8wErwZtCkNQFACNYk4hf_3YM-08/ROIJEF9V2P84C29MPHODL91MD8/8477O9D21LNI8HOMVO7IGAPJBS/m-284442.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-284442.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-284442.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12085341001 returns this exact m-284442.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-8477o9d21lni8homvo7igapjbs.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "adfe1433ca14cd4e158d4c5800d97b229bfd022ff276112c43ad604049d56a67"
+  },
+  {
+    "sku": "12176181001",
+    "sourceTitle": "REHAU Tür für VS AP 130/500",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176181001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/RBIhxtnYu09Y-gnjxI8Jr5XR5qYGk3gAu0GppPr7x0I/TP247GV2C85UOLHI74B3O1FR78/PLUH4FFBIUCLK6M45Q5F8IT23G/m-1072903.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/RBIhxtnYu09Y-gnjxI8Jr5XR5qYGk3gAu0GppPr7x0I/TP247GV2C85UOLHI74B3O1FR78/PLUH4FFBIUCLK6M45Q5F8IT23G/m-1072903.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072903.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072903.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176181001 returns this exact m-1072903.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-pluh4ffbiuclk6m45q5f8it23g.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "806ddd28d484af3e5cc4a995a1bce9c36f486720f2f301c53dc3214e314ae152"
+  },
+  {
+    "sku": "12176211001",
+    "sourceTitle": "REHAU Tür für VS AP 130/605",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176211001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/RBIhxtnYu09Y-gnjxI8Jr5XR5qYGk3gAu0GppPr7x0I/TP247GV2C85UOLHI74B3O1FR78/PLUH4FFBIUCLK6M45Q5F8IT23G/m-1072903.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/RBIhxtnYu09Y-gnjxI8Jr5XR5qYGk3gAu0GppPr7x0I/TP247GV2C85UOLHI74B3O1FR78/PLUH4FFBIUCLK6M45Q5F8IT23G/m-1072903.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072903.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072903.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176211001 returns this exact m-1072903.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-pluh4ffbiuclk6m45q5f8it23g.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "806ddd28d484af3e5cc4a995a1bce9c36f486720f2f301c53dc3214e314ae152"
+  },
+  {
+    "sku": "12176241001",
+    "sourceTitle": "REHAU Tür für VS AP 130/805",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176241001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/RBIhxtnYu09Y-gnjxI8Jr5XR5qYGk3gAu0GppPr7x0I/TP247GV2C85UOLHI74B3O1FR78/PLUH4FFBIUCLK6M45Q5F8IT23G/m-1072903.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/RBIhxtnYu09Y-gnjxI8Jr5XR5qYGk3gAu0GppPr7x0I/TP247GV2C85UOLHI74B3O1FR78/PLUH4FFBIUCLK6M45Q5F8IT23G/m-1072903.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072903.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072903.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176241001 returns this exact m-1072903.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-pluh4ffbiuclk6m45q5f8it23g.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "806ddd28d484af3e5cc4a995a1bce9c36f486720f2f301c53dc3214e314ae152"
+  },
+  {
+    "sku": "12176271001",
+    "sourceTitle": "REHAU Tür für VS AP 130/1005",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176271001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/RBIhxtnYu09Y-gnjxI8Jr5XR5qYGk3gAu0GppPr7x0I/TP247GV2C85UOLHI74B3O1FR78/PLUH4FFBIUCLK6M45Q5F8IT23G/m-1072903.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/RBIhxtnYu09Y-gnjxI8Jr5XR5qYGk3gAu0GppPr7x0I/TP247GV2C85UOLHI74B3O1FR78/PLUH4FFBIUCLK6M45Q5F8IT23G/m-1072903.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072903.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072903.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176271001 returns this exact m-1072903.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-pluh4ffbiuclk6m45q5f8it23g.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "806ddd28d484af3e5cc4a995a1bce9c36f486720f2f301c53dc3214e314ae152"
+  },
+  {
+    "sku": "12176301001",
+    "sourceTitle": "REHAU Tür für VS AP 130/1205",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176301001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/RBIhxtnYu09Y-gnjxI8Jr5XR5qYGk3gAu0GppPr7x0I/TP247GV2C85UOLHI74B3O1FR78/PLUH4FFBIUCLK6M45Q5F8IT23G/m-1072903.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/RBIhxtnYu09Y-gnjxI8Jr5XR5qYGk3gAu0GppPr7x0I/TP247GV2C85UOLHI74B3O1FR78/PLUH4FFBIUCLK6M45Q5F8IT23G/m-1072903.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072903.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072903.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176301001 returns this exact m-1072903.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-pluh4ffbiuclk6m45q5f8it23g.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "806ddd28d484af3e5cc4a995a1bce9c36f486720f2f301c53dc3214e314ae152"
+  },
+  {
+    "sku": "12176331001",
+    "sourceTitle": "REHAU Tür für VS AP 130/1353",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176331001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/RBIhxtnYu09Y-gnjxI8Jr5XR5qYGk3gAu0GppPr7x0I/TP247GV2C85UOLHI74B3O1FR78/PLUH4FFBIUCLK6M45Q5F8IT23G/m-1072903.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/RBIhxtnYu09Y-gnjxI8Jr5XR5qYGk3gAu0GppPr7x0I/TP247GV2C85UOLHI74B3O1FR78/PLUH4FFBIUCLK6M45Q5F8IT23G/m-1072903.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072903.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072903.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176331001 returns this exact m-1072903.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-pluh4ffbiuclk6m45q5f8it23g.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "806ddd28d484af3e5cc4a995a1bce9c36f486720f2f301c53dc3214e314ae152"
+  },
+  {
+    "sku": "12176391001",
+    "sourceTitle": "REHAU Rahmen mit Tür für VS UP 450",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176391001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072904.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072904.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176391001 returns this exact m-1072904.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-rfku99u3mgq31tlsfnek4gm4go.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "f0178d1bd5a0df7dcf0495af28ca24ab0750f122a197a486f27594dcb5dc6601"
+  },
+  {
+    "sku": "12176441001",
+    "sourceTitle": "REHAU Rahmen mit Tür für VS UP 550",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176441001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072904.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072904.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176441001 returns this exact m-1072904.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-rfku99u3mgq31tlsfnek4gm4go.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "f0178d1bd5a0df7dcf0495af28ca24ab0750f122a197a486f27594dcb5dc6601"
+  },
+  {
+    "sku": "12176491001",
+    "sourceTitle": "REHAU Rahmen mit Tür für VS UP 750",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176491001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072904.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072904.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176491001 returns this exact m-1072904.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-rfku99u3mgq31tlsfnek4gm4go.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "f0178d1bd5a0df7dcf0495af28ca24ab0750f122a197a486f27594dcb5dc6601"
+  },
+  {
+    "sku": "12176541001",
+    "sourceTitle": "REHAU Rahmen mit Tür für VS UP 950",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176541001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072904.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072904.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176541001 returns this exact m-1072904.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-rfku99u3mgq31tlsfnek4gm4go.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "f0178d1bd5a0df7dcf0495af28ca24ab0750f122a197a486f27594dcb5dc6601"
+  },
+  {
+    "sku": "12176591001",
+    "sourceTitle": "REHAU Rahmen mit Tür für VS UP 1150",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176591001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072904.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072904.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176591001 returns this exact m-1072904.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-rfku99u3mgq31tlsfnek4gm4go.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "f0178d1bd5a0df7dcf0495af28ca24ab0750f122a197a486f27594dcb5dc6601"
+  },
+  {
+    "sku": "12176641001",
+    "sourceTitle": "REHAU Rahmen mit Tür für VS UP 1300",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176641001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072904.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072904.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176641001 returns this exact m-1072904.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-rfku99u3mgq31tlsfnek4gm4go.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "f0178d1bd5a0df7dcf0495af28ca24ab0750f122a197a486f27594dcb5dc6601"
+  },
+  {
+    "sku": "12176871001",
+    "sourceTitle": "REHAU Kunststoff-Drehriegelverschluss",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176871001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/e_bF9ZoiYQyt4KmgH7QARl7QxmYOfnPbdwUqvepA3NA/8O2L9JDV92FJKFO9LUU2TJCBN8/LMCU0U4GSH4D1DRTF3BDAHO8BG/m-1072906.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/e_bF9ZoiYQyt4KmgH7QARl7QxmYOfnPbdwUqvepA3NA/8O2L9JDV92FJKFO9LUU2TJCBN8/LMCU0U4GSH4D1DRTF3BDAHO8BG/m-1072906.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072906.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072906.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176871001 returns this exact m-1072906.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-lmcu0u4gsh4d1drtf3bdaho8bg.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "1cd76149d23f54fd17ccd8e62edd1d998b391fa3901ad8f17a1e4ea809f32597"
+  },
+  {
+    "sku": "12176901001",
+    "sourceTitle": "REHAU C-Profilschiene für VS UP 75 / 110 und AP 130",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176901001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/9oiVG5V99Rgl9TCVqgx1wFtlB5zgDUwDFYLTpz2p0uY/T09RBM6MR6H03SHUPCC2BPPPOO/9P3G4COSPUFAEFSSVT1KAAMOO8/m-1072909.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/9oiVG5V99Rgl9TCVqgx1wFtlB5zgDUwDFYLTpz2p0uY/T09RBM6MR6H03SHUPCC2BPPPOO/9P3G4COSPUFAEFSSVT1KAAMOO8/m-1072909.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072909.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072909.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176901001 returns this exact m-1072909.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-9p3g4cospufaefssvt1kaamoo8.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "b43146fda563dd7e62cc19eb48de10a17462a2e946cf62cc10c9530aa66c5fe1"
+  },
+  {
+    "sku": "12176921001",
+    "sourceTitle": "REHAU Z-Satz für VS UP 75",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176921001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/ZJdcibggyZkBHTGqPVqH7tbozY-msmW8b0sYwXzEkH0/SM2KBALK55OB34GSL302VM4NK8/NB5HPR4IGTG89LK6SBBLRUTLJ8/m-1072901.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/ZJdcibggyZkBHTGqPVqH7tbozY-msmW8b0sYwXzEkH0/SM2KBALK55OB34GSL302VM4NK8/NB5HPR4IGTG89LK6SBBLRUTLJ8/m-1072901.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072901.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072901.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176921001 returns this exact m-1072901.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-nb5hpr4igtg89lk6sbblrutlj8.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "b13b3a9e6e6eefd7e911e881f13d4e0446bc99fbcbb184cad2d59c09ebc5f146"
+  },
+  {
+    "sku": "12176941001",
+    "sourceTitle": "REHAU Schrauben M8 für Montage HKV (4 St.)",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176941001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/RHHtkUImMCkDSsyw-t3aXU8xqlpuD59ZvBLJ3EAICXA/RGPSB42N4C10L1676NS1REJ904/OK5R6STNVTNMP2C18DM0ER7P08/m-1072905.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/RHHtkUImMCkDSsyw-t3aXU8xqlpuD59ZvBLJ3EAICXA/RGPSB42N4C10L1676NS1REJ904/OK5R6STNVTNMP2C18DM0ER7P08/m-1072905.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072905.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072905.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176941001 returns this exact m-1072905.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-ok5r6stnvtnmp2c18dm0er7p08.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "ebbc10439677c23bb718914d0491dac36b469e1fd51d92f16f4f2a06d8437744"
+  },
+  {
+    "sku": "12176961001",
+    "sourceTitle": "REHAU Flügelmuttern für C-Profilschiene (4 St.)",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12176961001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/uOY0RVAA4BDhrYpoT7G5OqbNCMNUQuO-iM81nxwyOiE/97VU2UIM0OG83TL9E5G3MR80KG/098J1O478KRDMBHA96QK8KNNN8/m-1072907.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/uOY0RVAA4BDhrYpoT7G5OqbNCMNUQuO-iM81nxwyOiE/97VU2UIM0OG83TL9E5G3MR80KG/098J1O478KRDMBHA96QK8KNNN8/m-1072907.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072907.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072907.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12176961001 returns this exact m-1072907.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-098j1o478krdmbha96qk8knnn8.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "7e306847d8b3f58774c23c4a4f6105e64ddab6f23a97b00cb52efd89d79f322a"
+  },
+  {
+    "sku": "12288901001",
+    "sourceTitle": "Подвійний тримач для труби RAUTHERM S 10,1 x 1,1 мм, поліамід",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12288901001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/rgAxx8RW8wI7pe1peVs01EFAVBGOxcNa744enmiy75I/SV6L3DVS0N71291852BON9CNES/6IQ49038E6DSQVDI8OAADKCAFK/m-32937.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/rgAxx8RW8wI7pe1peVs01EFAVBGOxcNa744enmiy75I/SV6L3DVS0N71291852BON9CNES/6IQ49038E6DSQVDI8OAADKCAFK/m-32937.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-32937.jpg",
+    "sourceType": "PRODUCT_RENDER",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-32937.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044",
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12288901001 returns this exact m-32937.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Coloured three-dimensional illustration of the product itself; no generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-6iq49038e6dsqvdi8oaadkcafk.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "0496d2391b7152bb6abf28ec41cbaa75603ebaefabb7b9da68ccff0660cc6d79"
+  },
+  {
+    "sku": "12317911001",
+    "sourceTitle": "REHAU BKT-Steckdeckel für Anschlussdose Thermische Anschlussdose",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12317911001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/UawIJBoUwqZMjFvLS4BZkCEzkrpa5x1iLPrMD-jH8eE/93RO2ASPUDLU18DFSDMMJ9J7K0/I9Q9D7PJ8CAJNGEESQ49PUGJSS/m-91260.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/UawIJBoUwqZMjFvLS4BZkCEzkrpa5x1iLPrMD-jH8eE/93RO2ASPUDLU18DFSDMMJ9J7K0/I9Q9D7PJ8CAJNGEESQ49PUGJSS/m-91260.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-91260.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-91260.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12317911001 returns this exact m-91260.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-i9q9d7pj8cajngeesq49pugjss.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "3f2aaa469056d23cc0cfb9cf90264c7cdaf2fe7e09ac3368c6a8ce43d0ea7bf5"
+  },
+  {
+    "sku": "12446511001",
+    "sourceTitle": "Гвинти для RAUTOOL E2/A2/A-light/H1/H2",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12446511001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/X44o4fjnY_DF6o40uTGBtdsqhEcxykPq52KZ2QriZV0/EGITBGSCVQSH2P7HC6N9D77JH0/3883API531J2ETNBAIDOUIH6CG/m-250942.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/X44o4fjnY_DF6o40uTGBtdsqhEcxykPq52KZ2QriZV0/EGITBGSCVQSH2P7HC6N9D77JH0/3883API531J2ETNBAIDOUIH6CG/m-250942.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-250942.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-250942.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044",
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12446511001 returns this exact m-250942.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs.",
+      "editorialIssue": "Official UA title calls this screws; exact DE title is Satz Steckstifte and drawing shows retaining pins. Prefer Набір фіксувальних штифтів, not гвинти."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-3883api531j2etnbaidouih6cg.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "d8f01cb1ddfbb651c854045d6e655f42877855c69de6147d5b5668298be92326"
+  },
+  {
+    "sku": "12465291002",
+    "sourceTitle": "REHAU BKT-Modul EM 20/15",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12465291002",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/z1LRT_gaX6-9o8hTOSk0xQj0kDIwZBFJ_lyp-xAKlEk/BBKTA91IG3I887FDRSI9KKLJ8G/NU2AK6VDD0K5OJLJFHDFD84S9S/m-36657.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/z1LRT_gaX6-9o8hTOSk0xQj0kDIwZBFJ_lyp-xAKlEk/BBKTA91IG3I887FDRSI9KKLJ8G/NU2AK6VDD0K5OJLJFHDFD84S9S/m-36657.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-36657.jpg",
+    "sourceType": "PRODUCT_RENDER",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-36657.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12465291002 returns this exact m-36657.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Coloured three-dimensional illustration of the product itself; no generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-nu2ak6vdd0k5ojljfhdfd84s9s.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "626595cafc1e21226398aed59291280e7bb052dd8ca780021b8f63055cb9adbc"
+  },
+  {
+    "sku": "12489901002",
+    "sourceTitle": "REHAU BKT-Modul EM 20/15 ohne Schnellkuppl./Blindstopfen",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12489901002",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/z1LRT_gaX6-9o8hTOSk0xQj0kDIwZBFJ_lyp-xAKlEk/BBKTA91IG3I887FDRSI9KKLJ8G/NU2AK6VDD0K5OJLJFHDFD84S9S/m-36657.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/z1LRT_gaX6-9o8hTOSk0xQj0kDIwZBFJ_lyp-xAKlEk/BBKTA91IG3I887FDRSI9KKLJ8G/NU2AK6VDD0K5OJLJFHDFD84S9S/m-36657.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-36657.jpg",
+    "sourceType": "PRODUCT_RENDER",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-36657.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 12489901002 returns this exact m-36657.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Coloured three-dimensional illustration of the product itself; no generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-nu2ak6vdd0k5ojljfhdfd84s9s.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "626595cafc1e21226398aed59291280e7bb052dd8ca780021b8f63055cb9adbc"
+  },
+  {
+    "sku": "13045291001",
+    "sourceTitle": "REHAU Verlegewerkzeug Abwickelvorrichtung, klein, 4-armig",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13045291001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/Ou5fHP_2_R_NlVDNa6LJ41PZ7eqSSzFv9iUEE0s0yTU/5H343N5CGDM3K5TSNTE9KSVOJ8/K647AK674ON3L9R8KHGD2RLNAO/m-16100790.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/Ou5fHP_2_R_NlVDNa6LJ41PZ7eqSSzFv9iUEE0s0yTU/5H343N5CGDM3K5TSNTE9KSVOJ8/K647AK674ON3L9R8KHGD2RLNAO/m-16100790.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-16100790.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-16100790.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13045291001 returns this exact m-16100790.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-k647ak674on3l9r8khgd2rlnao.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "2e79099299c114ac8ba1fb40c0ffd9b8323d080e0b59676f6a8117009bd1c332"
+  },
+  {
+    "sku": "13140831001",
+    "sourceTitle": "Інструмент REHAU STRATIA для вирівнювання труби",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13140831001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/3dGy83IDsBoixAvJAnopOo7RHbiyj9ss33Ev5GBqBhE/G80TTR3Q83024LG28FGIU4UKIO/LKN8US8E8DTGMUA2A1E7VPJ9A8/m-16099955.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/3dGy83IDsBoixAvJAnopOo7RHbiyj9ss33Ev5GBqBhE/G80TTR3Q83024LG28FGIU4UKIO/LKN8US8E8DTGMUA2A1E7VPJ9A8/m-16099955.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-16099955.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-16099955.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044",
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13140831001 returns this exact m-16099955.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-lkn8us8e8dtgmua2a1e7vpj9a8.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "d0f2ee38b961075163bf8937c9fc908aeec54f9de4d6e53c052a570238a426dd"
+  },
+  {
+    "sku": "13161291001",
+    "sourceTitle": "REHAU Drehriegelverschluss mit Griff",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13161291001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/0-slXiVnT7YdHXdg5M60R9cEYdSCnEtzrvOue6gOGtM/EMT2MHIE5AJGJVRB1PFATSIA4K/MTLEIG73HVGSPVQTAE4QSINA1O/m-1072908.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/0-slXiVnT7YdHXdg5M60R9cEYdSCnEtzrvOue6gOGtM/EMT2MHIE5AJGJVRB1PFATSIA4K/MTLEIG73HVGSPVQTAE4QSINA1O/m-1072908.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072908.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072908.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13161291001 returns this exact m-1072908.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-mtleig73hvgspvqtae4qsina1o.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "95570e42c3eb6ccaa257326c086e1b8eadd38010436eff7f96d901bb23789c4c"
+  },
+  {
+    "sku": "13434221001",
+    "sourceTitle": "REHAU Індикатор потоку DFI on/off для розп. колектора Easyflow DFI",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13434221001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/OHW5xsFyQMsbgXQH5tWZBMi2SoOBe1c-M8J1AXUPbSM/I3VCI98EMJFH14B4HISH6LAA9G/DFJU0U8SBO9OELBP1CV6OBF0E8/m-1103351.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/OHW5xsFyQMsbgXQH5tWZBMi2SoOBe1c-M8J1AXUPbSM/I3VCI98EMJFH14B4HISH6LAA9G/DFJU0U8SBO9OELBP1CV6OBF0E8/m-1103351.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1103351.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1103351.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044",
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13434221001 returns this exact m-1103351.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-dfju0u8sbo9oelbp1cv6obf0e8.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "e88d94a3c7ee997a137d8cf45d35ee7db0093405213454b6fa2834ee76597610"
+  },
+  {
+    "sku": "13437011001",
+    "sourceTitle": "REHAU Thermostatkopf mit Tauchfühler + Splint",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13437011001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/nF80rRwRdK2BXj9Z1fpFg2h_Ic3V8hQzSWCRiGrEBW0/LEFMA037VI4H61O3O4CGHILGAG/4USABSJ6AJ0NULH4SE65MHQ6HK/m-1087843.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/nF80rRwRdK2BXj9Z1fpFg2h_Ic3V8hQzSWCRiGrEBW0/LEFMA037VI4H61O3O4CGHILGAG/4USABSJ6AJ0NULH4SE65MHQ6HK/m-1087843.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1087843.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1087843.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13437011001 returns this exact m-1087843.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-4usabsj6aj0nulh4se65mhq6hk.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "868ca06243a942c44e9778a5dc299865346c4bb19ec65003e60104d274bb75b4"
+  },
+  {
+    "sku": "13437021001",
+    "sourceTitle": "REHAU Stellantrieb 0-10 V für Regelset flex (P)",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13437021001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/TB1Yp69P6rRJU5CqgOcsqsmzywbEClOIaxrS3ljmBNw/ALUAGHR364157FOIFJOP2TKVAC/UTGCAMSCTDHM7S3BHR6J4ONEF0/m-1087837.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/TB1Yp69P6rRJU5CqgOcsqsmzywbEClOIaxrS3ljmBNw/ALUAGHR364157FOIFJOP2TKVAC/UTGCAMSCTDHM7S3BHR6J4ONEF0/m-1087837.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1087837.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1087837.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13437021001 returns this exact m-1087837.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-utgcamsctdhm7s3bhr6j4onef0.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "c058ecdaefd9e2de6eeae93421f1bc956547abf277063a863b8356c20d27186f"
+  },
+  {
+    "sku": "13437031001",
+    "sourceTitle": "REHAU Anschlussgruppe für Regelset flex P",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13437031001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/TmJ0tclLMoey00YTjp2bIjNd5vSq6q2u_bllNJo-gB8/JCU25MB1GS1LV08RKCA9K95B7G/D326IU646MDV7AHT04FI73N610/m-1087842.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/TmJ0tclLMoey00YTjp2bIjNd5vSq6q2u_bllNJo-gB8/JCU25MB1GS1LV08RKCA9K95B7G/D326IU646MDV7AHT04FI73N610/m-1087842.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1087842.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1087842.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13437031001 returns this exact m-1087842.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-d326iu646mdv7aht04fi73n610.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "e705a93f385d939c217a634ee50798fd615b43f70b78c090298edd8698a1f51d"
+  },
+  {
+    "sku": "13437041001",
+    "sourceTitle": "REHAU Pumpe + Sicherheitstemp.begrenzer für Regelset flex P",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13437041001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/k3GEVgKtAgLZ0bOf68bNCTjxPJ45MaYqs89YJ7-XrcA/R9L82T97VFLU756ME28BTRFL7S/69F130CV8C0CF62V4H9HG7U9MS/m-1087841.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/k3GEVgKtAgLZ0bOf68bNCTjxPJ45MaYqs89YJ7-XrcA/R9L82T97VFLU756ME28BTRFL7S/69F130CV8C0CF62V4H9HG7U9MS/m-1087841.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1087841.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1087841.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13437041001 returns this exact m-1087841.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-69f130cv8c0cf62v4h9hg7u9ms.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "3504def89ff5d17536e5a411ec4b5633c35dbe698407c464a24b4e52abe84def"
+  },
+  {
+    "sku": "13437051002",
+    "sourceTitle": "REHAU Adapter Temperaturfühler Regelset flex P",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13437051002",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/G5zatFdhwejt7_YvnKRC4GEN1cMuGwTGASw0GARFCys/3RRJGICOVLTE95F2C80CI6RRD4/7R2L02GJMJQ5KTQ3C938RTP1BK/m-1087840.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/G5zatFdhwejt7_YvnKRC4GEN1cMuGwTGASw0GARFCys/3RRJGICOVLTE95F2C80CI6RRD4/7R2L02GJMJQ5KTQ3C938RTP1BK/m-1087840.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1087840.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1087840.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13437051002 returns this exact m-1087840.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-7r2l02gjmjq5ktq3c938rtp1bk.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "73559fc1edf534af3aeaab401716c5dcdd9a729e2e39198c45da574496f6f24a"
+  },
+  {
+    "sku": "13437071001",
+    "sourceTitle": "REHAU Verbindungswinkel für Regelset flex P",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13437071001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/opdEq8Gsd0v9q5e_6pe5ukdeUDZj4ov25gUXGRPinlI/6TPBV4SLRF659C1S6RSIVBVMCG/8CN3QFTAUS4KGE79K9H95J2QAO/m-1087838.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/opdEq8Gsd0v9q5e_6pe5ukdeUDZj4ov25gUXGRPinlI/6TPBV4SLRF659C1S6RSIVBVMCG/8CN3QFTAUS4KGE79K9H95J2QAO/m-1087838.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1087838.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1087838.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13437071001 returns this exact m-1087838.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-8cn3qftaus4kge79k9h95j2qao.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "6e4067870f5a500f353d06661c8f7553d96dc14490999692688a1f9469daedd5"
+  },
+  {
+    "sku": "13437081001",
+    "sourceTitle": "REHAU Vorlaufhubventil für Regelset flex",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13437081001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/y3Ku45ALKqcjoCnu4Nk0iqq1qJ9iSCT1KrBeCoFGwNE/8KE3RGPV2J83FQBKIF7IERBQQG/MBS1N4MTS04DGQ71P427DP0S8C/m-1087835.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/y3Ku45ALKqcjoCnu4Nk0iqq1qJ9iSCT1KrBeCoFGwNE/8KE3RGPV2J83FQBKIF7IERBQQG/MBS1N4MTS04DGQ71P427DP0S8C/m-1087835.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1087835.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1087835.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13437081001 returns this exact m-1087835.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-mbs1n4mts04dgq71p427dp0s8c.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "98eb69af6696b1ddcd64222ec49c70f52eedde7d76404105390f8c5f0c1de776"
+  },
+  {
+    "sku": "13437091001",
+    "sourceTitle": "REHAU Anschlussgruppe für Regelset flex",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13437091001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/F3utj9uguvW09T-Wkj4zyFlsNo3WWe-nbYLEMAgWWTo/GNKGC5UK7HMR8TRR6BN0ESI3C4/SUA5NEHOLMPKH25LCCJLPDLJ50/m-1087834.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/F3utj9uguvW09T-Wkj4zyFlsNo3WWe-nbYLEMAgWWTo/GNKGC5UK7HMR8TRR6BN0ESI3C4/SUA5NEHOLMPKH25LCCJLPDLJ50/m-1087834.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1087834.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1087834.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13437091001 returns this exact m-1087834.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-sua5neholmpkh25lccjlpdlj50.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "a6e55c597a6ac12cb00d7e64035d88aaf4f3a44cfcb8122e0aa5feeea73da6c6"
+  },
+  {
+    "sku": "13437111001",
+    "sourceTitle": "Насос для комплекту темпер. регулювання flex",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13437111001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/FT2KILFqYH7ZMiUQVaWaGojDPqqWZ3R_lM-6BeS-bgs/C67CNMF4MPHNMBN2OOP7JUB3TC/DVJ3BQ703MKEM2OI2I9NUN43GC/m-1087833.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/FT2KILFqYH7ZMiUQVaWaGojDPqqWZ3R_lM-6BeS-bgs/C67CNMF4MPHNMBN2OOP7JUB3TC/DVJ3BQ703MKEM2OI2I9NUN43GC/m-1087833.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1087833.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1087833.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044",
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13437111001 returns this exact m-1087833.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-dvj3bq703mkem2oi2i9nun43gc.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "cd159882047ed612ad503516fc189546f777f9969b6fbc3e37c7c98b42c0d891"
+  },
+  {
+    "sku": "13437121001",
+    "sourceTitle": "REHAU Sicherheitstemperaturbegrenzer für Regelset flex",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13437121001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/AXpj33BsUQDHSCsSRb3iLdAipWfN7hDLHgTZskJGJpg/KVB5IUFN3AQPQA3C3ER3UF4U78/7DII1AD3EVJJN0U6DRGTOCOM3S/m-1087832.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/AXpj33BsUQDHSCsSRb3iLdAipWfN7hDLHgTZskJGJpg/KVB5IUFN3AQPQA3C3ER3UF4U78/7DII1AD3EVJJN0U6DRGTOCOM3S/m-1087832.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1087832.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1087832.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13437121001 returns this exact m-1087832.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-7dii1ad3evjjn0u6drgtocom3s.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "bc84fbfdb9df1fc09aada61e1626cbb1598350864161e54750dfe99e03e9cf00"
+  },
+  {
+    "sku": "13437131001",
+    "sourceTitle": "REHAU Thermometer für Regelset flex (P)",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13437131001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/AMV05Luk_J9rTmNVhn3W1uyNhgQj5ariFfZu7ZzjTeQ/9ME7OH5MPTF46PBNKON7COBQ14/1SG6U5B7Q02T0H592JIQGM6O5G/m-1087836.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/AMV05Luk_J9rTmNVhn3W1uyNhgQj5ariFfZu7ZzjTeQ/9ME7OH5MPTF46PBNKON7COBQ14/1SG6U5B7Q02T0H592JIQGM6O5G/m-1087836.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1087836.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1087836.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13437131001 returns this exact m-1087836.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-1sg6u5b7q02t0h592jiqgm6o5g.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "89c5da07b74cddaa06ffbe1aefa4ee2ef3c0e24e3e6d0600ca2f7e77eb751ec6"
+  },
+  {
+    "sku": "13437141001",
+    "sourceTitle": "REHAU Exzenter G1 für Regelset flex",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13437141001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/CzgH7O8Idf2Qz6sjO7OoiJVG53TGi3vi55IVCDOm-bk/P6GQCLDT0GIAJAO8OKUNPV5F5G/KU6EBE65QJEB6VHHFB5NM1DQV4/m-1087831.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/CzgH7O8Idf2Qz6sjO7OoiJVG53TGi3vi55IVCDOm-bk/P6GQCLDT0GIAJAO8OKUNPV5F5G/KU6EBE65QJEB6VHHFB5NM1DQV4/m-1087831.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1087831.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1087831.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13437141001 returns this exact m-1087831.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-ku6ebe65qjeb6vhhfb5nm1dqv4.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "8ece202c9bd0e941826900c798675114f204959cab29f010eefa8807ae87ae0c"
+  },
+  {
+    "sku": "13437151001",
+    "sourceTitle": "REHAU Anschlusswinkel für Regelset flex",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13437151001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/7h0UdEDuqKx4RzuOQyKJY8c8xQYN5Ld3TBK8UVyawBs/ICVT1HK0UA9COIT8SFF67646S4/2VAI3M1CF8D20JRULNK0DCGHF4/m-1087830.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/7h0UdEDuqKx4RzuOQyKJY8c8xQYN5Ld3TBK8UVyawBs/ICVT1HK0UA9COIT8SFF67646S4/2VAI3M1CF8D20JRULNK0DCGHF4/m-1087830.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1087830.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1087830.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13437151001 returns this exact m-1087830.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-2vai3m1cf8d20jrulnk0dcghf4.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "3707c3638e76eb75789e8498fe1529c762a58b4432746df27d7cd702912eb204"
+  },
+  {
+    "sku": "13444561001",
+    "sourceTitle": "Комплект температурного регулювання G1 ErP",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13444561001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/NsdFx6BwQVhGbZcmmVMbiI-4yJTGjneICYdJaYUuppk/VL0AP60HE5Q3657GLN7P8GGS78/T2Q5AA161J3FG3955F4JVBJKTK/m-1086246.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/NsdFx6BwQVhGbZcmmVMbiI-4yJTGjneICYdJaYUuppk/VL0AP60HE5Q3657GLN7P8GGS78/T2Q5AA161J3FG3955F4JVBJKTK/m-1086246.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1086246.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1086246.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044",
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13444561001 returns this exact m-1086246.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-t2q5aa161j3fg3955f4jvbjktk.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "397cdf2e8bd6035b5ce536d14f8f89da280976098132c7b293d81364827e57e6"
+  },
+  {
+    "sku": "13444571001",
+    "sourceTitle": "REHAU Ersatzpumpe für FWRS G1 ErP 12096781001",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13444571001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/pbFSpfiOAPOvVMM-gM9OAwzXzH1gxYkafC6c-v5xQQA/TJE0LKBKHRQM7H6FH1AJU02NMC/IQQ5HPP2PA0721OS1TJIRM36KK/m-1086245.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/pbFSpfiOAPOvVMM-gM9OAwzXzH1gxYkafC6c-v5xQQA/TJE0LKBKHRQM7H6FH1AJU02NMC/IQQ5HPP2PA0721OS1TJIRM36KK/m-1086245.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1086245.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1086245.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13444571001 returns this exact m-1086245.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-iqq5hpp2pa0721os1tjirm36kk.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "4a25bb80a8ed08a3439df3841baf665afd08c06347dffc152ba0979c2f61febb"
+  },
+  {
+    "sku": "13444581001",
+    "sourceTitle": "REHAU Ersatzpumpe für PMG-25 ErP 12096761001",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13444581001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/ljLxEe7zRjJckVhesOucxlFefKDpEhYbgFMEbGaBWJA/1MFCUM28FGTHR8U4HFEPLI7EDS/IT58KCQ6QQLNPDJE7IS5G82US4/m-1086244.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/ljLxEe7zRjJckVhesOucxlFefKDpEhYbgFMEbGaBWJA/1MFCUM28FGTHR8U4HFEPLI7EDS/IT58KCQ6QQLNPDJE7IS5G82US4/m-1086244.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1086244.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1086244.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13444581001 returns this exact m-1086244.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-it58kcq6qqlnpdje7is5g82us4.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "822f04c2f5dc5aef1e1a54a88329be875719022691caf34d269f48d78d3a3553"
+  },
+  {
+    "sku": "13444591001",
+    "sourceTitle": "REHAU Ersatzpumpe für PMG-32 ErP 12096771001",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13444591001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/y9E4KVisdGSv9m35f_rZR2NXIfATcJQBhmiYm11JZMs/H65FVMDRII1386NES41UCU9PBK/BUG3A2I9L7LFC6U8U5FJQ4E1US/m-1086243.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/y9E4KVisdGSv9m35f_rZR2NXIfATcJQBhmiYm11JZMs/H65FVMDRII1386NES41UCU9PBK/BUG3A2I9L7LFC6U8U5FJQ4E1US/m-1086243.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1086243.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1086243.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13444591001 returns this exact m-1086243.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-bug3a2i9l7lfc6u8u5fjq4e1us.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "e0b412f820d5494263c4ad14b614732091603c1ceaa9fe3941f30e1c6b105aea"
+  },
+  {
+    "sku": "13502821900",
+    "sourceTitle": "Нижня частина д. інд.потоку DFM 0-5 л/хв для розподільчого колектора HKV-D AG",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13502821900",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/kGFjNqEqp3oBRhyYZn5xqG7GX8fFemaL_vN7lYYF-bM/L524RSRAUD3JFUK23GQFNCJNH4/6PDEH6Q3NUOI1DT814QPP0NQ3O/m-100004859.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/kGFjNqEqp3oBRhyYZn5xqG7GX8fFemaL_vN7lYYF-bM/L524RSRAUD3JFUK23GQFNCJNH4/6PDEH6Q3NUOI1DT814QPP0NQ3O/m-100004859.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-100004859.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-100004859.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13502821900 returns this exact m-100004859.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-6pdeh6q3nuoi1dt814qpp0nq3o.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "9a80d73232bac3d3be129e8800835c203eff936a8333d0bac8d45e81e8a304d5"
+  },
+  {
+    "sku": "13532771001",
+    "sourceTitle": "Ущільнююча стрічка RAUVITHERM для будинкового введення L = 2м",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13532771001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/HXwLSJfjgWJdzTwJF_Ho0OfnPLtHvapqi2HDn0oLTMM/QSLACK4GQOOGFCOD60NJGF8IRS/J19SQE0Q67APMDEHN7GSPBM3DK/m-13554270.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/HXwLSJfjgWJdzTwJF_Ho0OfnPLtHvapqi2HDn0oLTMM/QSLACK4GQOOGFCOD60NJGF8IRS/J19SQE0Q67APMDEHN7GSPBM3DK/m-13554270.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-13554270.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-13554270.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044",
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13532771001 returns this exact m-13554270.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-j19sqe0q67apmdehn7gspbm3dk.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "c0e4d23922d3904ea6bd6be7e5fb437a573ba06c45b5ea6f55bebe101ac05243"
+  },
+  {
+    "sku": "13767671001",
+    "sourceTitle": "REHAU Індикатор потоку MFI min/max для розп.колектора Easyflow MFI",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13767671001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/SSVbQn9vHZ0O4l5EhaEBQJKMalm7eIzrvpOWEuD5E_k/75IF4EI3LT80J98F3E90A0FHM0/VEMFSU1HCG21BORSMQ9QS03CV4/m-100081599.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/SSVbQn9vHZ0O4l5EhaEBQJKMalm7eIzrvpOWEuD5E_k/75IF4EI3LT80J98F3E90A0FHM0/VEMFSU1HCG21BORSMQ9QS03CV4/m-100081599.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-100081599.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-100081599.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044",
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13767671001 returns this exact m-100081599.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-vemfsu1hcg21borsmq9qs03cv4.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "5a8b51d5f3a2939c51a1d1da3ad851d3a9cc21878dfcce1d39f24a1b8ae8f677"
+  },
+  {
+    "sku": "13767671001",
+    "sourceTitle": "REHAU Індикатор потоку MFI min/max для розп.колектора Easyflow MFI",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13767671001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/W1J-wyv8xUYUwdKeEnPpXhgB9lEiU3fhb5bqyvdjGBY/UCSNND8K3OJK36VMSHDI84OL7K/ISTDSKB88K4KG8R279K95P8UTO/m-100081601.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/W1J-wyv8xUYUwdKeEnPpXhgB9lEiU3fhb5bqyvdjGBY/UCSNND8K3OJK36VMSHDI84OL7K/ISTDSKB88K4KG8R279K95P8UTO/m-100081601.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-100081601.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-100081601.jpg",
+    "sortOrder": 1,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044",
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13767671001 returns this exact m-100081601.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-istdskb88k4kg8r279k95p8uto.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "082f43ed31ef84c8a1c1f9639fa80448dd3353685a2ddcd058251486f4531557"
+  },
+  {
+    "sku": "13767691001",
+    "sourceTitle": "REHAU Ковпачок червоний для індикатора потоку MFI min/max",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13767691001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/5awaWCx7pcVgpeT8WPe7MOZJ8o926W2Xwl9TuxQ_nV0/7FD3BCEDA0KM7N2UGMKOIVTBVG/D7GVOKOO17OGBACHRH8CTAK0LO/m-100081600.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/5awaWCx7pcVgpeT8WPe7MOZJ8o926W2Xwl9TuxQ_nV0/7FD3BCEDA0KM7N2UGMKOIVTBVG/D7GVOKOO17OGBACHRH8CTAK0LO/m-100081600.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-100081600.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-100081600.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044",
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13767691001 returns this exact m-100081600.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-d7gvokoo17ogbachrh8ctak0lo.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "e48e5a0807e1cd740df56b033e8d0607a820c53ee0c025e94308cd0be0764bc1"
+  },
+  {
+    "sku": "13767691001",
+    "sourceTitle": "REHAU Ковпачок червоний для індикатора потоку MFI min/max",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13767691001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/WEno4Vt15PNjyC9CC3Jlf7t-YeKpwvoqV-92IFnEGeE/Q4EH29KS9S154VQ6RIDP35MQ4G/9FVBEQ03NT0FGGAPMO37F8785S/m-100081602.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/WEno4Vt15PNjyC9CC3Jlf7t-YeKpwvoqV-92IFnEGeE/Q4EH29KS9S154VQ6RIDP35MQ4G/9FVBEQ03NT0FGGAPMO37F8785S/m-100081602.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-100081602.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-100081602.jpg",
+    "sortOrder": 1,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044",
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13767691001 returns this exact m-100081602.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-9fvbeq03nt0fggapmo37f8785s.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "b491b34eeee9626af32d01f0f43723ee495a1593be65f2e06a4ba46ad801afbe"
+  },
+  {
+    "sku": "13920091001",
+    "sourceTitle": "REHAU Подвійний ніпель G1 з ущільнюв. кільцем д/розп.колектора",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13920091001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/YCcoVymSJirPbHhl8DnEGJR88u6g7UG3W3JDUYtXO9c/QHF391EN6RK0FLVJ43A9P5QELG/4VGAD0CB7QF6DD64MRS94BK1B8/m-100004865.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/YCcoVymSJirPbHhl8DnEGJR88u6g7UG3W3JDUYtXO9c/QHF391EN6RK0FLVJ43A9P5QELG/4VGAD0CB7QF6DD64MRS94BK1B8/m-100004865.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-100004865.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-100004865.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 13920091001 returns this exact m-100004865.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-4vgad0cb7qf6dd64mrs94bk1b8.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "9ce5c51b9bd4e8fff0bdb2420763323185c5516d10664f988099f3e25c17dcac"
+  },
+  {
+    "sku": "14069951001",
+    "sourceTitle": "AWADUKT Thermo Стіновий прохід DN 630",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/14069951001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/RB7yNefG-R4XGrRnQN3K0r67GFOveALOICvn469cNUA/6I8REA8EIULEG6JVV58AUO7LH4/BG6VC8HO82IDH0CRPRNTNS3KIG/m-560780.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/RB7yNefG-R4XGrRnQN3K0r67GFOveALOICvn469cNUA/6I8REA8EIULEG6JVV58AUO7LH4/BG6VC8HO82IDH0CRPRNTNS3KIG/m-560780.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-560780.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-560780.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3001044"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 14069951001 returns this exact m-560780.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-bg6vc8ho82idh0crprntns3kig.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "b5ef2c51c9760720390aa3243b985823a33df8ef52b669fdb05b98fc6af7602a"
+  },
+  {
+    "sku": "14316931001",
+    "sourceTitle": "REHAU Rahmen mit Tür für Verteilerschrank UP 550 kompakt",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/14316931001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072904.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072904.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 14316931001 returns this exact m-1072904.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-rfku99u3mgq31tlsfnek4gm4go.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "f0178d1bd5a0df7dcf0495af28ca24ab0750f122a197a486f27594dcb5dc6601"
+  },
+  {
+    "sku": "14316941001",
+    "sourceTitle": "REHAU Rahmen mit Tür für Verteilerschrank UP 750 kompakt",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/14316941001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072904.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072904.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 14316941001 returns this exact m-1072904.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-rfku99u3mgq31tlsfnek4gm4go.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "f0178d1bd5a0df7dcf0495af28ca24ab0750f122a197a486f27594dcb5dc6601"
+  },
+  {
+    "sku": "14316951001",
+    "sourceTitle": "REHAU Rahmen mit Tür für Verteilerschrank UP 950 kompakt",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/14316951001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072904.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072904.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 14316951001 returns this exact m-1072904.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-rfku99u3mgq31tlsfnek4gm4go.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "f0178d1bd5a0df7dcf0495af28ca24ab0750f122a197a486f27594dcb5dc6601"
+  },
+  {
+    "sku": "14316961001",
+    "sourceTitle": "REHAU Rahmen mit Tür für Verteilerschrank UP 1150 kompakt",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/14316961001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/5MC6znQL2FHLwKazcFAPp6uqt8EfhrtKosyXF94N3f0/5E99S9MR5P4SM0KDTLKO7BTOUS/RFKU99U3MGQ31TLSFNEK4GM4GO/m-1072904.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072904.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072904.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 14316961001 returns this exact m-1072904.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-rfku99u3mgq31tlsfnek4gm4go.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "f0178d1bd5a0df7dcf0495af28ca24ab0750f122a197a486f27594dcb5dc6601"
+  },
+  {
+    "sku": "14316971001",
+    "sourceTitle": "REHAU C-Profilschiene für VS UP 75 / 110 kompakt",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/14316971001",
+    "originalUrl": "https://oxomi.com/dasd/pd/attachments/9oiVG5V99Rgl9TCVqgx1wFtlB5zgDUwDFYLTpz2p0uY/T09RBM6MR6H03SHUPCC2BPPPOO/9P3G4COSPUFAEFSSVT1KAAMOO8/m-1072909.jpg",
+    "originalURL": "https://oxomi.com/dasd/pd/attachments/9oiVG5V99Rgl9TCVqgx1wFtlB5zgDUwDFYLTpz2p0uY/T09RBM6MR6H03SHUPCC2BPPPOO/9P3G4COSPUFAEFSSVT1KAAMOO8/m-1072909.jpg",
+    "localOriginal": "tmp/rehau-image-gap-qa/m-1072909.jpg",
+    "sourceType": "MEASURED_DRAWING",
+    "originalAttachmentType": "OTHER",
+    "originalAttachmentDescription": "detail",
+    "filename": "m-1072909.jpg",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "exact-sku-manufacturer-attachment",
+      "inspected": true,
+      "sourcePortals": [
+        "3000126"
+      ],
+      "sourceCache": "imports/rehau-image-gap-source.json",
+      "query": "attachments",
+      "attachmentField": "downloadUrl",
+      "exactProductBinding": "Manufacturer OXOMI product 14316971001 returns this exact m-1072909.jpg as its own attachment. No URL or asset inferred from another SKU.",
+      "visualReview": "Line drawing of the product itself and its geometry; not a photo, logo, placeholder, cover, or generic installation/flow diagram.",
+      "interpretation": "Retain the honest sourceType in sourceEvidence and report drawings as drawings, not photographs."
+    },
+    "proposedImage": {
+      "kind": "original",
+      "path": "assets/products/rehau/images/recovered-9p3g4cospufaefssvt1kaamoo8.webp",
+      "crop": null,
+      "width": 1000,
+      "height": 1000,
+      "format": "webp",
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "b43146fda563dd7e62cc19eb48de10a17462a2e946cf62cc10c9530aa66c5fe1"
+  },
+  {
+    "sku": "15562281002",
+    "sourceTitle": "RAUSILENTO Труба DN 125 / 500 мм",
+    "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/15562281002",
+    "originalUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3001044&document=10702610",
+    "originalURL": "https://oxomi.com/portals/api/v1/documents/download?portal=3001044&document=10702610",
+    "localPdf": "assets/products/rehau/documents/10702610.pdf",
+    "page": 7,
+    "localOriginal": "tmp/rehau-image-gap-qa/10702610-p7-xref26.jpeg",
+    "sourceType": "PRODUCT_RENDER",
+    "sortOrder": 0,
+    "proof": {
+      "kind": "same-table-group-exact-sku",
+      "inspected": true,
+      "document": "RAUSILENTO official Ukrainian catalogue",
+      "section": "01.01 RAUSILENTO Труби",
+      "imagePage": 7,
+      "skuPage": 8,
+      "exactRow": "15562281002 | DN 125 / 500 мм | DN/OD125 | BL500 | Dmax146 | a60.4",
+      "continuity": "Page7 introduces01.01 RAUSILENTO Труби and its representative grey straight socket-pipe illustration; the SAME table continues onpage8 with exactSKU15562281002. Page9 starts the separate01.02 fittings group. The image is not borrowed from an adjacent product group.",
+      "imageDescription": "Grey straight socket pipe, RAU-PP / RAL7047, representing its own manufacturer tube table group; no 4m/other-size label, elbow, fitting or installation diagram.",
+      "geometry": {
+        "xref": 26,
+        "bbox": [
+          288.99212646484375,
+          95.3194351196289,
+          367.1773376464844,
+          173.504638671875
+        ]
+      },
+      "limitation": "Native source resolution163×163; disclose low resolution and do not upscale. Source does not provide an exact-size photographic depiction; it explicitly uses this representative product illustration for the same SKU table group."
+    },
+    "proposedImage": {
+      "kind": "pdf-embedded",
+      "xref": 26,
+      "page": 7,
+      "path": "assets/products/rehau/images/recovered-15562281002-pdf10702610-p7-xref26.webp",
+      "crop": null,
+      "width": 163,
+      "height": 163,
+      "format": "webp",
+      "encoder": {
+        "lossless": true
+      },
+      "maxEdge": 1600,
+      "upscale": false
+    },
+    "sha256": "0027b5a4132b0a35ff4a7a9d2f02979a348bc68c49f5b579b7d633d7b9895d4c"
+  }
+]

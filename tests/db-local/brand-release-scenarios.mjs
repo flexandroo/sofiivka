@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
-import {splitDraftSql,publicationSql,readyPayload} from '../../scripts/import/prepare-brand-release.mjs';
+import {createHash} from 'node:crypto';
+import {splitDraftSql,publicationSql,readyPayload,prepareRelease} from '../../scripts/import/prepare-brand-release.mjs';
 
 const root=path.resolve(import.meta.dirname,'../..');
 const one=async(db,sql,params=[])=>(await db.query(sql,params)).rows[0];
@@ -34,6 +35,16 @@ export async function run(db){
     fs.writeFileSync(batchFile,JSON.stringify(batch));fs.writeFileSync(referenceFile,JSON.stringify(reference));
     const result=JSON.parse(execFileSync(process.execPath,['scripts/import-check.mjs',batchFile,`--reference=${referenceFile}`],{cwd:root,encoding:'utf8'}));
     assert.deepEqual([result.total,result.existing,result.ready,result.blocked,result.priceChanges],[3,1,2,0,1]);
+    const metadataFile=path.join(directory,'metadata.sql');const prerequisite='-- Local metadata fixture\nbegin;\nselect 1;\ncommit;\n';
+    fs.writeFileSync(metadataFile,prerequisite);
+    assert.throws(()=>prepareRelease([batchFile],{jobPrefix:'../unsafe'}),/Unsafe release job prefix/);
+    const prepared=prepareRelease([batchFile],{reference:referenceFile,jobPrefix:'local-metadata-test',metadataFile});
+    assert.equal(prepared.metadata.sha256,createHash('sha256').update(prerequisite).digest('hex'));
+    assert.equal(prepared.metadata.bytes,Buffer.byteLength(prerequisite));
+    assert.equal(prepared.newProducts,2);assert.ok(prepared.jobId.startsWith('local-metadata-test-'));
+    assert.ok(prepared.chunks.every(chunk=>chunk.sourceRef.startsWith(prepared.jobId+'/')));
+    const expectedDigest=createHash('sha256').update(fs.readFileSync(batchFile)).update('\0metadata\0').update(prerequisite).digest('hex').slice(0,12);
+    assert.equal(prepared.jobId,`local-metadata-test-${expectedDigest}`,'metadata is part of the immutable release identity');
     const sql=fs.readFileSync(path.join(directory,'batch.sql'),'utf8');
     assert.equal(readyPayload(sql).length,2);
     const chunks=splitDraftSql(sql,{jobId:'local-brand-release',batchName:'batch.json',size:1,maxBytes:1_500_000});

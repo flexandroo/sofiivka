@@ -20,6 +20,7 @@ const stableId=stableImportId;
 const progress=value=>console.log(JSON.stringify(value));
 const elapsed=start=>Math.round(performance.now()-start);
 const readJson=async file=>JSON.parse(await fs.readFile(file,'utf8'));
+const relationBytes=async db=>(await one(db,"select coalesce(sum(pg_total_relation_size(c.oid)),0)::float8 bytes from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r'")).bytes;
 
 export async function rehearse(manifestPath){
   const manifestFile=path.resolve(ROOT,manifestPath);const manifest=await readJson(manifestFile);
@@ -85,6 +86,13 @@ export async function rehearse(manifestPath){
     await db.exec(metadataSql());
     // Repeating additive metadata must be harmless on an already-provisioned release.
     await db.exec(metadataSql());
+    if(manifest.metadata){
+      const prerequisite=await fs.readFile(path.resolve(ROOT,manifest.metadata.file),'utf8');
+      assert.equal(crypto.createHash('sha256').update(prerequisite).digest('hex'),manifest.metadata.sha256,'release metadata hash');
+      assert.equal(Buffer.byteLength(prerequisite),manifest.metadata.bytes,'release metadata byte count');
+      await db.exec(prerequisite);await db.exec(prerequisite);
+      report.checks.push('release-specific-metadata-hash-and-idempotency');
+    }
     const fixtureBrand=await one(db,"select internal_id from public.brands where status='active' order by stable_id limit 1");
     const fixtureCategory=await one(db,`select c.internal_id from public.categories c where c.status='active' and c.visibility='catalog'
       and not exists(select 1 from public.categories child where child.parent_id=c.internal_id and child.status='active')order by c.stable_id limit 1`);
@@ -93,6 +101,7 @@ export async function rehearse(manifestPath){
     await db.query("select public._admin_refresh_catalog(array[internal_id])from public.products where legacy_id='brand-rehearsal-sentinel'");
     const sentinelBefore=(await one(db,"select to_jsonb(p) data from public.products p where legacy_id='brand-rehearsal-sentinel'")).data;
     const baseline=await one(db,'select count(*)::int n from public.products');
+    report.relationBytesBefore=await relationBytes(db);
     report.checks.push('manifest-hashes-and-whole-input-coverage','metadata-applied-twice');
     for(let i=0;i<chunks.length;i++){
       const chunk=chunks[i];const start=performance.now();await db.exec(chunk.sql);
@@ -158,6 +167,7 @@ export async function rehearse(manifestPath){
       progress({phase:'atomic-replay',index:1,products:first.ids.length,ms:report.atomicReplayMs});
     }
     report.status='ok';report.publicCards=publicCards.n;report.imageRows=actualMedia.n;report.documentRows=actualDocs.n;
+    report.relationBytesAfter=await relationBytes(db);report.relationBytesAdded=report.relationBytesAfter-report.relationBytesBefore;
     report.maxDraftMs=Math.max(0,...report.chunks.map(x=>x.draftMs));report.maxPublishMs=Math.max(0,...report.chunks.map(x=>x.publishMs));
     report.slowChunks=report.chunks.filter(x=>x.draftMs>=15000||x.publishMs>=15000);
   }catch(error){report.status='failed';report.error={message:error.message,stack:error.stack};throw error;}

@@ -84,11 +84,19 @@ export function atomicPublicationSql(draft, publication) {
   return sql;
 }
 
-export function prepareRelease(batchFiles, { reference = 'imports/reference-prod.json' } = {}) {
+export function prepareRelease(batchFiles, { reference = 'imports/reference-prod.json', jobPrefix = 'three-brands-20261125', metadataFile = null } = {}) {
   if (!batchFiles.length) throw new Error('Provide the checked brand batch files.');
+  if (!/^[a-zA-Z0-9._-]+$/.test(jobPrefix)) throw new Error('Unsafe release job prefix.');
   const digest = crypto.createHash('sha256');
   for (const file of batchFiles) digest.update(fs.readFileSync(path.resolve(root, file)));
-  const jobId = `three-brands-20261125-${digest.digest('hex').slice(0, 12)}`;
+  let metadata;
+  if (metadataFile) {
+    const sql = fs.readFileSync(path.resolve(root, metadataFile), 'utf8');
+    if (Buffer.byteLength(sql) >= 2_000_000) throw new Error('Metadata exceeds execute_sql budget.');
+    metadata = { file: metadataFile, sha256: crypto.createHash('sha256').update(sql).digest('hex'), bytes: Buffer.byteLength(sql) };
+    digest.update('\0metadata\0').update(sql);
+  }
+  const jobId = `${jobPrefix}-${digest.digest('hex').slice(0, 12)}`;
   const output = path.join(root, 'imports/releases', jobId);
   fs.mkdirSync(output, { recursive: true });
   const chunks = [];
@@ -135,6 +143,7 @@ export function prepareRelease(batchFiles, { reference = 'imports/reference-prod
   }
   const manifest = {
     jobId, createdAt: new Date().toISOString(), projectRef: 'fkjarsouuchjiedrrblc',
+    ...(metadata ? { metadata } : {}),
     batches, newProducts: chunks.reduce((count, chunk) => count + chunk.ids.length, 0),
     chunks: chunks.map(({ sql, ...chunk }) => ({ ...chunk, sha256: crypto.createHash('sha256').update(sql).digest('hex'), bytes: Buffer.byteLength(sql) })),
     publicationFiles: chunks.map(chunk => chunk.publicationFile),
@@ -146,6 +155,10 @@ export function prepareRelease(batchFiles, { reference = 'imports/reference-prod
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const args = process.argv.slice(2);
   const reference = args.find(arg => arg.startsWith('--reference='))?.slice('--reference='.length);
-  const manifest = prepareRelease(args.filter(arg => !arg.startsWith('--')), reference ? { reference } : {});
+  const jobPrefix = args.find(arg => arg.startsWith('--job-prefix='))?.slice('--job-prefix='.length);
+  const metadataFile = args.find(arg => arg.startsWith('--metadata='))?.slice('--metadata='.length);
+  const manifest = prepareRelease(args.filter(arg => !arg.startsWith('--')), {
+    ...(reference ? { reference } : {}), ...(jobPrefix ? { jobPrefix } : {}), ...(metadataFile ? { metadataFile } : {}),
+  });
   console.log(JSON.stringify({ jobId: manifest.jobId, newProducts: manifest.newProducts, chunks: manifest.chunks.length, batches: manifest.batches }));
 }

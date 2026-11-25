@@ -1,0 +1,40 @@
+[
+  {
+    "sku": "12080411003",
+    "sourceTitle": "Heizkreisverteiler HKV-D Edelstahl, 4 Heizkreise",
+    "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12080411003",
+    "originalUrl": "https://oxomi.com/portals/api/v1/documents/download?portal=3000126&document=10237499",
+    "localPdf": "assets/products/rehau/documents/10237499.pdf",
+    "page": 1,
+    "sourceType": "MEASURED_DRAWING",
+    "proof": {
+      "kind": "exact-circuit-count-and-same-page-sku-row",
+      "inspected": true,
+      "documentTitle": "Verteilermatrix - Heizkreisverteiler HKV-D Edelstahl + Verteilerschrank UP 75",
+      "exactSkuRow": "Anzahl Heizkreise 4 → Material-Nr. 12080411003",
+      "visibleCircuitCount": 4,
+      "visualCount": "Vector drawing has exactly four flow meters on the upper rail and four regulating valve caps on the lower rail. This is a four-circuit manifold, not six or eight.",
+      "cropScope": "Only the bare HKV-D stainless manifold and its two mounting brackets. The adjacent cabinet, title block, other components and table are outside the crop.",
+      "corroboratingDocuments": [
+        "assets/products/rehau/documents/10237500.pdf",
+        "assets/products/rehau/documents/10237501.pdf"
+      ],
+      "otherVariants": "The four-circuit drawing MUST NOT be assigned to 12080211003, 12080311003, 12080511003, 12080611003, 12080711003, 12080811003, 12080911003, 12081011003, 12081111003 or 12081211003.",
+      "originalGalleryCheck": "All eleven exact-SKU product-images and attachments arrays are empty; baseInfo.previewImageUrl is the generic item_thumbnail_large.jpg."
+    },
+    "proposedImage": {
+      "kind": "pdf-crop",
+      "page": 1,
+      "bbox": [342, 80, 420, 172],
+      "path": "assets/products/rehau/images/recovered-12080411003-hkv-vector.webp",
+      "sourceGeometry": "vector",
+      "renderScale": 12,
+      "width": 936,
+      "height": 1104,
+      "format": "webp",
+      "maxEdge": 1600,
+      "rasterUpscale": false
+    },
+    "localPreview": "tmp/rehau-image-gap-qa/hkv-12080411003-vector-final.png"
+  }
+]

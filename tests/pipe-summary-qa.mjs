@@ -31,6 +31,12 @@ assert.deepEqual(plain(keySpecs(pipe)).map(({ id, value }) => [id, value]), [
 assert.equal(keySpecs(pipe)[0].label, 'Зовнішній діаметр труби, мм');
 assert.equal(keySpecs(pipe)[1].label, 'Довжина труби, мм');
 
+const multilayer={...pipe,primaryCategoryId:'water-heating-pipes',normalizedAttributes:{pipeDiameterMm:16,pipeWallThicknessMm:2,pipeLengthMm:100000,material:'PE-RT II/AL/PE-RT II'}};
+assert.deepEqual(plain(productCardAttributes(multilayer)),[
+  ['Діаметр труби','16 мм'],['Товщина стінки','2 мм'],['Довжина труби',`${numberLabel(100000)} мм`]
+]);
+assert.deepEqual(plain(keySpecs(multilayer)).map(({id})=>id),['pipeDiameterMm','pipeWallThicknessMm','pipeLengthMm','material']);
+
 const fitting = {
   ...pipe, primaryCategoryId: 'internal-sewer-fittings',
   normalizedAttributes: { pipeDiameterMm: 110, angleDegrees: 45, material: 'PP', connection: 'Розтрубне' }
@@ -50,7 +56,8 @@ assert.ok(!standard.includes('Характеристики уточнюютьс�
 
 for (const category of [
   'internal-sewer-pipes', 'internal-sewer-fittings', 'external-sewer-pipes', 'external-sewer-fittings',
-  'drainage-pipes', 'sewer-installation-components', 'pipe-fittings', 'inspection-chambers', 'future-pipe-category'
+  'drainage-pipes', 'sewer-installation-components', 'pipe-fittings', 'inspection-chambers', 'future-pipe-category',
+  'water-heating-pipes','district-heating-pipes','district-heating-components','geothermal-systems','ventilation-components'
 ]) {
   const product = { ...pipe, primaryCategoryId: category, normalizedAttributes: { pipeDiameterMm: 110 } };
   assert.deepEqual(plain(productCardAttributes(product)), [['Діаметр труби', '110 мм']], category);
@@ -80,4 +87,4 @@ assert.deepEqual(plain(productCardAttributes(boiler)), [
 ]);
 assert.deepEqual(plain(keySpecs(boiler)).map(({ id }) => id), ['heatOutputKw', 'type', 'dhwFlowLMin', 'efficiencyPercent']);
 
-console.log(JSON.stringify({ status: 'PASS', confirmedPipe: [110, 1000], angleDegrees: 45, categories: 9, cardLimits: [3, 2], missingValues: 'PASS', legacyPumpAndBoiler: 'PASS' }));
+console.log(JSON.stringify({ status: 'PASS', confirmedPipe: [110, 1000], wallThicknessMm:2, angleDegrees: 45, categories: 14, cardLimits: [3, 2], missingValues: 'PASS', legacyPumpAndBoiler: 'PASS' }));
