@@ -24,9 +24,10 @@ const supplierFeedNames = new Set([
   "tekkhaus-products-data.js",
   "tech-products-data.js",
   "heating-brands-products-data.js",
-  "baxi-buderus-products-data.js"
+  "baxi-buderus-products-data.js",
+  "hunter-products-data.js"
 ]);
-const supplierFeedPattern = /<script\b(?=[^>]*\bsrc=["'](?:[^"']*\/)?(?:products-data|water-catalog-data|termojet-products-data|wilo-products-data|grundfos-products-data|tekkhaus-products-data|tech-products-data|heating-brands-products-data|baxi-buderus-products-data)\.js[^"']*["'])[^>]*>\s*<\/script>\s*/gim;
+const supplierFeedPattern = /<script\b(?=[^>]*\bsrc=["'](?:[^"']*\/)?(?:products-data|water-catalog-data|termojet-products-data|wilo-products-data|grundfos-products-data|tekkhaus-products-data|tech-products-data|heating-brands-products-data|baxi-buderus-products-data|hunter-products-data)\.js[^"']*["'])[^>]*>\s*<\/script>\s*/gim;
 
 if (!["local", "supabase"].includes(source)) throw new Error(`SOFIEVKA_CATALOG_SOURCE must be local or supabase, received: ${source}`);
 if (outputDirectory === root || !outputDirectory.startsWith(`${root}${path.sep}`)) throw new Error("Build output must be a dedicated directory inside the project root.");

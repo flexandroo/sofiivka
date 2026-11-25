@@ -108,7 +108,7 @@ for (const [operation, call] of Object.entries(endpointCalls)) {
   endpointValues[operation] = sampled.value;
 }
 
-assert.equal(endpointValues.bootstrap.totalProducts, 3214);
+assert.equal(endpointValues.bootstrap.totalProducts, 3276);
 assert.equal(endpointValues.plpCategory.total, 57);
 assert.equal(endpointValues.plpCategory.products.length, 24);
 assert.equal(endpointValues.plpCategoryBrand.total, 52);
@@ -170,7 +170,7 @@ const payloadReductionPercent = Number(((1 - firstPlpJourneyBytes / fullSnapshot
 const payloadRatio = Number((fullSnapshotBytes / firstPlpJourneyBytes).toFixed(1));
 const explainTimes = Object.values(explainResults).map(result => result.executionMs);
 const acceptance = {
-  publicProducts: endpointValues.bootstrap.totalProducts === 3214,
+  publicProducts: endpointValues.bootstrap.totalProducts === 3276,
   firstPlpJourneyUnderOneMegabyte: firstPlpJourneyBytes < 1_000_000,
   pdpUnderOneMegabyte: endpoints.pdp.responseBytes < 1_000_000,
   exactSkuFirst: endpointValues.search.products[0].id === 'MO550MECOSTD',
@@ -183,7 +183,7 @@ const report = {
   status,
   measuredAt: new Date().toISOString(),
   project: { name: project.name, ref: project.ref, status: project.status, linked: project.linked },
-  dataset: { databaseProducts: 3215, publicProducts: endpointValues.bootstrap.totalProducts },
+  dataset: { databaseProducts: 3277, publicProducts: endpointValues.bootstrap.totalProducts },
   sampleCount: SAMPLE_COUNT,
   endpoints,
   journeys: {
@@ -205,7 +205,7 @@ const report = {
   caveats: [
     `HTTP timings are five external ${project.environment} samples and include gateway and network latency.`,
     'responseBytes is decoded JSON text size; contentLength reflects the transport header when supplied.',
-    'Browser heap reduction is not claimed as an exact measurement; normal routes no longer allocate the 45 MB full JSON or a 3214-product client search index.',
+    'Browser heap reduction is not claimed as an exact measurement; normal routes no longer allocate the full catalog JSON or a 3276-product client search index.',
   ],
 };
 

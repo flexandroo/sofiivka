@@ -1,5 +1,6 @@
 import path from 'node:path';
 import {
+  approvedMigrationVersions,
   PROJECT_ROOT,
   SupabaseRestClient,
   buildSnapshotBaseline,
@@ -12,29 +13,10 @@ import {
   resolveProjectApiKeys,
   sha256,
   stableStringify,
-  sortedLinesHash,
   writeJson,
 } from './catalog-db-utils.mjs';
 
 const APPROVED_PROJECT_REFS = new Set(['wfxcklglujgramasdzyr', 'fkjarsouuchjiedrrblc']);
-const EXPECTED_MIGRATIONS = [
-  '20260928000100',
-  '20260928000200',
-  '20260928000300',
-  '20260928000400',
-  '20260928000500',
-  '20260929000100',
-  '20260929000200',
-  '20260929000300',
-  '20260929000400',
-  '20260929000500',
-  '20260929000600',
-  '20260929000700',
-  '20260929000800',
-  '20260929000900',
-  '20260929001000',
-];
-
 const argumentsMap = new Map(process.argv.slice(2).map(argument => {
   const [key, ...parts] = argument.split('=');
   return [key, parts.join('=')];
@@ -45,9 +27,9 @@ const reportDir = path.resolve(PROJECT_ROOT, argumentsMap.get('--report-dir') ||
 if (!APPROVED_PROJECT_REFS.has(projectRef)) throw new Error(`Refusing unapproved project ${projectRef || '(missing)'}.`);
 
 const project = resolveLinkedProject(projectRef);
-const migrationHistory = resolveMigrationHistory();
-const remoteVersions = migrationHistory.pairs.map(pair => pair.remote);
-if (remoteVersions.join(',') !== EXPECTED_MIGRATIONS.join(',')) {
+const migrationHistory = resolveMigrationHistory(projectRef);
+const remoteVersions = migrationHistory.remoteVersions;
+if (remoteVersions.join(',') !== approvedMigrationVersions(projectRef).join(',')) {
   throw new Error(`Read-model migration history mismatch: ${remoteVersions.join(',')}.`);
 }
 
@@ -56,6 +38,9 @@ const serviceClient = new SupabaseRestClient({ projectRef, apiKey: keys.serviceR
 const publicClient = new SupabaseRestClient({ projectRef, apiKey: keys.publishableKey });
 const state = loadCatalogRuntime();
 const snapshot = state.sofievkaCatalogSnapshot;
+const expectedTotal = snapshot.products.length;
+const expectedPublic = snapshot.products.filter(product => product.publicationStatus === 'published').length;
+const expectedHidden = expectedTotal - expectedPublic;
 const baseline = buildSnapshotBaseline({
   state,
   homepage: loadHomepageCollections(),
@@ -66,7 +51,7 @@ const remoteProducts = await serviceClient.fetchAll('products', { select: 'legac
 const remoteIdHash = sortedLinesHash(remoteProducts.map(product => product.legacy_id));
 const remotePublished = remoteProducts.filter(product => product.publication_status === 'published').length;
 const remoteHidden = remoteProducts.filter(product => product.publication_status === 'hidden').length;
-if (remoteProducts.length !== 3215 || remotePublished !== 3214 || remoteHidden !== 1 || remoteIdHash !== baseline.productIdHash) {
+if (remoteProducts.length !== expectedTotal || remotePublished !== expectedPublic || remoteHidden !== expectedHidden || remoteIdHash !== baseline.productIdHash) {
   throw new Error(`Catalogue preflight failed: products=${remoteProducts.length}, published=${remotePublished}, hidden=${remoteHidden}, hash=${remoteIdHash}.`);
 }
 
@@ -129,7 +114,7 @@ if (mode === 'apply') {
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ target_snapshot_version: snapshotVersion }),
   });
-  if (finalized.payload !== 3214) throw new Error(`Snapshot finalization returned ${JSON.stringify(finalized.payload)} instead of 3214.`);
+  if (finalized.payload !== expectedPublic) throw new Error(`Snapshot finalization returned ${JSON.stringify(finalized.payload)} instead of ${expectedPublic}.`);
   await serviceClient.upsert('catalog_snapshot_pointer', [{
     singleton: true,
     snapshot_version: snapshotVersion,
@@ -174,7 +159,7 @@ const collection = snapshot.collections?.[0]
   ? await verifyPublicRpc('get_catalog_collection', { collection_id: snapshot.collections[0].id })
   : null;
 
-if (bootstrap?.totalProducts !== 3214 || productPage?.total !== 3214 || facets?.total !== 3214) {
+if (bootstrap?.totalProducts !== expectedPublic || productPage?.total !== expectedPublic || facets?.total !== expectedPublic) {
   throw new Error(`Scoped public counts failed: bootstrap=${bootstrap?.totalProducts}, products=${productPage?.total}, facets=${facets?.total}.`);
 }
 if (product?.product?.id !== representativeProduct.id) throw new Error('Scoped PDP verification failed.');

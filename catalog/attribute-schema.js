@@ -32,6 +32,7 @@
     installation: define("installation", { label: "Монтаж", rank: 6, aliases: [/^монтаж$/i, /^встановлення$/i, /^спосіб встановлення$/i] }),
     capacityLh: define("capacityLh", { label: "Продуктивність, л/год", type: "number", unit: "л/год", rank: 7, aliases: [/^продуктивність(?:,?\s*л\/год)?$/i] }),
     flowM3h: define("flowM3h", { label: "Продуктивність, м³/год", type: "number", unit: "м³/год", rank: 8, aliases: [/^qmax$/i, /^gmax$/i, /^макс\.?\s*продуктивність$/i, /^максимальна витрата$/i, /^витрата$/i, /^пропускна здатність(?:\s*\(м[³3]\/год\))?$/i, /^швидкість потоку(?:\s*\(м[³3]\/год\))?$/i, /^номінальна витрата$/i] }),
+    radiusM: define("radiusM", { label: "Радіус поливу, м", type: "number", unit: "м", rank: 8.05, aliases: [/^радіус(?: поливу)?$/i, /^radius$/i] }),
     capacityKgh: define("capacityKgh", { label: "Продуктивність, кг/год", type: "number", unit: "кг/год", rank: 8.1, aliases: [/^продуктивність(?:,?\s*кг\/год)?$/i, /^продуктивність.*кг\/год$/i] }),
     rotationRpm: define("rotationRpm", { label: "Частота обертання, об/хв", type: "number", unit: "об/хв", rank: 8.2, aliases: [/^частота обертання$/i, /^оберти двигуна$/i] }),
     kvs: define("kvs", { label: "Kvs, м³/год", type: "number", unit: "м³/год", rank: 9, aliases: [/^kvs(?:\s*\(.+\))?$/i, /^kv$/i] }),
@@ -238,6 +239,7 @@
     mountingLengthMm: "Монтажна довжина",
     filtrationMicron: "Фільтрація",
     pressureBar: "Робочий тиск",
+    radiusM: "Радіус поливу",
     diameter: "Діаметр / DN",
     diameterMm: "Діаметр",
     connection: "Підключення",
@@ -271,7 +273,8 @@
     ...(window.sofievkaTekkhausSeriesLabels || {}),
     ...(window.sofievkaTechSeriesLabels || {}),
     ...(window.sofievkaHeatingBrandsSeriesLabels || {}),
-    ...(window.sofievkaBaxiBuderusSeriesLabels || {})
+    ...(window.sofievkaBaxiBuderusSeriesLabels || {}),
+    ...(window.sofievkaHunterSeriesLabels || {})
   });
 
   window.sofievkaAttributeSchema = Object.freeze({ definitions, valueLabels, cardPriorityByCategory, cardFallbackPriority, pdpPriorityByCategory, pdpFallbackPriority, cardAttributeLabels, seriesLabels });

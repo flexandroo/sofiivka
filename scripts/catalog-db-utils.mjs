@@ -12,6 +12,40 @@ export const SOFIEVKA_PROJECTS = Object.freeze({
   fkjarsouuchjiedrrblc: Object.freeze({ environment: 'production', name: 'sofievka-prod' }),
 });
 
+const SHARED_CATALOG_MIGRATIONS = Object.freeze([
+  '20260928000100', '20260928000200', '20260928000300', '20260928000400', '20260928000500',
+  '20260929000100', '20260929000200', '20260929000300', '20260929000400', '20260929000500',
+  '20260929000600', '20260929000700', '20260929000800', '20260929000900', '20260929001000',
+  '20261001000100', '20261001000200', '20261002000100',
+]);
+
+export const APPROVED_MIGRATIONS_BY_PROJECT = Object.freeze({
+  wfxcklglujgramasdzyr: Object.freeze([
+    ...SHARED_CATALOG_MIGRATIONS,
+    '20261002000800', '20261004221005', '20261004230105', '20261005120814',
+    '20261104114631', '20261107134320', '20261107134348', '20261107134441',
+    '20261125000100',
+  ]),
+  fkjarsouuchjiedrrblc: Object.freeze([
+    ...SHARED_CATALOG_MIGRATIONS,
+    '20261002000200', '20261002000300', '20261002000500', '20261002000600', '20261002000700',
+    '20261002000800', '20261002000900', '20261002001000', '20261002001100', '20261002001200',
+    '20261002001300', '20261002001400', '20261002001500', '20261002001600', '20261002001700',
+    '20261002001800', '20261002001900', '20261002002000', '20261002002100',
+    '20261004223113', '20261004223156', '20261004235248', '20261004235303', '20261004235341',
+    '20261005122258', '20261104114708', '20261104125158', '20261104135520', '20261104143756',
+    '20261107114454', '20261107141253', '20261107141346',
+    '20261116000100', '20261116000200', '20261116000300', '20261116000400',
+    '20261125000100',
+  ]),
+});
+
+export function approvedMigrationVersions(projectRef) {
+  const migrations = APPROVED_MIGRATIONS_BY_PROJECT[projectRef];
+  if (!migrations) throw new Error(`No approved migration chain for ${projectRef}.`);
+  return migrations;
+}
+
 export const CATALOG_RUNTIME_FILES = Object.freeze([
   'brands-data.js',
   'products-data.js',
@@ -23,6 +57,7 @@ export const CATALOG_RUNTIME_FILES = Object.freeze([
   'tech-products-data.js',
   'heating-brands-products-data.js',
   'baxi-buderus-products-data.js',
+  'hunter-products-data.js',
   'catalog-data.js',
 ]);
 
@@ -171,10 +206,21 @@ export function resolveLinkedDevProject(projectRef) {
   return resolveLinkedProject(projectRef);
 }
 
-export function resolveMigrationHistory() {
-  const output = runSupabaseCli(['migration', 'list', '--linked', '--output-format', 'text']);
-  const pairs = [...output.matchAll(/`(\d{14})`\s*\|\s*`(\d{14})`/g)].map((match) => ({ local: match[1], remote: match[2] }));
-  return { output, pairs };
+export function resolveMigrationHistory(projectRef = '') {
+  const targetArguments = projectRef ? ['--project-ref', projectRef] : ['--linked'];
+  const output = runSupabaseCli(['migration', 'list', ...targetArguments, '--output-format', 'json']);
+  let migrations = [];
+  try {
+    migrations = JSON.parse(output).migrations || [];
+  } catch {
+    migrations = [...output.matchAll(/`(\d{14})`\s*\|\s*`(\d{14})`/g)]
+      .map((match) => ({ local: match[1], remote: match[2] }));
+  }
+  const pairs = migrations.filter((item) => item.local && item.remote)
+    .map((item) => ({ local: item.local, remote: item.remote }));
+  const localVersions = migrations.map((item) => item.local).filter(Boolean);
+  const remoteVersions = migrations.map((item) => item.remote).filter(Boolean);
+  return { output, migrations, pairs, localVersions, remoteVersions };
 }
 
 export function resolveProjectApiKeys(projectRef) {
@@ -397,8 +443,8 @@ export async function loadCoreLookup(client) {
     client.fetchAll('categories', { select: 'internal_id,stable_id' }),
     client.fetchAll('attribute_definitions', { select: 'internal_id,stable_id,value_type,unit' }),
   ]);
-  if (brands.length !== 36 || categories.length !== 87 || attributes.length !== 64) {
-    throw new Error(`Core seed mismatch: brands=${brands.length}, categories=${categories.length}, attributes=${attributes.length}.`);
+  if (!brands.length || !categories.length || !attributes.length) {
+    throw new Error(`Core registry is incomplete: brands=${brands.length}, categories=${categories.length}, attributes=${attributes.length}.`);
   }
   return {
     brandRows: brands,

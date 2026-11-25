@@ -18,14 +18,28 @@
   const hydraulicFacets = ["productType", "type", "outlets", "connection", "flowM3h", "heatOutputKw", "material", "pressureBar"];
   const accessoryFacets = ["productType", "type", "compatibility", "connection", "material", "voltage", "consumptionPowerW", "weightKg"];
   const treatmentFacets = ["productType", "purpose", "waterSource", "technology", "installation", "capacityLh", "waterType", "format", "pump", "mineralizer", "flowType", "scope"];
+  const irrigationFacets = ["productType", "type", "radiusM", "flowM3h", "pressureBar", "connection", "control", "communication", "zones", "voltage", "protectionClass"];
 
   const definitions = [
     category({ id: "heating", slug: "heating", parentId: null, level: 1, title: "Опалення", shortTitle: "Опалення", description: "Обладнання для генерації, розподілу й керування теплом у житлових, комерційних та промислових системах.", menuDescription: "Котли, теплові насоси, гідравліка та автоматика", order: 10, seo: { title: "Опалення | ТД «Софіївка»", description: "Котли, теплові насоси, гідравліка, автоматика та комплектуючі для систем опалення." } }),
     category({ id: "water-supply", slug: "water-supply", parentId: null, level: 1, title: "Водопостачання та каналізація", shortTitle: "Вода й каналізація", description: "Насоси, установки, баки, автоматика та комплектуючі для подачі й відведення води.", menuDescription: "Насоси, каналізаційні установки, баки й автоматика", order: 20, seo: { title: "Водопостачання та каналізація | ТД «Софіївка»", description: "Насоси та обладнання для водопостачання, підвищення тиску й каналізації." } }),
+    category({ id: "irrigation", slug: "irrigation", parentId: null, level: 1, title: "Полив і зрошення", shortTitle: "Полив", description: "Дощувачі, форсунки, контролери, датчики та компоненти автоматичного поливу для приватних, комерційних і спортивних об’єктів.", menuDescription: "Дощувачі, форсунки, автоматика та датчики", order: 25, allowedFacetIds: irrigationFacets, seo: { title: "Полив і зрошення | ТД «Софіївка»", description: "Обладнання Hunter для автоматичного поливу: ротори, форсунки, контролери, датчики та пульти." } }),
     category({ id: "water-treatment", slug: "water-treatment", parentId: null, level: 1, title: "Водоочищення", shortTitle: "Водоочищення", description: "Питні фільтри, системи очищення всього будинку, картриджі, матеріали та UV-C знезараження.", menuDescription: "Фільтри, осмос, пом’якшення, картриджі та UV-C", order: 30, allowedFacetIds: treatmentFacets, seo: { title: "Водоочищення | ТД «Софіївка»", description: "Системи водоочищення, питні фільтри, картриджі, матеріали й UV-C знезараження." } }),
     category({ id: "smart-home", slug: "smart-home", parentId: null, level: 1, title: "Розумний будинок і автоматизація", shortTitle: "Розумний будинок", description: "Центральні блоки, освітлення, реле, датчики, захист від протікання та керування кліматом.", menuDescription: "Sinum, освітлення, реле, датчики та клімат", order: 40, seo: { title: "Розумний будинок і автоматизація | ТД «Софіївка»", description: "Компоненти TECH Sinum для автоматизації будинку, освітлення, клімату та безпеки." } }),
     category({ id: "climate", slug: "climate", parentId: null, level: 1, title: "Клімат", shortTitle: "Клімат", description: "Кондиціонери та системи туманоутворення для охолодження й зволоження повітря.", menuDescription: "Кондиціонери та туманоутворення", order: 50, seo: { title: "Кліматичне обладнання | ТД «Софіївка»", description: "Кондиціонери та системи туманоутворення для житлових і комерційних об’єктів." } }),
     category({ id: "plumbing", slug: "plumbing", parentId: null, level: 1, title: "Сантехніка", shortTitle: "Сантехніка", description: "Напрям готується до наповнення перевіреним асортиментом.", menuDescription: "Рішення під замовлення", order: 70, status: "future", visibility: "landing", seo: { title: "Сантехніка | ТД «Софіївка»", description: "Сантехнічні рішення під замовлення з підбором і комплектацією." } }),
+
+    category({ id: "irrigation-sprinklers", slug: "sprinklers", parentId: "irrigation", level: 2, title: "Дощування", shortTitle: "Дощування", description: "Ротори, ротаційні та віялові форсунки, висувні корпуси й системи для спортивних полів.", order: 251, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-rotors", slug: "rotors", parentId: "irrigation-sprinklers", level: 3, title: "Роторні дощувачі", shortTitle: "Ротори", description: "Роторні дощувачі Hunter для газонів, великих ділянок і професійних об’єктів.", order: 2511, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-mp-nozzles", slug: "mp-rotator", parentId: "irrigation-sprinklers", level: 3, title: "Ротаційні форсунки MP Rotator", shortTitle: "MP Rotator", description: "Водозберігальні багатоструменеві форсунки для точного поливу ділянок різної геометрії.", order: 2512, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-spray-nozzles", slug: "spray-nozzles", parentId: "irrigation-sprinklers", level: 3, title: "Віялові форсунки", shortTitle: "Форсунки", description: "Регульовані, фіксовані, смугові й мікроспрей-форсунки Hunter.", order: 2513, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-spray-bodies", slug: "spray-bodies", parentId: "irrigation-sprinklers", level: 3, title: "Висувні корпуси дощувачів", shortTitle: "Корпуси", description: "Підземні висувні корпуси для встановлення форсунок у системах автоматичного поливу.", order: 2514, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-sports", slug: "sports-fields", parentId: "irrigation-sprinklers", level: 3, title: "Полив спортивних полів", shortTitle: "Спортивні поля", description: "Професійні дощувачі та вузли Hunter ST System для стадіонів і великих майданчиків.", order: 2515, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-control", slug: "control", parentId: "irrigation", level: 2, title: "Керування поливом", shortTitle: "Керування", description: "Контролери, датчики, пульти та компоненти автоматизації систем поливу.", order: 252, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-controllers", slug: "controllers", parentId: "irrigation-control", level: 3, title: "Контролери поливу", shortTitle: "Контролери", description: "Контролери Hunter для побутових, комерційних і професійних систем поливу.", order: 2521, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-sensors", slug: "sensors", parentId: "irrigation-control", level: 3, title: "Датчики поливу", shortTitle: "Датчики", description: "Датчики дощу, вологості, витрати, вітру й температури для автоматичного коригування поливу.", order: 2522, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-remotes", slug: "remotes", parentId: "irrigation-control", level: 3, title: "Пульти дистанційного керування", shortTitle: "Пульти", description: "Пульти Hunter для дистанційного запуску та сервісної перевірки зон поливу.", order: 2523, allowedFacetIds: irrigationFacets }),
+    category({ id: "irrigation-control-accessories", slug: "components", parentId: "irrigation-control", level: 3, title: "Компоненти автоматики", shortTitle: "Компоненти", description: "Декодери, реле, бездротові модулі та сервісні компоненти керування поливом.", order: 2524, allowedFacetIds: irrigationFacets }),
 
     category({ id: "heat-generation", slug: "heat-generation", parentId: "heating", level: 2, title: "Теплогенерація", shortTitle: "Теплогенерація", description: "Котли, пальники, теплогенератори та парогенератори за типом палива й призначенням.", order: 110 }),
     category({ id: "gas-boilers", slug: "gas-boilers", parentId: "heat-generation", level: 3, title: "Газові котли", shortTitle: "Газові котли", description: "Побутові, комерційні та промислові газові котли.", order: 111, allowedFacetIds: ["productType", "type", "heatOutputKw", "efficiencyPercent", "dhwFlowLMin", "installation", "energyClass", "dimensions", "weightKg", "voltage", "protectionClass"] }),
@@ -185,6 +199,7 @@
     installation: define("installation", { label: "Монтаж", rank: 6, aliases: [/^монтаж$/i, /^встановлення$/i, /^спосіб встановлення$/i] }),
     capacityLh: define("capacityLh", { label: "Продуктивність, л/год", type: "number", unit: "л/год", rank: 7, aliases: [/^продуктивність(?:,?\s*л\/год)?$/i] }),
     flowM3h: define("flowM3h", { label: "Продуктивність, м³/год", type: "number", unit: "м³/год", rank: 8, aliases: [/^qmax$/i, /^gmax$/i, /^макс\.?\s*продуктивність$/i, /^максимальна витрата$/i, /^витрата$/i, /^пропускна здатність(?:\s*\(м[³3]\/год\))?$/i, /^швидкість потоку(?:\s*\(м[³3]\/год\))?$/i, /^номінальна витрата$/i] }),
+    radiusM: define("radiusM", { label: "Радіус поливу, м", type: "number", unit: "м", rank: 8.05, aliases: [/^радіус(?: поливу)?$/i, /^radius$/i] }),
     capacityKgh: define("capacityKgh", { label: "Продуктивність, кг/год", type: "number", unit: "кг/год", rank: 8.1, aliases: [/^продуктивність(?:,?\s*кг\/год)?$/i, /^продуктивність.*кг\/год$/i] }),
     rotationRpm: define("rotationRpm", { label: "Частота обертання, об/хв", type: "number", unit: "об/хв", rank: 8.2, aliases: [/^частота обертання$/i, /^оберти двигуна$/i] }),
     kvs: define("kvs", { label: "Kvs, м³/год", type: "number", unit: "м³/год", rank: 9, aliases: [/^kvs(?:\s*\(.+\))?$/i, /^kv$/i] }),
@@ -391,6 +406,7 @@
     mountingLengthMm: "Монтажна довжина",
     filtrationMicron: "Фільтрація",
     pressureBar: "Робочий тиск",
+    radiusM: "Радіус поливу",
     diameter: "Діаметр / DN",
     diameterMm: "Діаметр",
     connection: "Підключення",
@@ -424,7 +440,8 @@
     ...(window.sofievkaTekkhausSeriesLabels || {}),
     ...(window.sofievkaTechSeriesLabels || {}),
     ...(window.sofievkaHeatingBrandsSeriesLabels || {}),
-    ...(window.sofievkaBaxiBuderusSeriesLabels || {})
+    ...(window.sofievkaBaxiBuderusSeriesLabels || {}),
+    ...(window.sofievkaHunterSeriesLabels || {})
   });
 
   window.sofievkaAttributeSchema = Object.freeze({ definitions, valueLabels, cardPriorityByCategory, cardFallbackPriority, pdpPriorityByCategory, pdpFallbackPriority, cardAttributeLabels, seriesLabels });
@@ -456,7 +473,8 @@
     feniks: Object.freeze({ id: "feniks", brandId: "feniks", sourceName: "Офіційний каталог FENIKS" }),
     focus: Object.freeze({ id: "focus", brandId: "focus", sourceName: "Офіційний каталог FOCUS / FireBox" }),
     baxi: Object.freeze({ id: "baxi", brandId: "baxi", sourceName: "Офіційний каталог BAXI Україна" }),
-    buderus: Object.freeze({ id: "buderus", brandId: "buderus", sourceName: "Офіційний каталог Buderus Україна" })
+    buderus: Object.freeze({ id: "buderus", brandId: "buderus", sourceName: "Офіційний каталог Buderus Україна" }),
+    hunter: Object.freeze({ id: "hunter", brandId: "hunter", sourceName: "Офіційний каталог Hunter Industries" })
   });
 
   const categoryMappings = Object.freeze({
@@ -575,6 +593,17 @@
       "buderus-heat-accumulators": freezeMapping({ categoryId: "heat-accumulators" }),
       "buderus-solar-thermal": freezeMapping({ categoryId: "solar-thermal" }),
       "buderus-automation": freezeMapping({ categoryId: "heating-controllers" })
+    }),
+    hunter: Object.freeze({
+      "irrigation-rotors": freezeMapping({ categoryId: "irrigation-rotors" }),
+      "irrigation-sports": freezeMapping({ categoryId: "irrigation-sports" }),
+      "irrigation-mp-nozzles": freezeMapping({ categoryId: "irrigation-mp-nozzles" }),
+      "irrigation-spray-nozzles": freezeMapping({ categoryId: "irrigation-spray-nozzles" }),
+      "irrigation-spray-bodies": freezeMapping({ categoryId: "irrigation-spray-bodies" }),
+      "irrigation-controllers": freezeMapping({ categoryId: "irrigation-controllers" }),
+      "irrigation-control-accessories": freezeMapping({ categoryId: "irrigation-control-accessories" }),
+      "irrigation-sensors": freezeMapping({ categoryId: "irrigation-sensors" }),
+      "irrigation-remotes": freezeMapping({ categoryId: "irrigation-remotes" })
     })
   });
 
@@ -680,6 +709,7 @@
   });
 
   function supplierFor(product) {
+    if (String(product.brand || "").toLocaleLowerCase("en") === "hunter") return "hunter";
     if (String(product.brand || "").toLocaleLowerCase("en") === "buderus") return "buderus";
     if (String(product.brand || "").toLocaleLowerCase("en") === "baxi") return "baxi";
     if (String(product.brand || "").toLocaleLowerCase("en") === "focus") return "focus";
@@ -1163,7 +1193,8 @@
   const rawTechProducts = Array.isArray(window.sofievkaTechProducts) ? window.sofievkaTechProducts : [];
   const rawHeatingBrandsProducts = Array.isArray(window.sofievkaHeatingBrandsProducts) ? window.sofievkaHeatingBrandsProducts : [];
   const rawBaxiBuderusProducts = Array.isArray(window.sofievkaBaxiBuderusProducts) ? window.sofievkaBaxiBuderusProducts : [];
-  const rawSupplierProducts = Object.freeze([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts, ...rawTechProducts, ...rawHeatingBrandsProducts, ...rawBaxiBuderusProducts]);
+  const rawHunterProducts = Array.isArray(window.sofievkaHunterProducts) ? window.sofievkaHunterProducts : [];
+  const rawSupplierProducts = Object.freeze([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts, ...rawTechProducts, ...rawHeatingBrandsProducts, ...rawBaxiBuderusProducts, ...rawHunterProducts]);
   const rawProductsById = new Map(rawSupplierProducts.map(product => [String(product.id), product]));
   const result = normalizeAll(rawSupplierProducts);
 
@@ -1175,7 +1206,7 @@
   });
   window.sofievkaCanonicalProducts = result.products;
   window.sofievkaNormalizationReport = Object.freeze({
-    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length + rawTekkhausProducts.length + rawTechProducts.length + rawHeatingBrandsProducts.length + rawBaxiBuderusProducts.length,
+    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length + rawTekkhausProducts.length + rawTechProducts.length + rawHeatingBrandsProducts.length + rawBaxiBuderusProducts.length + rawHunterProducts.length,
     normalizedCount: result.products.length,
     waterSourceCount: rawWaterProducts.length,
     heatingSourceCount: rawHeatingProducts.length,
@@ -1185,6 +1216,7 @@
     techSourceCount: rawTechProducts.length,
     heatingBrandsSourceCount: rawHeatingBrandsProducts.length,
     baxiBuderusSourceCount: rawBaxiBuderusProducts.length,
+    hunterSourceCount: rawHunterProducts.length,
     duplicateInputIds: result.duplicateInputIds,
     adjustedSlugs: result.adjustedSlugs,
     normalizationErrors: Object.freeze(result.products.filter(product => product.normalizationError).map(product => Object.freeze({ id: product.id, error: product.normalizationError })))
@@ -1352,7 +1384,6 @@
     "/catalog/water-treatment/mechanical-treatment": "mechanical-treatment",
     // Catalogue structure of 2026-10-02: every pump moved under water-supply, single-child water
     // treatment groups were flattened. The old addresses keep resolving to the same categories.
-    "/catalog/heating/circulation-pumps": "system-circulation-pumps",
     "/catalog/heating/circulation-pumps/system-circulation": "system-circulation-pumps",
     "/catalog/heating/circulation-pumps/dhw-recirculation": "dhw-circulation-pumps",
     "/catalog/water-supply/water-pumps": "water-supply",

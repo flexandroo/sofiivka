@@ -441,7 +441,8 @@
   const rawTechProducts = Array.isArray(window.sofievkaTechProducts) ? window.sofievkaTechProducts : [];
   const rawHeatingBrandsProducts = Array.isArray(window.sofievkaHeatingBrandsProducts) ? window.sofievkaHeatingBrandsProducts : [];
   const rawBaxiBuderusProducts = Array.isArray(window.sofievkaBaxiBuderusProducts) ? window.sofievkaBaxiBuderusProducts : [];
-  const rawSupplierProducts = Object.freeze([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts, ...rawTechProducts, ...rawHeatingBrandsProducts, ...rawBaxiBuderusProducts]);
+  const rawHunterProducts = Array.isArray(window.sofievkaHunterProducts) ? window.sofievkaHunterProducts : [];
+  const rawSupplierProducts = Object.freeze([...rawWaterProducts, ...rawHeatingProducts, ...rawWiloProducts, ...rawGrundfosProducts, ...rawTekkhausProducts, ...rawTechProducts, ...rawHeatingBrandsProducts, ...rawBaxiBuderusProducts, ...rawHunterProducts]);
   const rawProductsById = new Map(rawSupplierProducts.map(product => [String(product.id), product]));
   const result = normalizeAll(rawSupplierProducts);
 
@@ -453,7 +454,7 @@
   });
   window.sofievkaCanonicalProducts = result.products;
   window.sofievkaNormalizationReport = Object.freeze({
-    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length + rawTekkhausProducts.length + rawTechProducts.length + rawHeatingBrandsProducts.length + rawBaxiBuderusProducts.length,
+    sourceCount: rawWaterProducts.length + rawHeatingProducts.length + rawWiloProducts.length + rawGrundfosProducts.length + rawTekkhausProducts.length + rawTechProducts.length + rawHeatingBrandsProducts.length + rawBaxiBuderusProducts.length + rawHunterProducts.length,
     normalizedCount: result.products.length,
     waterSourceCount: rawWaterProducts.length,
     heatingSourceCount: rawHeatingProducts.length,
@@ -463,6 +464,7 @@
     techSourceCount: rawTechProducts.length,
     heatingBrandsSourceCount: rawHeatingBrandsProducts.length,
     baxiBuderusSourceCount: rawBaxiBuderusProducts.length,
+    hunterSourceCount: rawHunterProducts.length,
     duplicateInputIds: result.duplicateInputIds,
     adjustedSlugs: result.adjustedSlugs,
     normalizationErrors: Object.freeze(result.products.filter(product => product.normalizationError).map(product => Object.freeze({ id: product.id, error: product.normalizationError })))

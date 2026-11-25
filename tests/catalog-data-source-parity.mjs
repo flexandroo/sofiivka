@@ -49,11 +49,11 @@ for (const layer of canonicalLayers) {
   assert.equal(supabaseHash, localHash, `${layer} canonical parity failed`);
   canonicalHashes[layer] = localHash;
 }
-assert.equal(localSnapshot.products.length, 3214);
-assert.equal(supabaseSnapshot.products.length, 3214);
-assert.equal(localSnapshot.categories.length, 87);
-assert.equal(localSnapshot.brands.length, 36);
-assert.equal(Object.keys(localSnapshot.attributeDefinitions).length, 64);
+assert.equal(localSnapshot.products.length, 3276);
+assert.equal(supabaseSnapshot.products.length, 3276);
+assert.equal(localSnapshot.categories.length, 97);
+assert.equal(localSnapshot.brands.length, 37);
+assert.equal(Object.keys(localSnapshot.attributeDefinitions).length, 65);
 
 const hiddenId = 'grundfos-98377171';
 assert.ok(!supabaseSnapshot.products.some(product => product.id === hiddenId), 'hidden product leaked into public snapshot');

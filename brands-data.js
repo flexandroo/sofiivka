@@ -115,6 +115,14 @@ window.sofievkaBrands = Object.freeze([
     featuredOrder: 4
   },
   {
+    slug: "hunter",
+    name: "Hunter",
+    description: "Дощувачі, форсунки, контролери, датчики та компоненти професійних систем автоматичного поливу.",
+    type: "catalog",
+    featured: true,
+    featuredOrder: 11
+  },
+  {
     slug: "krafter",
     name: "Krafter",
     description: "Опалювальне обладнання та комплектуючі для побудови й обслуговування котелень.",

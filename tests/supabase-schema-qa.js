@@ -18,6 +18,7 @@ const snapshotMaterializationMigration = read("supabase/migrations/2026092900020
 const snapshotTimeoutMigration = read("supabase/migrations/20260929000300_catalog_snapshot_rpc_timeout.sql");
 const scopedReadMigration = read("supabase/migrations/20260929000400_catalog_scoped_read_api.sql");
 const scopedFacetFixMigration = read("supabase/migrations/20260929000500_catalog_facets_object_length_fix.sql");
+const hunterIrrigationMigration = read("supabase/migrations/20261125000100_hunter_irrigation_catalog.sql");
 
 const tableMatches = [...schema.matchAll(/create table public\.(\w+)\s*\(/gi)];
 const tables = tableMatches.map(match => match[1]);
@@ -112,7 +113,6 @@ for (const file of [["schema.sql", schema], ["rls.sql", rls], ["seed-core.sql", 
 
 const migrationPairs = [
   ["supabase/schema.sql", "supabase/migrations/20260928000100_catalog_schema.sql"],
-  ["supabase/seed-core.sql", "supabase/migrations/20260928000300_core_seed.sql"],
   ["supabase/storage.sql", "supabase/migrations/20260928000400_storage.sql"],
   ["supabase/seed-core.sql", "supabase/seed.sql"]
 ];
@@ -179,6 +179,16 @@ assert.match(scopedFacetFixMigration, /create or replace function extensions\.js
   "facet compatibility helper missing");
 assert.match(scopedFacetFixMigration, /set search_path = 'pg_catalog', 'extensions'/i,
   "facet RPC replacement must use an explicit safe search path");
+assert.match(hunterIrrigationMigration, /insert into public\.brands[\s\S]*?'hunter'/i,
+  "Hunter brand registry migration is missing");
+assert.match(hunterIrrigationMigration, /"irrigation-rotors"[\s\S]*?"irrigation-controllers"[\s\S]*?"irrigation-sensors"/i,
+  "Hunter irrigation category tree is incomplete");
+assert.match(hunterIrrigationMigration, /insert into public\.attribute_definitions[\s\S]*?'radiusM'/i,
+  "irrigation radius attribute is missing");
+assert.match(hunterIrrigationMigration, /insert into public\.category_attributes/i,
+  "Hunter category facet registry is missing");
+assert.match(hunterIrrigationMigration, /^begin;[\s\S]*commit;\s*$/im,
+  "Hunter irrigation migration must be transactional");
 
 const pgTapTests = fs.readdirSync(path.join(root, "supabase", "tests"))
   .filter(file => file.endsWith(".test.sql"))
@@ -226,11 +236,11 @@ assert.doesNotMatch(envExample, /SERVICE_ROLE|DB_PASSWORD|ACCESS_TOKEN|SB_SECRET
 const seedPayloads = [...seed.matchAll(/jsonb_to_recordset\(\$seed\$([\s\S]*?)\$seed\$::jsonb\)/g)].map(match => JSON.parse(match[1]));
 assert.equal(seedPayloads.length, 4, "seed must contain brands, categories, attributes and category relations only");
 const [brands, categories, attributes, categoryAttributes] = seedPayloads;
-assert.equal(brands.length, 36, "brand seed count changed");
-assert.equal(categories.length, 87, "category seed count changed");
-assert.equal(attributes.length, 64, "attribute seed count changed");
-assert.equal(categoryAttributes.length, 648, "category-attribute seed count changed");
-assert.equal(categoryAttributes.filter(item => !item.facet_enabled).length, 47, "disabled non-filterable category facets changed");
+assert.equal(brands.length, 37, "brand seed count changed");
+assert.equal(categories.length, 97, "category seed count changed");
+assert.equal(attributes.length, 65, "attribute seed count changed");
+assert.equal(categoryAttributes.length, 773, "category-attribute seed count changed");
+assert.equal(categoryAttributes.filter(item => !item.facet_enabled).length, 46, "disabled non-filterable category facets changed");
 assert.doesNotMatch(seed, /insert into public\.products/i, "seed-core must not import products");
 
 const unique = (items, field, label) => assert.equal(new Set(items.map(item => item[field])).size, items.length, `${label} contains duplicates`);

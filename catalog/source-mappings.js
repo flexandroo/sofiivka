@@ -24,7 +24,8 @@
     feniks: Object.freeze({ id: "feniks", brandId: "feniks", sourceName: "Офіційний каталог FENIKS" }),
     focus: Object.freeze({ id: "focus", brandId: "focus", sourceName: "Офіційний каталог FOCUS / FireBox" }),
     baxi: Object.freeze({ id: "baxi", brandId: "baxi", sourceName: "Офіційний каталог BAXI Україна" }),
-    buderus: Object.freeze({ id: "buderus", brandId: "buderus", sourceName: "Офіційний каталог Buderus Україна" })
+    buderus: Object.freeze({ id: "buderus", brandId: "buderus", sourceName: "Офіційний каталог Buderus Україна" }),
+    hunter: Object.freeze({ id: "hunter", brandId: "hunter", sourceName: "Офіційний каталог Hunter Industries" })
   });
 
   const categoryMappings = Object.freeze({
@@ -143,6 +144,17 @@
       "buderus-heat-accumulators": freezeMapping({ categoryId: "heat-accumulators" }),
       "buderus-solar-thermal": freezeMapping({ categoryId: "solar-thermal" }),
       "buderus-automation": freezeMapping({ categoryId: "heating-controllers" })
+    }),
+    hunter: Object.freeze({
+      "irrigation-rotors": freezeMapping({ categoryId: "irrigation-rotors" }),
+      "irrigation-sports": freezeMapping({ categoryId: "irrigation-sports" }),
+      "irrigation-mp-nozzles": freezeMapping({ categoryId: "irrigation-mp-nozzles" }),
+      "irrigation-spray-nozzles": freezeMapping({ categoryId: "irrigation-spray-nozzles" }),
+      "irrigation-spray-bodies": freezeMapping({ categoryId: "irrigation-spray-bodies" }),
+      "irrigation-controllers": freezeMapping({ categoryId: "irrigation-controllers" }),
+      "irrigation-control-accessories": freezeMapping({ categoryId: "irrigation-control-accessories" }),
+      "irrigation-sensors": freezeMapping({ categoryId: "irrigation-sensors" }),
+      "irrigation-remotes": freezeMapping({ categoryId: "irrigation-remotes" })
     })
   });
 
@@ -248,6 +260,7 @@
   });
 
   function supplierFor(product) {
+    if (String(product.brand || "").toLocaleLowerCase("en") === "hunter") return "hunter";
     if (String(product.brand || "").toLocaleLowerCase("en") === "buderus") return "buderus";
     if (String(product.brand || "").toLocaleLowerCase("en") === "baxi") return "baxi";
     if (String(product.brand || "").toLocaleLowerCase("en") === "focus") return "focus";

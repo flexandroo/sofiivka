@@ -83,6 +83,7 @@ if (process.argv.includes("--catalog-audit")) {
     "tech-products-data.js",
     "heating-brands-products-data.js",
     "baxi-buderus-products-data.js",
+    "hunter-products-data.js",
     "catalog-data.js"
   ]) {
     vm.runInContext(fs.readFileSync(path.join(projectRoot, file), "utf8"), context, { filename: file });
@@ -143,7 +144,7 @@ if (process.argv.includes("--audit")) {
 
 const json = value => JSON.stringify(value, null, 2).replaceAll("$seed$", "$seed_safe$");
 
-process.stdout.write(`-- Generated from the stabilized Sofiivka registries. Do not add products here.
+const output = `-- Generated from the stabilized Sofiivka registries. Do not add products here.
 -- Source: brands-data.js, catalog/categories.js, catalog/attribute-schema.js
 
 begin;
@@ -272,4 +273,12 @@ on conflict (category_id, attribute_id) do update set
   display_group = excluded.display_group;
 
 commit;
-`);
+`;
+
+if (process.argv.includes("--write")) {
+  fs.writeFileSync(path.join(projectRoot, "supabase", "seed-core.sql"), output, "utf8");
+  fs.writeFileSync(path.join(projectRoot, "supabase", "seed.sql"), output, "utf8");
+  console.log("Updated supabase/seed-core.sql and supabase/seed.sql");
+} else {
+  process.stdout.write(output);
+}

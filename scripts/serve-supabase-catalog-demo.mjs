@@ -23,7 +23,7 @@ const publicConfigScript = `<script>window.SOFIEVKA_DEV_CATALOG_SOURCE=true;wind
   environment: 'local-preview',
   supabase: { url: supabaseUrl, publishableKey, projectRef },
 })});</script>`;
-const supplierFeedPattern = /<script\b(?=[^>]*\bsrc=["'](?:[^"']*\/)?(?:products-data|termojet-products-data|wilo-products-data|grundfos-products-data|tekkhaus-products-data|tech-products-data|heating-brands-products-data|baxi-buderus-products-data)\.js[^"']*["'])[^>]*>\s*<\/script>\s*/gim;
+const supplierFeedPattern = /<script\b(?=[^>]*\bsrc=["'](?:[^"']*\/)?(?:products-data|termojet-products-data|wilo-products-data|grundfos-products-data|tekkhaus-products-data|tech-products-data|heating-brands-products-data|baxi-buderus-products-data|hunter-products-data)\.js[^"']*["'])[^>]*>\s*<\/script>\s*/gim;
 
 const mimeTypes = {
   '.css': 'text/css; charset=utf-8', '.html': 'text/html; charset=utf-8',

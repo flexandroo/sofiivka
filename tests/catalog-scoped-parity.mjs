@@ -36,7 +36,7 @@ for (const layer of ['categories', 'brands', 'attributeDefinitions', 'categoryCo
 const scopes = [
   'gas-boilers', 'solid-fuel-boilers', 'system-circulation-pumps', 'borehole-pumps',
   'sewage-pumps', 'reverse-osmosis', 'water-softening', 'smart-lighting',
-  'heating', 'water-supply', 'all',
+  'irrigation-rotors', 'irrigation', 'heating', 'water-supply', 'all',
 ];
 const plp = {};
 let criticalDiffs = 0;
@@ -106,12 +106,12 @@ const regressionQueries = [
   'Grundfos PM 1', '1000116', 'TEKK HAUS ECS', 'кормоподрібнювач TEKK HAUS',
   'L-5s', 'TECH Sinum', 'кімнатний термостат TECH', 'Altep Classic Plus',
   'FENIKS Серія C 12 кВт', 'FOCUS пелетний котел 120 кВт', 'BAXI DUO-TEC Compact E 24',
-  '7736901204', 'Buderus Logalux', 'циркуляцыйний насос', 'power 0.37 кВт',
+  '7736901204', 'Buderus Logalux', 'циркуляцыйний насос', 'power 0.37 кВт', 'Hunter PGP Ultra',
 ];
-const exactCases = snapshot.products.slice(0, 10).flatMap(product => [
+const exactCases = [{ query: 'Hunter PGP Ultra', expectedId: 'hunter-pgp-ultra', type: 'hunter' }, ...snapshot.products.slice(0, 10).flatMap(product => [
   { query: product.sku, expectedId: product.id, type: 'sku' },
   { query: product.model, expectedId: product.id, type: 'model' },
-]);
+])];
 const search = [];
 for (const test of [...regressionQueries.map(query => ({ query, type: 'regression' })), ...exactCases]) {
   const legacy = runtime.sofievkaCatalogSearch.search(test.query, { productLimit: 30, categoryLimit: 8, brandLimit: 8, seriesLimit: 8 });

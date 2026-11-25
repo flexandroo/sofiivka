@@ -222,6 +222,21 @@ from jsonb_to_recordset($seed$[
     "status": "active"
   },
   {
+    "stable_id": "hunter",
+    "slug": "hunter",
+    "name": "Hunter",
+    "aliases": [],
+    "logo_url": null,
+    "description": "Дощувачі, форсунки, контролери, датчики та компоненти професійних систем автоматичного поливу.",
+    "country": null,
+    "visibility": "catalog",
+    "featured": true,
+    "featured_order": 11,
+    "seo_title": "Hunter — товари та категорії | ТД «Софіївка»",
+    "seo_description": "Дощувачі, форсунки, контролери, датчики та компоненти професійних систем автоматичного поливу.",
+    "status": "active"
+  },
+  {
     "stable_id": "krafter",
     "slug": "krafter",
     "name": "Krafter",
@@ -611,6 +626,21 @@ from jsonb_to_recordset($seed$[
     "seo_description": "Насоси та обладнання для водопостачання, підвищення тиску й каналізації."
   },
   {
+    "stable_id": "irrigation",
+    "slug": "irrigation",
+    "parent_stable_id": null,
+    "level": 1,
+    "title": "Полив і зрошення",
+    "short_title": "Полив",
+    "description": "Дощувачі, форсунки, контролери, датчики та компоненти автоматичного поливу для приватних, комерційних і спортивних об’єктів.",
+    "menu_description": "Дощувачі, форсунки, автоматика та датчики",
+    "sort_order": 25,
+    "status": "active",
+    "visibility": "catalog",
+    "seo_title": "Полив і зрошення | ТД «Софіївка»",
+    "seo_description": "Обладнання Hunter для автоматичного поливу: ротори, форсунки, контролери, датчики та пульти."
+  },
+  {
     "stable_id": "water-treatment",
     "slug": "water-treatment",
     "parent_stable_id": null,
@@ -656,21 +686,6 @@ from jsonb_to_recordset($seed$[
     "seo_description": "Кондиціонери та системи туманоутворення для житлових і комерційних об’єктів."
   },
   {
-    "stable_id": "household-equipment",
-    "slug": "household-equipment",
-    "parent_stable_id": null,
-    "level": 1,
-    "title": "Обладнання для господарства",
-    "short_title": "Для господарства",
-    "description": "Електричне обладнання для підготовки кормів та повсякденних господарських задач.",
-    "menu_description": "Подрібнення та підготовка кормів",
-    "sort_order": 60,
-    "status": "active",
-    "visibility": "catalog",
-    "seo_title": "Обладнання для господарства | ТД «Софіївка»",
-    "seo_description": "Електричне обладнання для приватного та фермерського господарства."
-  },
-  {
     "stable_id": "plumbing",
     "slug": "plumbing",
     "parent_stable_id": null,
@@ -684,6 +699,171 @@ from jsonb_to_recordset($seed$[
     "visibility": "landing",
     "seo_title": "Сантехніка | ТД «Софіївка»",
     "seo_description": "Сантехнічні рішення під замовлення з підбором і комплектацією."
+  },
+  {
+    "stable_id": "irrigation-sprinklers",
+    "slug": "sprinklers",
+    "parent_stable_id": "irrigation",
+    "level": 2,
+    "title": "Дощування",
+    "short_title": "Дощування",
+    "description": "Ротори, ротаційні та віялові форсунки, висувні корпуси й системи для спортивних полів.",
+    "menu_description": "",
+    "sort_order": 251,
+    "status": "active",
+    "visibility": "catalog",
+    "seo_title": null,
+    "seo_description": null
+  },
+  {
+    "stable_id": "irrigation-rotors",
+    "slug": "rotors",
+    "parent_stable_id": "irrigation-sprinklers",
+    "level": 3,
+    "title": "Роторні дощувачі",
+    "short_title": "Ротори",
+    "description": "Роторні дощувачі Hunter для газонів, великих ділянок і професійних об’єктів.",
+    "menu_description": "",
+    "sort_order": 2511,
+    "status": "active",
+    "visibility": "catalog",
+    "seo_title": null,
+    "seo_description": null
+  },
+  {
+    "stable_id": "irrigation-mp-nozzles",
+    "slug": "mp-rotator",
+    "parent_stable_id": "irrigation-sprinklers",
+    "level": 3,
+    "title": "Ротаційні форсунки MP Rotator",
+    "short_title": "MP Rotator",
+    "description": "Водозберігальні багатоструменеві форсунки для точного поливу ділянок різної геометрії.",
+    "menu_description": "",
+    "sort_order": 2512,
+    "status": "active",
+    "visibility": "catalog",
+    "seo_title": null,
+    "seo_description": null
+  },
+  {
+    "stable_id": "irrigation-spray-nozzles",
+    "slug": "spray-nozzles",
+    "parent_stable_id": "irrigation-sprinklers",
+    "level": 3,
+    "title": "Віялові форсунки",
+    "short_title": "Форсунки",
+    "description": "Регульовані, фіксовані, смугові й мікроспрей-форсунки Hunter.",
+    "menu_description": "",
+    "sort_order": 2513,
+    "status": "active",
+    "visibility": "catalog",
+    "seo_title": null,
+    "seo_description": null
+  },
+  {
+    "stable_id": "irrigation-spray-bodies",
+    "slug": "spray-bodies",
+    "parent_stable_id": "irrigation-sprinklers",
+    "level": 3,
+    "title": "Висувні корпуси дощувачів",
+    "short_title": "Корпуси",
+    "description": "Підземні висувні корпуси для встановлення форсунок у системах автоматичного поливу.",
+    "menu_description": "",
+    "sort_order": 2514,
+    "status": "active",
+    "visibility": "catalog",
+    "seo_title": null,
+    "seo_description": null
+  },
+  {
+    "stable_id": "irrigation-sports",
+    "slug": "sports-fields",
+    "parent_stable_id": "irrigation-sprinklers",
+    "level": 3,
+    "title": "Полив спортивних полів",
+    "short_title": "Спортивні поля",
+    "description": "Професійні дощувачі та вузли Hunter ST System для стадіонів і великих майданчиків.",
+    "menu_description": "",
+    "sort_order": 2515,
+    "status": "active",
+    "visibility": "catalog",
+    "seo_title": null,
+    "seo_description": null
+  },
+  {
+    "stable_id": "irrigation-control",
+    "slug": "control",
+    "parent_stable_id": "irrigation",
+    "level": 2,
+    "title": "Керування поливом",
+    "short_title": "Керування",
+    "description": "Контролери, датчики, пульти та компоненти автоматизації систем поливу.",
+    "menu_description": "",
+    "sort_order": 252,
+    "status": "active",
+    "visibility": "catalog",
+    "seo_title": null,
+    "seo_description": null
+  },
+  {
+    "stable_id": "irrigation-controllers",
+    "slug": "controllers",
+    "parent_stable_id": "irrigation-control",
+    "level": 3,
+    "title": "Контролери поливу",
+    "short_title": "Контролери",
+    "description": "Контролери Hunter для побутових, комерційних і професійних систем поливу.",
+    "menu_description": "",
+    "sort_order": 2521,
+    "status": "active",
+    "visibility": "catalog",
+    "seo_title": null,
+    "seo_description": null
+  },
+  {
+    "stable_id": "irrigation-sensors",
+    "slug": "sensors",
+    "parent_stable_id": "irrigation-control",
+    "level": 3,
+    "title": "Датчики поливу",
+    "short_title": "Датчики",
+    "description": "Датчики дощу, вологості, витрати, вітру й температури для автоматичного коригування поливу.",
+    "menu_description": "",
+    "sort_order": 2522,
+    "status": "active",
+    "visibility": "catalog",
+    "seo_title": null,
+    "seo_description": null
+  },
+  {
+    "stable_id": "irrigation-remotes",
+    "slug": "remotes",
+    "parent_stable_id": "irrigation-control",
+    "level": 3,
+    "title": "Пульти дистанційного керування",
+    "short_title": "Пульти",
+    "description": "Пульти Hunter для дистанційного запуску та сервісної перевірки зон поливу.",
+    "menu_description": "",
+    "sort_order": 2523,
+    "status": "active",
+    "visibility": "catalog",
+    "seo_title": null,
+    "seo_description": null
+  },
+  {
+    "stable_id": "irrigation-control-accessories",
+    "slug": "components",
+    "parent_stable_id": "irrigation-control",
+    "level": 3,
+    "title": "Компоненти автоматики",
+    "short_title": "Компоненти",
+    "description": "Декодери, реле, бездротові модулі та сервісні компоненти керування поливом.",
+    "menu_description": "",
+    "sort_order": 2524,
+    "status": "active",
+    "visibility": "catalog",
+    "seo_title": null,
+    "seo_description": null
   },
   {
     "stable_id": "heat-generation",
@@ -1869,21 +2049,6 @@ from jsonb_to_recordset($seed$[
     "visibility": "catalog",
     "seo_title": null,
     "seo_description": null
-  },
-  {
-    "stable_id": "feed-grinders",
-    "slug": "feed-grinders",
-    "parent_stable_id": "household-equipment",
-    "level": 2,
-    "title": "Кормоподрібнювачі",
-    "short_title": "Кормоподрібнювачі",
-    "description": "Електричні подрібнювачі зернових культур і коренеплодів.",
-    "menu_description": "",
-    "sort_order": 610,
-    "status": "active",
-    "visibility": "catalog",
-    "seo_title": null,
-    "seo_description": null
   }
 ]$seed$::jsonb) as seed(
   stable_id text, slug text, parent_stable_id text, level smallint, title text,
@@ -2171,6 +2336,33 @@ from jsonb_to_recordset($seed$[
       },
       {
         "pattern": "^номінальна витрата$",
+        "flags": "i"
+      }
+    ],
+    "normalization_config": {
+      "booleanValues": {
+        "true": [],
+        "false": []
+      },
+      "legacyValues": {}
+    },
+    "status": "active"
+  },
+  {
+    "stable_id": "radiusM",
+    "label": "Радіус поливу, м",
+    "value_type": "number",
+    "unit": "м",
+    "filterable": true,
+    "sortable": false,
+    "sort_order": 8.05,
+    "aliases": [
+      {
+        "pattern": "^радіус(?: поливу)?$",
+        "flags": "i"
+      },
+      {
+        "pattern": "^radius$",
         "flags": "i"
       }
     ],
@@ -3930,6 +4122,94 @@ select
   seed.display_group
 from jsonb_to_recordset($seed$[
   {
+    "category_stable_id": "irrigation",
+    "attribute_stable_id": "productType",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 0,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation",
+    "attribute_stable_id": "type",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 1,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation",
+    "attribute_stable_id": "radiusM",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 2,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation",
+    "attribute_stable_id": "flowM3h",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 3,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation",
+    "attribute_stable_id": "pressureBar",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 4,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation",
+    "attribute_stable_id": "connection",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 5,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation",
+    "attribute_stable_id": "control",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 6,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation",
+    "attribute_stable_id": "communication",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 7,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation",
+    "attribute_stable_id": "zones",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 8,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation",
+    "attribute_stable_id": "voltage",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 9,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation",
+    "attribute_stable_id": "protectionClass",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 10,
+    "display_group": null
+  },
+  {
     "category_stable_id": "water-treatment",
     "attribute_stable_id": "productType",
     "facet_enabled": true,
@@ -4023,6 +4303,974 @@ from jsonb_to_recordset($seed$[
     "facet_enabled": true,
     "required": false,
     "sort_order": 11,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sprinklers",
+    "attribute_stable_id": "productType",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 0,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sprinklers",
+    "attribute_stable_id": "type",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 1,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sprinklers",
+    "attribute_stable_id": "radiusM",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 2,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sprinklers",
+    "attribute_stable_id": "flowM3h",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 3,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sprinklers",
+    "attribute_stable_id": "pressureBar",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 4,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sprinklers",
+    "attribute_stable_id": "connection",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 5,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sprinklers",
+    "attribute_stable_id": "control",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 6,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sprinklers",
+    "attribute_stable_id": "communication",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 7,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sprinklers",
+    "attribute_stable_id": "zones",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 8,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sprinklers",
+    "attribute_stable_id": "voltage",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 9,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sprinklers",
+    "attribute_stable_id": "protectionClass",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 10,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-rotors",
+    "attribute_stable_id": "productType",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 0,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-rotors",
+    "attribute_stable_id": "type",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 1,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-rotors",
+    "attribute_stable_id": "radiusM",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 2,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-rotors",
+    "attribute_stable_id": "flowM3h",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 3,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-rotors",
+    "attribute_stable_id": "pressureBar",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 4,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-rotors",
+    "attribute_stable_id": "connection",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 5,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-rotors",
+    "attribute_stable_id": "control",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 6,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-rotors",
+    "attribute_stable_id": "communication",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 7,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-rotors",
+    "attribute_stable_id": "zones",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 8,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-rotors",
+    "attribute_stable_id": "voltage",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 9,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-rotors",
+    "attribute_stable_id": "protectionClass",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 10,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-mp-nozzles",
+    "attribute_stable_id": "productType",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 0,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-mp-nozzles",
+    "attribute_stable_id": "type",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 1,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-mp-nozzles",
+    "attribute_stable_id": "radiusM",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 2,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-mp-nozzles",
+    "attribute_stable_id": "flowM3h",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 3,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-mp-nozzles",
+    "attribute_stable_id": "pressureBar",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 4,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-mp-nozzles",
+    "attribute_stable_id": "connection",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 5,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-mp-nozzles",
+    "attribute_stable_id": "control",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 6,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-mp-nozzles",
+    "attribute_stable_id": "communication",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 7,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-mp-nozzles",
+    "attribute_stable_id": "zones",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 8,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-mp-nozzles",
+    "attribute_stable_id": "voltage",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 9,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-mp-nozzles",
+    "attribute_stable_id": "protectionClass",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 10,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-nozzles",
+    "attribute_stable_id": "productType",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 0,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-nozzles",
+    "attribute_stable_id": "type",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 1,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-nozzles",
+    "attribute_stable_id": "radiusM",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 2,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-nozzles",
+    "attribute_stable_id": "flowM3h",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 3,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-nozzles",
+    "attribute_stable_id": "pressureBar",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 4,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-nozzles",
+    "attribute_stable_id": "connection",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 5,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-nozzles",
+    "attribute_stable_id": "control",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 6,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-nozzles",
+    "attribute_stable_id": "communication",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 7,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-nozzles",
+    "attribute_stable_id": "zones",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 8,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-nozzles",
+    "attribute_stable_id": "voltage",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 9,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-nozzles",
+    "attribute_stable_id": "protectionClass",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 10,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-bodies",
+    "attribute_stable_id": "productType",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 0,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-bodies",
+    "attribute_stable_id": "type",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 1,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-bodies",
+    "attribute_stable_id": "radiusM",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 2,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-bodies",
+    "attribute_stable_id": "flowM3h",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 3,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-bodies",
+    "attribute_stable_id": "pressureBar",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 4,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-bodies",
+    "attribute_stable_id": "connection",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 5,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-bodies",
+    "attribute_stable_id": "control",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 6,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-bodies",
+    "attribute_stable_id": "communication",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 7,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-bodies",
+    "attribute_stable_id": "zones",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 8,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-bodies",
+    "attribute_stable_id": "voltage",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 9,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-spray-bodies",
+    "attribute_stable_id": "protectionClass",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 10,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sports",
+    "attribute_stable_id": "productType",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 0,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sports",
+    "attribute_stable_id": "type",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 1,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sports",
+    "attribute_stable_id": "radiusM",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 2,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sports",
+    "attribute_stable_id": "flowM3h",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 3,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sports",
+    "attribute_stable_id": "pressureBar",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 4,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sports",
+    "attribute_stable_id": "connection",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 5,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sports",
+    "attribute_stable_id": "control",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 6,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sports",
+    "attribute_stable_id": "communication",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 7,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sports",
+    "attribute_stable_id": "zones",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 8,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sports",
+    "attribute_stable_id": "voltage",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 9,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sports",
+    "attribute_stable_id": "protectionClass",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 10,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control",
+    "attribute_stable_id": "productType",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 0,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control",
+    "attribute_stable_id": "type",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 1,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control",
+    "attribute_stable_id": "radiusM",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 2,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control",
+    "attribute_stable_id": "flowM3h",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 3,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control",
+    "attribute_stable_id": "pressureBar",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 4,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control",
+    "attribute_stable_id": "connection",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 5,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control",
+    "attribute_stable_id": "control",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 6,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control",
+    "attribute_stable_id": "communication",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 7,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control",
+    "attribute_stable_id": "zones",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 8,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control",
+    "attribute_stable_id": "voltage",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 9,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control",
+    "attribute_stable_id": "protectionClass",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 10,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-controllers",
+    "attribute_stable_id": "productType",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 0,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-controllers",
+    "attribute_stable_id": "type",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 1,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-controllers",
+    "attribute_stable_id": "radiusM",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 2,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-controllers",
+    "attribute_stable_id": "flowM3h",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 3,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-controllers",
+    "attribute_stable_id": "pressureBar",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 4,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-controllers",
+    "attribute_stable_id": "connection",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 5,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-controllers",
+    "attribute_stable_id": "control",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 6,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-controllers",
+    "attribute_stable_id": "communication",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 7,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-controllers",
+    "attribute_stable_id": "zones",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 8,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-controllers",
+    "attribute_stable_id": "voltage",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 9,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-controllers",
+    "attribute_stable_id": "protectionClass",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 10,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sensors",
+    "attribute_stable_id": "productType",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 0,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sensors",
+    "attribute_stable_id": "type",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 1,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sensors",
+    "attribute_stable_id": "radiusM",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 2,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sensors",
+    "attribute_stable_id": "flowM3h",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 3,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sensors",
+    "attribute_stable_id": "pressureBar",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 4,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sensors",
+    "attribute_stable_id": "connection",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 5,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sensors",
+    "attribute_stable_id": "control",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 6,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sensors",
+    "attribute_stable_id": "communication",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 7,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sensors",
+    "attribute_stable_id": "zones",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 8,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sensors",
+    "attribute_stable_id": "voltage",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 9,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-sensors",
+    "attribute_stable_id": "protectionClass",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 10,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-remotes",
+    "attribute_stable_id": "productType",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 0,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-remotes",
+    "attribute_stable_id": "type",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 1,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-remotes",
+    "attribute_stable_id": "radiusM",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 2,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-remotes",
+    "attribute_stable_id": "flowM3h",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 3,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-remotes",
+    "attribute_stable_id": "pressureBar",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 4,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-remotes",
+    "attribute_stable_id": "connection",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 5,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-remotes",
+    "attribute_stable_id": "control",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 6,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-remotes",
+    "attribute_stable_id": "communication",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 7,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-remotes",
+    "attribute_stable_id": "zones",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 8,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-remotes",
+    "attribute_stable_id": "voltage",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 9,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-remotes",
+    "attribute_stable_id": "protectionClass",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 10,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control-accessories",
+    "attribute_stable_id": "productType",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 0,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control-accessories",
+    "attribute_stable_id": "type",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 1,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control-accessories",
+    "attribute_stable_id": "radiusM",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 2,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control-accessories",
+    "attribute_stable_id": "flowM3h",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 3,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control-accessories",
+    "attribute_stable_id": "pressureBar",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 4,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control-accessories",
+    "attribute_stable_id": "connection",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 5,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control-accessories",
+    "attribute_stable_id": "control",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 6,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control-accessories",
+    "attribute_stable_id": "communication",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 7,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control-accessories",
+    "attribute_stable_id": "zones",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 8,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control-accessories",
+    "attribute_stable_id": "voltage",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 9,
+    "display_group": null
+  },
+  {
+    "category_stable_id": "irrigation-control-accessories",
+    "attribute_stable_id": "protectionClass",
+    "facet_enabled": true,
+    "required": false,
+    "sort_order": 10,
     "display_group": null
   },
   {
@@ -9055,62 +10303,6 @@ from jsonb_to_recordset($seed$[
     "facet_enabled": false,
     "required": false,
     "sort_order": 7,
-    "display_group": null
-  },
-  {
-    "category_stable_id": "feed-grinders",
-    "attribute_stable_id": "productType",
-    "facet_enabled": true,
-    "required": false,
-    "sort_order": 0,
-    "display_group": null
-  },
-  {
-    "category_stable_id": "feed-grinders",
-    "attribute_stable_id": "powerKw",
-    "facet_enabled": true,
-    "required": false,
-    "sort_order": 1,
-    "display_group": null
-  },
-  {
-    "category_stable_id": "feed-grinders",
-    "attribute_stable_id": "capacityKgh",
-    "facet_enabled": true,
-    "required": false,
-    "sort_order": 2,
-    "display_group": null
-  },
-  {
-    "category_stable_id": "feed-grinders",
-    "attribute_stable_id": "rotationRpm",
-    "facet_enabled": true,
-    "required": false,
-    "sort_order": 3,
-    "display_group": null
-  },
-  {
-    "category_stable_id": "feed-grinders",
-    "attribute_stable_id": "voltage",
-    "facet_enabled": true,
-    "required": false,
-    "sort_order": 4,
-    "display_group": null
-  },
-  {
-    "category_stable_id": "feed-grinders",
-    "attribute_stable_id": "protectionClass",
-    "facet_enabled": true,
-    "required": false,
-    "sort_order": 5,
-    "display_group": null
-  },
-  {
-    "category_stable_id": "feed-grinders",
-    "attribute_stable_id": "weightKg",
-    "facet_enabled": false,
-    "required": false,
-    "sort_order": 6,
     "display_group": null
   }
 ]$seed$::jsonb) as seed(

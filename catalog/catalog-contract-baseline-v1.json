@@ -1,24 +1,24 @@
 {
   "version": "catalog-contract-baseline-v1",
-  "capturedAt": "2026-09-28",
+  "capturedAt": "2026-11-25",
   "counts": {
-    "products": 3212,
-    "catalogProducts": 3211,
+    "products": 3277,
+    "catalogProducts": 3276,
     "serviceItems": 1,
-    "brands": 36,
-    "categories": 85
+    "brands": 37,
+    "categories": 97
   },
   "hashes": {
-    "productIds": "7de9af4f37be52b5f8dbbe55dbe444ccba95ad696ac99eb8499fa44eb2a12e0c",
-    "skus": "474cfce3000a42a61a34e5c74cba22bdac8034cc412366d40e7effc20fbd279f",
-    "slugs": "9c44251d2b8921ce8685162aa78b40e4ae9ceef750bef7fe11581277d671a149",
-    "brandCategoryAssignments": "08486139d6cd8a166cc736c3c834029710f2cdf681f17cea37c08d00f4878d70",
-    "brandIds": "453337dab34ed6ce11a1cb0487d9bcd09fa0199592305797147c69c2fe6d5076",
-    "categoryIds": "3856afa9d155d45cbafedb110701d142b39b90aa62a8ea901e0f528226b79ed6",
-    "publicUrls": "a5544c7271eb032ab468d031957a40ed582f47d41115f39f2d15cfb003c99bb0",
-    "plpCounts": "11e26832366a132c8bd4f39212b1a35b1b664f8aa52b1545c2d25d50becdd2ef",
-    "facetAvailability": "fced2fc1a2ca0bba304f301208142dcb4663f3182879ab15af40ebab7cab19f6",
-    "searchAvailability": "9cad45b2408f0dafbad15a0f67abaae7accca4915f398cefdafada8869e5a3f8"
+    "productIds": "efc91be0ad2a8321e5162ff1b388eb10f0b8d75b72ae418566028812b141fc5c",
+    "skus": "f93f8d67252833deb3a45c9f5a77ea030947e579e4d2d6cd8fc6192c661a9427",
+    "slugs": "03bebcd2b1ea5d584e4874ba74c1adda0c467fce0e8aa94b2a2e392a7f57701a",
+    "brandCategoryAssignments": "d9beb731f85ef48ef7d5ddaa37108f37bb0211921117f86b2d615d56e04c9f9b",
+    "brandIds": "afd0a1c1e1bff4317efb6a8a297568f3afc2e5a9c6099732a25a0f924a76c47e",
+    "categoryIds": "fb59873844dc832a3f73bd9f05bb73a1524c757866946566b57d45f101e4cf7c",
+    "publicUrls": "47f28941fc62fd04f9e4abcad64c685a91b33df54c02bdc8778530fb882f673e",
+    "plpCounts": "61c0974501be087cf0226b443b2b8d5673743bff34b0331e4120faec4bb27a89",
+    "facetAvailability": "78523bd008e491316e1c40c6e3fdfbb3f13bc30ac08ab7f8ddf82531695539d1",
+    "searchAvailability": "de3fc0b9154212085e319928f11fac3d655cee328c1751b0e80a9968d0a7e691"
   },
   "searchQueries": [
     "MO550MECOSTD",
@@ -32,7 +32,8 @@
     "Grundfos ALPHA3",
     "1000116",
     "TECH Sinum",
-    "BAXI DUO-TEC Compact E 24"
+    "BAXI DUO-TEC Compact E 24",
+    "Hunter PGP Ultra"
   ],
   "localStorageKeys": [
     "sofievka-cart",

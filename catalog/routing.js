@@ -45,7 +45,6 @@
     "/catalog/water-treatment/mechanical-treatment": "mechanical-treatment",
     // Catalogue structure of 2026-10-02: every pump moved under water-supply, single-child water
     // treatment groups were flattened. The old addresses keep resolving to the same categories.
-    "/catalog/heating/circulation-pumps": "system-circulation-pumps",
     "/catalog/heating/circulation-pumps/system-circulation": "system-circulation-pumps",
     "/catalog/heating/circulation-pumps/dhw-recirculation": "dhw-circulation-pumps",
     "/catalog/water-supply/water-pumps": "water-supply",

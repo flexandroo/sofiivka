@@ -96,7 +96,7 @@ const publicClient = createSofievkaSupabasePublicClient({
 const supabaseSource = new SupabaseCatalogDataSource({ client: publicClient, cacheTtlMs: 0 });
 const remoteSnapshot = await supabaseSource.loadCatalogSnapshot();
 const network = supabaseSource.lastMetrics;
-assert.equal(remoteSnapshot.products.length, 3214);
+assert.equal(remoteSnapshot.products.length, 3276);
 
 const adapterFactory = runtime.sofievkaProductLegacyAdapter.createLegacyAdapter;
 const adapter = adapterFactory({
@@ -105,11 +105,11 @@ const adapter = adapterFactory({
   rawCatalog: null,
 });
 const legacy = measure('LegacyAdapter transformation', () => adapter.adaptProducts(remoteSnapshot.products, { useRawCatalog: false }));
-assert.equal(legacy.value.length, 3214);
+assert.equal(legacy.value.length, 3276);
 
 runtime.sofievkaInstallCatalogSnapshot(remoteSnapshot, { useRawCatalog: false });
 const searchBuild = measure('browser search-index build', () => runtime.sofievkaInstallCatalogSearch());
-assert.equal(searchBuild.value.index.products.length, 3214);
+assert.equal(searchBuild.value.index.products.length, 3276);
 const facets = measure('representative filter/facet preparation', () => prepareRepresentativeFacets(runtime.sofievkaCatalog));
 assert.ok(facets.value > 0);
 

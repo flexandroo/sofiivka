@@ -21,6 +21,7 @@ for (const file of [
   "tech-products-data.js",
   "heating-brands-products-data.js",
   "baxi-buderus-products-data.js",
+  "hunter-products-data.js",
   "catalog-data.js"
 ]) vm.runInContext(fs.readFileSync(path.join(root, file), "utf8"), context, { filename: file });
 
@@ -56,7 +57,7 @@ const result = {
   slug: audit("slug")
 };
 
-assert.equal(products.length, 3215, "canonical product count changed");
+assert.equal(products.length, 3277, "canonical product count changed");
 for (const field of ["legacyId", "sku", "slug"]) {
   assert.equal(result[field].null, 0, `${field} contains null values`);
   assert.equal(result[field].empty, 0, `${field} contains empty values`);

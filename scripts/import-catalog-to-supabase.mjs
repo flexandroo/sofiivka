@@ -1,5 +1,6 @@
 import path from 'node:path';
 import {
+  approvedMigrationVersions,
   PROJECT_ROOT,
   SupabaseRestClient,
   buildImportPlan,
@@ -15,30 +16,13 @@ import {
   writeJson,
 } from './catalog-db-utils.mjs';
 
-const EXPECTED_MIGRATIONS = [
-  '20260928000100',
-  '20260928000200',
-  '20260928000300',
-  '20260928000400',
-  '20260928000500',
-  '20260929000100',
-  '20260929000200',
-  '20260929000300',
-  '20260929000400',
-  '20260929000500',
-  '20260929000600',
-  '20260929000700',
-  '20260929000800',
-  '20260929000900',
-  '20260929001000',
-];
-
 function parseArguments(argumentsList) {
   const options = {
     mode: null,
     projectRef: '',
     reportDir: 'reports',
     batchSize: 250,
+    supplier: '',
   };
   for (const argument of argumentsList) {
     if (['--dry-run', '--apply', '--verify'].includes(argument)) {
@@ -47,6 +31,7 @@ function parseArguments(argumentsList) {
     } else if (argument.startsWith('--project-ref=')) options.projectRef = argument.slice('--project-ref='.length);
     else if (argument.startsWith('--report-dir=')) options.reportDir = argument.slice('--report-dir='.length);
     else if (argument.startsWith('--batch-size=')) options.batchSize = Number(argument.slice('--batch-size='.length));
+    else if (argument.startsWith('--supplier=')) options.supplier = argument.slice('--supplier='.length).trim().toLocaleLowerCase('en-US');
     else throw new Error(`Unknown argument: ${argument}`);
   }
   if (!options.mode) throw new Error('Choose one of --dry-run, --apply, or --verify.');
@@ -57,12 +42,11 @@ function parseArguments(argumentsList) {
   return options;
 }
 
-function assertMigrationHistory(history) {
-  const local = history.pairs.map((pair) => pair.local);
-  const remote = history.pairs.map((pair) => pair.remote);
-  const expected = EXPECTED_MIGRATIONS.join(',');
-  if (local.join(',') !== expected || remote.join(',') !== expected) {
-    throw new Error(`Migration history mismatch. Expected local/remote ${expected}; got ${local.join(',')} / ${remote.join(',')}.`);
+function assertMigrationHistory(history, projectRef) {
+  const remote = history.remoteVersions;
+  const expected = approvedMigrationVersions(projectRef).join(',');
+  if (remote.join(',') !== expected) {
+    throw new Error(`Migration history mismatch. Expected remote ${expected}; got ${remote.join(',')}.`);
   }
 }
 
@@ -86,22 +70,41 @@ function entityCounts(plan) {
   };
 }
 
-function validatePlan(plan, baseline) {
+function validatePlan(plan, baseline, options) {
   const counts = entityCounts(plan);
+  if (options.supplier) {
+    const expectedProducts = options.supplier === 'hunter' ? 65 : baseline.counts.products;
+    const assertions = [
+      [counts.products === expectedProducts, `products=${counts.products}`],
+      [counts.series === baseline.counts.series, `series=${counts.series}`],
+      [counts.productCategories === 0, `secondary categories=${counts.productCategories}`],
+      [counts.productAttributeValues === baseline.counts.typedAttributeRows, `typed attributes=${counts.productAttributeValues}`],
+      [counts.productSourceRecords === expectedProducts, `source records=${counts.productSourceRecords}`],
+      [counts.productSourceAttributes === baseline.counts.sourceEvidenceRows, `source attributes=${counts.productSourceAttributes}`],
+      [counts.productMedia === baseline.counts.mediaRows, `media=${counts.productMedia}`],
+      [counts.productDocuments === baseline.counts.documentRows, `documents=${counts.productDocuments}`],
+      [counts.categoryMappingReviews === 0, `reviews=${counts.categoryMappingReviews}`],
+      [plan.productRows.every((row) => row.publication_status === 'published'), 'all scoped products published'],
+      [plan.productRows.every((row) => row.price_status === 'unknown'), 'all scoped prices unknown'],
+    ];
+    const failures = assertions.filter(([passed]) => !passed).map(([, label]) => label);
+    if (failures.length) throw new Error(`Scoped import plan validation failed: ${failures.join('; ')}.`);
+    return counts;
+  }
   const assertions = [
-    [counts.products === 3215, `products=${counts.products}`],
-    [counts.series === 368, `series=${counts.series}`],
+    [counts.products === 3277, `products=${counts.products}`],
+    [counts.series === 433, `series=${counts.series}`],
     [counts.productCategories === 0, `secondary categories=${counts.productCategories}`],
     [counts.productAttributeValues === baseline.counts.typedAttributeRows, `typed attributes=${counts.productAttributeValues}`],
-    [counts.productSourceRecords === 3215, `source records=${counts.productSourceRecords}`],
+    [counts.productSourceRecords === 3277, `source records=${counts.productSourceRecords}`],
     [counts.productSourceAttributes === baseline.counts.sourceEvidenceRows, `source attributes=${counts.productSourceAttributes}`],
     [counts.productMedia === baseline.counts.mediaRows, `media=${counts.productMedia}`],
     [counts.productDocuments === baseline.counts.documentRows, `documents=${counts.productDocuments}`],
     [counts.categoryMappingReviews === 29, `reviews=${counts.categoryMappingReviews}`],
-    [plan.productRows.filter((row) => row.publication_status === 'published').length === 3214, 'published product count'],
+    [plan.productRows.filter((row) => row.publication_status === 'published').length === 3276, 'published product count'],
     [plan.productRows.filter((row) => row.publication_status === 'hidden').length === 1, 'hidden product count'],
     [plan.productRows.filter((row) => row.price_status === 'known').length === 631, 'known price count'],
-    [plan.productRows.filter((row) => row.price_status === 'unknown').length === 2584, 'unknown price count'],
+    [plan.productRows.filter((row) => row.price_status === 'unknown').length === 2649, 'unknown price count'],
   ];
   const failures = assertions.filter(([passed]) => !passed).map(([, label]) => label);
   if (failures.length) throw new Error(`Import plan validation failed: ${failures.join('; ')}.`);
@@ -114,15 +117,21 @@ function progressLogger({ table, completed, total, batch, batches }) {
   }
 }
 
-async function assertSafeExistingProducts(client, plan) {
-  const existing = await client.fetchAll('products', { select: 'legacy_id,internal_id' });
+async function assertSafeExistingProducts(client, plan, scoped = false) {
+  const query = scoped
+    ? { legacy_id: `in.(${plan.productRows.map((row) => row.legacy_id).join(',')})` }
+    : {};
+  const existing = await client.fetchAll('products', { select: 'legacy_id,internal_id', query });
   if (existing.length === 0) return { productsBefore: 0, state: 'empty' };
   const expected = new Map(plan.productRows.map((row) => [row.legacy_id, row.internal_id]));
   const unexpected = existing.filter((row) => !expected.has(row.legacy_id) || expected.get(row.legacy_id) !== row.internal_id);
-  if (unexpected.length || existing.length !== plan.productRows.length) {
-    throw new Error(`Refusing non-empty catalog import: existing products are not the exact deterministic catalog set (${existing.length} rows, ${unexpected.length} unexpected).`);
+  if (unexpected.length) {
+    throw new Error(`Refusing non-empty catalog import: existing products are not a deterministic subset of the planned catalog (${existing.length} rows, ${unexpected.length} unexpected).`);
   }
-  return { productsBefore: existing.length, state: 'same-catalog' };
+  return {
+    productsBefore: existing.length,
+    state: existing.length === plan.productRows.length ? 'same-catalog' : 'catalog-subset',
+  };
 }
 
 async function clearManagedChildren(client, plan) {
@@ -237,23 +246,38 @@ if (options.mode === 'verify') {
 }
 
 const project = resolveLinkedProject(options.projectRef);
-const migrationHistory = resolveMigrationHistory();
-assertMigrationHistory(migrationHistory);
+const migrationHistory = resolveMigrationHistory(options.projectRef);
+assertMigrationHistory(migrationHistory, options.projectRef);
 const keys = resolveProjectApiKeys(options.projectRef);
 const client = new SupabaseRestClient({ projectRef: options.projectRef, apiKey: keys.serviceRoleKey });
 const exactProductsBefore = await client.count('products');
 const state = loadCatalogRuntime();
-const homepage = loadHomepageCollections();
-const categoryReview = readCategoryReview();
-const baseline = buildSnapshotBaseline({ state, homepage, categoryReview });
+const scopedProducts = options.supplier
+  ? state.sofievkaCatalogSnapshot.products.filter((product) => product.source?.supplier === options.supplier)
+  : state.sofievkaCatalogSnapshot.products;
+if (options.supplier && scopedProducts.length === 0) throw new Error(`No products found for supplier ${options.supplier}.`);
+const scopedIds = new Set(scopedProducts.map((product) => product.id));
+const importState = options.supplier ? {
+  ...state,
+  sofievkaCatalogSnapshot: { ...state.sofievkaCatalogSnapshot, products: scopedProducts },
+  sofievkaRawSupplierProducts: state.sofievkaRawSupplierProducts.filter((product) => scopedIds.has(product.id)),
+} : state;
+const homepage = options.supplier ? { homepageProductIds: [], homepageSaleProductIds: [] } : loadHomepageCollections();
+const categoryReview = options.supplier ? { items: [] } : readCategoryReview();
+const baseline = buildSnapshotBaseline({ state: importState, homepage, categoryReview });
 const reportDirectory = path.resolve(PROJECT_ROOT, options.reportDir);
 writeJson(path.join(reportDirectory, 'catalog-migration-baseline.json'), baseline);
 const core = await loadCoreLookup(client);
 const startedAt = new Date().toISOString();
 const importRunId = uuidFromKey(`import-run:${startedAt}:${baseline.snapshotHash}`);
-const plan = buildImportPlan({ state, homepage, categoryReview, core, importRunId, startedAt, snapshotBaseline: baseline });
-const counts = validatePlan(plan, baseline);
-const safety = await assertSafeExistingProducts(client, plan);
+const plan = buildImportPlan({ state: importState, homepage, categoryReview, core, importRunId, startedAt, snapshotBaseline: baseline });
+if (options.supplier) {
+  plan.collectionRows = [];
+  plan.collectionItemRows = [];
+  plan.managedCollectionIds = [];
+}
+const counts = validatePlan(plan, baseline, options);
+const safety = await assertSafeExistingProducts(client, plan, Boolean(options.supplier));
 plan.importRun.metadata.productWriteSummary = {
   inserted: safety.productsBefore === 0 ? plan.productRows.length : 0,
   updated: safety.productsBefore === 0 ? 0 : plan.productRows.length,
@@ -269,7 +293,8 @@ const preflight = {
   status: 'ok',
   mode: options.mode,
   project: { name: project.name, ref: project.ref, region: project.region, status: project.status },
-  migrationVersions: migrationHistory.pairs.map((pair) => pair.remote),
+  migrationVersions: migrationHistory.remoteVersions,
+  supplierScope: options.supplier || null,
   exactProductsBefore,
   existingCatalogState: safety,
   snapshotHash: baseline.snapshotHash,

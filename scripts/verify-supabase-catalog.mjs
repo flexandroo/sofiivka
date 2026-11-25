@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  approvedMigrationVersions,
   PROJECT_ROOT,
   SupabaseRestClient,
   buildImportPlan,
@@ -18,24 +19,6 @@ import {
   uuidFromKey,
   writeJson,
 } from './catalog-db-utils.mjs';
-
-const EXPECTED_MIGRATIONS = [
-  '20260928000100',
-  '20260928000200',
-  '20260928000300',
-  '20260928000400',
-  '20260928000500',
-  '20260929000100',
-  '20260929000200',
-  '20260929000300',
-  '20260929000400',
-  '20260929000500',
-  '20260929000600',
-  '20260929000700',
-  '20260929000800',
-  '20260929000900',
-  '20260929001000',
-];
 
 function normalizeTimestamp(value) {
   return value ? new Date(value).toISOString() : null;
@@ -293,12 +276,11 @@ async function verifySearch({ publicClient, plan, checks }) {
 export async function runVerification({ projectRef, reportDir = 'reports' }) {
   const startedAt = new Date().toISOString();
   const project = resolveLinkedProject(projectRef);
-  const migrationHistory = resolveMigrationHistory();
-  const localMigrations = migrationHistory.pairs.map((pair) => pair.local);
-  const remoteMigrations = migrationHistory.pairs.map((pair) => pair.remote);
-  if (stableStringify(localMigrations) !== stableStringify(EXPECTED_MIGRATIONS)
-      || stableStringify(remoteMigrations) !== stableStringify(EXPECTED_MIGRATIONS)) {
-    throw new Error('Refusing verification: local/remote migration history does not match the approved migration chain.');
+  const migrationHistory = resolveMigrationHistory(projectRef);
+  const remoteMigrations = migrationHistory.remoteVersions;
+  const expectedMigrations = approvedMigrationVersions(projectRef);
+  if (stableStringify(remoteMigrations) !== stableStringify(expectedMigrations)) {
+    throw new Error('Refusing verification: remote migration history does not match the approved project chain.');
   }
 
   const keys = resolveProjectApiKeys(projectRef);
@@ -319,10 +301,10 @@ export async function runVerification({ projectRef, reportDir = 'reports' }) {
   const checks = [];
   const expectedProject = SOFIEVKA_PROJECTS[projectRef];
   addCheck(checks, { label: `${project.environment} project identity`, passed: project.ref === projectRef && project.name === expectedProject.name, expected: `${expectedProject.name}/${projectRef}`, actual: `${project.name}/${project.ref}` });
-  addCheck(checks, { label: 'migration parity', passed: true, expected: EXPECTED_MIGRATIONS, actual: remoteMigrations });
-  addCheck(checks, { label: 'core brands', passed: core.brandRows.length === 36, expected: 36, actual: core.brandRows.length });
-  addCheck(checks, { label: 'core categories', passed: core.categoryRows.length === 87, expected: 87, actual: core.categoryRows.length });
-  addCheck(checks, { label: 'core attribute definitions', passed: core.attributeRows.length === 64, expected: 64, actual: core.attributeRows.length });
+  addCheck(checks, { label: 'migration parity', passed: true, expected: expectedMigrations, actual: remoteMigrations });
+  addCheck(checks, { label: 'core brands', passed: core.brandRows.length === 37, expected: 37, actual: core.brandRows.length });
+  addCheck(checks, { label: 'core categories', passed: core.categoryRows.length === 97, expected: 97, actual: core.categoryRows.length });
+  addCheck(checks, { label: 'core attribute definitions', passed: core.attributeRows.length === 65, expected: 65, actual: core.attributeRows.length });
 
   const reconciliation = {};
   for (const spec of TABLE_SPECS) {
@@ -356,8 +338,8 @@ export async function runVerification({ projectRef, reportDir = 'reports' }) {
   addCheck(checks, {
     label: 'successful import run recorded',
     passed: importRuns.some((run) => run.status === 'succeeded'
-      && run.records_seen === 3215 && run.records_succeeded === 3215 && run.records_failed === 0),
-    expected: 'at least one succeeded 3215/3215 run',
+      && run.records_seen === 3277 && run.records_succeeded === 3277 && run.records_failed === 0),
+    expected: 'at least one succeeded 3277/3277 run',
     actual: importRuns.map((run) => ({ status: run.status, seen: run.records_seen, succeeded: run.records_succeeded, failed: run.records_failed })),
   });
 

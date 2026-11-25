@@ -33,6 +33,7 @@ const supplierFeeds = [
   "tech-products-data.js",
   "heating-brands-products-data.js",
   "baxi-buderus-products-data.js",
+  "hunter-products-data.js",
 ];
 const marker = "__SOFIEVKA_HTTP__";
 
@@ -78,7 +79,7 @@ const routeResponses = await parallelMap(routePaths, 1, vercelCurl);
 for (const response of routeResponses) {
   if (response.status !== 200) throw new Error(`${response.pathname} returned HTTP ${response.status}.`);
   if (!/catalog-runtime-config\.js/i.test(response.body)) throw new Error(`${response.pathname} is missing runtime configuration.`);
-  if (/(?:products-data|water-catalog-data|termojet-products-data|wilo-products-data|grundfos-products-data|tekkhaus-products-data|tech-products-data|heating-brands-products-data|baxi-buderus-products-data)\.js/i.test(response.body)) {
+  if (/(?:products-data|water-catalog-data|termojet-products-data|wilo-products-data|grundfos-products-data|tekkhaus-products-data|tech-products-data|heating-brands-products-data|baxi-buderus-products-data|hunter-products-data)\.js/i.test(response.body)) {
     throw new Error(`${response.pathname} still references a supplier feed.`);
   }
 }
