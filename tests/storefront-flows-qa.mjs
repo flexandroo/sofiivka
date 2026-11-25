@@ -134,6 +134,8 @@ async function newPage(viewport = VIEWPORTS.desktop) {
   const context = await browser.newContext({ viewport, locale: "uk-UA" });
   const page = await context.newPage();
   page.on("pageerror", error => pageErrors.push(`${page.url()} :: ${error.message}`));
+  // Nova Poshta stays offline unless a check answers it (the checkout fields then work as plain text inputs).
+  await context.route("https://api.novaposhta.ua/**", route => route.abort());
   // Never let a real lead or order reach any server from this test.
   await page.route(/\/rest\/v1\/rpc\/crm_submit_(lead|order)$/, route => route.fulfill({ status: 500, contentType: "application/json", body: '{"message":"blocked by storefront-flows-qa"}' }));
   return page;
@@ -942,11 +944,132 @@ await check("checkout-carrier-city", async () => {
   assert.equal(await form.locator('input[name="city"]').evaluate(input => input.validity.valid), false, "city is not flagged");
   await form.locator('input[name="city"]').fill("Житомир");
   await form.locator("[data-checkout-submit]").click();
-  await page.locator(".checkout-success").waitFor({ timeout: 10000 }).catch(() => { throw new Error("checkout: no success after filling the city"); });
+  assert.equal(payload, null, "checkout sent a carrier order without a branch");
+  assert.equal(await form.locator('input[name="deliveryPoint"]').evaluate(input => input.validity.valid), false, "branch is not flagged");
+  await form.locator('input[name="deliveryPoint"]').fill("Відділення №5");
+  await form.locator("[data-checkout-submit]").click();
+  await page.locator(".checkout-success").waitFor({ timeout: 10000 }).catch(() => { throw new Error("checkout: no success after filling the city and the branch"); });
   assert.equal(payload.city, "Житомир");
+  assert.equal(payload.deliveryPoint, "Відділення №5");
+  assert.equal("promoCode" in payload, false, "an order without a promo code carries promoCode");
   assert.equal("pickupStore" in payload, false, "carrier order still carries pickupStore");
   await page.context().close();
   return { delivery: payload.delivery };
+});
+
+// Nova Poshta pickers (nova-poshta.js) with the API answered locally: settlement search, the branch list of the
+// picked settlement, a number search, and the values that go into the order.
+await check("checkout-nova-poshta", async () => {
+  const page = await newPage(VIEWPORTS.mobile);
+  const calls = [];
+  await page.route("https://api.novaposhta.ua/**", async route => {
+    const body = JSON.parse(route.request().postData() || "{}");
+    calls.push(body);
+    const props = body.methodProperties || {};
+    const data = body.calledMethod === "searchSettlements"
+      ? [{ TotalCount: 2, Addresses: [
+        { Present: "м. Бровари, Броварський р-н, Київська обл.", Warehouses: 412, MainDescription: "Бровари", DeliveryCity: "city-brovary", Ref: "s1" },
+        { Present: "с. Броварки, Глобинський р-н, Полтавська обл.", Warehouses: 0, MainDescription: "Броварки", DeliveryCity: "city-empty", Ref: "s2" }] }]
+      : props.WarehouseId === "15" ? [{ Description: "Відділення №15: вул. Київська, 265/1", Ref: "w15" }]
+      : [{ Description: "Відділення №2: вул. Київська, 302", Ref: "w2" }, { Description: "Поштомат №3301: вул. Гагаріна, 1", Ref: "w3" }];
+    await route.fulfill({ contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ success: true, data, errors: [] }) });
+  });
+  await seedStorage(page, { "sofievka-cart": { [pricedProduct.id]: 1 } });
+  await open(page, "/checkout");
+  const city = page.locator("[data-np-city]");
+  const branch = page.locator("[data-np-branch]");
+  await city.click();
+  await city.pressSequentially("бров", { delay: 20 });
+  await page.locator("#checkout-city-options [role=option]").first().waitFor({ timeout: 5000 });
+  assert.equal(await page.locator("#checkout-city-options [role=option]").count(), 2);
+  assert.equal(await city.getAttribute("aria-expanded"), "true");
+  await city.press("ArrowDown");
+  await city.press("Enter");
+  assert.equal(await city.inputValue(), "м. Бровари, Броварський р-н, Київська обл.");
+  await page.waitForFunction(() => document.activeElement?.matches("[data-np-branch]"), null, { timeout: 3000 });
+  await page.locator("#checkout-branch-options [role=option]").first().waitFor({ timeout: 5000 });
+  assert.equal(calls.filter(call => call.calledMethod === "getWarehouses").at(-1).methodProperties.CityRef, "city-brovary");
+  await branch.pressSequentially("15", { delay: 20 });
+  await page.waitForFunction(() => document.querySelector("#checkout-branch-options [role=option]")?.textContent.includes("№15"), null, { timeout: 5000 });
+  await page.locator("#checkout-branch-options [role=option]").first().click();
+  assert.equal(await branch.inputValue(), "Відділення №15: вул. Київська, 265/1");
+  assert.equal(calls.filter(call => call.calledMethod === "getWarehouses").at(-1).methodProperties.WarehouseId, "15", "a number searches by branch number");
+  // A settlement without branches: the hint asks for an address and the field stays free text.
+  await city.fill("");
+  await city.pressSequentially("бров", { delay: 20 });
+  await page.locator("#checkout-city-options [role=option]").nth(1).waitFor({ timeout: 5000 });
+  await page.locator("#checkout-city-options [role=option]").nth(1).click();
+  assert.match(await page.locator("[data-np-hint]").innerText(), /немає відділень/);
+  assert.equal(await branch.inputValue(), "", "changing the settlement clears the branch");
+  await page.context().close();
+  return { calls: calls.length };
+});
+
+// Order summary on /checkout: every line has a photo and links to its product page.
+await check("checkout-summary-links", async () => {
+  const page = await newPage(VIEWPORTS.desktop);
+  await seedStorage(page, { "sofievka-cart": { [pricedProduct.id]: 2, [facts.unpricedProduct.id]: 1 } });
+  await open(page, "/checkout");
+  const items = page.locator(".checkout-summary .checkout-item");
+  assert.equal(await items.count(), 2);
+  for (const product of [pricedProduct, facts.unpricedProduct]) {
+    const link = page.locator(`.checkout-summary .checkout-item[href="${productPath(product)}"]`);
+    assert.equal(await link.count(), 1, `no summary link to ${productPath(product)}`);
+    assert.ok(await link.locator("img").getAttribute("src"), "summary line without a photo");
+  }
+  await page.locator(`.checkout-summary .checkout-item[href="${productPath(pricedProduct)}"]`).click();
+  await page.waitForURL(url => url.pathname === productPath(pricedProduct).split("?")[0], { timeout: 10000 });
+  await page.context().close();
+});
+
+// Promo code on /checkout (the server side is covered by tests/db-local/promo-scenarios.mjs): hidden while the shop
+// has no active codes, a wrong code is explained, a valid one changes the total and goes with the order.
+await check("checkout-promo", async () => {
+  const page = await newPage(VIEWPORTS.mobile);
+  let available = false;
+  let order = null;
+  const discount = Math.round(pricedProduct.amount * 2 * 10) / 100;
+  await page.route(/\/rest\/v1\/rpc\/crm_check_promo_code$/, async route => {
+    const payload = JSON.parse(route.request().postData() || "{}").payload || {};
+    const code = String(payload.code || "").toUpperCase();
+    const body = !code ? { available }
+      : code === "SALE10" ? { available: true, valid: true, code, kind: "percent", value: 10, discount, itemsTotal: pricedProduct.amount * 2 }
+      : { available: true, valid: false, message: "Такого промокоду немає або він уже не діє." };
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
+  });
+  await page.route(/\/rest\/v1\/rpc\/crm_submit_order$/, async route => {
+    order = JSON.parse(route.request().postData() || "{}").payload || null;
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ accepted: true, number: 4242 }) });
+  });
+  await seedStorage(page, { "sofievka-cart": { [pricedProduct.id]: 2 } });
+  await open(page, "/checkout");
+  await page.waitForTimeout(500);
+  assert.equal(await page.locator("[data-promo]").isHidden(), true, "promo field shown without active codes");
+  available = true;
+  await open(page, "/checkout");
+  await page.locator("[data-promo]").waitFor({ state: "visible", timeout: 5000 });
+  const input = page.locator("[data-promo-input]");
+  await input.fill("wrong");
+  await input.press("Enter");
+  await page.waitForFunction(() => document.querySelector("[data-promo-status]")?.classList.contains("is-error"), null, { timeout: 5000 });
+  assert.match(await page.locator("[data-promo-status]").innerText(), /немає або він уже не діє/);
+  await input.fill("sale10");
+  await page.locator("[data-promo-apply]").click();
+  await page.waitForFunction(() => document.querySelector("[data-promo-status]")?.classList.contains("is-ok"), null, { timeout: 5000 });
+  const totals = normalize(await page.locator("[data-checkout-totals]").innerText());
+  assert.ok(totals.includes(`−${normalize(formatMoney(discount))}`), `discount row missing: ${totals}`);
+  assert.ok(totals.includes(normalize(formatMoney(pricedProduct.amount * 2 - discount))), `total after the discount missing: ${totals}`);
+  assert.equal(await input.inputValue(), "SALE10");
+  const form = page.locator("[data-checkout]");
+  await form.locator('input[name="name"]').fill("QA Промокод");
+  await form.locator('input[name="phone"]').fill("067 123 45 67");
+  await form.locator('input[name="city"]').fill("Житомир");
+  await form.locator('input[name="deliveryPoint"]').fill("Відділення №5");
+  await form.locator("[data-checkout-submit]").click();
+  await page.locator(".checkout-success").waitFor({ timeout: 10000 });
+  assert.equal(order.promoCode, "SALE10");
+  await page.context().close();
+  return { discount };
 });
 
 await check("home-callback-form", async () => {

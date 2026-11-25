@@ -43,7 +43,7 @@ export async function run(db) {
     name: "Іван Коваль", phone: "067 111 22 33", email: "Ivan@Example.test", delivery: "carrier", city: "Київ", deliveryPoint: "Відділення 5",
     items: [{ id: "acc-pump", quantity: 2 }]
   }])).r;
-  assert.deepEqual(Object.keys(anonymous).sort(), ["accepted", "currency", "hasUnpricedItems", "itemsCount", "itemsTotal", "number"]);
+  assert.deepEqual(Object.keys(anonymous).sort(), ["accepted", "currency", "discount", "hasUnpricedItems", "itemsCount", "itemsTotal", "number", "promoCode", "total"]);
   const anonymousRow = await one(db, "select customer_user_id, customer_id from public.crm_orders where number = $1", [anonymous.number]);
   assert.equal(anonymousRow.customer_user_id, null);
   assert.equal((await one(db, "select body from public.crm_activity where order_id = (select internal_id from public.crm_orders where number = $1)", [anonymous.number])).body, "Замовлення з сайту");

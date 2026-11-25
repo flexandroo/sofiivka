@@ -1,0 +1,163 @@
+/* Nova Poshta pickers on /checkout: the settlement first, then a branch or parcel locker in it.
+ * Address lookups of the public Nova Poshta API work without a key and allow browser calls (CORS), so the page
+ * asks the API directly. If the API does not answer, both fields stay plain text inputs, as before.
+ *   window.sofievkaNovaPoshta.bind({ city, branch, hint })  // the two inputs and an optional hint paragraph */
+(function () {
+  "use strict";
+
+  const API = "https://api.novaposhta.ua/v2.0/json/";
+  const cache = new Map();
+
+  function call(calledMethod, methodProperties) {
+    const key = `${calledMethod}:${JSON.stringify(methodProperties)}`;
+    if (!cache.has(key)) {
+      const request = fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ apiKey: "", modelName: "Address", calledMethod, methodProperties }),
+        signal: AbortSignal.timeout(8000)
+      }).then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
+        .then(body => {
+          if (!body || !body.success) throw new Error((body && body.errors || []).join(", ") || "Nova Poshta error");
+          return body;
+        });
+      cache.set(key, request);
+      request.catch(() => cache.delete(key));
+    }
+    return cache.get(key);
+  }
+
+  // The API answers «CityName has invalid characters» for Latin letters and symbols.
+  const settlementQuery = text => String(text || "").replace(/^(м|с|смт|сел|селище)\.\s*/i, "").split(",")[0]
+    .replace(/[^0-9a-zа-яіїєґ'’ʼ\-\s]/gi, " ").replace(/\s+/g, " ").trim();
+
+  async function searchSettlements(text) {
+    const query = settlementQuery(text);
+    if (query.length < 2 || /[a-z]/i.test(query)) return [];
+    const body = await call("searchSettlements", { CityName: query, Limit: "20", Page: "1" });
+    return ((body.data && body.data[0] && body.data[0].Addresses) || []).map(item => ({
+      label: item.Present,
+      detail: Number(item.Warehouses) > 0 ? `Відділень і поштоматів: ${item.Warehouses}` : "Немає відділень Нової пошти",
+      value: item.Present,
+      ref: item.DeliveryCity,
+      name: item.MainDescription,
+      warehouses: Number(item.Warehouses) || 0
+    }));
+  }
+
+  async function searchBranches(cityRef, text) {
+    const query = String(text || "").replace(/^№\s*/, "").trim();
+    const properties = { CityRef: cityRef, Limit: "30", Page: "1", Language: "UA" };
+    // «15» or «№15» is a branch number; anything else is a street or a name.
+    if (/^\d{1,6}$/.test(query)) properties.WarehouseId = query;
+    else if (query) properties.FindByString = query.slice(0, 60);
+    const body = await call("getWarehouses", properties);
+    return (body.data || []).map(item => ({ label: item.Description, value: item.Description, ref: item.Ref }));
+  }
+
+  // Accessible combobox (input + listbox): arrows move, Enter picks, Escape closes; the typed text is kept
+  // when nothing is picked, so a customer can still write an address by hand.
+  function combobox({ input, minLength, search, onPick, onType }) {
+    const list = document.getElementById(input.getAttribute("aria-controls"));
+    if (!list) return { open() {} };
+    let options = [];
+    let active = -1;
+    let timer = 0;
+    let requestId = 0;
+    const close = () => { list.hidden = true; input.setAttribute("aria-expanded", "false"); input.removeAttribute("aria-activedescendant"); active = -1; };
+    // On a phone the list opens below the fold (tab bar, keyboard): scroll just enough to show it, keeping the field
+    // under the sticky header.
+    const reveal = () => {
+      const viewport = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+      const overflow = list.getBoundingClientRect().bottom - (viewport - 72);
+      if (overflow > 0) window.scrollBy({ top: Math.min(overflow, input.getBoundingClientRect().top - 132), behavior: "smooth" });
+    };
+    const state = text => { options = []; list.innerHTML = `<li class="np-options__state" role="presentation">${text}</li>`; list.hidden = false; input.setAttribute("aria-expanded", "true"); };
+    const highlight = index => {
+      active = index;
+      [...list.querySelectorAll("[role=option]")].forEach((node, position) => node.setAttribute("aria-selected", String(position === index)));
+      const node = list.querySelector(`[data-index="${index}"]`);
+      if (node) { input.setAttribute("aria-activedescendant", node.id); node.scrollIntoView({ block: "nearest" }); }
+    };
+    const pick = index => {
+      const option = options[index];
+      if (!option) return;
+      input.value = option.value;
+      close();
+      onPick(option);
+    };
+    const run = async () => {
+      const text = input.value.trim();
+      if (text.length < minLength) { close(); return; }
+      const id = ++requestId;
+      state("Шукаємо…");
+      let found;
+      try { found = await search(text); } catch { if (id === requestId) state("Не вдалося завантажити список — впишіть вручну"); return; }
+      if (id !== requestId || document.activeElement !== input) return;
+      if (!found) { close(); return; }
+      if (!found.length) { state("Нічого не знайдено"); return; }
+      options = found;
+      list.innerHTML = found.map((option, index) => `<li role="option" id="${list.id}-${index}" data-index="${index}" aria-selected="false">${escape(option.label)}${option.detail ? `<small>${escape(option.detail)}</small>` : ""}</li>`).join("");
+      list.hidden = false;
+      input.setAttribute("aria-expanded", "true");
+      active = -1;
+      reveal();
+    };
+    input.addEventListener("input", () => { onType(); clearTimeout(timer); timer = setTimeout(run, 250); });
+    input.addEventListener("focus", () => { if (input.value.trim().length >= minLength || minLength === 0) run(); });
+    input.addEventListener("blur", () => setTimeout(close, 150));
+    input.addEventListener("keydown", event => {
+      if (event.key === "Escape" && !list.hidden) { event.preventDefault(); close(); return; }
+      if (!options.length || list.hidden) { if (event.key === "ArrowDown") run(); return; }
+      if (event.key === "ArrowDown") { event.preventDefault(); highlight(Math.min(options.length - 1, active + 1)); }
+      else if (event.key === "ArrowUp") { event.preventDefault(); highlight(Math.max(0, active - 1)); }
+      else if (event.key === "Enter" && active >= 0) { event.preventDefault(); pick(active); }
+    });
+    // mousedown keeps the focus in the input, so blur does not close the list before the click.
+    list.addEventListener("mousedown", event => event.preventDefault());
+    list.addEventListener("click", event => { const node = event.target.closest("[role=option]"); if (node) pick(Number(node.dataset.index)); });
+    return { open: run, close };
+  }
+  const escape = value => String(value ?? "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+
+  function bind({ city, branch, hint }) {
+    if (!city || !branch || city.dataset.npBound) return;
+    city.dataset.npBound = "1";
+    let cityRef = "";
+    const showHint = text => { if (!hint) return; hint.textContent = text || ""; hint.hidden = !text; };
+    // A city typed or prefilled without picking it from the list is looked up once the branch field is used.
+    const resolveCity = async () => {
+      if (cityRef || !city.value.trim()) return cityRef;
+      const found = await searchSettlements(city.value).catch(() => []);
+      const name = settlementQuery(city.value).toLocaleLowerCase("uk");
+      const match = found.find(item => item.name.toLocaleLowerCase("uk") === name);
+      if (match && match.warehouses > 0) cityRef = match.ref;
+      return cityRef;
+    };
+    combobox({
+      input: city,
+      minLength: 2,
+      search: searchSettlements,
+      onType: () => { if (cityRef) { cityRef = ""; branch.value = ""; } showHint(""); },
+      onPick: option => {
+        cityRef = option.warehouses > 0 ? option.ref : "";
+        branch.value = "";
+        showHint(option.warehouses > 0 ? "" : "У цьому населеному пункті немає відділень Нової пошти — впишіть адресу або найближче відділення.");
+        if (cityRef) branch.focus();
+      }
+    });
+    combobox({
+      input: branch,
+      minLength: 0,
+      search: async text => {
+        const ref = await resolveCity();
+        if (!ref) return null;
+        return searchBranches(ref, text);
+      },
+      onType: () => {},
+      onPick: () => showHint("")
+    });
+  }
+
+  window.sofievkaNovaPoshta = Object.freeze({ bind, searchSettlements, searchBranches });
+})();

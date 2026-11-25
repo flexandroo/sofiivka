@@ -2508,6 +2508,7 @@ ol {
 .admin-crm-item em { color: var(--warning); font-style: normal; font-weight: 700; }
 .admin-crm-item a:hover { text-decoration: underline; }
 .admin-crm-item--total { background: var(--surface-soft); font-weight: 800; }
+.admin-crm-item--discount { color: var(--success); }
 
 .admin-crm-text { padding: 18px 20px; font-size: 13px; line-height: 1.6; }
 
@@ -3035,6 +3036,30 @@ img.admin-collection-item__thumb { padding: 3px; background: var(--surface); }
   .admin-print-placeholder { background: none; color: #111; }
   .admin-print-parties { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-print-sheet__footer { grid-template-columns: repeat(2, minmax(0, 1fr)); break-inside: avoid; }
+}
+
+/* Promo codes */
+.admin-promos { display: grid; gap: 22px; }
+.admin-promos .admin-button[hidden] { display: none; }
+.admin-promos > .admin-panel { margin: 0; }
+.admin-promos .admin-form-grid .admin-field + .admin-field { margin-top: 0; }
+.admin-promo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.admin-promo-code-input, .admin-promo-value { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.admin-promo-code-input input { text-transform: uppercase; letter-spacing: .04em; }
+.admin-promo-code-input input:read-only { background: var(--surface-soft); color: var(--text-secondary); }
+.admin-promo-value select { width: 84px; }
+.admin-promo-table td { vertical-align: middle; }
+.admin-promo-table tr.is-muted td { color: var(--text-subtle); }
+.admin-promo-code { font-size: 13px; letter-spacing: .04em; }
+.admin-promo-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+@media (max-width: 760px) {
+  .admin-promo-grid { grid-template-columns: minmax(0, 1fr); }
+  .admin-promo-table { min-width: 0; }
+  .admin-promo-table thead { display: none; }
+  .admin-promo-table, .admin-promo-table tbody, .admin-promo-table tr, .admin-promo-table td { display: block; width: 100%; }
+  .admin-promo-table tr { padding: 12px 0; border-bottom: 1px solid var(--divider); }
+  .admin-promo-table td { padding: 4px 20px; border: 0; }
+  .admin-promo-actions { justify-content: flex-start; }
 }
 
 /* Staff */

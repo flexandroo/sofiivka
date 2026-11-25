@@ -1032,6 +1032,47 @@ body[data-page="product"] {
 .checkout-legal a { color: inherit; text-decoration: underline; }
 .order-summary__note { margin: 12px 0 14px; color: rgba(255, 255, 255, .7); font-size: 13px; line-height: 1.45; }
 .order-summary dd { white-space: nowrap; }
+/* Cart and checkout: the list starts right under the headline (the cart has no lead text). */
+.page-hero:has(+ .page-section--shop) { padding-bottom: 8px; }
+.page-hero + .page-section--shop { padding-top: 16px; }
+/* Checkout summary: photo, name and quantity of every item, each a link to its product page. */
+.checkout-items { display: grid; gap: 2px; max-height: min(46vh, 440px); margin: 20px -8px 0; padding: 0; overflow-y: auto; list-style: none; overscroll-behavior: contain; }
+.checkout-item { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px; border-radius: var(--radius-control); color: #fff; text-decoration: none; }
+.checkout-item:hover, .checkout-item:focus-visible { background: rgba(255, 255, 255, .08); }
+.checkout-item__image { display: grid; place-items: center; width: 56px; height: 56px; overflow: hidden; border-radius: 6px; background: #fff; }
+.checkout-item__image img { width: 48px; height: 48px; object-fit: contain; }
+.checkout-item__name { display: -webkit-box; overflow: hidden; font-size: 13px; line-height: 1.35; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.checkout-item__name small { display: block; margin-top: 3px; color: rgba(255, 255, 255, .62); font-size: 12px; }
+.checkout-item strong { font-size: 13px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.checkout-summary dl { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, .18); }
+.checkout-summary .order-summary__total { padding-top: 0; border-top: 0; }
+.checkout-summary dl > div:first-child:not(:only-child) ~ .order-summary__total { padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, .18); }
+.order-summary__discount { color: #9fe0bd; }
+.checkout-summary > a { color: rgba(255, 255, 255, .82); font-size: 14px; }
+.checkout-summary > a:hover { color: #fff; }
+/* Nova Poshta settlement and branch pickers (nova-poshta.js). */
+.np-field { position: relative; }
+.np-options { position: absolute; top: 100%; right: 0; left: 0; z-index: 30; max-height: 320px; margin: 4px 0 0; padding: 4px 0; overflow-y: auto; border: 1px solid var(--divider); border-radius: var(--radius-control); background: var(--surface); box-shadow: var(--shadow-soft); list-style: none; }
+.np-options[hidden] { display: none; }
+.np-options [role=option] { padding: 10px 14px; font-size: 14px; line-height: 1.35; cursor: pointer; }
+.np-options [role=option] small { display: block; margin-top: 2px; color: var(--text-secondary); font-size: 12px; }
+.np-options [role=option]:hover, .np-options [aria-selected=true] { background: var(--yellow-tint); }
+.np-options__state { padding: 10px 14px; color: var(--text-secondary); font-size: 14px; }
+.np-hint { margin: 0; color: var(--text-secondary); font-size: 13px; }
+.np-hint[hidden] { display: none; }
+/* Promo code (shown only while the shop has active codes). */
+.checkout-promo { display: grid; gap: 8px; margin-top: 18px; }
+.checkout-promo[hidden] { display: none; }
+.checkout-promo > label { font-size: 13px; font-weight: 700; }
+.checkout-promo__row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.checkout-promo__row input { width: 100%; min-height: 50px; padding: 12px 14px; border: 1px solid var(--divider); border-radius: var(--radius-control); background: var(--surface); color: var(--text); font: inherit; text-transform: uppercase; }
+.checkout-promo__row input::placeholder { text-transform: none; }
+.checkout-promo__row input[readonly] { border-color: var(--success); background: #f1f8f4; }
+.checkout-promo__row .button { min-height: 50px; }
+.checkout-promo__status { margin: 0; min-height: 0; color: var(--text-secondary); font-size: 13px; }
+.checkout-promo__status:empty { display: none; }
+.checkout-promo__status.is-ok { color: var(--success); }
+.checkout-promo__status.is-error { color: var(--danger); }
 .lead-form .form-section > p { margin: -6px 0 20px; color: var(--text-secondary); }
 .lead-form .notice { margin-bottom: 18px; }
 .lead-form .form-section > p.lead-product { margin: 0 0 20px; padding: 12px 16px; border-left: 3px solid var(--yellow); background: var(--yellow-tint); color: var(--text); }

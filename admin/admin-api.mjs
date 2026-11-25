@@ -299,6 +299,13 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
     })
   });
 
+  // Promo codes (owner/admin): the storefront previews and applies them through crm_check_promo_code / crm_submit_order.
+  const promoCodes = Object.freeze({
+    list: ({ signal } = {}) => rpc("admin_list_promo_codes", {}, signal),
+    save: (payload, expectedUpdatedAt) => rpc("admin_save_promo_code", { payload, expected_updated_at: expectedUpdatedAt || null }),
+    remove: id => rpc("admin_delete_promo_code", { promo_id: id })
+  });
+
   // Staff: profiles through RPC; a brand-new account goes through the admin-staff edge function.
   const staff = Object.freeze({
     list: ({ signal } = {}) => rpc("admin_list_staff", {}, signal),
@@ -413,6 +420,7 @@ export function createAdminApi(config, getAccessToken, { fetchImplementation = g
   return Object.freeze({
     crm,
     staff,
+    promoCodes,
     changePassword,
     taxonomy,
     settings,

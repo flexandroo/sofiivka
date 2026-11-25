@@ -44,8 +44,9 @@
       const item = STATUS[status] || { label: status, tone: "muted" };
       return `<span class="account-status account-status--${item.tone}">${esc(item.label)}</span>`;
     };
+    // To pay: the lines minus the promo discount.
     const orderTotal = order => {
-      const total = Number(order.itemsTotal) || 0;
+      const total = (Number(order.itemsTotal) || 0) - (Number(order.discountAmount) || 0);
       if (order.hasUnpricedItems) return total ? `${money(total)} + уточнення` : "Ціну уточнює менеджер";
       return money(total);
     };
@@ -286,7 +287,7 @@
             <td data-label="Ціна">${item.unitAmount === null || item.unitAmount === undefined ? "уточнюється" : esc(money(Number(item.unitAmount)))}</td>
             <td data-label="Сума">${item.lineTotal === null || item.lineTotal === undefined ? "—" : esc(money(Number(item.lineTotal)))}</td>
           </tr>`).join("")}</tbody>
-          <tfoot><tr><th scope="row" colspan="3">Разом</th><td>${esc(orderTotal(order))}</td></tr></tfoot>
+          <tfoot>${Number(order.discountAmount) > 0 ? `<tr><th scope="row" colspan="3">Знижка за промокодом ${esc(order.promoCode)}</th><td>−${esc(money(Number(order.discountAmount)))}</td></tr>` : ""}<tr><th scope="row" colspan="3">Разом</th><td>${esc(orderTotal(order))}</td></tr></tfoot>
         </table>
         ${order.hasUnpricedItems ? `<p class="account-note">Ціни позицій «уточнюється» менеджер повідомляє під час підтвердження замовлення.</p>` : ""}
         <div class="account-actions">

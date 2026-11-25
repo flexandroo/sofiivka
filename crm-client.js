@@ -58,6 +58,9 @@
       return call("crm_submit_order", payload, accessToken);
     },
     submitLead: payload => call("crm_submit_lead", payload),
+    // { code, items:[{id, quantity}] } → { available, valid, code, kind, value, discount, itemsTotal, message };
+    // an empty code only asks whether the shop has active promo codes.
+    checkPromo: payload => call("crm_check_promo_code", payload),
     // "КОД 10 примітка" → { code, quantity, note }; one position per line.
     parseSpecLines(text) {
       return String(text || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean).slice(0, 200).map(line => {

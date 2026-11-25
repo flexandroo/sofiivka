@@ -20,6 +20,7 @@ import { createBannersView } from "/admin/admin-banners.mjs";
 import { createMediaView } from "/admin/admin-media.mjs";
 import { createPostsListView, createPostEditorView } from "/admin/admin-posts.mjs";
 import { createMenusView } from "/admin/admin-menus.mjs";
+import { createPromoCodesView } from "/admin/admin-promos.mjs";
 
 const ROLES = new Set(["owner", "admin", "manager", "content_manager"]);
 const ROLE_LABELS = Object.freeze({
@@ -33,6 +34,7 @@ const ROUTES = Object.freeze({
   "/admin/orders": { title: "Замовлення", section: "orders", icon: "orders", roles: [...CRM_ROLES] },
   "/admin/leads": { title: "Заявки", section: "leads", icon: "leads", roles: [...CRM_ROLES] },
   "/admin/customers": { title: "Клієнти", section: "customers", icon: "user", roles: [...CRM_ROLES] },
+  "/admin/promo-codes": { title: "Промокоди", section: "promo-codes", icon: "percent", roles: ["owner", "admin"] },
   "/admin/products": { title: "Товари", section: "products", icon: "products", roles: [...ROLES] },
   "/admin/categories": { title: "Категорії", section: "categories", icon: "categories", roles: [...ROLES] },
   "/admin/brands": { title: "Бренди", section: "brands", icon: "brands", roles: [...ROLES] },
@@ -49,7 +51,7 @@ const ROUTES = Object.freeze({
 });
 const NAV_GROUPS = Object.freeze([
   { label: "Головне", paths: ["/admin"] },
-  { label: "Продажі", paths: ["/admin/orders", "/admin/leads", "/admin/customers"] },
+  { label: "Продажі", paths: ["/admin/orders", "/admin/leads", "/admin/customers", "/admin/promo-codes"] },
   { label: "Каталог", paths: ["/admin/products", "/admin/collections"] },
   { label: "Сайт", paths: ["/admin/banners", "/admin/pages", "/admin/blog", "/admin/menus"] },
   { label: "Дані", paths: ["/admin/categories", "/admin/brands", "/admin/attributes", "/admin/media"] },
@@ -191,6 +193,7 @@ async function route() {
     : categoryMatch ? () => createCategoryDetailView({ api, categoryId: decodeURIComponent(categoryMatch[1]), signal })
     : path === "/admin/settings" ? () => createSettingsView({ api, signal })
     : path === "/admin/users" ? () => createStaffView({ api, signal })
+    : path === "/admin/promo-codes" ? () => createPromoCodesView({ api, signal })
     : path === "/admin/account" ? async () => createAccountView({ api, profile: activeProfile, email: activeSession?.user?.email })
     : path === "/admin/collections" ? () => createCollectionsListView({ api, signal })
     : collectionMatch ? () => createCollectionDetailView({ api, collectionId: decodeURIComponent(collectionMatch[1]), signal })

@@ -59,20 +59,23 @@ type Message = { subject: string; body: string };
 
 async function orderMessage(service: Service, number: number, base: string): Promise<Message> {
   const { data: order, error } = await service.from("crm_orders")
-    .select("number, source, contact_name, contact_phone, contact_email, delivery_method, delivery_city, delivery_point, customer_comment, items_count, items_total, has_unpriced_items")
+    // "*": promo_code / discount_amount exist only after 20261125170000; the message works before and after it.
+    .select("*")
     .eq("number", number).maybeSingle();
   if (error) throw new Error(`Не вдалося прочитати замовлення: ${error.message}`);
   if (!order) throw new Error(`Замовлення №${number} не знайдено.`);
   const delivery = order.delivery_method === "pickup"
     ? `Самовивіз${order.delivery_point ? ` — ${html(order.delivery_point)}` : ""}`
     : `Перевізник${[order.delivery_city, order.delivery_point].filter(Boolean).length ? ` — ${html([order.delivery_city, order.delivery_point].filter(Boolean).join(", "))}` : ""}`;
-  const total = Number(order.items_total || 0) > 0 ? money(order.items_total) : "ціна за запитом";
+  const discount = Number(order.discount_amount || 0);
+  const total = Number(order.items_total || 0) > 0 ? money(Number(order.items_total) - discount) : "ціна за запитом";
   return {
     subject: subjectText(`Нове замовлення №${order.number} — ${order.contact_name}`),
     body: [
       `<b>Нове замовлення №${html(order.number)}</b>${order.source === "manual" ? " (створено вручну)" : ""}`,
       `${html(order.contact_name)}, ${html(order.contact_phone)}${order.contact_email ? `, ${html(order.contact_email)}` : ""}`,
       `Товарів: ${html(order.items_count)} · Сума: ${html(total)}${order.has_unpriced_items && Number(order.items_total || 0) > 0 ? " + позиції за запитом" : ""}`,
+      discount > 0 ? `Промокод: ${html(order.promo_code)} · знижка ${html(money(discount))}` : "",
       `Отримання: ${delivery}`,
       order.customer_comment ? `Коментар: ${html(clip(order.customer_comment))}` : "",
       `<a href="${html(`${base}/admin/orders/${order.number}`)}">Відкрити в адмінці</a>`

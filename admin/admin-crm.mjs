@@ -100,6 +100,7 @@ function renderOrderDetail({ api, detail }) {
                     <span class="admin-crm-num">${number(item.quantity)} × ${item.unitAmount === null ? `<em>${escape(unpricedLabel(item))}</em>` : money(item.unitAmount)}</span>
                     <strong class="admin-crm-num">${item.lineTotal === null ? "—" : money(item.lineTotal)}</strong>
                   </div>`).join("")}
+                ${Number(order.discountAmount) > 0 ? `<div class="admin-crm-item admin-crm-item--discount"><span>Знижка за промокодом <strong>${escape(order.promoCode)}</strong>${order.promoKind === "percent" ? ` (${number(order.promoValue)}%)` : ""}</span><span></span><strong class="admin-crm-num">−${money(order.discountAmount)}</strong></div>` : ""}
                 <div class="admin-crm-item admin-crm-item--total"><span>Разом</span><span></span><strong class="admin-crm-num">${orderTotal(order)}</strong></div>
               </div>
               ${order.hasUnpricedItems ? `<p class="admin-panel-note">Є позиції без ціни — уточніть вартість і вкажіть її в складі замовлення.</p>` : ""}
@@ -381,7 +382,8 @@ export async function createOrderPrintView({ api, orderNumber, signal }) {
         </div>
         <div class="admin-print-totals">
           <div><span>Усього</span><strong>${number(items.length)} поз. · ${number(order.itemsCount)} шт.</strong></div>
-          <div><span>Разом до сплати</span><strong>${money(order.itemsTotal)}</strong></div>
+          ${Number(order.discountAmount) > 0 ? `<div><span>Знижка (промокод ${escape(order.promoCode)})</span><strong>−${money(order.discountAmount)}</strong></div>` : ""}
+          <div><span>Разом до сплати</span><strong>${money(Number(order.itemsTotal) - Number(order.discountAmount || 0))}</strong></div>
           <div><span>ПДВ</span><strong><span class="admin-print-placeholder">[ЗАПОВНИТИ: у т.ч. ПДВ / без ПДВ]</span></strong></div>
           ${order.hasUnpricedItems ? `<p>Вартість позицій з позначкою «уточнюється» буде повідомлена додатково й до суми не входить.</p>` : ""}
         </div>
@@ -694,6 +696,9 @@ const ORDER_CSV_COLUMNS = Object.freeze([
   ["Відділення / магазин", row => row.deliveryPoint],
   ["Кількість, шт.", row => row.itemsCount],
   ["Сума, грн", row => csvAmount(row.itemsTotal)],
+  ["Промокод", row => row.promoCode || ""],
+  ["Знижка, грн", row => csvAmount(row.discountAmount || 0)],
+  ["До сплати, грн", row => csvAmount(Number(row.itemsTotal) - Number(row.discountAmount || 0))],
   ["Є позиції без ціни", row => row.hasUnpricedItems ? "так" : "ні"],
   ["Відповідальний", row => row.assignedTo],
   ["Товари", row => (row.items || []).map(item => `${[item.sku, item.title].filter(Boolean).join(" ")} × ${item.quantity}${item.unitAmount === null ? " (ціна уточнюється)" : ` по ${csvAmount(item.unitAmount)}`}`).join(" | ")],
@@ -1236,8 +1241,9 @@ function showToast(container, message, error = false) {
   toast._timer = setTimeout(() => { toast.hidden = true; }, 5000);
 }
 
+// To pay: the lines minus the promo discount (discountAmount is absent in older answers).
 function orderTotal(order) {
-  const total = Number(order.itemsTotal) || 0;
+  const total = (Number(order.itemsTotal) || 0) - (Number(order.discountAmount) || 0);
   if (!order.hasUnpricedItems) return money(total);
   return total ? `${money(total)} + уточн.` : "Уточнюється";
 }
