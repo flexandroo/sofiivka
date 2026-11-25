@@ -263,9 +263,9 @@ export async function run(db) {
   await db.exec(serviceSql);
   assert.equal((await one(db, "select title from public.site_pages where slug = 'service-center'")).title, "Свій заголовок", "an edited headline stays");
 
-  // 15. 20261125000100_delivery_payment_one_page: the «Оплата» page is gone, an edited delivery article stays.
+  // 15. 20261125150000_delivery_payment_one_page: the «Оплата» page is gone, an edited delivery article stays.
   assert.equal(await anon(db, "select public.get_site_page('payment') r"), null, "the payment page is gone");
-  const deliverySql = fs.readFileSync(path.join(MIGRATIONS_DIR, "20261125000100_delivery_payment_one_page.sql"), "utf8");
+  const deliverySql = fs.readFileSync(path.join(MIGRATIONS_DIR, "20261125150000_delivery_payment_one_page.sql"), "utf8");
   const editedDelivery = [{ type: "heading", text: "Свій розділ" }, { type: "paragraph", text: "Свій текст." }];
   await db.query("update public.site_pages set body = $1 where slug = 'delivery'", [JSON.stringify(editedDelivery)]);
   await db.exec(deliverySql);
