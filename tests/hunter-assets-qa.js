@@ -35,10 +35,8 @@ assert.equal(imagePaths.length, 117, "Hunter series photo coverage changed");
 const redirects = JSON.parse(fs.readFileSync(path.join(root, "vercel.json"), "utf8"))
   .redirects.filter(redirect => redirect.source.startsWith("/product/hunter-"));
 const productPaths = new Set(products.map(product => `/product/${product.id}`));
-assert.equal(redirects.length, 59, "Legacy Hunter family redirect coverage changed");
-assert.equal(new Set(redirects.map(redirect => redirect.source)).size, redirects.length, "Legacy Hunter redirect sources must be unique");
-assert.ok(redirects.every(redirect => redirect.source !== redirect.destination), "Hunter redirects must not point to themselves");
-assert.ok(redirects.every(redirect => productPaths.has(redirect.destination)), "Every Hunter redirect must point to a published SKU");
+assert.equal(redirects.length, 0, "Obsolete Hunter family links must not be redirected");
+assert.ok(productPaths.has("/product/hunter-pgp-04"), "Hunter SKU links must stay available");
 
 for (const image of imagePaths) {
   const filePath = path.join(root, image.replace(/^\//, ""));
