@@ -6,6 +6,7 @@
 // Usage: node scripts/import-check.mjs imports/<batch>.json --reference=imports/reference-prod.json [--check-links]
 import fs from "node:fs";
 import path from "node:path";
+import { stableImportId } from "./import/product-identity.mjs";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const args = process.argv.slice(2);
@@ -223,7 +224,8 @@ function isEmptyImage(file) {
 }
 
 async function checkMedia(item, problems) {
-  const images = (item.images || []).map(norm).filter(Boolean);
+  // Batch paths may come from path.relative() on Windows; public media URLs always use '/'.
+  const images = (item.images || []).map(value => norm(value).replaceAll("\\", "/")).filter(Boolean);
   if (!images.length) problems.errors.push("немає фото");
   for (const image of images) {
     if (/^https?:/i.test(image)) problems.errors.push(`фото з чужого сайту: ${image}`);
@@ -233,7 +235,8 @@ async function checkMedia(item, problems) {
   }
   const documents = [];
   for (const document of item.documents || []) {
-    const url = norm(document.url);
+    const value = norm(document.url);
+    const url = /^https?:/i.test(value) ? value : value.replaceAll("\\", "/");
     if (!url) continue;
     if (!/^https?:/i.test(url)) {
       if (!fs.existsSync(path.join(ROOT, url.replace(/^\//, "")))) { problems.errors.push(`немає файлу документа: ${url}`); continue; }
@@ -296,7 +299,7 @@ const priceChanges = existing.filter(result => result.price !== null && Number(r
 // ---------- SQL ----------
 function sqlFor(rows) {
   const payload = rows.map(({ item, characteristics, filters, media, price, seo }) => ({
-    legacyId: `${batch.supplier}-${norm(item.sourceId).replace(new RegExp(`^${batch.supplier}-`), "")}`.toLowerCase().replace(/[^a-z0-9._-]+/g, "-"),
+    legacyId: stableImportId(batch.supplier, norm(item.sourceId)),
     sourceId: norm(item.sourceId),
     sourceUrl: norm(item.sourceUrl),
     sourceCategory: norm(item.sourceCategory || item.category),
