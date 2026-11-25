@@ -164,10 +164,15 @@
         let viewedIds = [];
         try { viewedIds = JSON.parse(localStorage.getItem("sofievka-viewed")) || []; } catch {}
         const previousViewedIds = [...new Set(viewedIds.filter(viewedId => viewedId && viewedId !== id))].slice(0, 8);
-        if (previousViewedIds.length) {
-          const viewed = await source.getProductsByIds(previousViewedIds);
-          window.sofievkaScopedViewedProducts = viewed.products;
-          products = [...new Map([...products, ...viewed.products].map(product => [product.id, product])).values()];
+        // Cart, favourites and compare products come in the same request: the header counts and the
+        // «В обране» / «Порівняти» states need them, as on every other page.
+        const loaded = new Set(products.map(product => product.id));
+        const extraIds = [...new Set([...previousViewedIds, ...stateIds])].filter(extraId => !loaded.has(extraId)).slice(0, 96);
+        if (extraIds.length) {
+          const extra = await source.getProductsByIds(extraIds);
+          const byId = new Map([...products, ...extra.products].map(product => [product.id, product]));
+          window.sofievkaScopedViewedProducts = previousViewedIds.map(viewedId => byId.get(viewedId)).filter(Boolean);
+          products = [...byId.values()];
         }
       }
     } else if (["cart", "checkout", "favorites", "compare"].includes(name)) {
@@ -191,9 +196,14 @@
   function productCountLabel(count) { const value = Math.abs(Number(count) || 0); const ending = value % 10 === 1 && value % 100 !== 11 ? "товар" : [2, 3, 4].includes(value % 10) && ![12, 13, 14].includes(value % 100) ? "товари" : "товарів"; return `${value} ${ending}`; }
   function setNoindex() { let meta = document.querySelector('meta[name="robots"]'); if (!meta) { meta = document.createElement("meta"); meta.name = "robots"; document.head.append(meta); } meta.content = "noindex, follow"; document.querySelector('link[rel="canonical"]')?.remove(); }
   function setCanonical(path) { let link = document.querySelector('link[rel="canonical"]'); if (!link) { link = document.createElement("link"); link.rel = "canonical"; document.head.append(link); } link.href = `https://sofievka.vercel.app${path}`; }
-  function cart() { try { const value = JSON.parse(localStorage.getItem("sofievka-cart")) || {}; return Object.fromEntries(Object.entries(value).filter(([id, quantity]) => productById(id) && Number(quantity) > 0)); } catch { return {}; } }
+  // cart(), favorites() and compareSelection() list only products this page has loaded; every change starts
+  // from the whole saved value (savedCart/savedList), so a product the page has not loaded is never dropped.
+  function savedCart() { try { const value = JSON.parse(localStorage.getItem("sofievka-cart")); return value && typeof value === "object" && !Array.isArray(value) ? value : {}; } catch { return {}; } }
+  function savedList(key) { try { const value = JSON.parse(localStorage.getItem(key)); return Array.isArray(value) ? value : []; } catch { return []; } }
+  function cart() { return Object.fromEntries(Object.entries(savedCart()).filter(([id, quantity]) => productById(id) && Number(quantity) > 0).map(([id, quantity]) => [id, Number(quantity)])); }
   function saveCart(value) { localStorage.setItem("sofievka-cart", JSON.stringify(value)); updateCounts(); }
-  function favorites() { try { const value = JSON.parse(localStorage.getItem("sofievka-favorites")) || []; return value.filter(id => productById(id)); } catch { return []; } }
+  function setCartQuantity(id, quantity) { const value = savedCart(); if (quantity > 0) value[id] = quantity; else delete value[id]; saveCart(value); }
+  function favorites() { return savedList("sofievka-favorites").filter(id => productById(id)); }
   function saveFavorites(value) { localStorage.setItem("sofievka-favorites", JSON.stringify(value)); updateCounts(); }
   function productById(id) { return SCOPED_PRODUCT_CACHE.get(id) || PRODUCTS.find(item => item.id === id) || null; }
   // Some supplier texts arrive with HTML entities already in them (&lt;); decode first so they are not escaped twice.
@@ -224,7 +234,7 @@
     return slug ? PRODUCTS.find(item => item.slug === slug)?.id || "" : "";
   }
   function brandUrl(product) { return CATALOG?.brandUrl(product.brandId || CATALOG.slugify(product.brand)) || `/brands/${encodeURIComponent(product.brand.toLocaleLowerCase("en"))}`; }
-  function compareSelection() { try { return (JSON.parse(localStorage.getItem("sofievka-compare")) || []).filter(id => productById(id)).slice(0, 4); } catch { return []; } }
+  function compareSelection() { return savedList("sofievka-compare").filter(id => productById(id)).slice(0, 4); }
   function saveCompare(value) { localStorage.setItem("sofievka-compare", JSON.stringify(value)); }
   function toggleCompare(id) {
     const product = productById(id);
@@ -236,9 +246,10 @@
     if (value.length >= 4) { toast("У порівнянні вже 4 товари"); return false; }
     saveCompare([...value, id]); toast("Додано до порівняння", { href: "/compare", label: `Порівняти (${value.length + 1})` }); return true;
   }
-  function addToCart(id, qty = 1) { const value = cart(); value[id] = (value[id] || 0) + qty; saveCart(value); toast("Товар додано до кошика", { href: "/cart", label: "Перейти до кошика" }); }
-  function toggleFavorite(id) { const value = favorites(); const next = value.includes(id) ? value.filter(item => item !== id) : [...value, id]; saveFavorites(next); toast(next.includes(id) ? "Додано в обране" : "Видалено з обраного"); return next.includes(id); }
-  function toast(message, link) { const el = document.querySelector("[data-page-toast]"); if (!el) return; el.textContent = message; if (link) { const a = document.createElement("a"); a.href = link.href; a.textContent = link.label; el.append(" ", a); } el.classList.add("is-visible"); clearTimeout(window.pageToast); window.pageToast = setTimeout(() => el.classList.remove("is-visible"), link ? 4500 : 2400); }
+  function addToCart(id, qty = 1) { const value = savedCart(); value[id] = (Number(value[id]) || 0) + qty; saveCart(value); toast("Товар додано до кошика", { href: "/cart", label: "Перейти до кошика" }); }
+  function toggleFavorite(id) { const saved = savedList("sofievka-favorites"); const active = !saved.includes(id); saveFavorites(active ? [...saved, id] : saved.filter(item => item !== id)); toast(active ? "Додано в обране" : "Видалено з обраного"); return active; }
+  // link: { href, label } opens a page, { action, label } runs a function (e.g. «Повернути» after a removal).
+  function toast(message, link) { const el = document.querySelector("[data-page-toast]"); if (!el) return; el.textContent = message; if (link) { const control = document.createElement(link.action ? "button" : "a"); if (link.action) { control.type = "button"; control.addEventListener("click", () => { el.classList.remove("is-visible"); link.action(); }, { once: true }); } else control.href = link.href; control.textContent = link.label; el.append(" ", control); } el.classList.add("is-visible"); clearTimeout(window.pageToast); window.pageToast = setTimeout(() => el.classList.remove("is-visible"), link ? 4500 : 2400); }
 
   function crumbs(current) { return `<nav class="page-breadcrumbs" aria-label="Хлібні крихти"><a href="/">Головна</a><span>/</span><span aria-current="page">${current}</span></nav>`; }
   // Breadcrumbs name the page, not its headline (the headline is editable in /admin/pages).
@@ -321,7 +332,7 @@
   function renderBlog(){ const cards=[["Підбір","Що підготувати для підбору циркуляційного насоса","Монтажна довжина, робоча точка, тип системи й режим керування — мінімум даних для змістовної консультації."],["Опалення","Чому потужність котла — не єдиний критерій","Димохід, гідравліка, гаряча вода, автоматика та умови сервісу впливають на остаточне рішення."],["Експлуатація","Як прийняти технічне обладнання у перевізника","Перевірка упаковки, моделі, комплектності та фіксація пошкоджень до завершення отримання."]]; return hero("Практичні матеріали","Корисно знати","Короткі технічні пояснення без підміни проєктування та інструкцій виробника.",true)+`<section class="page-section"><div class="container"><div class="article-grid">${cards.map(([k,t,d])=>`<article class="editorial-card"><span>${k}</span><div><h2>${t}</h2><p>${d}</p></div></article>`).join("")}</div><p class="notice" style="margin-top:32px">Повні статті будуть опубліковані після технічної та редакційної перевірки.</p></div></section>`; }
   function renderPortfolio(){ return hero("Реалізовані об’єкти","Рішення, які можна перевірити","Ми не публікуємо вигадані кейси. Тут з’являться підтверджені об’єкти з фотографіями, складом системи та межами виконаних робіт.") + `<section class="page-section"><div class="container"><div class="portfolio-grid"><article class="editorial-card"><span>Формат кейсу</span><div><h2>Вихідна задача</h2><p>Тип об’єкта, обмеження та критерії, за якими обиралося рішення.</p></div></article><article class="editorial-card"><span>Формат кейсу</span><div><h2>Склад системи</h2><p>Перевірені моделі, ключові вузли та монтажні матеріали без рекламного перебільшення.</p></div></article><article class="editorial-card"><span>Формат кейсу</span><div><h2>Результат і сервіс</h2><p>Фактичний обсяг робіт, запуск, документація та подальше обслуговування.</p></div></article></div><div class="empty-state" style="margin-top:32px"><h2>Готуємо перші підтверджені кейси</h2><p>Фото й результати будуть додані після дозволу замовників та технічної перевірки описів.</p><a class="button button--secondary" href="/solutions">Переглянути напрями рішень</a></div></div></section>`; }
 
-  function renderCart(){ const value=cart(); const lines=Object.entries(value).filter(([id,q])=>q>0 && productById(id)); return hero("Кошик","Ваше замовлення","Перевірте товари й кількість перед оформленням.",true)+`<section class="page-section"><div class="container" data-cart-view>${cartMarkup(lines)}</div></section>`; }
+  function renderCart(){ const lines=Object.entries(cart()); return hero("Кошик","Ваше замовлення","Перевірте товари й кількість перед оформленням.",true)+`<section class="page-section"><div class="container" data-cart-view>${cartMarkup(lines)}</div></section>`; }
   function linePrice(product) { return Number(product?.price) > 0 ? Number(product.price) : null; }
   function cartTotals(lines) {
     return lines.reduce((acc, [id, q]) => {
@@ -335,10 +346,77 @@
     if (!totals.unpriced) return money(totals.total);
     return totals.total ? `${money(totals.total)} + уточнення` : "Після уточнення";
   }
+  const CART_MAX_QUANTITY = 999;
+  // One line: photo, name and code with «Видалити», quantity, line total (with the unit price when more than one).
+  function cartLineMarkup(id, q) {
+    const p = productById(id);
+    const sku = displaySku(p);
+    const key = escapeHtml(id);
+    return `<article class="cart-item" data-cart-line="${key}"><a class="cart-item__image" href="${productUrl(p)}"><img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.title)}"></a>`
+      + `<div class="cart-item__info"><h2><a href="${productUrl(p)}">${escapeHtml(p.title)}</a></h2>${sku ? `<p>Код товару: ${escapeHtml(sku)}</p>` : ""}`
+      + `<button class="cart-item__remove" type="button" data-remove="${key}" aria-label="Видалити з кошика: ${escapeHtml(p.title)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Видалити</button></div>`
+      + `<div class="cart-item__qty" role="group" aria-label="Кількість"><button type="button" data-qty="${key}" data-delta="-1" aria-label="Зменшити кількість"${q <= 1 ? " disabled" : ""}>−</button><input type="number" min="1" max="${CART_MAX_QUANTITY}" step="1" value="${q}" inputmode="numeric" data-qty-input="${key}" aria-label="Кількість, шт."><button type="button" data-qty="${key}" data-delta="1" aria-label="Збільшити кількість"${q >= CART_MAX_QUANTITY ? " disabled" : ""}>+</button></div>`
+      + `<div class="cart-item__price">${cartLinePriceMarkup(linePrice(p), q)}</div></article>`;
+  }
+  function cartLinePriceMarkup(price, q) {
+    return `<strong>${price === null ? "Ціну уточнюйте" : money(price * q)}</strong>${price !== null && q > 1 ? `<span>${money(price)} × ${q} шт.</span>` : ""}`;
+  }
+  function cartSummaryRows(totals) {
+    return `<div><dt>Товари, ${totals.count} шт.</dt><dd>${totals.total ? money(totals.total) : "—"}</dd></div>${totals.unpriced ? `<div><dt>Ціна за запитом</dt><dd>${totals.unpriced} поз.</dd></div>` : ""}<div><dt>Доставка</dt><dd>після уточнення</dd></div><div class="order-summary__total"><dt>До оплати</dt><dd>${totalLabel(totals)}</dd></div>`;
+  }
   function cartMarkup(lines){
     if(!lines.length) return `<div class="empty-state"><h2>Кошик порожній</h2><p>Додайте товар з каталогу, щоб перейти до оформлення.</p><a class="button button--primary" href="/catalog">До каталогу</a></div>`;
-    const totals = cartTotals(lines);
-    return `<div class="cart-layout"><div class="cart-items">${lines.map(([id,q])=>{const p=productById(id);const price=linePrice(p);return `<article class="cart-item"><a class="cart-item__image" href="${productUrl(p)}"><img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.title)}"></a><div><h2><a href="${productUrl(p)}">${escapeHtml(p.title)}</a></h2>${displaySku(p)?`<p>Код товару: ${escapeHtml(displaySku(p))}</p>`:""}<div class="cart-item__controls"><button data-qty="${escapeHtml(id)}" data-delta="-1" aria-label="Зменшити">−</button><output>${q}</output><button data-qty="${escapeHtml(id)}" data-delta="1" aria-label="Збільшити">+</button></div></div><div class="cart-item__price"><strong>${price===null?"Ціну уточнюйте":money(price*q)}</strong><button class="cart-item__remove" data-remove="${escapeHtml(id)}">Видалити</button></div></article>`}).join("")}</div><aside class="order-summary"><h2>Разом</h2><dl><div><dt>Товари</dt><dd>${totals.total?money(totals.total):"—"}</dd></div>${totals.unpriced?`<div><dt>Ціна за запитом</dt><dd>${totals.unpriced} поз.</dd></div>`:""}<div><dt>Доставка</dt><dd>після уточнення</dd></div><div class="order-summary__total"><dt>До оплати</dt><dd>${totalLabel(totals)}</dd></div></dl><a class="button button--primary" href="/checkout">Перейти до оформлення</a></aside></div>`;
+    return `<div class="cart-layout"><div class="cart-items">${lines.map(([id,q])=>cartLineMarkup(id,q)).join("")}</div><aside class="order-summary"><h2>Разом</h2><dl data-cart-summary>${cartSummaryRows(cartTotals(lines))}</dl><a class="button button--primary" href="/checkout">Перейти до оформлення</a></aside></div>`;
+  }
+  // A quantity change updates its line and the summary in place: rebuilding the list would drop the click on
+  // «Перейти до оформлення» that blurs the quantity field. Only a removal (or its «Повернути») rebuilds it.
+  function bindCartPage() {
+    const view = document.querySelector("[data-cart-view]");
+    if (!view) return;
+    const clamp = value => Math.min(CART_MAX_QUANTITY, Math.max(1, Math.round(value)));
+    const updateSummary = () => { const summary = view.querySelector("[data-cart-summary]"); if (summary) summary.innerHTML = cartSummaryRows(cartTotals(Object.entries(cart()))); };
+    const setQuantity = (id, quantity, stepButton) => {
+      setCartQuantity(id, quantity);
+      const line = view.querySelector(`[data-cart-line="${CSS.escape(id)}"]`);
+      if (!line) return;
+      const input = line.querySelector("[data-qty-input]");
+      input.value = quantity;
+      line.querySelector('[data-delta="-1"]').disabled = quantity <= 1;
+      line.querySelector('[data-delta="1"]').disabled = quantity >= CART_MAX_QUANTITY;
+      // «−» turns disabled at 1 (and «+» at the maximum): the focus moves to the field instead of being lost.
+      if (stepButton?.disabled) input.focus();
+      line.querySelector(".cart-item__price").innerHTML = cartLinePriceMarkup(linePrice(productById(id)), quantity);
+      updateSummary();
+    };
+    const render = () => { view.innerHTML = cartMarkup(Object.entries(cart())); };
+    view.addEventListener("click", event => {
+      const step = event.target.closest("[data-qty]");
+      if (step) { const id = step.dataset.qty; setQuantity(id, clamp((cart()[id] || 1) + Number(step.dataset.delta)), step); return; }
+      const remove = event.target.closest("[data-remove]");
+      if (!remove) return;
+      const id = remove.dataset.remove;
+      const quantity = cart()[id];
+      const position = Object.keys(cart()).indexOf(id);
+      const savedPosition = Object.keys(savedCart()).indexOf(id);
+      setCartQuantity(id, 0);
+      render();
+      const removeButtons = view.querySelectorAll("[data-remove]");
+      (removeButtons[Math.min(position, removeButtons.length - 1)] || view.querySelector(".empty-state a"))?.focus();
+      toast("Товар видалено з кошика", { label: "Повернути", action: () => {
+        const entries = Object.entries(savedCart()).filter(([entryId]) => entryId !== id);
+        entries.splice(Math.max(0, Math.min(savedPosition, entries.length)), 0, [id, quantity]);
+        saveCart(Object.fromEntries(entries));
+        render();
+        view.querySelector(`[data-remove="${CSS.escape(id)}"]`)?.focus();
+      } });
+    });
+    view.addEventListener("change", event => {
+      const input = event.target.closest("[data-qty-input]");
+      if (!input) return;
+      const id = input.dataset.qtyInput;
+      const value = Number(input.value);
+      setQuantity(id, value >= 1 ? clamp(value) : cart()[id] || 1);
+    });
   }
 
   function renderCheckout(){
@@ -567,7 +645,7 @@
   }
   function updateCounts(){ const cartCount=Object.values(cart()).reduce((s,q)=>s+q,0); document.querySelectorAll("[data-cart-count]").forEach(x=>x.textContent=cartCount); document.querySelectorAll("[data-fav-count]").forEach(x=>x.textContent=favorites().length); }
   function bindPage(name){ if(name==="catalog"){const params=new URLSearchParams(location.search);let category=params.get("category")||"all";const query=(params.get("q")||"").toLocaleLowerCase("uk");const pills=[...document.querySelectorAll("[data-category]")];const render=()=>{const brands=[...document.querySelectorAll("[data-brand-filter]:checked")].map(x=>x.value);const result=PRODUCTS.filter(p=>(category==="all"||p.category===category)&&(!brands.length||brands.includes(p.brand))&&(!query||`${p.brand} ${p.model} ${p.code}`.toLocaleLowerCase("uk").includes(query)));document.querySelector("[data-catalog-products]").innerHTML=result.length?result.map(productCard).join(""):`<div class="catalog-empty"><h2>Нічого не знайдено</h2><p>Спробуйте іншу категорію або очистіть фільтри.</p></div>`;document.querySelector("[data-result-count]").textContent=result.length;pills.forEach(b=>b.classList.toggle("is-active",b.dataset.category===category));};pills.forEach(b=>b.addEventListener("click",()=>{category=b.dataset.category;render();}));document.querySelectorAll("[data-brand-filter]").forEach(x=>x.addEventListener("change",render));document.querySelector("[data-filter-toggle]")?.addEventListener("click",()=>document.querySelector("[data-filter]")?.classList.toggle("is-open"));render();}
-    if(name==="cart") document.querySelector("[data-cart-view]")?.addEventListener("click",e=>{const q=e.target.closest("[data-qty]");const r=e.target.closest("[data-remove]");const value=cart();if(q)value[q.dataset.qty]=Math.max(0,(value[q.dataset.qty]||0)+Number(q.dataset.delta));if(r)delete value[r.dataset.remove];if(q||r){saveCart(value);const lines=Object.entries(value).filter(([,n])=>n>0);document.querySelector("[data-cart-view]").innerHTML=cartMarkup(lines);}});
+    if(name==="cart") bindCartPage();
     if(name==="checkout") bindCheckout();
     if(name==="account") bindAccountPage();
     bindLeadForms(); }
