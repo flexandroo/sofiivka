@@ -57,6 +57,24 @@ const schema = JSON.parse(/id="schema-product">(.*?)<\/script>/.exec(html)[1]);
 assert.equal(schema.offers.price, "1000");
 assert.equal(schema.offers.availability, "https://schema.org/InStock");
 assert.equal(schema.brand.name, "Wilo");
+// The quoted metre price has one explicit machine-readable basis, matching /м.
+// Piece/absent/unknown unit codes preserve the previous Offer without guesses.
+{
+  const metrePage=renderProduct({product:{...product,pricing:{...product.pricing,unit:"m"}},bootstrap,origin});
+  const metreHtml=applyToShell(shell,metrePage);
+  const metreSchema=JSON.parse(/id="schema-product">(.*?)<\/script>/.exec(metreHtml)[1]);
+  assert.deepEqual(metreSchema.offers.priceSpecification,{
+    "@type":"UnitPriceSpecification",price:metreSchema.offers.price,priceCurrency:metreSchema.offers.priceCurrency,
+    referenceQuantity:{"@type":"QuantitativeValue",value:1,unitText:"м"}
+  });
+  assert.match(metrePage.body,/1\s000 грн\/м/);
+  for(const unit of [undefined,"piece","roll"]){
+    const other=renderProduct({product:{...product,pricing:{...product.pricing,unit}},bootstrap,origin});
+    assert.deepEqual(other.schemas["schema-product"].offers,schema.offers);
+  }
+  const unknown=renderProduct({product:{...product,pricing:{amount:null,priceStatus:"unknown",unit:"m"}},bootstrap,origin});
+  assert.equal(unknown.schemas["schema-product"].offers,undefined);
+}
 const crumbs = JSON.parse(/id="schema-breadcrumbs">(.*?)<\/script>/.exec(html)[1]);
 assert.deepEqual(crumbs.itemListElement.map(item => item.name).slice(0, 4), ["Головна", "Каталог", "Опалення", "Котли"]);
 

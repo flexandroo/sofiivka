@@ -245,6 +245,10 @@ export function renderProduct({ product, relatedProducts = [], bootstrap, origin
     ...(price ? { offers: {
       "@type": "Offer", url, price: String(price), priceCurrency: pricing.currency || "UAH",
       itemCondition: "https://schema.org/NewCondition",
+      ...(pricing.unit === "m" ? { priceSpecification: {
+        "@type": "UnitPriceSpecification", price: String(price), priceCurrency: pricing.currency || "UAH",
+        referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitText: "м" }
+      } } : {}),
       ...(availability ? { availability: `https://schema.org/${availability}` } : {})
     } } : {})
   };
