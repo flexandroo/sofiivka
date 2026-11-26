@@ -315,7 +315,7 @@ ${listingMarkup(products)}
     canonical: absolute(path, origin),
     robots: filtered || count === 0 ? "noindex,follow" : "index,follow",
     ogType: "website",
-    image: absolute(brand.logo ? `/${String(brand.logo).replace(/^\/+/, "")}` : "", origin),
+    image: brand.logo ? absolute(`/${String(brand.logo).replace(/^\/+/, "")}`, origin) : "",
     schemas: { "schema-breadcrumbs": breadcrumbSchema(crumbs, origin) },
     body
   };
@@ -323,21 +323,32 @@ ${listingMarkup(products)}
 
 // Puts the rendered page into a shell (product.html, catalog.html, brand.html). Unknown shells stay untouched.
 export function applyToShell(shell, page) {
-  const tag = (attribute, name, content) => content ? `<meta ${attribute}="${name}" content="${escapeHtml(content)}">` : "";
+  const tag = (attribute, name, content) => `<meta ${attribute}="${name}" content="${escapeHtml(content)}">`;
+  // Build shells already contain company social tags. Replace the whole owned set, including stale image
+  // dimensions, before adding page metadata; attribute order and quote style do not change ownership.
+  const preparedShell = shell.replace(/<head\b[^>]*>[\s\S]*?<\/head>/i, head => head.replace(/<meta\b(?:[^"'<>]|"[^"]*"|'[^']*')*>/gi, meta => {
+    for (const [, name, doubleQuoted, singleQuoted, unquoted] of meta.matchAll(/\s+([^\s"'<>/=]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g)) {
+      if (/^(?:property|name)$/i.test(name) && /^(?:og|twitter):/i.test((doubleQuoted ?? singleQuoted ?? unquoted).trim())) return "";
+    }
+    return meta;
+  }));
+  // Derive the company fallback from this page's origin, never from a previous page's product image.
+  const image = absolute(page.image || "/assets/og-image.jpg", page.canonical);
   const head = [
     `<link rel="canonical" href="${escapeHtml(page.canonical)}">`,
     tag("name", "robots", page.robots),
     tag("property", "og:site_name", SITE_NAME),
+    tag("property", "og:locale", "uk_UA"),
     tag("property", "og:type", page.ogType),
     tag("property", "og:title", page.title),
     tag("property", "og:description", page.description),
     tag("property", "og:url", page.canonical),
-    tag("property", "og:image", page.image),
-    tag("name", "twitter:card", page.image ? "summary_large_image" : "summary"),
+    tag("property", "og:image", image),
+    tag("name", "twitter:card", image ? "summary_large_image" : "summary"),
     ...Object.entries(page.schemas).map(([id, data]) => `<script type="application/ld+json" id="${id}">${jsonForScript(data)}</script>`),
     FIRST_PAINT_STYLE
   ].filter(Boolean).join("");
-  return shell
+  return preparedShell
     .replace(/<title>[\s\S]*?<\/title>/i, () => `<title>${escapeHtml(page.title)}</title>`)
     .replace(/<meta\s+name="description"[^>]*>/i, () => tag("name", "description", page.description))
     .replace(/<link\s+rel="canonical"[^>]*>/i, "")

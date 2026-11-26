@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import handler, { applyToShell, createTaxonomy, displaySku, hasFilterParams, productGtin, renderProduct, resetMemory, resolvePage, shortSeoTitle } from "../api/seo-page.mjs";
+import handler, { applyToShell, createTaxonomy, displaySku, hasFilterParams, productGtin, renderBrand, renderCategory, renderProduct, resetMemory, resolvePage, shortSeoTitle } from "../api/seo-page.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = relative => fs.readFileSync(path.join(root, relative), "utf8");
@@ -59,6 +59,63 @@ assert.equal(schema.offers.availability, "https://schema.org/InStock");
 assert.equal(schema.brand.name, "Wilo");
 const crumbs = JSON.parse(/id="schema-breadcrumbs">(.*?)<\/script>/.exec(html)[1]);
 assert.deepEqual(crumbs.itemListElement.map(item => item.name).slice(0, 4), ["Головна", "Каталог", "Опалення", "Котли"]);
+
+// Compiled shells have generic social metadata before the runtime page metadata. Link-preview crawlers may
+// use the first value, so the rendered head must own one complete, current set, also after another application.
+{
+  const companyTags = `<meta property="og:site_name" content="ТД «Софіївка»">
+<meta property="og:locale" content="uk_UA"><meta property="og:type" content="website">
+<meta property="og:title" content="Товар | ТД «Софіївка»"><meta property="og:description" content="Загальний опис">
+<meta property="og:url" content="https://shop.test/product"><meta property="og:image" content="https://shop.test/assets/og-image.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">`;
+  const unrelated = `<meta name="theme-color" content="#fff"><meta name="google-site-verification" content="verify-123">
+<meta data-property="og:title" content="not an Open Graph tag"><meta name="custom" content="property='og:title' > example">
+<link rel="stylesheet" href="/site.css"><script src="/page-shell.js" defer></script>`;
+  const compiledShell = shell.replace("</head>", `${companyTags}${unrelated}</head>`);
+  const social = value => [...value.matchAll(/<meta (?:property|name)="((?:og|twitter):[^"]+)" content="([^"]*)">/g)].map(([, name, content]) => [name, content]);
+  const expected = [
+    ["og:site_name", "ТД «Софіївка»"], ["og:locale", "uk_UA"], ["og:type", "product"],
+    ["og:title", page.title], ["og:description", page.description], ["og:url", page.canonical],
+    ["og:image", "https://shop.test/assets/a.webp"], ["twitter:card", "summary_large_image"]
+  ];
+  const rendered = applyToShell(compiledShell, page);
+  assert.deepEqual(social(rendered), expected, "generic build metadata is replaced by exactly one product set");
+  assert.ok(rendered.includes(unrelated), "unrelated meta, quoted content, stylesheets and scripts remain byte-identical");
+  assert.deepEqual(social(applyToShell(rendered, page)), expected, "reapplying metadata does not duplicate social tags");
+  const attributeVariants = `<META CONTENT='stale title' data-extra='x' PROPERTY = 'OG:TITLE' />
+<meta content="stale description" property='og:description'><meta content='stale image' name=og:image>
+<meta content='summary' NAME = 'TWITTER:CARD'><meta content='old tweet' property="twitter:title">
+<meta content='uk_UA' property=og:locale><meta content='1200' property='og:image:width'>`;
+  const variantsHtml = applyToShell(shell.replace("</head>", `${attributeVariants}</head>`), page);
+  assert.deepEqual(social(variantsHtml), expected,
+    "ownership follows name/property for either quote style, unquoted values, casing and attribute order");
+  for (const originalTag of attributeVariants.split("\n")) assert.ok(!variantsHtml.includes(originalTag), `stale tag removed: ${originalTag}`);
+
+  const categoryPage = renderCategory({ category: categories[0], bootstrap, origin });
+  assert.equal(categoryPage.image, "");
+  const categoryHtml = applyToShell(compiledShell, categoryPage);
+  const categorySocial = social(categoryHtml);
+  assert.equal(categorySocial.length, expected.length);
+  for (const [name, content] of [["og:title", categoryPage.title], ["og:description", categoryPage.description],
+    ["og:type", "website"], ["og:url", categoryPage.canonical], ["og:locale", "uk_UA"],
+    ["og:image", "https://shop.test/assets/og-image.jpg"], ["twitter:card", "summary_large_image"]]) {
+    assert.deepEqual(categorySocial.filter(([key]) => key === name), [[name, content]], `${name}: category uses its own metadata and company image`);
+  }
+  assert.deepEqual(social(applyToShell(rendered, categoryPage)), categorySocial,
+    "a page without an image cannot inherit a previous product image on reapplication");
+  const emptyDescription = applyToShell(compiledShell, { ...categoryPage, description: "" });
+  assert.deepEqual(social(emptyDescription).filter(([key]) => key === "og:description"), [["og:description", ""]],
+    "an empty page description replaces the generic company description without inventing content");
+  const noLogoBrand = renderBrand({ brand: bootstrap.brands[0], bootstrap, origin });
+  assert.equal(noLogoBrand.image, "", "a brand without a logo must not use the homepage HTML URL as an image");
+  assert.deepEqual(social(applyToShell(compiledShell, noLogoBrand)).filter(([key]) => key === "og:image"),
+    [["og:image", "https://shop.test/assets/og-image.jpg"]], "a brand without a logo uses the corporate image");
+  const withLogoBrand = renderBrand({ brand: { ...bootstrap.brands[0], logo: "assets/brands/wilo.svg" }, bootstrap, origin });
+  assert.equal(withLogoBrand.image, "https://shop.test/assets/brands/wilo.svg");
+  assert.deepEqual(social(applyToShell(compiledShell, withLogoBrand)).filter(([key]) => key === "og:image"),
+    [["og:image", "https://shop.test/assets/brands/wilo.svg"]], "a verified brand logo remains the page image");
+}
 
 // A framed shell (the build's header, placeholders and footer): the content goes into <main> at the slot, the frame
 // stays around it, and the content is hidden until the client render (shown by the shell's <noscript> style).
