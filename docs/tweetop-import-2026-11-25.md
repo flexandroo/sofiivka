@@ -1,8 +1,8 @@
 # Tweetop: імпорт прес-системи 25.11.2026
 
-Збір почато 25.11.2026, перевірку завершено 26.11.2026. Виробник: Tweetop Sp. z o.o., Польща.
+Збір почато 25.11.2026, перевірку та публікацію даних завершено 26.11.2026. **Статус: 345 товарів опубліковано в PROD; SQL-аудит, browser QA та live-перевірки — PASS.** Виробник: Tweetop Sp. z o.o., Польща.
 
-Перевірено весь погоджений обсяг 388 артикулів, без обмеження кількості.345 готові до нового імпорту,43 пропущені через відсутнє підтверджене зображення потрібного виконання. Існуючі товари й ціни не змінюються.270 позицій інших напрямків каталогу (Screw/SmartPush, колектори, шафи, насосні вузли, автоматика, вентиляція та теплові насоси) поза погодженим обсягом.
+Перевірено весь погоджений обсяг 388 артикулів, без обмеження кількості. **345 опубліковано, 43 пропущені** через відсутнє підтверджене зображення потрібного виконання. Фінальний аудит підтвердив незмінність існуючих товарів і цін. 270 позицій інших напрямків каталогу (Screw/SmartPush, колектори, шафи, насосні вузли, автоматика, вентиляція та теплові насоси) поза погодженим обсягом.
 
 ## Офіційні джерела
 
@@ -17,7 +17,7 @@
 
 ## Покриття
 
-|Група виробника|У scope|Готові|Пропущені|
+|Група виробника|У scope|Опубліковано|Пропущені|
 |---|---:|---:|---:|
 |A30|19|19|0|
 |A31|12|12|0|
@@ -38,7 +38,7 @@
 |N31|24|24|0|
 |N36|2|2|0|
 
-|Категорія|Готові|
+|Категорія|Опубліковано|
 |---|---:|
 |water-heating-pipes|64|
 |pipe-fittings|186|
@@ -190,3 +190,11 @@
 - BatchSHA-256:c81ea998e2734ffa75c8f87c46614f79d23f0efbbb72c5e3991b2598778d5f03.
 
 Відтворення з кореня репозиторію: node scripts/import/tweetop-collect.mjs → python scripts/import/tweetop-pdf.py → node scripts/import/tweetop-media.mjs → node scripts/import/tweetop-batch.mjs → node scripts/import/tweetop-verify.mjs --prune → node scripts/import-check.mjs imports/tweetop-2026-11-25.json --reference=imports/reference-wave2-staged.json --check-links. PyMuPDF розміщений тільки вtmp/tweetop-tools; Sharp і Cheerio — у спільних тимчасовихimport-tools/tervix-tools. Каталогджерел уtmp/tweetop-source, робочіJSON уimports; вони не підміняють вихідні SKU.
+
+## Підтвердження публікації
+
+Фінальний read-only PROD-аудит `imports/wave2-final-scope-audit.json` — **PASS**, exact 345/345 Tweetop опубліковано; core/source metadata, характеристики, series, null UAH, зображення, документи та active public snapshots/cards пройшли перевірки без помилок. SHA256 виконаного `tmp/wave2-no-tools-final-audit.sql`: `08816a314c7ba6d99bd50815013b19287e2e5faf3fab82fbfdbb55b3b9a74b21`. Окремий `imports/wave2-old-data-final-audit.json` — PASS: усі 11 428 старих products та пов'язані дані й ціни незмінні.
+
+Production-збірка READY містить 19 327 публічних товарів і 19 489 sitemap URLs. Browser QA на desktop 1 366 × 900 та mobile 390 × 844 підтвердила 43 результати Tweetop для товщини стінки 2 мм, відкриття/закриття filter drawer, справжні товарні зображення та CTA запиту ціни на PDP, шість локальних PDF-посилань і відсутність горизонтального overflow. Повний протокол — у [зведеному звіті](engineering-brand-import-2026-11-26.md).
+
+Після production-деплою SEO-виправлення `49eedec` live-перевірка трьох брендів — **309 checks PASS**, загальний `live-smoke` — **181 checks PASS**. Протоколи: `imports/wave2-live-qa.json`, `imports/wave2-live-smoke-qa.json`.
