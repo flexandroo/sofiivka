@@ -1,0 +1,1929 @@
+{
+  "schemaVersion": 1,
+  "status": "REVIEWED_USER_APPROVED_NO_TOOLS_SCOPE",
+  "reviewedAt": "2026-11-26",
+  "brand": "rehau",
+  "scope": "All REHAU engineering systems except standalone tools, dedicated tool accessories and diagnostic/pressure-test equipment. Retain permanent system mounting parts and primary valve/manifold sets with included tools.",
+  "originalBatch": {
+    "path": "imports/rehau-2026-11-25.json",
+    "sha256": "c927bdc6722bd8aaa4d37afe171379dea4b67055c308ed006d7481468ca4a963",
+    "products": 7905
+  },
+  "scopedBatch": {
+    "path": "imports/rehau-no-tools-2026-11-26.json",
+    "sha256": "6b64f10c1725f8daf7e69f01491429b957794f32b91ef86c7350ecda1639babf",
+    "products": 7639
+  },
+  "count": 266,
+  "breakdown": {
+    "categoryToolsExcluded": 231,
+    "additionalOutsideToolCategory": 35,
+    "coreTooling": 260,
+    "reusablePressureTestAccessories": 6
+  },
+  "products": [
+    {
+      "legacyId": "rehau-n5d908v6l27emn5bgkoj6q0p5k",
+      "sku": "10009331001",
+      "sourceId": "N5D908V6L27EMN5BGKOJ6Q0P5K",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10009331001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-nunfv8a2ht1947mdss6cf47n58",
+      "sku": "10011281001",
+      "sourceId": "NUNFV8A2HT1947MDSS6CF47N58",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10011281001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-1udis6ahtd4jvavegvppvg7lfc",
+      "sku": "10011321001",
+      "sourceId": "1UDIS6AHTD4JVAVEGVPPVG7LFC",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/10011321001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-56ubncm9qh3pnrocmklkpgop0o",
+      "sku": "10011331001",
+      "sourceId": "56UBNCM9QH3PNROCMKLKPGOP0O",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10011331001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-th8ql904viti36nmmrinl6p31s",
+      "sku": "10011341001",
+      "sourceId": "TH8QL904VITI36NMMRINL6P31S",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10011341001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-p5v40lcumouui23cltthfb542g",
+      "sku": "10011351001",
+      "sourceId": "P5V40LCUMOUUI23CLTTHFB542G",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10011351001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-34q6tv01i0kqlaqprpsm3c7elg",
+      "sku": "10011371001",
+      "sourceId": "34Q6TV01I0KQLAQPRPSM3C7ELG",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10011371001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-h8tgovspb32un7ldcr6245k7n4",
+      "sku": "10011391001",
+      "sourceId": "H8TGOVSPB32UN7LDCR6245K7N4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10011391001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-uhd28av0i2ifkvuleb23a2eem0",
+      "sku": "10011421001",
+      "sourceId": "UHD28AV0I2IFKVULEB23A2EEM0",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10011421001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-stmtuijp7aq5hcnjgiuilu0h4s",
+      "sku": "10011431001",
+      "sourceId": "STMTUIJP7AQ5HCNJGIUILU0H4S",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10011431001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-g85aka9u8142gb00s05nk597r4",
+      "sku": "10011441001",
+      "sourceId": "G85AKA9U8142GB00S05NK597R4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10011441001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-3gfmh75n7b5m2ahpcnd9vk01c4",
+      "sku": "10011451001",
+      "sourceId": "3GFMH75N7B5M2AHPCND9VK01C4",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/10011451001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-4rkh4osvl8v9550uajskn1dj6k",
+      "sku": "10014561001",
+      "sourceId": "4RKH4OSVL8V9550UAJSKN1DJ6K",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10014561001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-pk8i0oobces7qb8h5tc5j7ee2s",
+      "sku": "10014571001",
+      "sourceId": "PK8I0OOBCES7QB8H5TC5J7EE2S",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10014571001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-l6ljour8gjgd6rae471dfuhk3o",
+      "sku": "10014581001",
+      "sourceId": "L6LJOUR8GJGD6RAE471DFUHK3O",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10014581001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-lmppe4ot8ajd9ini1u14d4q2jo",
+      "sku": "10014591001",
+      "sourceId": "LMPPE4OT8AJD9INI1U14D4Q2JO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10014591001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-dsqb1hedsr35bj4798i7g81aq8",
+      "sku": "10014621001",
+      "sourceId": "DSQB1HEDSR35BJ4798I7G81AQ8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10014621001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-i4i17krdrrh63moam11f10d4t0",
+      "sku": "10015631001",
+      "sourceId": "I4I17KRDRRH63MOAM11F10D4T0",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/10015631001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-e6u2hb1v9nk5gntb77frmcbmgs",
+      "sku": "10015651001",
+      "sourceId": "E6U2HB1V9NK5GNTB77FRMCBMGS",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/10015651001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-9t12aa7hm1fvmrneectagvo8j8",
+      "sku": "10015941001",
+      "sourceId": "9T12AA7HM1FVMRNEECTAGVO8J8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10015941001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-us83d3vnerkr49ajn9g9vnjrvs",
+      "sku": "10015961001",
+      "sourceId": "US83D3VNERKR49AJN9G9VNJRVS",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10015961001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-l574rt2anqqum6urg3oe2vgcsg",
+      "sku": "10015971001",
+      "sourceId": "L574RT2ANQQUM6URG3OE2VGCSG",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10015971001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-cbk35mvt6rmpln1ich0nicgm70",
+      "sku": "10015981001",
+      "sourceId": "CBK35MVT6RMPLN1ICH0NICGM70",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10015981001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-q786aq8s7q2e5j0gdgargfab48",
+      "sku": "10016021001",
+      "sourceId": "Q786AQ8S7Q2E5J0GDGARGFAB48",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10016021001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-i9k3osr6rll48ipe92a2somsrk",
+      "sku": "10016031001",
+      "sourceId": "I9K3OSR6RLL48IPE92A2SOMSRK",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10016031001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-qfolmgm3l2kdurgln9gupfjg5s",
+      "sku": "10016051001",
+      "sourceId": "QFOLMGM3L2KDURGLN9GUPFJG5S",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10016051001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-h0erio0dvflverhi79rfmdcfj4",
+      "sku": "10016071001",
+      "sourceId": "H0ERIO0DVFLVERHI79RFMDCFJ4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10016071001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-1ds67qcj1ncalf508pce7s0skc",
+      "sku": "10016431001",
+      "sourceId": "1DS67QCJ1NCALF508PCE7S0SKC",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/10016431001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-ebbi1q52p3s1q1oprcc86kriks",
+      "sku": "10017621001",
+      "sourceId": "EBBI1Q52P3S1Q1OPRCC86KRIKS",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10017621001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-cerkmgq21p07p2a3j0i02vuhh4",
+      "sku": "10017631001",
+      "sourceId": "CERKMGQ21P07P2A3J0I02VUHH4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10017631001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-44icr297e2j2io1d04fvqhb5oc",
+      "sku": "10017831001",
+      "sourceId": "44ICR297E2J2IO1D04FVQHB5OC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10017831001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-ok21g9lq8tep89r14cls905n0o",
+      "sku": "10017941001",
+      "sourceId": "OK21G9LQ8TEP89R14CLS905N0O",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10017941001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-17ckf7kaa8t7qstqpvtaajdk4g",
+      "sku": "10018581001",
+      "sourceId": "17CKF7KAA8T7QSTQPVTAAJDK4G",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/10018581001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-bob14f6podh21jctvhj3b11cak",
+      "sku": "11037151001",
+      "sourceId": "BOB14F6PODH21JCTVHJ3B11CAK",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11037151001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-7rnv6qmehvd94ptnrts8gjejv0",
+      "sku": "11040221001",
+      "sourceId": "7RNV6QMEHVD94PTNRTS8GJEJV0",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11040221001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-bkke3db9hfcvrajq7q09e5l680",
+      "sku": "11040271001",
+      "sourceId": "BKKE3DB9HFCVRAJQ7Q09E5L680",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11040271001",
+      "reason": "Doorway spreader/pipe guide used during pipe laying; reusable installation equipment."
+    },
+    {
+      "legacyId": "rehau-kqobt7fk6l94d7dejmp9n56rlk",
+      "sku": "11045241001",
+      "sourceId": "KQOBT7FK6L94D7DEJMP9N56RLK",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11045241001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-6rnhrtu6k7b2qnj27a1mn76gec",
+      "sku": "11051031001",
+      "sourceId": "6RNHRTU6K7B2QNJ27A1MN76GEC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11051031001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-fdvs513rfn9bicch2kv0uo4cgs",
+      "sku": "11051621001",
+      "sourceId": "FDVS513RFN9BICCH2KV0UO4CGS",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11051621001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-a12apc40p3su6mp4shr81v1hb4",
+      "sku": "11051631001",
+      "sourceId": "A12APC40P3SU6MP4SHR81V1HB4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11051631001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-9qr1g8tls2bifu0i1ibbrng9no",
+      "sku": "11051641001",
+      "sourceId": "9QR1G8TLS2BIFU0I1IBBRNG9NO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11051641001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-fb3qb80mhose4cu4snie619hm0",
+      "sku": "11051651001",
+      "sourceId": "FB3QB80MHOSE4CU4SNIE619HM0",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11051651001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-7b8cqok04o21g99penri7dlaro",
+      "sku": "11051661001",
+      "sourceId": "7B8CQOK04O21G99PENRI7DLARO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11051661001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-s6ltvbrc2chcsf785crhr6au38",
+      "sku": "11051801001",
+      "sourceId": "S6LTVBRC2CHCSF785CRHR6AU38",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11051801001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-p452dv0ktiorjbjekrkua9j448",
+      "sku": "11053431001",
+      "sourceId": "P452DV0KTIORJBJEKRKUA9J448",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11053431001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-44k30v61hud28j8dk3gfk2vef8",
+      "sku": "11064781001",
+      "sourceId": "44K30V61HUD28J8DK3GFK2VEF8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11064781001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-sueg2ed7n2s7nlkttitsvtfrr4",
+      "sku": "11064791001",
+      "sourceId": "SUEG2ED7N2S7NLKTTITSVTFRR4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11064791001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-161rda6rosqtt9g4dhoub76t2c",
+      "sku": "11064801001",
+      "sourceId": "161RDA6ROSQTT9G4DHOUB76T2C",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11064801001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-6u32el1mgn37o1kfg69ulrqe18",
+      "sku": "11064811001",
+      "sourceId": "6U32EL1MGN37O1KFG69ULRQE18",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11064811001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-f09pf1p9p5vv7spjd493hmpgp0",
+      "sku": "11066341001",
+      "sourceId": "F09PF1P9P5VV7SPJD493HMPGP0",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11066341001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-cg7amoo90hds8658srttts37fg",
+      "sku": "11067581001",
+      "sourceId": "CG7AMOO90HDS8658SRTTTS37FG",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11067581001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-nu8sc75446297p11qagj1t227o",
+      "sku": "11085051001",
+      "sourceId": "NU8SC75446297P11QAGJ1T227O",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11085051001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-dqmoaqf3c024lm7um07gj53aqg",
+      "sku": "11089501001",
+      "sourceId": "DQMOAQF3C024LM7UM07GJ53AQG",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11089501001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-gl9bgftehktikkqkb3kirgo7lk",
+      "sku": "11093361001",
+      "sourceId": "GL9BGFTEHKTIKKQKB3KIRGO7LK",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11093361001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-v2dlk9rqphvt4ki43iq9q0bcvs",
+      "sku": "11093371001",
+      "sourceId": "V2DLK9RQPHVT4KI43IQ9Q0BCVS",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11093371001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-7u0v4puf5h5db8m9fcnu2vtd0g",
+      "sku": "11093381001",
+      "sourceId": "7U0V4PUF5H5DB8M9FCNU2VTD0G",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11093381001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-jtubgqnrphm31eldop2ot4skms",
+      "sku": "11093391001",
+      "sourceId": "JTUBGQNRPHM31ELDOP2OT4SKMS",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11093391001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-7gdc6e0717lgclg8avfq5stkv4",
+      "sku": "11094991001",
+      "sourceId": "7GDC6E0717LGCLG8AVFQ5STKV4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11094991001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-ml7e3eq626i883lnh8gotl8ea0",
+      "sku": "11102681001",
+      "sourceId": "ML7E3EQ626I883LNH8GOTL8EA0",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11102681001",
+      "reason": "Sanitary-box alignment jig; source explicitly calls it Werkzeug for positioning while foam/adhesive hardens."
+    },
+    {
+      "legacyId": "rehau-7cpalkooijculnoor62tkqd34o",
+      "sku": "11104291001",
+      "sourceId": "7CPALKOOIJCULNOOR62TKQD34O",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11104291001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-4je8ttk5gmav3n1kps5htrhcu4",
+      "sku": "11106661001",
+      "sourceId": "4JE8TTK5GMAV3N1KPS5HTRHCU4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11106661001",
+      "reason": "Reusable temporary pressure-test plug with integrated vent; dedicated test accessory."
+    },
+    {
+      "legacyId": "rehau-5uvu8nssidq40n7vmn0l18pbec",
+      "sku": "11106671001",
+      "sourceId": "5UVU8NSSIDQ40N7VMN0L18PBEC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11106671001",
+      "reason": "Reusable temporary pressure-test plug with integrated vent; dedicated test accessory."
+    },
+    {
+      "legacyId": "rehau-tijo955lapueatmctnatk8o6lg",
+      "sku": "11106681001",
+      "sourceId": "TIJO955LAPUEATMCTNATK8O6LG",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11106681001",
+      "reason": "Reusable temporary pressure-test plug with integrated vent; dedicated test accessory."
+    },
+    {
+      "legacyId": "rehau-24di21a6c2go1761h0jls03gqg",
+      "sku": "11106761001",
+      "sourceId": "24DI21A6C2GO1761H0JLS03GQG",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11106761001",
+      "reason": "Reusable temporary pressure-test plug with integrated vent; dedicated test accessory."
+    },
+    {
+      "legacyId": "rehau-jihpkidpb5n76ksonh7f0f3cqk",
+      "sku": "11106771001",
+      "sourceId": "JIHPKIDPB5N76KSONH7F0F3CQK",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11106771001",
+      "reason": "Reusable temporary pressure-test plug with integrated vent; dedicated test accessory."
+    },
+    {
+      "legacyId": "rehau-semn4q03r4u2ujtrepol1l4jlk",
+      "sku": "11106781001",
+      "sourceId": "SEMN4Q03R4U2UJTREPOL1L4JLK",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11106781001",
+      "reason": "Reusable temporary pressure-test plug with integrated vent; dedicated test accessory."
+    },
+    {
+      "legacyId": "rehau-gsntf6a5cs3olut7caoq7ue2h4",
+      "sku": "11110381001",
+      "sourceId": "GSNTF6A5CS3OLUT7CAOQ7UE2H4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11110381001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-nfr96avas56at5hedd8jeh6m9c",
+      "sku": "11110391001",
+      "sourceId": "NFR96AVAS56AT5HEDD8JEH6M9C",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11110391001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-n889jmj973ot8as7noqopkf5tk",
+      "sku": "11190031001",
+      "sourceId": "N889JMJ973OT8AS7NOQOPKF5TK",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11190031001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-f1l5le45t3n76t1p4v0pc4d2c8",
+      "sku": "11190041001",
+      "sourceId": "F1L5LE45T3N76T1P4V0PC4D2C8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11190041001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-1opesh0aoka6gji8b4jbpid0ic",
+      "sku": "11190051001",
+      "sourceId": "1OPESH0AOKA6GJI8B4JBPID0IC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11190051001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-cjgujir6vk7honfu06angjotvk",
+      "sku": "11190061001",
+      "sourceId": "CJGUJIR6VK7HONFU06ANGJOTVK",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11190061001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-so369skjq4ubbed3273lnaak8s",
+      "sku": "11315571001",
+      "sourceId": "SO369SKJQ4UBBED3273LNAAK8S",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11315571001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-tm3lhrkijdeadr544kp1hgmdso",
+      "sku": "11315581001",
+      "sourceId": "TM3LHRKIJDEADR544KP1HGMDSO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11315581001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-v90grvdauhacdtbjgvlu1cugnc",
+      "sku": "11315591001",
+      "sourceId": "V90GRVDAUHACDTBJGVLU1CUGNC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11315591001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-3r6686pijlmkmbf3hp6j5enbi8",
+      "sku": "11315651001",
+      "sourceId": "3R6686PIJLMKMBF3HP6J5ENBI8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11315651001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-lukt1lfn88b200fhmgb0i42f24",
+      "sku": "11315671001",
+      "sourceId": "LUKT1LFN88B200FHMGB0I42F24",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11315671001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-lqoernj8quuc9rujkg6i1l6ros",
+      "sku": "11315681001",
+      "sourceId": "LQOERNJ8QUUC9RUJKG6I1L6ROS",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11315681001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-lrdhnv9v2j26prni9pmvvkr1s0",
+      "sku": "11318881001",
+      "sourceId": "LRDHNV9V2J26PRNI9PMVVKR1S0",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11318881001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-a1cf3hco4ckqcqkdk1o25omph0",
+      "sku": "11372341001",
+      "sourceId": "A1CF3HCO4CKQCQKDK1O25OMPH0",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11372341001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-jcpffn3cpjekhraorud5kv762c",
+      "sku": "11373141001",
+      "sourceId": "JCPFFN3CPJEKHRAORUD5KV762C",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11373141001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-6omce8in056hb646upvrq2n6og",
+      "sku": "11373441001",
+      "sourceId": "6OMCE8IN056HB646UPVRQ2N6OG",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11373441001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-mtkgrijn9j34fq6imckf6sqcic",
+      "sku": "11373641001",
+      "sourceId": "MTKGRIJN9J34FQ6IMCKF6SQCIC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11373641001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-fg89fm648c00ese7mvd7mm9afg",
+      "sku": "11374241001",
+      "sourceId": "FG89FM648C00ESE7MVD7MM9AFG",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11374241001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-p8vreqrjj34545krip86v7g2a4",
+      "sku": "11374341001",
+      "sourceId": "P8VREQRJJ34545KRIP86V7G2A4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11374341001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-ej47fpqhms7g0nrn00e03s1ev4",
+      "sku": "11374951002",
+      "sourceId": "EJ47FPQHMS7G0NRN00E03S1EV4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11374951002",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-e50cob5fkbl5tgcn4ip3tq0als",
+      "sku": "11375841001",
+      "sourceId": "E50COB5FKBL5TGCN4IP3TQ0ALS",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11375841001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-0g2uge0bas2t3j3b2p1eou9b0s",
+      "sku": "11376041001",
+      "sourceId": "0G2UGE0BAS2T3J3B2P1EOU9B0S",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11376041001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-bbkmr6i6j8oot339819krd8nn8",
+      "sku": "11376141001",
+      "sourceId": "BBKMR6I6J8OOT339819KRD8NN8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11376141001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-2pu4mslfok6pe4hd24snlgferk",
+      "sku": "11376241001",
+      "sourceId": "2PU4MSLFOK6PE4HD24SNLGFERK",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11376241001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-vn22cj3ibe93n5bq360d1o4cfo",
+      "sku": "11376341001",
+      "sourceId": "VN22CJ3IBE93N5BQ360D1O4CFO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11376341001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-j691g5um3akeujlt6dn8uf67e4",
+      "sku": "11376441001",
+      "sourceId": "J691G5UM3AKEUJLT6DN8UF67E4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11376441001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-t7teqbaa9uestrmj6i52b3o4rc",
+      "sku": "11376541001",
+      "sourceId": "T7TEQBAA9UESTRMJ6I52B3O4RC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11376541001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-54akl8oougok03e1tp2i4ivq58",
+      "sku": "11376641001",
+      "sourceId": "54AKL8OOUGOK03E1TP2I4IVQ58",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11376641001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-8k6k7ja6mrg2klkc5qolg4jrt8",
+      "sku": "11376851001",
+      "sourceId": "8K6K7JA6MRG2KLKC5QOLG4JRT8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11376851001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-v340qiapf1tchf921ffc1nuhec",
+      "sku": "11377441001",
+      "sourceId": "V340QIAPF1TCHF921FFC1NUHEC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11377441001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-jsktk7qnqgjhgqupmq81gls9f4",
+      "sku": "11377541001",
+      "sourceId": "JSKTK7QNQGJHGQUPMQ81GLS9F4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11377541001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-af4pcrpj8rq54tahjvkv9eca38",
+      "sku": "11377641005",
+      "sourceId": "AF4PCRPJ8RQ54TAHJVKV9ECA38",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11377641005",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-iac4cs0rk89567o0t1f9rs7ks8",
+      "sku": "11378251001",
+      "sourceId": "IAC4CS0RK89567O0T1F9RS7KS8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11378251001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-eeq9bu230kksh3e26thnienrc0",
+      "sku": "11382721001",
+      "sourceId": "EEQ9BU230KKSH3E26THNIENRC0",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11382721001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-g6h1anfnn0dui83stjcqrhpg2s",
+      "sku": "11383231001",
+      "sourceId": "G6H1ANFNN0DUI83STJCQRHPG2S",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11383231001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-tsj27rne26s5skgev719le2efg",
+      "sku": "11384631001",
+      "sourceId": "TSJ27RNE26S5SKGEV719LE2EFG",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11384631001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-5tmgkd22qrn6nj5ht77sh9t2es",
+      "sku": "11393611002",
+      "sourceId": "5TMGKD22QRN6NJ5HT77SH9T2ES",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11393611002",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-6fvhb49g76jjmm2gej1jdsfmmg",
+      "sku": "11398811001",
+      "sourceId": "6FVHB49G76JJMM2GEJ1JDSFMMG",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11398811001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-fh60msdc74vnd8c37qh51ui3g8",
+      "sku": "11398911001",
+      "sourceId": "FH60MSDC74VND8C37QH51UI3G8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11398911001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-9ra208eeup9koslaohc8u8e5p8",
+      "sku": "11399011001",
+      "sourceId": "9RA208EEUP9KOSLAOHC8U8E5P8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11399011001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-jmsbh79ptksu850kgshvsuc310",
+      "sku": "11519531002",
+      "sourceId": "JMSBH79PTKSU850KGSHVSUC310",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/11519531002",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-rvsiq7ius4bf9hk8rq05059v80",
+      "sku": "11706711001",
+      "sourceId": "RVSIQ7IUS4BF9HK8RQ05059V80",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11706711001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-9m2jvm8anuogfg81v4krsrkokc",
+      "sku": "11706811001",
+      "sourceId": "9M2JVM8ANUOGFG81V4KRSRKOKC",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11706811001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-8v271vupvid84s044qia7k2chc",
+      "sku": "11706911001",
+      "sourceId": "8V271VUPVID84S044QIA7K2CHC",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11706911001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-f0unl6kfvhknnbh01c3ioe1kuo",
+      "sku": "11726991001",
+      "sourceId": "F0UNL6KFVHKNNBH01C3IOE1KUO",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11726991001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-0kugses11adrd3qb3tpnu0nd5o",
+      "sku": "11760471001",
+      "sourceId": "0KUGSES11ADRD3QB3TPNU0ND5O",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11760471001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-86836ngpqegcf4vl4j4bit7nik",
+      "sku": "11760481001",
+      "sourceId": "86836NGPQEGCF4VL4J4BIT7NIK",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11760481001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-ois7m7ti7upj0dhpicm0opem04",
+      "sku": "11760491001",
+      "sourceId": "OIS7M7TI7UPJ0DHPICM0OPEM04",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11760491001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-nbtnkrps4kehe9npovm2cjgg8o",
+      "sku": "11761111600",
+      "sourceId": "NBTNKRPS4KEHE9NPOVM2CJGG8O",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11761111600",
+      "reason": "Standalone AWADOCK installation wrench."
+    },
+    {
+      "legacyId": "rehau-onrqen46bjvnh1jl5h7fkfvn8c",
+      "sku": "11763011001",
+      "sourceId": "ONRQEN46BJVNH1JL5H7FKFVN8C",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11763011001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-vneq023crbjppuonn91ohrkgdo",
+      "sku": "11763141001",
+      "sourceId": "VNEQ023CRBJPPUONN91OHRKGDO",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11763141001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-3od7qkhfa1br528i800ifna51k",
+      "sku": "11763171001",
+      "sourceId": "3OD7QKHFA1BR528I800IFNA51K",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11763171001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-u70kmkc4sj1h9ovv9b3b54aq18",
+      "sku": "11763211001",
+      "sourceId": "U70KMKC4SJ1H9OVV9B3B54AQ18",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11763211001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-cn25v5ou1bt3u54r9me0v7llsc",
+      "sku": "11900281001",
+      "sourceId": "CN25V5OU1BT3U54R9ME0V7LLSC",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11900281001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-hvcqj32jhbnv1t39cknfjvsa6k",
+      "sku": "11904571001",
+      "sourceId": "HVCQJ32JHBNV1T39CKNFJVSA6K",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11904571001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-hnlfis118a4e6s0c57mfgo351s",
+      "sku": "11904771001",
+      "sourceId": "HNLFIS118A4E6S0C57MFGO351S",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11904771001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-3r1nu6eogj4elaom1cn8od3cco",
+      "sku": "11904971001",
+      "sourceId": "3R1NU6EOGJ4ELAOM1CN8OD3CCO",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11904971001",
+      "reason": "Standalone AWADOCK PC160 installation wrench set."
+    },
+    {
+      "legacyId": "rehau-g1p28ef2ce7kqdhaspj63ih3vg",
+      "sku": "11905471001",
+      "sourceId": "G1P28EF2CE7KQDHASPJ63IH3VG",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11905471001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-a3ihqqb0c5bk2oovduvf9sp810",
+      "sku": "11905571001",
+      "sourceId": "A3IHQQB0C5BK2OOVDUVF9SP810",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11905571001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-0mnbnfhteeiqv9op0d3a22lt6o",
+      "sku": "11905771001",
+      "sourceId": "0MNBNFHTEEIQV9OP0D3A22LT6O",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11905771001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-2td6cbrd5vnamh35og1ipb2cg4",
+      "sku": "11905871001",
+      "sourceId": "2TD6CBRD5VNAMH35OG1IPB2CG4",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11905871001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-bl3531fb3oimkr8tf71nr3ma4k",
+      "sku": "11907391001",
+      "sourceId": "BL3531FB3OIMKR8TF71NR3MA4K",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11907391001",
+      "reason": "Standalone AWADOCK PC200 installation wrench set."
+    },
+    {
+      "legacyId": "rehau-1pl2njttamps3oep9klns7m8vg",
+      "sku": "11909961001",
+      "sourceId": "1PL2NJTTAMPS3OEP9KLNS7M8VG",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/11909961001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-0el35r1gj3ca9t76nr4rtd4mgc",
+      "sku": "12017981001",
+      "sourceId": "0EL35R1GJ3CA9T76NR4RTD4MGC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12017981001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-ko35iblodmol2bd7rlinjaf4m4",
+      "sku": "12018011001",
+      "sourceId": "KO35IBLODMOL2BD7RLINJAF4M4",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12018011001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-9mait1nq9u21ec6vthrrj6gugo",
+      "sku": "12018021001",
+      "sourceId": "9MAIT1NQ9U21EC6VTHRRJ6GUGO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12018021001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-6vu4qjfkg5c7sv5go8klpkh6j8",
+      "sku": "12036091001",
+      "sourceId": "6VU4QJFKG5C7SV5GO8KLPKH6J8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12036091001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-klgim12m239pa9c69qmpcn3l1g",
+      "sku": "12036191001",
+      "sourceId": "KLGIM12M239PA9C69QMPCN3L1G",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12036191001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-591pbk51bm9omdh6lq6e45isk8",
+      "sku": "12036231001",
+      "sourceId": "591PBK51BM9OMDH6LQ6E45ISK8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12036231001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-cvjor4q1317snnabtl66ibi8rk",
+      "sku": "12051331001",
+      "sourceId": "CVJOR4Q1317SNNABTL66IBI8RK",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12051331001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-bsv785dq8415ibom3fqtgb43rg",
+      "sku": "12062591001",
+      "sourceId": "BSV785DQ8415IBOM3FQTGB43RG",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12062591001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-lkn5n08p8b9gpa5j2mv8r10uts",
+      "sku": "12076611001",
+      "sourceId": "LKN5N08P8B9GPA5J2MV8R10UTS",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12076611001",
+      "reason": "Standalone air-vent key for the heating manifold, rather than a vent valve."
+    },
+    {
+      "legacyId": "rehau-g8b0khvf3i8s6r3lgahrn9p408",
+      "sku": "12092241001",
+      "sourceId": "G8B0KHVF3I8S6R3LGAHRN9P408",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12092241001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-slf7rvr2a5obn018fbrr53vuos",
+      "sku": "12092251001",
+      "sourceId": "SLF7RVR2A5OBN018FBRR53VUOS",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12092251001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-fqjq5ue941pn00tufcbkt4gnsc",
+      "sku": "12092261001",
+      "sourceId": "FQJQ5UE941PN00TUFCBKT4GNSC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12092261001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-u49dpa8iac2rlp6fqlvlic3nq4",
+      "sku": "12092271001",
+      "sourceId": "U49DPA8IAC2RLP6FQLVLIC3NQ4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12092271001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-486dkgrjfdb3680flp0r895p84",
+      "sku": "12093061001",
+      "sourceId": "486DKGRJFDB3680FLP0R895P84",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12093061001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-8fnpnop73vpemqol0sisitbdjc",
+      "sku": "12093921001",
+      "sourceId": "8FNPNOP73VPEMQOL0SISITBDJC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12093921001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-3e607eb7kemkfcrb89an2is1ig",
+      "sku": "12093931001",
+      "sourceId": "3E607EB7KEMKFCRB89AN2IS1IG",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12093931001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-0doeolsab0lugukkgsc432sf88",
+      "sku": "12093941001",
+      "sourceId": "0DOEOLSAB0LUGUKKGSC432SF88",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12093941001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-558719dq28ntofgippvhk5vvis",
+      "sku": "12099411001",
+      "sourceId": "558719DQ28NTOFGIPPVHK5VVIS",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12099411001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-br15ddldkho1ginb4r1dliat8o",
+      "sku": "12125521001",
+      "sourceId": "BR15DDLDKHO1GINB4R1DLIAT8O",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12125521001",
+      "reason": "Source explicitly calls the clip-fitting rod an instrument for fastening quattro clips."
+    },
+    {
+      "legacyId": "rehau-er10lqgahc06c5erjhac06oqis",
+      "sku": "12136371001",
+      "sourceId": "ER10LQGAHC06C5ERJHAC06OQIS",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12136371001",
+      "reason": "Temporary20–63mm clamping tool for electrofusion connections during welding."
+    },
+    {
+      "legacyId": "rehau-041fit7isjt495ajc7md60doj4",
+      "sku": "12141691001",
+      "sourceId": "041FIT7ISJT495AJC7MD60DOJ4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12141691001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-o0gd7cho8s2d0pq28rmkqft3r8",
+      "sku": "12141711001",
+      "sourceId": "O0GD7CHO8S2D0PQ28RMKQFT3R8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12141711001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-akl2b7h7rbaj775oduij13d93c",
+      "sku": "12141721001",
+      "sourceId": "AKL2B7H7RBAJ775ODUIJ13D93C",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12141721001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-13s2uvl7ma3otnr3tjfau2bg34",
+      "sku": "12141751001",
+      "sourceId": "13S2UVL7MA3OTNR3TJFAU2BG34",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12141751001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-t40esqgaq60ve04n9epuknmies",
+      "sku": "12141761001",
+      "sourceId": "T40ESQGAQ60VE04N9EPUKNMIES",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12141761001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-fh6oj2uj87b8el3obsgqnaemcs",
+      "sku": "12143531001",
+      "sourceId": "FH6OJ2UJ87B8EL3OBSGQNAEMCS",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12143531001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-eoif4p2lmvegaagl23dt9e3rmc",
+      "sku": "12143551001",
+      "sourceId": "EOIF4P2LMVEGAAGL23DT9E3RMC",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12143551001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-op8kheke55d6qn580841jmj42s",
+      "sku": "12143561001",
+      "sourceId": "OP8KHEKE55D6QN580841JMJ42S",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12143561001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-2ql9ivbalj7dt78ohv6qrno3ms",
+      "sku": "12143951001",
+      "sourceId": "2QL9IVBALJ7DT78OHV6QRNO3MS",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12143951001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-0588pue747bqdm913fd0vo1a9s",
+      "sku": "12166881001",
+      "sourceId": "0588PUE747BQDM913FD0VO1A9S",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12166881001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-qdlbfh70vj01q915qqsbnqcn0g",
+      "sku": "12166941001",
+      "sourceId": "QDLBFH70VJ01Q915QQSBNQCN0G",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12166941001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-kgjqeh3rgiir2soppv34uq3csk",
+      "sku": "12167121001",
+      "sourceId": "KGJQEH3RGIIR2SOPPV34UQ3CSK",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12167121001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-ifothfkd21a47k1eovghjne1oo",
+      "sku": "12174691001",
+      "sourceId": "IFOTHFKD21A47K1EOVGHJNE1OO",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12174691001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-l52g5dk6cgn2krep8d8gshlcjo",
+      "sku": "12177581001",
+      "sourceId": "L52G5DK6CGN2KREP8D8GSHLCJO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12177581001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-t54115lajdneijnsq7qg58eo4c",
+      "sku": "12179071001",
+      "sourceId": "T54115LAJDNEIJNSQ7QG58EO4C",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12179071001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-9kdr40nuamg1gvg20l342csk20",
+      "sku": "12179081001",
+      "sourceId": "9KDR40NUAMG1GVG20L342CSK20",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12179081001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-f57btf20vo3pu39e528hnqq3ks",
+      "sku": "12179091001",
+      "sourceId": "F57BTF20VO3PU39E528HNQQ3KS",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12179091001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-1s20b28j9o8npvmlsendgb3mpc",
+      "sku": "12221291001",
+      "sourceId": "1S20B28J9O8NPVMLSENDGB3MPC",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12221291001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-sha99tknfm8jk2ulmu5pf3ek5g",
+      "sku": "12221741001",
+      "sourceId": "SHA99TKNFM8JK2ULMU5PF3EK5G",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12221741001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-i6i8h3bb6vbmjr4pjs2s7cqjlo",
+      "sku": "12221841001",
+      "sourceId": "I6I8H3BB6VBMJR4PJS2S7CQJLO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12221841001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-aaorarep4r8d8htabuit3iif2k",
+      "sku": "12221941001",
+      "sourceId": "AAORAREP4R8D8HTABUIT3IIF2K",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12221941001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-nn7an1dgib7ah14g21dgghke0o",
+      "sku": "12222041001",
+      "sourceId": "NN7AN1DGIB7AH14G21DGGHKE0O",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12222041001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-j3fah4kl77m5or6mau3u5mv470",
+      "sku": "12223141001",
+      "sourceId": "J3FAH4KL77M5OR6MAU3U5MV470",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12223141001",
+      "reason": "Half-inch square-drive operating shaft for tapping saddles: tool drive accessory."
+    },
+    {
+      "legacyId": "rehau-sm57q9mnjlsvslom1rd4m51fm4",
+      "sku": "12238661001",
+      "sourceId": "SM57Q9MNJLSVSLOM1RD4M51FM4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12238661001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-b73opfli8kpjj8gehoc1hnsjk0",
+      "sku": "12254451001",
+      "sourceId": "B73OPFLI8KPJJ8GEHOC1HNSJK0",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12254451001",
+      "reason": "Universal63–180mm clamp secures electrofusion connections during welding; source lists tool kit and transport case."
+    },
+    {
+      "legacyId": "rehau-bd66fsmg26u2a1cmmnud0e7aq4",
+      "sku": "12278351001",
+      "sourceId": "BD66FSMG26U2A1CMMNUD0E7AQ4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12278351001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-l7sdn2ha8h30oqf89gqdl2c3l8",
+      "sku": "12283961001",
+      "sourceId": "L7SDN2HA8H30OQF89GQDL2C3L8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12283961001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-rvfec42974bpjuajrtiqo4lme0",
+      "sku": "12446111001",
+      "sourceId": "RVFEC42974BPJUAJRTIQO4LME0",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12446111001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-3inu335023limkisdf5qqn8964",
+      "sku": "12446211001",
+      "sourceId": "3INU335023LIMKISDF5QQN8964",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12446211001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-ckq0vglrsgbfnu6ecaraq8jc8k",
+      "sku": "12446511001",
+      "sourceId": "CKQ0VGLRSGBFNU6ECARAQ8JC8K",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12446511001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-52kgit8mc6lr626umnd369v5ik",
+      "sku": "12456361001",
+      "sourceId": "52KGIT8MC6LR626UMND369V5IK",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12456361001",
+      "reason": "Thermographic locating foil30–40°C: source purpose is finding medium-carrying pipes, not a permanent under-screed protective film."
+    },
+    {
+      "legacyId": "rehau-rqr487son6p05j4dnu23bfl4t0",
+      "sku": "12465341001",
+      "sourceId": "RQR487SON6P05J4DNU23BFL4T0",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12465341001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-cluc91h17ruuo3te89s26od5v0",
+      "sku": "12468791001",
+      "sourceId": "CLUC91H17RUUO3TE89S26OD5V0",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12468791001",
+      "reason": "Pressure-test gauge for BKT/oBKT commissioning, requiring a compressed-air plug nipple; test instrument."
+    },
+    {
+      "legacyId": "rehau-jptrvs5gelr5ev8qni41l20v8s",
+      "sku": "12468891001",
+      "sourceId": "JPTRVS5GELR5EV8QNI41L20V8S",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12468891001",
+      "reason": "Compressed-air plug nipple specifically connects the above gauge during pressure testing; dedicated test-tool accessory."
+    },
+    {
+      "legacyId": "rehau-lhvf9j7fgh9ipq0g626eje8op0",
+      "sku": "12474641001",
+      "sourceId": "LHVF9J7FGH9IPQ0G626EJE8OP0",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12474641001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-mqe7ffcu59p156hmv18sp2o818",
+      "sku": "12474741001",
+      "sourceId": "MQE7FFCU59P156HMV18SP2O818",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12474741001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-0pd0d9q5bhekghnjms287adrag",
+      "sku": "12474841001",
+      "sourceId": "0PD0D9Q5BHEKGHNJMS287ADRAG",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12474841001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-s5s8nchpgdaq92ok8m6uimhca0",
+      "sku": "12474941001",
+      "sourceId": "S5S8NCHPGDAQ92OK8M6UIMHCA0",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12474941001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-8lcmdrkk52af1572682il10mhk",
+      "sku": "12476441001",
+      "sourceId": "8LCMDRKK52AF1572682IL10MHK",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12476441001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-nnccb3cstgf4hj2cvn4nmmnr7s",
+      "sku": "12492601001",
+      "sourceId": "NNCCB3CSTGF4HJ2CVN4NMMNR7S",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12492601001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-t9l46d04ikffmi5rdq2uc476s0",
+      "sku": "12493401001",
+      "sourceId": "T9L46D04IKFFMI5RDQ2UC476S0",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12493401001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-ai0bajti0dlqk93pukkr4dd8io",
+      "sku": "12496821002",
+      "sourceId": "AI0BAJTI0DLQK93PUKKR4DD8IO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12496821002",
+      "reason": "230V HSG-O groove-cutting appliance: source explicitly calls it a tool for making pipe grooves in filler panels."
+    },
+    {
+      "legacyId": "rehau-hurq6grbs2rn4v76ckro5u1n24",
+      "sku": "12572591002",
+      "sourceId": "HURQ6GRBS2RN4V76CKRO5U1N24",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12572591002",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-oip8uka115c77v0l3dsr4hj39s",
+      "sku": "12573041003",
+      "sourceId": "OIP8UKA115C77V0L3DSR4HJ39S",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12573041003",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-0dcpt2kd6b7k53secmai2ifrlo",
+      "sku": "12590491002",
+      "sourceId": "0DCPT2KD6B7K53SECMAI2IFRLO",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12590491002",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-osjs142s3m6o916uph5uo7tvho",
+      "sku": "12619591001",
+      "sourceId": "OSJS142S3M6O916UPH5UO7TVHO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/12619591001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-h9o4gdgcof601tvfr1iso2td30",
+      "sku": "12861511002",
+      "sourceId": "H9O4GDGCOF601TVFR1ISO2TD30",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/12861511002",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-ni2jp8ejr7fus3nqkrtdh5culo",
+      "sku": "13045291001",
+      "sourceId": "NI2JP8EJR7FUS3NQKRTDH5CULO",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13045291001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-gjfpqsnhv4nfe7paehqjifve10",
+      "sku": "13140831001",
+      "sourceId": "GJFPQSNHV4NFE7PAEHQJIFVE10",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13140831001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-9msmuaaka8m45qs27f26cgeln4",
+      "sku": "13149451001",
+      "sourceId": "9MSMUAAKA8M45QS27F26CGELN4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13149451001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-hdve2adqg8pdqmqqs04kctnnh0",
+      "sku": "13149841001",
+      "sourceId": "HDVE2ADQG8PDQMQQS04KCTNNH0",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13149841001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-7gu0m6ov710qig5n1jbk5ta5vo",
+      "sku": "13149851001",
+      "sourceId": "7GU0M6OV710QIG5N1JBK5TA5VO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13149851001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-kvthc32dli575tknujof6qvdas",
+      "sku": "13149861001",
+      "sourceId": "KVTHC32DLI575TKNUJOF6QVDAS",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13149861001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-0mi61do6ahagu94q8hlfsbnblo",
+      "sku": "13152381001",
+      "sourceId": "0MI61DO6AHAGU94Q8HLFSBNBLO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13152381001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-bs052llfrj3ofvc31ks8beg5vk",
+      "sku": "13152391001",
+      "sourceId": "BS052LLFRJ3OFVC31KS8BEG5VK",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13152391001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-maafboqrnoukfv73ldq1snl0hk",
+      "sku": "13152401001",
+      "sourceId": "MAAFBOQRNOUKFV73LDQ1SNL0HK",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13152401001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-bn54uvpiifcbtjkgrpihvtmgi8",
+      "sku": "13152411001",
+      "sourceId": "BN54UVPIIFCBTJKGRPIHVTMGI8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13152411001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-c721bjdpa50v3vh25g5038gmg4",
+      "sku": "13152421001",
+      "sourceId": "C721BJDPA50V3VH25G5038GMG4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13152421001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-pjohk8ctjicdkof1sq9g1pd8bc",
+      "sku": "13152431001",
+      "sourceId": "PJOHK8CTJICDKOF1SQ9G1PD8BC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13152431001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-tionet1i237mqua3lsdggd05bo",
+      "sku": "13170451001",
+      "sourceId": "TIONET1I237MQUA3LSDGGD05BO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13170451001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-m13783d4s6s3thd5n8l1j20j80",
+      "sku": "13174351001",
+      "sourceId": "M13783D4S6S3THD5N8L1J20J80",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13174351001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-us4oma769fu5q0u6gre2tgl5h4",
+      "sku": "13174361001",
+      "sourceId": "US4OMA769FU5Q0U6GRE2TGL5H4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13174361001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-rdmej6elvqcq36o6jjpn270glc",
+      "sku": "13174371001",
+      "sourceId": "RDMEJ6ELVQCQ36O6JJPN270GLC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13174371001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-4d8finbb1572t95nk5a3mto05s",
+      "sku": "13174381001",
+      "sourceId": "4D8FINBB1572T95NK5A3MTO05S",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13174381001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-iv0om3h17h9nhcnbu0t1eoikm0",
+      "sku": "13175001001",
+      "sourceId": "IV0OM3H17H9NHCNBU0T1EOIKM0",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13175001001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-3ac6bu8mo0f6nllkjivebvsi48",
+      "sku": "13230071001",
+      "sourceId": "3AC6BU8MO0F6NLLKJIVEBVSI48",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13230071001",
+      "reason": "RAUTHERM isofix adapter attaches to the foot of a REHAU Tackergerät multi stapling tool, with a roll-guide bracket."
+    },
+    {
+      "legacyId": "rehau-nv15foo4p2v62pt09l7ilcdnnc",
+      "sku": "13230361001",
+      "sourceId": "NV15FOO4P2V62PT09L7ILCDNNC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13230361001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-e5gpm6jsa5r16fnkplod1blm34",
+      "sku": "13230411001",
+      "sourceId": "E5GPM6JSA5R16FNKPLOD1BLM34",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13230411001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-612mogepk55419r906opian4g4",
+      "sku": "13258201001",
+      "sourceId": "612MOGEPK55419R906OPIAN4G4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13258201001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-87n99nticn930cm3ureo3d4lh0",
+      "sku": "13258211001",
+      "sourceId": "87N99NTICN930CM3UREO3D4LH0",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13258211001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-plddeic5f8ksmt6mlv4g3il2io",
+      "sku": "13267601001",
+      "sourceId": "PLDDEIC5F8KSMT6MLV4G3IL2IO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13267601001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-njjdu9p339an2nao1omd81hv2o",
+      "sku": "13272021001",
+      "sourceId": "NJJDU9P339AN2NAO1OMD81HV2O",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13272021001",
+      "reason": "Reduction insert for temporary Universalrohrhalteklemme12254451001; tool clamp accessory."
+    },
+    {
+      "legacyId": "rehau-ud1sd53rtoiqk7e37h7qpqu8i4",
+      "sku": "13278061001",
+      "sourceId": "UD1SD53RTOIQK7E37H7QPQU8I4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13278061001",
+      "reason": "Handheld FUSAPEX marking pen, ETIM Lackstift/Lackspray; not an installed identification plate."
+    },
+    {
+      "legacyId": "rehau-sll1a8vggv47ib24dr2qmfmdqc",
+      "sku": "13282481001",
+      "sourceId": "SLL1A8VGGV47IB24DR2QMFMDQC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13282481001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-lijmq442cdcai5vm83na6trgeo",
+      "sku": "13298071001",
+      "sourceId": "LIJMQ442CDCAI5VM83NA6TRGEO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13298071001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-5uhbpsqvfb122l3k0ga1dkv4a8",
+      "sku": "13316921001",
+      "sourceId": "5UHBPSQVFB122L3K0GA1DKV4A8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13316921001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-e8q9qkv7hlge3ugmglqo4cjq0g",
+      "sku": "13317061001",
+      "sourceId": "E8Q9QKV7HLGE3UGMGLQO4CJQ0G",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13317061001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-6hvr5k7l5i743op7v4chjkea2g",
+      "sku": "13524201001",
+      "sourceId": "6HVR5K7L5I743OP7V4CHJKEA2G",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13524201001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-9ljhq0ojv9095bvc851muadahk",
+      "sku": "13533901178",
+      "sourceId": "9LJHQ0OJV9095BVC851MUADAHK",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13533901178",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-o6hf74h7m5ighpet0vv5sqmsbc",
+      "sku": "13861501001",
+      "sourceId": "O6HF74H7M5IGHPET0VV5SQMSBC",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13861501001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-6323pguunslbjum7v2r7b5jkl8",
+      "sku": "13861601001",
+      "sourceId": "6323PGUUNSLBJUM7V2R7B5JKL8",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13861601001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-lrub7lvld6f4pts6k1oqf7c1us",
+      "sku": "13861701001",
+      "sourceId": "LRUB7LVLD6F4PTS6K1OQF7C1US",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13861701001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-5j2vak04gjqsbobk4icd22f68c",
+      "sku": "13861801001",
+      "sourceId": "5J2VAK04GJQSBOBK4ICD22F68C",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13861801001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-vm96p3jo844s4vam5a4ts5obes",
+      "sku": "13861901001",
+      "sourceId": "VM96P3JO844S4VAM5A4TS5OBES",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13861901001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-i9c6b6omp4eu9q0p6pdnb4a3h8",
+      "sku": "13862001001",
+      "sourceId": "I9C6B6OMP4EU9Q0P6PDNB4A3H8",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13862001001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-s293uo4tevv3atn1oapvprsel8",
+      "sku": "13862101001",
+      "sourceId": "S293UO4TEVV3ATN1OAPVPRSEL8",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13862101001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-ksgldg5rnftuhpbiunptb4i6p4",
+      "sku": "13910041001",
+      "sourceId": "KSGLDG5RNFTUHPBIUNPTB4I6P4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/13910041001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-49b20q56s5li81bfmmc4okpn7k",
+      "sku": "14030781001",
+      "sourceId": "49B20Q56S5LI81BFMMC4OKPN7K",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/14030781001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-musahuh9q3vcukiqgo2b5e90d0",
+      "sku": "14054691001",
+      "sourceId": "MUSAHUH9Q3VCUKIQGO2B5E90D0",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/14054691001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-j0kj9ea8i141g26nglk213mg98",
+      "sku": "14266421001",
+      "sourceId": "J0KJ9EA8I141G26NGLK213MG98",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/14266421001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-4q057r5iirv28j8pb0rn2i7n1o",
+      "sku": "14307611001",
+      "sourceId": "4Q057R5IIRV28J8PB0RN2I7N1O",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/14307611001",
+      "reason": "Temporary angular clamp for20–63mm electrofusion connections during welding."
+    },
+    {
+      "legacyId": "rehau-69prlj1j689kqiuvqs7mttnjrc",
+      "sku": "14402511900",
+      "sourceId": "69PRLJ1J689KQIUVQS7MTTNJRC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/14402511900",
+      "reason": "Standalone metre-long T-key for operating shutoff valves, not the valve itself."
+    },
+    {
+      "legacyId": "rehau-9o6il2atdot6bg0l6ld1fgcfqg",
+      "sku": "14444001900",
+      "sourceId": "9O6IL2ATDOT6BG0L6LD1FGCFQG",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/14444001900",
+      "reason": "Temporary32–110mm clamps for securing electrofusion joints during welding."
+    },
+    {
+      "legacyId": "rehau-ghdv908lc33tej76jljc61osco",
+      "sku": "14444011900",
+      "sourceId": "GHDV908LC33TEJ76JLJC61OSCO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/14444011900",
+      "reason": "Temporary modified63–225mm clamps for securing electrofusion joints during welding."
+    },
+    {
+      "legacyId": "rehau-ns5vmr3ivr7u9q9jpfv6frtq7s",
+      "sku": "14488891900",
+      "sourceId": "NS5VMR3IVR7U9Q9JPFV6FRTQ7S",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/14488891900",
+      "reason": "Pipe squeeze-off tool32–63mm; source explicitly says temporary closure by compression."
+    },
+    {
+      "legacyId": "rehau-9l2p12dkah9uf614rh89tej1o4",
+      "sku": "14488901900",
+      "sourceId": "9L2P12DKAH9UF614RH89TEJ1O4",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/14488901900",
+      "reason": "Pipe squeeze-off tool75–160mm; source explicitly says temporary closure by compression."
+    },
+    {
+      "legacyId": "rehau-jrr5v7qtkum8sckt952m4u08co",
+      "sku": "14488981900",
+      "sourceId": "JRR5V7QTKUM8SCKT952M4U08CO",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/14488981900",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-ik6vofu642pm0jkm11vcvtdr34",
+      "sku": "14600021001",
+      "sourceId": "IK6VOFU642PM0JKM11VCVTDR34",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/14600021001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-dbc9p7hkrs3urat6cc2ujjc0no",
+      "sku": "14710631001",
+      "sourceId": "DBC9P7HKRS3URAT6CC2UJJC0NO",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/14710631001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-tsdd3htsplvqii5dm9m5sb7cqg",
+      "sku": "14710651001",
+      "sourceId": "TSDD3HTSPLVQII5DM9M5SB7CQG",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/14710651001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-3fnr90qfccl294o9q62rmaeseg",
+      "sku": "14710701001",
+      "sourceId": "3FNR90QFCCL294O9Q62RMAESEG",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/14710701001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-acqnjj7s8krn1kvn7aug6b2nlc",
+      "sku": "14848311001",
+      "sourceId": "ACQNJJ7S8KRN1KVN7AUG6B2NLC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/14848311001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-885v0qot9o1b2ld3fm2tmr4b5g",
+      "sku": "14848351001",
+      "sourceId": "885V0QOT9O1B2LD3FM2TMR4B5G",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/14848351001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-2aenf0ntfnm6gh6q2bk9du4jls",
+      "sku": "16851121001",
+      "sourceId": "2AENF0NTFNM6GH6Q2BK9DU4JLS",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/16851121001",
+      "reason": "Reduction insert for temporary Universalrohrhalteklemme12254451001; tool clamp accessory."
+    },
+    {
+      "legacyId": "rehau-9gdkf2gobltipcar6m6hpf369k",
+      "sku": "16851131001",
+      "sourceId": "9GDKF2GOBLTIPCAR6M6HPF369K",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/16851131001",
+      "reason": "Reduction insert for temporary Universalrohrhalteklemme12254451001; tool clamp accessory."
+    },
+    {
+      "legacyId": "rehau-l5d47rpkotmevmd90fmnbr73do",
+      "sku": "16851141001",
+      "sourceId": "L5D47RPKOTMEVMD90FMNBR73DO",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/16851141001",
+      "reason": "Reduction insert for temporary Universalrohrhalteklemme12254451001; tool clamp accessory."
+    },
+    {
+      "legacyId": "rehau-mugrhv6h59lp00qv4micjqtnhg",
+      "sku": "16851151001",
+      "sourceId": "MUGRHV6H59LP00QV4MICJQTNHG",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/16851151001",
+      "reason": "Reduction insert for temporary Universalrohrhalteklemme12254451001; tool clamp accessory."
+    },
+    {
+      "legacyId": "rehau-fh1i3ba372en85e0bnrhsu3cko",
+      "sku": "16851161001",
+      "sourceId": "FH1I3BA372EN85E0BNRHSU3CKO",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/16851161001",
+      "reason": "Reduction insert for temporary Universalrohrhalteklemme12254451001; tool clamp accessory."
+    },
+    {
+      "legacyId": "rehau-8mq22ngd9keu0j23v3utu7v7us",
+      "sku": "16851171001",
+      "sourceId": "8MQ22NGD9KEU0J23V3UTU7V7US",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/16851171001",
+      "reason": "Reduction insert for temporary Universalrohrhalteklemme12254451001; tool clamp accessory."
+    },
+    {
+      "legacyId": "rehau-9oeqlp3hdi6eeme0g5jl9nv11g",
+      "sku": "16851211001",
+      "sourceId": "9OEQLP3HDI6EEME0G5JL9NV11G",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/16851211001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-hdcdomcbu3lbdd2bulegth8a5g",
+      "sku": "16851221001",
+      "sourceId": "HDCDOMCBU3LBDD2BULEGTH8A5G",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/16851221001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-sf2d5needeo7j2i7o7er7e9rk8",
+      "sku": "16851241001",
+      "sourceId": "SF2D5NEEDEO7J2I7O7ER7E9RK8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/16851241001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-tctlo445h7kahsa7vaki14lm8c",
+      "sku": "16851251001",
+      "sourceId": "TCTLO445H7KAHSA7VAKI14LM8C",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/16851251001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-9s92aelockdflavas4s9j4vdcc",
+      "sku": "16851261001",
+      "sourceId": "9S92AELOCKDFLAVAS4S9J4VDCC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/16851261001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-pu76q78n0euup9prkbsuf8gd0c",
+      "sku": "16851271001",
+      "sourceId": "PU76Q78N0EUUP9PRKBSUF8GD0C",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/16851271001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-dif3dhlmtlpj7aav19bnflq4kc",
+      "sku": "16851281001",
+      "sourceId": "DIF3DHLMTLPJ7AAV19BNFLQ4KC",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/16851281001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    },
+    {
+      "legacyId": "rehau-oigdeeqbtd03hl05jvdva8mpl8",
+      "sku": "16851291001",
+      "sourceId": "OIGDEEQBTD03HL05JVDVA8MPL8",
+      "sourceUrl": "https://oxomi.com/p/3001044/datasheet/-/16851291001",
+      "reason": "Standalone installation tool or dedicated tool accessory; manufacturer title/type confirms tooling."
+    }
+  ],
+  "keptSystemComponents": [
+    {
+      "legacyId": "rehau-a2sh8pd4k6pahv3sqahre5lad4",
+      "sku": "13524301002",
+      "sourceId": "A2SH8PD4K6PAHV3SQAHRE5LAD4",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/13524301002",
+      "category": "geothermal-systems",
+      "title": "Монтажний комплект пластин REHAU RAUGEO 1 для геотермального зонда",
+      "normalizedAttributes": {},
+      "reason": "Постійне системне кріплення тягарця геозонда, також сумісне з допоміжним стрижнем; назва ETIM tool accessory не переважає доведене подвійне системне призначення.",
+      "sourceExactTitleDe": "RAUGEO Flacheisen-Set 1 für RAUGEO Sonde",
+      "sourcePurposeDe": "Anwendung: \n- zur Montage eines Sondengewichts bzw. einer Einschubhilfe zwischen den Sondenhälften einer PE-Xa Sonde\n\nEigenschaft: \n- inklusive Befestigungsmaterial"
+    },
+    {
+      "legacyId": "rehau-vqpd3i735l17jnfk6ou02opfek",
+      "sku": "14710571001",
+      "sourceId": "VQPD3I735L17JNFK6OU02OPFEK",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/14710571001",
+      "category": "distribution-manifolds",
+      "title": "Комплект ручних повітровідвідників REHAU HKV-D P, 2 шт., з інструментом для демонтажу",
+      "normalizedAttributes": {},
+      "reason": "Основний виріб — два повітровідвідні клапани для HKV-D P; комплектний демонтажний інструмент не робить весь набір інструментом.",
+      "sourceExactTitleDe": "REHAU Entlüftungsventil manuell Set HKV-D P, 2 St m Demontagewerkzeug"
+    },
+    {
+      "legacyId": "rehau-fmc49c4ci9jpu3kg4lbmq6u06s",
+      "sku": "14710581001",
+      "sourceId": "FMC49C4CI9JPU3KG4LBMQ6U06S",
+      "sourceUrl": "https://oxomi.com/p/3000126/datasheet/-/14710581001",
+      "category": "distribution-manifolds",
+      "title": "Комплект автоматичних повітровідвідників REHAU HKV-D P, 2 шт., з інструментом для демонтажу",
+      "normalizedAttributes": {},
+      "reason": "Основний виріб — два повітровідвідні клапани для HKV-D P; комплектний демонтажний інструмент не робить весь набір інструментом.",
+      "sourceExactTitleDe": "REHAU Entlüftungsventil automatisch HKV-D P, 2 St m Demontagewerkzeug"
+    }
+  ],
+  "notes": [
+    "The six excluded reusable temporary pressure-test plugs are test equipment, not permanent system end caps.",
+    "Valve-kit quantity2 means two valves, not two manifold outlets. No normalized material or other attributes were inferred for the three retained components.",
+    "Batch paths and hashes are historical provenance only; verification needs this fixture and public runtime/RPC data, not ignored imports or local manufacturer caches."
+  ]
+}
