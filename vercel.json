@@ -3,6 +3,7 @@
   "outputDirectory": "dist",
   "cleanUrls": false,
   "trailingSlash": false,
+  "regions": ["dub1"],
   "redirects": [
     { "source": "/payment", "destination": "/delivery#payment", "permanent": true },
     { "source": "/payment.html", "destination": "/delivery#payment", "permanent": true },

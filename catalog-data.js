@@ -1959,8 +1959,8 @@
     return Object.freeze(manualRelated(product, "compatible").slice(0, limit));
   }
 
-  // Manual similar products first (up to 8), then automatic ones up to the limit.
-  function relatedProducts(product, limit = 4) {
+  // Manual similar products first, then automatic ones up to the requested limit.
+  function relatedProducts(product, limit = 12) {
     const manual = manualRelated(product, "similar").slice(0, Math.max(limit, 8));
     return Object.freeze([...manual, ...automaticRelated(product, Math.max(0, limit - manual.length), manualRelatedIds(product))]);
   }
@@ -1968,7 +1968,7 @@
   function automaticRelated(product, limit, excluded) {
     if (limit <= 0) return [];
     const sourceAttributes = product.normalizedAttributes || {};
-    return products.filter(item => item.id !== product.id && !excluded.has(String(item.id)) && item.primaryCategoryId === product.primaryCategoryId).map(item => {
+    return products.filter(item => (!item.publicationStatus || item.publicationStatus === "published") && item.id !== product.id && !excluded.has(String(item.id)) && item.primaryCategoryId === product.primaryCategoryId).map(item => {
       const shared = Object.keys(sourceAttributes).filter(id => hasValue(sourceAttributes[id]) && sourceAttributes[id] === item.normalizedAttributes?.[id]).length;
       const score = (item.seriesId && item.seriesId === product.seriesId ? 40 : 0) + (item.brandId === product.brandId ? 12 : 0) + shared * 5;
       const priceDistance = Math.abs(Number(item.price || 0) - Number(product.price || 0));

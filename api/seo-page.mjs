@@ -373,21 +373,30 @@ function createCatalogApi({ url, key, fetchImpl }) {
 }
 
 // Kept between invocations of the same function instance.
-const memory = { bootstrap: null, bootstrapAt: 0, shells: new Map() };
+const memory = { bootstrap: null, bootstrapAt: 0, bootstrapRequest: null, shells: new Map() };
 
 export function resetMemory() {
   memory.bootstrap = null;
   memory.bootstrapAt = 0;
+  memory.bootstrapRequest = null;
   memory.shells.clear();
 }
 
 async function loadBootstrap(rpc, now) {
   if (memory.bootstrap && now - memory.bootstrapAt < BOOTSTRAP_TTL_MS) return memory.bootstrap;
-  const bootstrap = await rpc("get_catalog_bootstrap");
-  if (!Array.isArray(bootstrap?.categories)) throw new Error("get_catalog_bootstrap returned no release");
-  memory.bootstrap = bootstrap;
-  memory.bootstrapAt = now;
-  return bootstrap;
+  if (memory.bootstrapRequest) return memory.bootstrapRequest;
+  // Fluid instances can serve simultaneous misses. Share the metadata read rather than asking the database
+  // for the same bootstrap once per page; a rejected request must not poison subsequent invocations.
+  const request = Promise.resolve().then(() => rpc("get_catalog_bootstrap")).then(bootstrap => {
+    if (!Array.isArray(bootstrap?.categories)) throw new Error("get_catalog_bootstrap returned no release");
+    memory.bootstrap = bootstrap;
+    memory.bootstrapAt = now;
+    return bootstrap;
+  }).finally(() => {
+    if (memory.bootstrapRequest === request) memory.bootstrapRequest = null;
+  });
+  memory.bootstrapRequest = request;
+  return request;
 }
 
 async function loadShell(path, requestOrigin, fetchImpl, now) {
@@ -415,6 +424,10 @@ export async function resolvePage({ kind, slug, path, search = "", rpc, origin, 
   const filtered = hasFilterParams(search);
   if (kind === "product") {
     const value = safeDecode(single(slug)).toLowerCase();
+    // These reads do not depend on each other. Still decide missing products/legacy redirects from the
+    // product response alone: unavailable metadata must not turn an unknown product into a 200 fallback.
+    const bootstrapRequest = value ? loadBootstrap(rpc, now) : null;
+    bootstrapRequest?.catch(() => {});
     let result = value ? await rpc("get_catalog_product_by_slug", { product_slug: value }) : null;
     if (!result?.product && value) {
       // /product/<legacy id> from old links: the id keeps its case, so ask with the original spelling.
@@ -422,7 +435,7 @@ export async function resolvePage({ kind, slug, path, search = "", rpc, origin, 
       if (byId?.product?.slug) return { redirect: `/product/${encodeURIComponent(byId.product.slug)}${search}` };
     }
     if (!result?.product) return { missing: true };
-    const bootstrap = await loadBootstrap(rpc, now);
+    const bootstrap = await bootstrapRequest;
     return { page: renderProduct({ product: result.product, relatedProducts: result.relatedProducts || [], bootstrap, origin }) };
   }
   if (kind === "catalog") {
@@ -465,12 +478,17 @@ export default async function handler(req, res, { fetchImpl = fetch, env = proce
   const requestOrigin = `https://${String(host).split(",")[0].trim()}`;
   const now = Date.now();
   const shellPath = SHELL_BY_KIND[kind];
+  let shellRequest = null;
 
   try {
     const url = env.SUPABASE_URL;
     const key = env.SUPABASE_PUBLISHABLE_KEY;
     if (!shellPath || !url || !key) throw new Error("catalogue API is not configured");
     const rpc = createCatalogApi({ url, key, fetchImpl });
+    // The static frame is independent of catalogue reads. Start its fetch now instead of adding another
+    // network round trip after the product/listing is ready. Redirects and 404s still choose their own shell.
+    shellRequest = loadShell(shellPath, requestOrigin, fetchImpl, now);
+    shellRequest.catch(() => {});
     const result = await resolvePage({ kind, slug, path, search, rpc, origin: resolveSiteOrigin(env), now });
     if (result.redirect) {
       res.statusCode = 308;
@@ -483,7 +501,7 @@ export default async function handler(req, res, { fetchImpl = fetch, env = proce
       send(404, CACHE_MISSING, await loadShell("/404.html", requestOrigin, fetchImpl, now));
       return;
     }
-    const shell = await loadShell(shellPath, requestOrigin, fetchImpl, now);
+    const shell = await shellRequest;
     if (result.plainShell) {
       send(200, CACHE_PAGE, shell);
       return;
@@ -492,7 +510,8 @@ export default async function handler(req, res, { fetchImpl = fetch, env = proce
   } catch (error) {
     console.error("seo-page:", error?.message || error);
     try {
-      send(200, CACHE_FALLBACK, await loadShell(shellPath || SHELL_BY_KIND.catalog, requestOrigin, fetchImpl, now));
+      const retryShell = () => loadShell(shellPath || SHELL_BY_KIND.catalog, requestOrigin, fetchImpl, now);
+      send(200, CACHE_FALLBACK, await (shellRequest ? shellRequest.catch(retryShell) : retryShell()));
     } catch {
       send(503, "no-store", `<!doctype html><html lang="uk"><meta charset="utf-8"><title>${SITE_NAME}</title><p>Сторінка тимчасово недоступна. Оновіть її за хвилину.</p></html>`);
     }

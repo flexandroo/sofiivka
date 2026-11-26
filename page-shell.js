@@ -4,6 +4,8 @@
   let CATALOG = window.sofievkaCatalog || null;
   let PRODUCTS = Array.isArray(CATALOG?.catalogProducts) && CATALOG.catalogProducts.length ? CATALOG.catalogProducts : (Array.isArray(CATALOG?.products) && CATALOG.products.length ? CATALOG.products : [...BASE_PRODUCTS, ...TERMOJET_PRODUCTS]);
   const SCOPED_PRODUCT_CACHE = new Map();
+  const PDP_RAIL_LIMIT = 12;
+  const VIEWED_HISTORY_LIMIT = 24;
   // Supabase pages register canonical products (pricing.amount, images[]); cart, checkout and compare read the
   // legacy fields (price, image, primaryCategoryName), so canonical products are adapted on the way in.
   window.sofievkaRegisterScopedProducts = products => {
@@ -163,7 +165,7 @@
         window.sofievkaScopedPdpResult = result;
         let viewedIds = [];
         try { viewedIds = JSON.parse(localStorage.getItem("sofievka-viewed")) || []; } catch {}
-        const previousViewedIds = [...new Set(viewedIds.filter(viewedId => viewedId && viewedId !== id))].slice(0, 8);
+        const previousViewedIds = [...new Set((Array.isArray(viewedIds) ? viewedIds : []).filter(viewedId => viewedId && viewedId !== id))].slice(0, VIEWED_HISTORY_LIMIT);
         // Cart, favourites and compare products come in the same request: the header counts and the
         // «В обране» / «Порівняти» states need them, as on every other page.
         const loaded = new Set(products.map(product => product.id));
@@ -1191,7 +1193,7 @@
       documents: window.sofievkaPdp?.documents?.(product) || [],
       accessories: window.sofievkaPdp?.accessoryProducts?.(product, 8) || [],
       compatibleProducts: window.sofievkaPdp?.compatibleProducts?.(product, 8) || [],
-      similarProducts: window.sofievkaPdp?.relatedProducts?.(product, 4) || [],
+      similarProducts: window.sofievkaPdp?.relatedProducts?.(product, PDP_RAIL_LIMIT) || [],
       purchase,
       model: window.sofievkaPdp?.model?.(product) || product.sku,
       series: CATALOG?.attributeSchema?.seriesLabels?.[product.seriesId] || "",
@@ -1327,12 +1329,42 @@
     let ids = [];
     try { ids = JSON.parse(localStorage.getItem("sofievka-viewed")) || []; } catch {}
     const shown = new Set([product.id, ...[view.compatibleProducts, view.accessories, view.similarProducts].flat().filter(Boolean).map(item => item.id)]);
-    return [...new Set(Array.isArray(ids) ? ids : [])].filter(id => !shown.has(id)).map(productById).filter(Boolean).slice(0, 4);
+    return [...new Set(Array.isArray(ids) ? ids : [])].filter(id => !shown.has(id)).map(productById).filter(Boolean).slice(0, PDP_RAIL_LIMIT);
   }
 
   function renderPdpProductRail({ id, title, products }) {
     if (!products.length) return "";
-    return `<section class="pdp-related-section" id="${id}" aria-labelledby="${id}-title"><div class="container"><div class="pdp-section__head"><h2 id="${id}-title">${escapeHtml(title)}</h2></div><div class="catalog-products pdp-related-products">${products.map(extendedProductCard).join("")}</div></div></section>`;
+    const cards = products.map(product => window.sofievkaCatalogUI?.renderProductCard(product, {
+      variant: "compact", favoriteIds: favorites(), compareIds: compareSelection(), cart: cart()
+    }) || "").join("");
+    return `<section class="pdp-related-section" id="${id}" aria-labelledby="${id}-title" data-pdp-rail><div class="container"><div class="pdp-section__head"><h2 id="${id}-title">${escapeHtml(title)}</h2><div class="pdp-rail-controls"><button type="button" data-rail-prev aria-label="Попередні товари: ${escapeHtml(title)}" aria-controls="${id}-products" disabled>←</button><button type="button" data-rail-next aria-label="Наступні товари: ${escapeHtml(title)}" aria-controls="${id}-products">→</button></div></div><div class="catalog-products pdp-related-products" id="${id}-products" tabindex="0" aria-labelledby="${id}-title">${cards}</div></div></section>`;
+  }
+
+  function bindPdpProductRails() {
+    document.querySelectorAll("[data-pdp-rail]").forEach(rail => {
+      if (rail.dataset.railBound) return;
+      rail.dataset.railBound = "true";
+      const track = rail.querySelector(".pdp-related-products");
+      const prev = rail.querySelector("[data-rail-prev]");
+      const next = rail.querySelector("[data-rail-next]");
+      if (!track || !prev || !next) return;
+      const update = () => {
+        prev.disabled = track.scrollLeft <= 2;
+        next.disabled = track.scrollLeft >= track.scrollWidth - track.clientWidth - 2;
+      };
+      const move = direction => track.scrollBy({ left: direction * track.clientWidth, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+      prev.addEventListener("click", () => move(-1));
+      next.addEventListener("click", () => move(1));
+      track.addEventListener("scroll", update, { passive: true });
+      track.addEventListener("keydown", event => {
+        if (event.target !== track || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+        event.preventDefault();
+        if (event.key === "Home" || event.key === "End") track.scrollTo({ left: event.key === "Home" ? 0 : track.scrollWidth, behavior: "instant" });
+        else move(event.key === "ArrowLeft" ? -1 : 1);
+      });
+      if ("ResizeObserver" in window) new ResizeObserver(update).observe(track);
+      update();
+    });
   }
 
   function renderPdpMobileBuybar(view) {
@@ -1930,7 +1962,8 @@
     }
     if (name === "product") {
       const id = currentProductId();
-      if (id && productById(id)) { let viewed = []; try { viewed = JSON.parse(localStorage.getItem("sofievka-viewed")) || []; } catch {} localStorage.setItem("sofievka-viewed", JSON.stringify([id, ...viewed.filter(item => item !== id)].slice(0, 8))); }
+      bindPdpProductRails();
+      if (id && productById(id)) { let viewed = []; try { viewed = JSON.parse(localStorage.getItem("sofievka-viewed")) || []; } catch {} localStorage.setItem("sofievka-viewed", JSON.stringify([id, ...(Array.isArray(viewed) ? viewed : []).filter(item => item !== id)].slice(0, VIEWED_HISTORY_LIMIT))); }
       const galleryMain = document.querySelector("[data-gallery-main]");
       const galleryImage = document.querySelector("[data-gallery-main-image]");
       const galleryThumbs = [...document.querySelectorAll("[data-gallery-thumb]")];

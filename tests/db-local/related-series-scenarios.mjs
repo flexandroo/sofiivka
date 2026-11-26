@@ -69,7 +69,7 @@ export async function run(db) {
   // 1. The payload always carries the three (empty) lists; the product page still has automatic similar items.
   assert.deepEqual((await payload(db, "r-1")).relatedProductIds, { accessory: [], compatible: [], similar: [] });
   const automaticBefore = await relatedIds(db, "r-1");
-  assert.equal(automaticBefore.length, 4, "four automatic similar products");
+  assert.equal(automaticBefore.length, 5, "all five published peers fit under the twelve-card limit");
   assert.ok(!automaticBefore.includes("r-5"), "drafts never appear");
 
   // 2. Access: anon none, manager reads only, content manager edits.

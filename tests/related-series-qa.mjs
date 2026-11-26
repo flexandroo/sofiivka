@@ -84,7 +84,8 @@ sandbox.window.sofievkaCatalog = {
   products: [
     card("p-1", { relatedProductIds: { accessory: ["a-1", "missing", "draft", "a-1", "p-1"], compatible: ["c-1"], similar: ["s-1"] } }),
     card("a-1", { primaryCategoryId: "chimneys" }), card("c-1", { primaryCategoryId: "boilers" }), card("s-1"),
-    card("draft", { publicationStatus: "draft" }), card("auto-1"), card("auto-2"), card("auto-3"), card("auto-4")
+    card("draft", { publicationStatus: "draft" }), card("hidden", { publicationStatus: "hidden" }),
+    card("auto-1"), card("auto-2"), card("auto-3"), card("auto-4"), card("legacy", { publicationStatus: undefined })
   ]
 };
 vm.runInNewContext(pdp, sandbox);
@@ -96,6 +97,11 @@ const similar = engine.relatedProducts(product, 4).map(item => item.id);
 assert.equal(similar[0], "s-1", "manual similar first");
 assert.equal(similar.length, 4);
 assert.ok(!similar.includes("c-1"), "automatic similar skip manually related products");
+assert.ok(!similar.includes("draft") && !similar.includes("hidden"), "unpublished same-category peers cannot fill automatic slots");
+const allSimilar = engine.relatedProducts(product).map(item => item.id);
+assert.equal(allSimilar.length, 6, "the larger default returns the manual item and all five eligible automatic peers");
+assert.ok(allSimilar.includes("legacy"), "legacy products without a publicationStatus remain eligible");
+assert.ok(!allSimilar.includes("draft") && !allSimilar.includes("hidden"));
 assert.equal(engine.accessoryProducts(card("x")).length, 0, "no lists, no rail");
 
 // Admin wiring.

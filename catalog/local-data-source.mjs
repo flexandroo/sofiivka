@@ -111,7 +111,7 @@ export class LocalCatalogDataSource extends CatalogDataSource {
       .filter(candidate => candidate.id !== product.id && candidate.primaryCategoryId === product.primaryCategoryId)
       .map((candidate, index) => ({ candidate, index, score: relatedScore(product, candidate), distance: priceDistance(product, candidate) }))
       .sort((left, right) => right.score - left.score || left.distance - right.distance || left.index - right.index)
-      .slice(0, 4)
+      .slice(0, 12)
       .map(item => productCard(item.candidate, snapshot.brands));
     return Object.freeze({ version: snapshot.version, product, relatedProducts: Object.freeze(relatedProducts) });
   }
