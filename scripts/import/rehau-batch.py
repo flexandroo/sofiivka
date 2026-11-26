@@ -79,6 +79,33 @@ def german_number(value,thousands=False):
     value=value.strip()
     if thousands and re.fullmatch(r'[1-9]\d{0,2}(?:\.\d{3})+',value):value=value.replace('.','')
     return float(value.replace(',','.'))
+
+def sealing_cone_angle(text):
+    # A threaded sealing cone is not the bend/branch angle of the fitting.
+    # Exact REHAU variant titles use both German and Ukrainian cone names.
+    if not re.search(r'Konus|конус|cone|taper',text,re.I):return None
+    match=re.search(r'(?<![\d.,])60(?:[.,]0+)?\s*(?:°|Grad\b)',text,re.I)
+    return 60 if match else None
+
+def variant_bend_angle(text):
+    if sealing_cone_angle(text)is not None:return None
+    match=re.search(r'(\d+(?:[.,]\d+)?)\s*(?:°|Grad\b)',text,re.I)
+    return {'value':float(match[1].replace(',','.')),'raw':match[0]}if match else None
+
+# Finite, independently adjudicated manufacturer field/prose contradiction.
+# The upstream ETIM is still retained verbatim in sourceEvidence.
+MAX_SCALAR_CONFLICT_SKUS={
+    '14410031001','14410051001','14410071001','14410091001','14410111001',
+    '14410131001','14410151001','14410171001','14410191001','14410211001',
+    '14410231001','14410251001','14410271001','14410291001','14410311001',
+    '14410331001','14410351001','14410411001','14410431001','14410691001',
+}
+
+def unreliable_max_scalar(sku,feature,description):
+    return bool(sku in MAX_SCALAR_CONFLICT_SKUS and feature.get('code')=='EF020023'
+        and feature.get('name')=='Max. Mediumtemperatur (Dauerbetrieb)'
+        and re.fullmatch(r'\s*-10\s*°\s*C\s*',str(feature.get('value','')))
+        and re.search(r'-10\s*°\s*C\s+bis\s+max\.?\s*95\s*°\s*C\s*\(gleitend\)\s+und\s+6\s*bar',description))
 def clean_value(value):
     if value=='Ja':return 'Так'
     if value in values:return values[value]
@@ -97,6 +124,9 @@ def build_characteristics(sku,base,sections,class_name,category):
     rows=[];rawfeatures=q(de.get(sku,{})).get('features',{}).get('features',[])
     byname={f['name']:f['value']for f in rawfeatures}
     for f in rawfeatures:
+        if unreliable_max_scalar(sku,f,raw_description(de.get(sku))):
+            OMISSIONS.append({'sku':sku,'kind':'contradicted maximum-temperature scalar','reason':'Exact-SKU manufacturer prose and official catalogue give a qualified -10 to95C sliding interval at6bar; ETIM labels its -10 lower bound as MAX. Omit only this derived claim; preserve raw manufacturer ETIM and prose.','feature':f})
+            continue
         if f['name']not in labels:
             TRANSLATION_GAPS.append({'sku':sku,'kind':'feature label','de':f['name']});continue
         rows.append({'label':labels[f['name']],'value':clean_value(f['value'])})
@@ -150,12 +180,22 @@ def build_characteristics(sku,base,sections,class_name,category):
         if length:
             value=float(length[1].replace(',','.'))*(1000 if length[2]in ['м','m']else 1)
             filters['pipeLengthMm']=value;numeric_sources['pipeLengthMm']={'source':'official supply length in exact pipe variant','raw':length[0]}
-    angle=re.search(r'(\d+(?:[.,]\d+)?)\s*(?:°|Grad\b)',base['shortText'],re.I)
+    cone_angle=sealing_cone_angle(base['shortText'])
+    angle=variant_bend_angle(base['shortText'])
     if angle:
-        angle_value=float(angle[1].replace(',','.'))
+        angle_value=angle['value']
         if 0<angle_value<=180:
             prior=filters.get('angleDegrees');filters['angleDegrees']=angle_value
-            numeric_sources['angleDegrees']={'source':'exact manufacturer variant angle','raw':angle[0],**({'sourceConflict':{'roundedEtim':prior,'exactVariant':angle_value}}if prior is not None and prior!=angle_value else{})}
+            numeric_sources['angleDegrees']={'source':'exact manufacturer variant angle','raw':angle['raw'],**({'sourceConflict':{'roundedEtim':prior,'exactVariant':angle_value}}if prior is not None and prior!=angle_value else{})}
+    if cone_angle is not None:
+        rows.append({'label':'Кут конуса','value':str(cone_angle)+' °'})
+        if byname.get('Form')=='gerade':
+            # A straight adapter's ETIM 180-degree convention is not a bend.
+            # Keep the manufacturer's original feature privately without
+            # creating a generic 0/180-degree catalogue facet or public claim.
+            filters.pop('angleDegrees',None);numeric_sources.pop('angleDegrees',None)
+            angle_labels={labels.get(name)for name in ['Winkel des Bogens','Winkel']}
+            rows=[row for row in rows if row['label']not in angle_labels]
     if category=='distribution-manifolds':
         circuit_match=re.search(r'(\d+)\s*(?:Kreise|Heizkreise|контур(?:и|ів)?|виход(?:и|ів)?)\b',base['shortText'],re.I)
         if sku in title_recoveries:

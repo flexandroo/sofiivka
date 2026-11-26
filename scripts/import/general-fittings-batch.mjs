@@ -16,6 +16,18 @@ const DATE = "2026-11-25";
 const SERIES_UK = { "Angle valves": "Кутові крани", "Washing machine taps": "Крани для пральних машин", "Other valves and filters": "Клапани та фільтри", "Eurocone fittings": "Євроконус", "Adapters and inserts for radiator valves": "Адаптери радіаторної арматури", "Multilayer pipe systems accessories": "Комплектуючі металополімерних труб" };
 const seriesName = value => SERIES_UK[value] || value.replace(/^LINE /, "");
 const isPipeBend = form => /^AC00\.(?:70|80)(?:\s|$)/.test(form.title) && /\bBEND\b/.test(form.content);
+export function manufacturerClaimPolicy(form, familyRows, construction) {
+  const source = clean(form.content).toUpperCase();
+  const nonFluidBox = source === "BOX FOR ELBOW";
+  const explicitMaterialConflict = /\bBRONZE\b/.test(source);
+  return {
+    nonFluidBox, explicitMaterialConflict,
+    allowGenericBodyMaterial: !nonFluidBox && !explicitMaterialConflict,
+    familyRows: nonFluidBox ? [] : familyRows,
+    construction: nonFluidBox ? "Монтажна коробка призначена для встановлення сумісного кутника. Матеріал коробки та параметри монтажу слід звірити за документацією конкретного виробу."
+      : explicitMaterialConflict ? construction?.replace("Корпус виготовлено з латуні, гільзу — з нержавіючої сталі AISI 304.", "Гільзу виготовлено з нержавіючої сталі AISI 304.") : construction
+  };
+}
 const documentType = url => /flyer|brochure|catalog|_BRO_/i.test(url) ? "catalog" : /technical|scheda|tech_|dati|datasheet|DTS_|_UK_2026/i.test(url) ? "datasheet" : "certificate";
 function documentModel(url) {
   const file = decodeURIComponent(new URL(url).pathname.split("/").pop());
@@ -248,25 +260,26 @@ async function build() {
       const characteristics = [...dimensions];
       const featureRows = kind.features.map(value => ({ label: "Виконання", value }));
       characteristics.push(...featureRows);
-      const accessories = /Кільце|кільце|прокладка|Комплектуюча/.test(kind.type);
+      const accessories = kind.category === "pipe-installation-components" || /Кільце|кільце|прокладка|Комплектуюча/.test(kind.type);
       const hasBody = !accessories && !/Гайка|гайка|Комплект різьбового/.test(kind.type);
       const pdfSources = formDocumentUrls.get(form.link) || [];
       const bodyEvidence = hasBody && !pipeBend ? pdfBodyEvidence(pdfSources, manifest) : null;
-      const directMaterial = pipeBend ? (/PLASTIC/.test(form.content) ? "Пластик" : "Сталь") : /STAINLESS STEEL/.test(form.content) ? "Нержавіюча сталь" : /PLASTIC/.test(form.content) ? "Пластик" : /BRASS/.test(form.content) ? "Латунь" : bodyEvidence?.genericMaterial || (!accessories && /brass/i.test(family.sourceText) ? "Латунь" : null);
+      const claimPolicy = manufacturerClaimPolicy(form, familyProperties.get(form.familyId) || [], FAMILY_COPY[family.title]);
+      const directMaterial = !claimPolicy.allowGenericBodyMaterial ? null : pipeBend ? (/PLASTIC/.test(form.content) ? "Пластик" : "Сталь") : /STAINLESS STEEL/.test(form.content) ? "Нержавіюча сталь" : /PLASTIC/.test(form.content) ? "Пластик" : /BRASS/.test(form.content) ? "Латунь" : bodyEvidence?.genericMaterial || (!accessories && /brass/i.test(family.sourceText) ? "Латунь" : null);
       if (directMaterial) characteristics.push({ label: "Матеріал", value: directMaterial });
-      if (bodyEvidence && !/PLASTIC|STAINLESS STEEL/.test(form.content)) characteristics.push({ label: "Матеріал корпусу за паспортом серії", value: bodyEvidence.material });
+      if (claimPolicy.allowGenericBodyMaterial && bodyEvidence && !/PLASTIC|STAINLESS STEEL/.test(form.content)) characteristics.push({ label: "Матеріал корпусу за паспортом серії", value: bodyEvidence.material });
       if (pipeBend) {
         characteristics.push({ label: "Матеріал напрямної за паспортом", value: /PLASTIC/.test(form.content) ? "Поліамід PA6, 30% скловолокна" : "Оцинкована сталь" }, { label: "Робоча температура", value: "110", unit: "°C" }, { label: "Термостійкість", value: ">165", unit: "°C" });
-      } else characteristics.push(...(familyProperties.get(form.familyId) || []));
-      let construction = FAMILY_COPY[family.title];
+      } else characteristics.push(...claimPolicy.familyRows);
+      let construction = claimPolicy.construction;
       if (pipeBend) construction = "Напрямна використовується для холодного вигинання труби, її підтримання та захисту від механічних впливів. Виріб не є з’єднанням для транспортування середовища. Матеріал стійкий до агресивних речовин у будівельних розчинах. Розмір вибирають відповідно до діаметра труби.";
       if (dimensions.some(row => /без контролю необтисненого/.test(row.value))) construction = construction?.replace(/ має функцію виявлення необтисненого з’єднання: до пресування вода виходить через негерметичну ділянку\./, ". Цей варіант не має функції контролю необтисненого з’єднання.");
       if (!construction) issues.push({ sourceUrl: form.link, sku, issue: `Немає українського опису серії ${family.title}` });
-      const purpose = pipeBend ? "використовується для вигинання, підтримання та механічного захисту сумісної труби" : kind.category === "shutoff-valves" ? "використовується для керування потоком у сумісній трубопровідній системі" : "використовується для монтажу сумісного трубопровідного з’єднання";
+      const purpose = claimPolicy.nonFluidBox ? "призначена для встановлення сумісного кутника" : pipeBend ? "використовується для вигинання, підтримання та механічного захисту сумісної труби" : kind.category === "shutoff-valves" ? "використовується для керування потоком у сумісній трубопровідній системі" : "використовується для монтажу сумісного трубопровідного з’єднання";
       const intro = `${title} ${purpose}.${size ? ` Розмір приєднання: ${size}.` : ""}`;
       const sections = [
         { title: "Застосування та конструкція", paragraphs: [construction || "", kind.features.length ? kind.features.join(". ") + "." : ""].filter(Boolean) },
-        { title: "Монтаж і сумісність", paragraphs: ["Перед установленням звірте тип труби, розміри, виконання різьби та вимоги технічного паспорта конкретної серії. Робочі параметри залежать від середовища й наявності ущільнень; дотримуйтеся наведених у характеристиках умов."] }
+        { title: "Монтаж і сумісність", paragraphs: [claimPolicy.nonFluidBox ? "Перед монтажем звірте сумісність кутника та монтажне розташування за документацією виробника." : "Перед установленням звірте тип труби, розміри, виконання різьби та вимоги технічного паспорта конкретної серії. Робочі параметри залежать від середовища й наявності ущільнень; дотримуйтеся наведених у характеристиках умов."] }
       ];
       const description = [intro, ...sections.flatMap(s => s.paragraphs)].join("\n\n");
       const filters = {};
@@ -283,7 +296,7 @@ async function build() {
         const pipeSizes = [...new Set(size.split("×").map(part => part.trim()).filter(part => /^\d+(?:[.,]\d+)?$/.test(part)).map(Number))];
         if (pipeSizes.length === 1 && pipeSizes[0] >= 6) filters.pipeDiameterMm = pipeSizes[0];
       }
-      const pressures = pipeBend ? [] : [...new Set((familyProperties.get(form.familyId) || []).filter(r => /Максимальний робочий тиск/.test(r.label) && /^\d+(?:[.,]\d+)? бар$/.test(r.value)).map(r => Number(r.value.replace(" бар", "").replace(",", "."))))];
+      const pressures = pipeBend || claimPolicy.nonFluidBox ? [] : [...new Set(claimPolicy.familyRows.filter(r => /Максимальний робочий тиск/.test(r.label) && /^\d+(?:[.,]\d+)? бар$/.test(r.value)).map(r => Number(r.value.replace(" бар", "").replace(",", "."))))];
       if (allowedFilters.has("pressureBar") && pressures.length === 1) filters.pressureBar = pressures[0];
       if (allowedFilters.has("angleDegrees") && kind.category === "pipe-fittings") {
         if (/90.DEGREE|90°/.test(form.content)) filters.angleDegrees = 90;
@@ -294,6 +307,7 @@ async function build() {
         return { title: type === "datasheet" && model ? `Технічний паспорт ${model}` : `${type === "datasheet" ? "Технічний паспорт" : type === "catalog" ? "Каталог" : "Сертифікат"} серії ${seriesName(form.familyTitle)}${type === "certificate" ? " " + (i + 1) : ""}`, type, url: manifest.documents[url].path };
       });
       const record = { sourceId: sku, sourceUrl: form.link, sourceCategory, sku, model: sku, series: pipeBend || SERIES_UK[form.familyTitle] ? null : form.familyTitle.replace(/^LINE /, ""), brand: "general-fittings", title, category: kind.category, price: null, priceCurrency: "UAH", vatIncluded: null, shortDescription: intro.slice(0, 300), description, sections, characteristics, filters, images: [...new Set(images)], documents, ...makeSeo(title, characteristics), sourceEvidence: { manufacturerForm: form.title, manufacturerDescription: clean(form.content), familyUrl: form.familyUrl, capturedAt: capture.capturedAt, htmlSha256: form.htmlSha256, sourceImageUrls: form.images, sourceDocumentUrls: pdfSources, ...(bodyEvidence ? { bodyMaterialPdfEvidence: bodyEvidence } : {}), ...(pipeBend ? { componentMaterialPdf: { sourceUrl: pdfSources.find(url => documentModel(url) === form.title.match(/^AC00\.\d+/)?.[0]), material: directMaterial === "Пластик" ? "POLYAMIDE PA6 30% FV" : "FE GALVANIZED", operatingTemperatureC: 110, thermalResistanceMinC: 165 } } : {}) } };
+      if (claimPolicy.explicitMaterialConflict) record.sourceEvidence.materialConflict = { exactModelDescription: clean(form.content), seriesBodyEvidence: bodyEvidence, decision: "Специфічний матеріал корпусу не публікується до уточнення виробника: BRONZE у моделі суперечить загальній таблиці латунного корпусу серії." };
       if (productsBySku.has(sku)) {
         const prior = productsBySku.get(sku); prior.sourceEvidence.additionalSourceUrls ??= []; prior.sourceEvidence.additionalSourceUrls.push(form.link);
         continue;

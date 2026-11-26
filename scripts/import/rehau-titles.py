@@ -79,7 +79,10 @@ def translate(text):
     text=re.sub(r'(\d+)\s+контури\b',circuits,text)
     text=re.sub(r'(\d+)\s+смуги\b',lambda m:m[1]+' '+('смуга'if int(m[1])%10==1 and int(m[1])%100!=11 else'смуги'if int(m[1])%10 in [2,3,4]and int(m[1])%100 not in [12,13,14]else'смужок'),text)
     text=re.sub(r'\s+([,.;:])',r'\1',text)
-    text=re.sub(r'\s+',' ',text).strip(' ,;-')
+    text=re.sub(r'\s+',' ',text).rstrip(' ,;-').lstrip(' ,;')
+    # A leading hyphen before a number is a sign (also in ETIM ranges), not
+    # heading punctuation. Keep it while still removing decorative hyphens.
+    text=re.sub(r'^(?:-(?!\s*(?:\d|[.,]\d))[ ,;]*)+','',text)
     return text
 
 TYPE_PATTERNS=[

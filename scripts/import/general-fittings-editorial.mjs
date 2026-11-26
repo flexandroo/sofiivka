@@ -46,6 +46,23 @@ export function classify(source, scope) {
   if (/PRESSING MACHINE|PRESS MACHINE|PRESSING TOOL|PRESSING JAW|JAW |JAWS|PIPE CUTTER|CUTTING WHEEL|DEBURR|REAMER|BATTERY|SHEARS|CALIBRAT|EXPANDER|EXPANSION TOOL|PINCER|BENDING SPRING|PRESS GUN|INSTALLATION KIT|INSTALLATION SET|KIT FOR MULTILAYER PIPE|KIT FOR PE-X PIPE/.test(s)) return { excluded: "Монтажний інструмент, поза запитом на крани та фітинги" };
   if (/MANIFOLD(?!.*BOX)/.test(s)) return { excluded: "Розподільчий колектор або його комплектуючі, поза запитом" };
   let type = "Фітинг";
+  // Classify the complete article before incidental words for its components.
+  // NUT in a fitting/valve assembly and ELBOW in BOX FOR ELBOW are not its head.
+  const article = /^(?:PLASTIC )?BEND FOR PE-X PIPE$/.test(s) ? { type: "Напрямна для згину труби", category: "pipe-installation-components" }
+    : s === "BOX FOR ELBOW" ? { type: "Монтажна коробка для кутника", category: "pipe-installation-components" }
+    : s === "TEE ELBOW" ? { type: "Кутовий трійник", category: "pipe-fittings" }
+    : s === "M/F ANGLE WITH NUT AND TAIL WITH BUTTERFLY" ? { type: "Кутовий кульовий кран з накидною гайкою", category: "shutoff-valves" }
+    : s === "EXTENSION FOR IN-WALL BALL-VALVE" ? { type: "Подовжувач для крана прихованого монтажу", category: "pipe-fittings" }
+    : s === "BRACKET AND END FITTINGS" ? { type: "Монтажна планка з фітингами", category: "pipe-fittings" }
+    : /^NICKEL PLATED VALVE 90° WITH LOOSE NUT AND FLAT WASHER$/.test(s) ? { type: "Кутовий кран з накидною гайкою", category: "shutoff-valves" }
+    : /^(?:(?:CHROME|NICKEL)[ -]PLATED )?STRAIGHT FITTING WITH LOOSE NUT/.test(s) ? { type: "Прямий фітинг з накидною гайкою", category: "pipe-fittings" }
+    : /^(?:(?:CHROME|NICKEL)[ -]PLATED )?ELBOW WITH LOOSE NUT/.test(s) ? { type: "Кутовий фітинг з накидною гайкою", category: "pipe-fittings" }
+    : /\bFEMALE STRAIGHT(?: FITTING| TIN PLATED)/.test(s) ? { type: "Прямий фітинг із внутрішньою різьбою", category: "pipe-fittings" }
+    : /STRAIGHT FITTING.*\bO-RING\b/.test(s) ? { type: "Прямий радіаторний фітинг з ущільнювальним кільцем", category: "pipe-fittings" }
+    : s === "CONICAL SEAT ADAPTOR (O-RING INCLUDED)" ? { type: "Адаптер з конічним сідлом та ущільнювальним кільцем", category: "pipe-fittings" }
+    : /^(?:EUROCONE )?FLAT SEAL ADAPTER/.test(s) ? { type: "Адаптер з плоским ущільненням", category: "pipe-fittings" }
+    : /\bADAPTER\b.*\b(?:COPPER AND STEEL|COPPER\/STEEL) PIPE/.test(s) ? { type: /EUROCONE/.test(s) ? "Адаптер євроконус для мідної та сталевої труби" : "Адаптер для мідної та сталевої труби", category: "pipe-fittings" }
+    : null;
   const choices = [
     [/CHECK VALVE/, "Зворотний клапан"], [/GATE VALVE/, "Засувка"], [/PATTERN FILTER|Y FILTER/, "Сітчастий фільтр"],
     [/AIR OUTLET VALVE/, "Кран для видалення повітря"], [/LOCKSHIELD/, "Запірний радіаторний вентиль"],
@@ -55,17 +72,23 @@ export function classify(source, scope) {
     [/STRAIGHT VALVE|H STRAIGHT VALVE|H ANGLE VALVE/, scope.includes("radiator") ? "Радіаторний вентиль" : "Прямий вентиль"],
     [/ELBOW VALVE/, "Кутовий вентиль"], [/VALVE KIT/, "Комплект запірної арматури"],
     [/BACKNUT/, "Контргайка"], [/RING NUT/, "Затискна гайка"], [/NUT,|KIT NUT/, "Комплект різьбового приєднання"], [/NUT/, "Гайка"],
-    [/WALLPLATE ELBOW/, "Кутник настінний"], [/ELBOW|\bBEND\b/, "Кутник"], [/TEE|T-FITTING/, "Трійник"], [/CROSS/, "Хрестовина"],
+    [/WALLPLATE ELBOW/, "Кутник настінний"], [/ELBOW|\bBEND\b/, "Кутник"], [/\bTEE\b|T-FITTING/, "Трійник"], [/CROSS/, "Хрестовина"],
     [/HOSE ADAPT|HOSE TAIL/, "Штуцер для шланга"], [/EXTENSION/, "Подовжувач"], [/BUSHING|REDUCTION|REDUCING ADAPTER/, "Перехідник"],
     [/CAP|PLUG/, "Заглушка"], [/O-RING|FLAT RING/, "Ущільнювальне кільце"], [/WASHER|SEAL/, "Ущільнювальна прокладка"],
     [/OLIVE|BRASS RING|CUT RING|REPLACEMENT RING|REINFORCEMENT|SLEEVE|^RING$/, "Монтажне кільце"],
     [/Y FITTING/, "Фітинг Y-подібний"], [/FITTING [35] EXITS/, "Розгалужувач"],
     [/SOCKET|DOUBLE STRAIGHT|REPAIRING|RUNNING STRAIGHT/, "Муфта"], [/ADAPTER|ADAPTOR|INSERT|CONNECT/, "Адаптер"],
-    [/MALE STRAIGHT|M\/M.*STRAIGHT|RUNNING MALE|MALE RUNNING/, "Ніпель"], [/STRAIGHT|FITTING/, "Прямий фітинг"],
+    [/\bMALE STRAIGHT|M\/M.*STRAIGHT|RUNNING MALE|\bMALE RUNNING/, "Ніпель"], [/STRAIGHT|FITTING/, "Прямий фітинг"],
     [/HANDLE|LEVER|SHUT FOR|PLATE|ROSETTE|BOX|BRACKET|HOLDFAST/, "Комплектуюча трубопровідної системи"]
   ];
-  for (const [test, name] of choices) if (test.test(s)) { type = name; break; }
-  const category = /VALVE|TAP|GATE|LOCKSHIELD|FILTER|AIR OUTLET|ANGLE WITH FIRE/.test(s) && !/ADAPTER|ADAPTOR|FITTING|EXTENSION|HANDLE|PLATE|SHUT FOR|BRACKET/.test(s) ? "shutoff-valves" : "pipe-fittings";
+  if (article) type = article.type;
+  else for (const [test, name] of choices) if (test.test(s)) { type = name; break; }
+  // A finish (PLATED) is not a spare PLATE; ADAPTERS in a complete valve kit
+  // are not a standalone ADAPTER FOR a valve.
+  const valveWord = /VALVE|TAP|GATE|LOCKSHIELD|FILTER|AIR OUTLET|ANGLE WITH FIRE/.exec(s);
+  const componentWord = /\b(?:ADAPTER|ADAPTOR|FITTING|EXTENSION|HANDLE|PLATE|BRACKET|NUT|WASHER|SEAL|RING|ROSETTE|BOX)\b/.exec(s);
+  const spareHead = /SHUT FOR/.test(s) || (componentWord && valveWord && componentWord.index < valveWord.index);
+  const category = article?.category || (valveWord && !spareHead ? "shutoff-valves" : "pipe-fittings");
   const features = [];
   const add = (test, text) => { if (test.test(s)) features.push(text); };
   add(/POLISHED CHROME/, "Поліроване хромоване покриття");
@@ -77,7 +100,7 @@ export function classify(source, scope) {
   if (!/[FM]\/[FM]\/[FM]/.test(s)) {
     add(/F\/F/, "Різьба: внутрішня / внутрішня"); add(/M\/M/, "Різьба: зовнішня / зовнішня"); add(/M\/F|F\/M/, "Різьба: зовнішня / внутрішня");
   }
-  if (!/[FM]\/[FM]/.test(s)) { add(/FEMALE/, "Внутрішня різьба"); add(/MALE(?!.*FEMALE)/, "Зовнішня різьба"); }
+  if (!/[FM]\/[FM]/.test(s)) { add(/\bFEMALE\b/, "Внутрішня різьба"); add(/\bMALE\b/, "Зовнішня різьба"); }
   add(/BUTTERFLY/, "Ручка-метелик"); add(/STEEL LEVER/, "Сталевий важіль"); add(/ALUMINIUM LEVER/, "Алюмінієвий важіль"); add(/ALUMINIUM BUTTERFLY/, "Алюмінієва ручка-метелик");
   add(/BLACK LEVER/, "Чорний важіль"); add(/RED HANDLE/, "Червона ручка"); add(/TRIANGULAR HANDLE/, "Трикутна ручка");
   add(/REDUCED|REDUCING/, "Перехідне виконання"); add(/REPAIRING/, "Ремонтне з’єднання");

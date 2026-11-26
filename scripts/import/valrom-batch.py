@@ -167,6 +167,10 @@ def attrs_ro(row):
 
 def type_ro(row,category):
     name=clean(row['name']).upper()
+    # VALDrain FILTRU articles here are slotted drainage pipes, not the filters
+    # of a sewage treatment station. Do not change generic FILTRU elsewhere.
+    if category == 'drainage-pipes' and re.match(r'^FILTRU VALDRAIN\b',name) and re.search(r'Tevi din PVC cu fante transversale',row.get('description',''),re.I):
+        return 'Дренажна фільтрувальна труба'
     for word,translated in TYPE_WORDS:
         if name.startswith(word):return translated
     typed=[clean(t['name']).upper() for a in row.get('attributes',[]) if a.get('taxonomy')=='pa_tip-articol' for t in a['terms']]
@@ -304,6 +308,8 @@ def describe(item,title):
     facts=[f'{r["label"].lower()} — {r["value"]}' for r in item['characteristics'] if r['label'] not in ('Розрахунковий строк використання','Розрахунковий строк служби')]
     first=item['type'].split()[0]
     form='призначена' if first in ('Труба','Кришка','Решітка','Муфта','Хрестовина','Манжета','Втулка','Станція','Установка','Повітродувка','Шафа','Панель','Деталь','Стрічка','Система','Комплектуюча','Основа') else 'призначене' if first in ('Коліно','Ущільнення','Кільце','З’єднання','Сідло','Свердло') else 'призначений'
+    if item['type'] == 'Дренажна фільтрувальна труба':
+        form='використовується'
     intro=f'{title} {form} для {applications[category]}.'
     technical='Технічні параметри: '+('; '.join(facts)+'.' if facts else 'виконання '+item['series']+'.')
     manufacturer=item.get('ukDescription','')
