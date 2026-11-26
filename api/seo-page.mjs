@@ -155,7 +155,7 @@ function categoryCrumbs(taxonomy, category) {
 }
 
 function priceLabel(pricing) {
-  if (pricing?.priceStatus === "known" && Number(pricing.amount) > 0) return money(pricing.amount);
+  if (pricing?.priceStatus === "known" && Number(pricing.amount) > 0) return `${money(pricing.amount)}${pricing.unit === "m" ? "/м" : ""}`;
   return "Ціну уточнюйте";
 }
 
@@ -250,7 +250,7 @@ export function renderProduct({ product, relatedProducts = [], bootstrap, origin
   };
   const specifications = specificationsOf(product);
   const related = relatedProducts.filter(item => item?.slug).slice(0, 8);
-  const oldPrice = price && Number(pricing.oldAmount) > price ? `<s>${escapeHtml(money(pricing.oldAmount))}</s> ` : "";
+  const oldPrice = price && Number(pricing.oldAmount) > price ? `<s>${escapeHtml(priceLabel({ ...pricing, amount: pricing.oldAmount }))}</s> ` : "";
   const body = `<article class="ssr-page"><div class="container">${crumbsMarkup(crumbs)}
 <h1>${escapeHtml(product.title)}</h1>
 <p>${brand ? `<a href="/brands/${escapeHtml(encodeURIComponent(brand.id))}">${escapeHtml(brand.name)}</a> · ` : ""}${sku ? `Артикул: ${escapeHtml(sku)}` : ""}</p>

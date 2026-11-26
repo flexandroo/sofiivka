@@ -385,7 +385,7 @@
       primaryCategoryId: category.id,
       secondaryCategoryIds: Object.freeze(Array.isArray(product.secondaryCategoryIds) ? [...product.secondaryCategoryIds] : []),
       seriesId: mapping.seriesId || product.seriesId || null,
-      pricing: Object.freeze({ amount, oldAmount, currency: product.currency || "UAH", priceStatus }),
+      pricing: Object.freeze({ amount, oldAmount, currency: product.currency || "UAH", priceStatus, unit: window.sofievkaSalesUnits.code(product) }),
       inventory: Object.freeze({ status: inventoryStatus }),
       publicationStatus,
       images,

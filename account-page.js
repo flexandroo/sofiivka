@@ -283,8 +283,8 @@
           <thead><tr><th scope="col">Товар</th><th scope="col">Кількість</th><th scope="col">Ціна</th><th scope="col">Сума</th></tr></thead>
           <tbody>${order.items.map(item => `<tr>
             <td>${item.available && item.productId ? `<a href="/product?id=${encodeURIComponent(item.productId)}">${esc(item.title)}</a>` : esc(item.title)}<small>${esc([item.brandName, item.sku ? `код ${item.sku}` : ""].filter(Boolean).join(" · "))}${item.productId && !item.available ? " · більше не продається" : ""}</small></td>
-            <td data-label="Кількість">${esc(item.quantity)} шт.</td>
-            <td data-label="Ціна">${item.unitAmount === null || item.unitAmount === undefined ? "уточнюється" : esc(money(Number(item.unitAmount)))}</td>
+            <td data-label="Кількість">${esc(window.sofievkaSalesUnits.quantityLabel(item.quantity, item))}</td>
+            <td data-label="Ціна">${item.unitAmount === null || item.unitAmount === undefined ? "уточнюється" : esc(window.sofievkaSalesUnits.price(Number(item.unitAmount), item, money))}</td>
             <td data-label="Сума">${item.lineTotal === null || item.lineTotal === undefined ? "—" : esc(money(Number(item.lineTotal)))}</td>
           </tr>`).join("")}</tbody>
           <tfoot>${Number(order.discountAmount) > 0 ? `<tr><th scope="row" colspan="3">Знижка за промокодом ${esc(order.promoCode)}</th><td>−${esc(money(Number(order.discountAmount)))}</td></tr>` : ""}<tr><th scope="row" colspan="3">Разом</th><td>${esc(orderTotal(order))}</td></tr></tfoot>

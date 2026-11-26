@@ -6,6 +6,7 @@
   const SCOPED_PRODUCT_CACHE = new Map();
   const PDP_RAIL_LIMIT = 12;
   const VIEWED_HISTORY_LIMIT = 24;
+  let salesUnits = window.sofievkaSalesUnits;
   // Supabase pages register canonical products (pricing.amount, images[]); cart, checkout and compare read the
   // legacy fields (price, image, primaryCategoryName), so canonical products are adapted on the way in.
   window.sofievkaRegisterScopedProducts = products => {
@@ -87,6 +88,24 @@
     script.onerror = reject;
     document.head.append(script);
   });
+  let salesUnitsPending = null;
+  function ensureSalesUnits() {
+    if (window.sofievkaSalesUnits) {
+      salesUnits = window.sofievkaSalesUnits;
+      return Promise.resolve(salesUnits);
+    }
+    if (!salesUnitsPending) {
+      salesUnitsPending = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "/catalog/sales-units.js";
+        script.onload = () => window.sofievkaSalesUnits
+          ? resolve(window.sofievkaSalesUnits) : reject(new Error("Sale-unit helper failed to initialize"));
+        script.onerror = () => reject(new Error("Sale-unit helper failed to load"));
+        document.head.append(script);
+      }).then(helper => { salesUnits = helper; return helper; }, error => { salesUnitsPending = null; throw error; });
+    }
+    return salesUnitsPending;
+  }
   // Info pages: the built-in texts below render first; site-pages.js then applies the copy edited
   // in /admin/pages (get_site_page). Pages that are mostly layout keep only their first screen editable.
   const SITE_PAGE_SLUGS = new Set(["about", "services", "installation", "service-center", "solutions", "partnership", "buyers", "delivery", "warranty", "returns", "faq", "privacy", "terms"]);
@@ -110,10 +129,15 @@
   const CATALOG_PAGES = new Set(["catalog", "brand", "product", "search", "cart", "checkout", "favorites", "compare", "heating", "water-supply", "plumbing", "climate"]);
   const initialize = async () => {
     let catalogLoadError = null;
+    // A delayed lightweight dependency must not leave a rejected catalogue
+    // promise unobserved while we prepare the independent account/cart UI.
+    window.sofievkaCatalogDataReady?.catch(() => {});
     try {
+      await ensureSalesUnits();
       if (!window.sofievkaBrands) await loadScript("/brands-data.js?v=20260911-model-1");
       if (!window.sofievkaCatalog) await loadScript("/catalog-data.js?v=20261002-sections-2");
       if (window.sofievkaCatalogDataReady) await window.sofievkaCatalogDataReady;
+      salesUnits = window.sofievkaSalesUnits;
       await prepareScopedPage(page);
       if (!window.sofievkaCatalogUI) await loadScript("/catalog-ui.js?v=20261002-stage2-1");
       if (window.sofievkaCatalogUIReady) await window.sofievkaCatalogUIReady;
@@ -202,9 +226,9 @@
   // from the whole saved value (savedCart/savedList), so a product the page has not loaded is never dropped.
   function savedCart() { try { const value = JSON.parse(localStorage.getItem("sofievka-cart")); return value && typeof value === "object" && !Array.isArray(value) ? value : {}; } catch { return {}; } }
   function savedList(key) { try { const value = JSON.parse(localStorage.getItem(key)); return Array.isArray(value) ? value : []; } catch { return []; } }
-  function cart() { return Object.fromEntries(Object.entries(savedCart()).filter(([id, quantity]) => productById(id) && Number(quantity) > 0).map(([id, quantity]) => [id, Number(quantity)])); }
+  function cart() { return Object.fromEntries(Object.entries(savedCart()).filter(([id, quantity]) => productById(id) && Number(quantity) > 0).map(([id, quantity]) => [id, salesUnits.wholeQuantity(quantity)])); }
   function saveCart(value) { localStorage.setItem("sofievka-cart", JSON.stringify(value)); updateCounts(); }
-  function setCartQuantity(id, quantity) { const value = savedCart(); if (quantity > 0) value[id] = quantity; else delete value[id]; saveCart(value); }
+  function setCartQuantity(id, quantity) { const value = savedCart(); if (quantity > 0) value[id] = salesUnits.wholeQuantity(quantity); else delete value[id]; saveCart(value); }
   function favorites() { return savedList("sofievka-favorites").filter(id => productById(id)); }
   function saveFavorites(value) { localStorage.setItem("sofievka-favorites", JSON.stringify(value)); updateCounts(); }
   function productById(id) { return SCOPED_PRODUCT_CACHE.get(id) || PRODUCTS.find(item => item.id === id) || null; }
@@ -248,7 +272,7 @@
     if (value.length >= 4) { toast("У порівнянні вже 4 товари"); return false; }
     saveCompare([...value, id]); toast("Додано до порівняння", { href: "/compare", label: `Порівняти (${value.length + 1})` }); return true;
   }
-  function addToCart(id, qty = 1) { const value = savedCart(); value[id] = (Number(value[id]) || 0) + qty; saveCart(value); toast("Товар додано до кошика", { href: "/cart", label: "Перейти до кошика" }); }
+  function addToCart(id, qty = 1) { const value = savedCart(); value[id] = salesUnits.wholeQuantity((Number(value[id]) || 0) + salesUnits.wholeQuantity(qty)); saveCart(value); toast("Товар додано до кошика", { href: "/cart", label: "Перейти до кошика" }); }
   function toggleFavorite(id) { const saved = savedList("sofievka-favorites"); const active = !saved.includes(id); saveFavorites(active ? [...saved, id] : saved.filter(item => item !== id)); toast(active ? "Додано в обране" : "Видалено з обраного"); return active; }
   // link: { href, label } opens a page, { action, label } runs a function (e.g. «Повернути» after a removal).
   function toast(message, link) { const el = document.querySelector("[data-page-toast]"); if (!el) return; el.textContent = message; if (link) { const control = document.createElement(link.action ? "button" : "a"); if (link.action) { control.type = "button"; control.addEventListener("click", () => { el.classList.remove("is-visible"); link.action(); }, { once: true }); } else control.href = link.href; control.textContent = link.label; el.append(" ", control); } el.classList.add("is-visible"); clearTimeout(window.pageToast); window.pageToast = setTimeout(() => el.classList.remove("is-visible"), link ? 4500 : 2400); }
@@ -337,12 +361,12 @@
   function renderCart(){ const lines=Object.entries(cart()); return hero("Кошик","Ваше замовлення","",true)+`<section class="page-section page-section--shop"><div class="container" data-cart-view>${cartMarkup(lines)}</div></section>`; }
   function linePrice(product) { return Number(product?.price) > 0 ? Number(product.price) : null; }
   function cartTotals(lines) {
+    const summary = salesUnits.basket(lines.map(([id, quantity]) => ({ product: productById(id), quantity })));
     return lines.reduce((acc, [id, q]) => {
       const price = linePrice(productById(id));
       if (price === null) acc.unpriced += 1; else acc.total += price * q;
-      acc.count += q;
       return acc;
-    }, { total: 0, unpriced: 0, count: 0 });
+    }, { total: 0, unpriced: 0, count: summary.count, quantityLabel: summary.label });
   }
   function totalLabel(totals) {
     if (!totals.unpriced) return money(totals.total);
@@ -357,14 +381,14 @@
     return `<article class="cart-item" data-cart-line="${key}"><a class="cart-item__image" href="${productUrl(p)}"><img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.title)}"></a>`
       + `<div class="cart-item__info"><h2><a href="${productUrl(p)}">${escapeHtml(p.title)}</a></h2>${sku ? `<p>Код товару: ${escapeHtml(sku)}</p>` : ""}`
       + `<button class="cart-item__remove" type="button" data-remove="${key}" aria-label="Видалити з кошика: ${escapeHtml(p.title)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Видалити</button></div>`
-      + `<div class="cart-item__qty" role="group" aria-label="Кількість"><button type="button" data-qty="${key}" data-delta="-1" aria-label="Зменшити кількість"${q <= 1 ? " disabled" : ""}>−</button><input type="number" min="1" max="${CART_MAX_QUANTITY}" step="1" value="${q}" inputmode="numeric" data-qty-input="${key}" aria-label="Кількість, шт."><button type="button" data-qty="${key}" data-delta="1" aria-label="Збільшити кількість"${q >= CART_MAX_QUANTITY ? " disabled" : ""}>+</button></div>`
-      + `<div class="cart-item__price">${cartLinePriceMarkup(linePrice(p), q)}</div></article>`;
+      + `<div class="cart-item__qty" role="group" aria-label="Кількість, ${salesUnits.label(p)}"><button type="button" data-qty="${key}" data-delta="-1" aria-label="Зменшити кількість"${q <= 1 ? " disabled" : ""}>−</button><input type="number" min="1" max="${CART_MAX_QUANTITY}" step="1" value="${q}" inputmode="numeric" data-qty-input="${key}" aria-label="Кількість, ${salesUnits.label(p)}"><button type="button" data-qty="${key}" data-delta="1" aria-label="Збільшити кількість"${q >= CART_MAX_QUANTITY ? " disabled" : ""}>+</button></div>`
+      + `<div class="cart-item__price">${cartLinePriceMarkup(linePrice(p), q, p)}</div></article>`;
   }
-  function cartLinePriceMarkup(price, q) {
-    return `<strong>${price === null ? "Ціну уточнюйте" : money(price * q)}</strong>${price !== null && q > 1 ? `<span>${money(price)} × ${q} шт.</span>` : ""}`;
+  function cartLinePriceMarkup(price, q, product) {
+    return `<strong>${price === null ? "Ціну уточнюйте" : money(price * q)}</strong>${price !== null && (q > 1 || salesUnits.code(product) === "m") ? `<span>${salesUnits.price(price, product, money)} × ${salesUnits.quantityLabel(q, product)}</span>` : ""}`;
   }
   function cartSummaryRows(totals) {
-    return `<div><dt>Товари, ${totals.count} шт.</dt><dd>${totals.total ? money(totals.total) : "—"}</dd></div>${totals.unpriced ? `<div><dt>Ціна за запитом</dt><dd>${totals.unpriced} поз.</dd></div>` : ""}<div><dt>Доставка</dt><dd>після уточнення</dd></div><div class="order-summary__total"><dt>До оплати</dt><dd>${totalLabel(totals)}</dd></div>`;
+    return `<div><dt>Товари, ${totals.quantityLabel}</dt><dd>${totals.total ? money(totals.total) : "—"}</dd></div>${totals.unpriced ? `<div><dt>Ціна за запитом</dt><dd>${totals.unpriced} поз.</dd></div>` : ""}<div><dt>Доставка</dt><dd>після уточнення</dd></div><div class="order-summary__total"><dt>До оплати</dt><dd>${totalLabel(totals)}</dd></div>`;
   }
   function cartMarkup(lines){
     if(!lines.length) return `<div class="empty-state"><h2>Кошик порожній</h2><p>Додайте товар з каталогу, щоб перейти до оформлення.</p><a class="button button--primary" href="/catalog">До каталогу</a></div>`;
@@ -387,7 +411,7 @@
       line.querySelector('[data-delta="1"]').disabled = quantity >= CART_MAX_QUANTITY;
       // «−» turns disabled at 1 (and «+» at the maximum): the focus moves to the field instead of being lost.
       if (stepButton?.disabled) input.focus();
-      line.querySelector(".cart-item__price").innerHTML = cartLinePriceMarkup(linePrice(productById(id)), quantity);
+      line.querySelector(".cart-item__price").innerHTML = cartLinePriceMarkup(linePrice(productById(id)), quantity, productById(id));
       updateSummary();
     };
     const render = () => { view.innerHTML = cartMarkup(Object.entries(cart())); };
@@ -428,7 +452,7 @@
       const p = productById(id);
       const price = linePrice(p);
       // Only the title is clamped: the quantity line under it always stays visible.
-      return `<li><a class="checkout-item" href="${productUrl(p)}"><span class="checkout-item__image"><img src="${escapeHtml(p.image)}" alt="" loading="lazy"></span><span class="checkout-item__name"><span class="checkout-item__title">${escapeHtml(p.title)}</span><small>${q} шт.${price === null ? "" : ` × ${money(price)}`}</small></span><strong>${price === null ? "за запитом" : money(price * q)}</strong></a></li>`;
+      return `<li><a class="checkout-item" href="${productUrl(p)}"><span class="checkout-item__image"><img src="${escapeHtml(p.image)}" alt="" loading="lazy"></span><span class="checkout-item__name"><span class="checkout-item__title">${escapeHtml(p.title)}</span><small>${salesUnits.quantityLabel(q, p)}${price === null ? "" : ` × ${salesUnits.price(price, p, money)}`}</small></span><strong>${price === null ? "за запитом" : money(price * q)}</strong></a></li>`;
     }).join("")}</ul>`;
   }
   // Whole hryvnias, rounded once: «Товари − Знижка = Разом» adds up as shown (1 235 − 124 = 1 111).
@@ -436,7 +460,7 @@
     const itemsTotal = Math.round(totals.total);
     const discount = checkoutPromo ? Math.min(Math.round(Number(checkoutPromo.discount) || 0), itemsTotal) : 0;
     const due = { ...totals, total: Math.max(0, itemsTotal - discount) };
-    return (checkoutPromo ? `<div><dt>Товари, ${totals.count} шт.</dt><dd>${money(itemsTotal)}</dd></div><div class="order-summary__discount"><dt>Знижка · ${escapeHtml(checkoutPromo.code)}</dt><dd>−${money(discount)}</dd></div>` : "")
+    return (checkoutPromo ? `<div><dt>Товари, ${totals.quantityLabel}</dt><dd>${money(itemsTotal)}</dd></div><div class="order-summary__discount"><dt>Знижка · ${escapeHtml(checkoutPromo.code)}</dt><dd>−${money(discount)}</dd></div>` : "")
       + `<div class="order-summary__total"><dt>Разом</dt><dd>${totalLabel(due)}</dd></div>`;
   }
   function renderCheckout(){
@@ -688,7 +712,7 @@
   // Customer account: account-page.js renders sign-in / orders / profile into [data-account-root].
   function renderAccount(){ return hero("Профіль","Особистий кабінет","Замовлення, їхні статуси, повторні покупки та контакти для швидкого оформлення.",true)+`<section class="page-section account-page"><div class="container" data-account-root><p class="account-loading" role="status">Завантажуємо кабінет…</p></div></section>`; }
   function loadAccountScripts(){
-    return accountClient().then(()=>window.sofievkaAccountPage?null:new Promise(resolve=>{const script=document.createElement("script");script.src="/account-page.js?v=20261002-account-1";script.onload=resolve;script.onerror=resolve;document.head.append(script);}));
+    return ensureSalesUnits().then(accountClient).then(()=>window.sofievkaAccountPage?null:new Promise(resolve=>{const script=document.createElement("script");script.src="/account-page.js?v=20261002-account-1";script.onload=resolve;script.onerror=resolve;document.head.append(script);}));
   }
   // customer-account.js is added to every page by the build (deferred); wait for it, load it only if missing.
   function accountClient(){
@@ -718,8 +742,8 @@
         const quantity=cart()[add.dataset.add]||qty;
         document.querySelectorAll(`[data-add="${CSS.escape(add.dataset.add)}"]`).forEach(button=>{
           button.classList.add("is-in-cart");
-          button.textContent=`У кошику · ${quantity}`;
-          button.setAttribute("aria-label",`У кошику ${quantity} шт. Додати ще`);
+          button.textContent=`У кошику · ${salesUnits.quantityLabel(quantity, productById(add.dataset.add))}`;
+          button.setAttribute("aria-label",`У кошику ${salesUnits.quantityLabel(quantity, productById(add.dataset.add))} Додати ще`);
         });
       }
       const fav=e.target.closest("[data-favorite]");
@@ -743,7 +767,7 @@
     });
     updateCounts();
   }
-  function updateCounts(){ const cartCount=Object.values(cart()).reduce((s,q)=>s+q,0); document.querySelectorAll("[data-cart-count]").forEach(x=>x.textContent=cartCount); document.querySelectorAll("[data-fav-count]").forEach(x=>x.textContent=favorites().length); }
+  function updateCounts(){ const summary=salesUnits.basket(Object.entries(cart()).map(([id,quantity])=>({product:productById(id),quantity}))); document.querySelectorAll("[data-cart-count]").forEach(x=>x.textContent=summary.count); document.querySelectorAll("[data-cart]").forEach(x=>x.setAttribute("aria-label",`Кошик, ${summary.label}`)); document.querySelectorAll("[data-fav-count]").forEach(x=>x.textContent=favorites().length); }
   function bindPage(name){ if(name==="catalog"){const params=new URLSearchParams(location.search);let category=params.get("category")||"all";const query=(params.get("q")||"").toLocaleLowerCase("uk");const pills=[...document.querySelectorAll("[data-category]")];const render=()=>{const brands=[...document.querySelectorAll("[data-brand-filter]:checked")].map(x=>x.value);const result=PRODUCTS.filter(p=>(category==="all"||p.category===category)&&(!brands.length||brands.includes(p.brand))&&(!query||`${p.brand} ${p.model} ${p.code}`.toLocaleLowerCase("uk").includes(query)));document.querySelector("[data-catalog-products]").innerHTML=result.length?result.map(productCard).join(""):`<div class="catalog-empty"><h2>Нічого не знайдено</h2><p>Спробуйте іншу категорію або очистіть фільтри.</p></div>`;document.querySelector("[data-result-count]").textContent=result.length;pills.forEach(b=>b.classList.toggle("is-active",b.dataset.category===category));};pills.forEach(b=>b.addEventListener("click",()=>{category=b.dataset.category;render();}));document.querySelectorAll("[data-brand-filter]").forEach(x=>x.addEventListener("change",render));document.querySelector("[data-filter-toggle]")?.addEventListener("click",()=>document.querySelector("[data-filter]")?.classList.toggle("is-open"));render();}
     if(name==="cart") bindCartPage();
     if(name==="checkout") bindCheckout();
@@ -1209,17 +1233,17 @@
   }
 
   function renderPdpPrice(view) {
-    const { purchase } = view;
+    const { purchase, product } = view;
     return purchase.amount
-      ? `<div class="pdp-price">${purchase.oldAmount ? `<del>${money(purchase.oldAmount)}</del>` : ""}<strong>${money(purchase.amount)}</strong></div>`
+      ? `<div class="pdp-price">${purchase.oldAmount ? `<del>${salesUnits.price(purchase.oldAmount, product, money)}</del>` : ""}<strong>${salesUnits.price(purchase.amount, product, money)}</strong></div>`
       : `<strong class="pdp-price pdp-price--request">Ціну уточнюйте</strong>`;
   }
 
   function renderPdpPrimaryAction(view, modifier = "") {
     const { product, purchase, cartQuantity } = view;
     if (purchase.purchasable) {
-      const label = cartQuantity ? `У кошику · ${cartQuantity}` : "Купити";
-      return `<button class="button button--primary pdp-buy${modifier ? ` ${modifier}` : ""}${cartQuantity ? " is-in-cart" : ""}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${escapeHtml(cartQuantity ? `У кошику ${cartQuantity} шт. Додати ще` : `Додати ${product.title} до кошика`)}">${pdpIcon("Кошик")}<span data-buy-label>${label}</span></button>`;
+      const label = cartQuantity ? `У кошику · ${salesUnits.quantityLabel(cartQuantity, product)}` : "Купити";
+      return `<button class="button button--primary pdp-buy${modifier ? ` ${modifier}` : ""}${cartQuantity ? " is-in-cart" : ""}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${escapeHtml(cartQuantity ? `У кошику ${salesUnits.quantityLabel(cartQuantity, product)} Додати ще` : `Додати ${product.title} до кошика`)}">${pdpIcon("Кошик")}<span data-buy-label>${label}</span></button>`;
     }
     // Same wording as the catalogue cards (catalog-ui.js productCard).
     const label = purchase.amount ? "Уточнити наявність" : "Запитати ціну";
@@ -1263,7 +1287,7 @@
     const { product, purchase, favoriteActive, compareActive } = view;
     const phone = window.sofievkaSiteSettings?.current?.stores?.[0]?.phones?.[0] || "+38 (050) 358-22-84";
     const phoneLink = `tel:+${phone.replace(/\D/g, "")}`;
-    const quantity = purchase.purchasable ? `<div class="pdp-quantity" aria-label="Кількість товару"><button type="button" data-pdp-qty-change="-1" aria-label="Зменшити кількість">−</button><input type="number" min="1" max="99" step="1" value="1" inputmode="numeric" data-product-qty aria-label="Кількість"><button type="button" data-pdp-qty-change="1" aria-label="Збільшити кількість">+</button></div><span class="pdp-unit">шт.</span>` : "";
+    const quantity = purchase.purchasable ? `<div class="pdp-quantity" aria-label="Кількість, ${salesUnits.label(product)}"><button type="button" data-pdp-qty-change="-1" aria-label="Зменшити кількість">−</button><input type="number" min="1" max="99" step="1" value="1" inputmode="numeric" data-product-qty aria-label="Кількість, ${salesUnits.label(product)}"><button type="button" data-pdp-qty-change="1" aria-label="Збільшити кількість">+</button></div><span class="pdp-unit">${salesUnits.label(product)}</span>` : "";
     return `<div class="pdp-purchase" data-pdp-purchase>
       <div class="pdp-purchase__line"><span class="buy-box__status buy-box__status--${escapeHtml(purchase.status)}"><i aria-hidden="true"></i>${escapeHtml(purchase.statusLabel)}</span>${renderPdpPrice(view)}</div>
       <div class="pdp-buy-row${purchase.purchasable ? "" : " pdp-buy-row--single"}">${quantity}${renderPdpPrimaryAction(view)}<p class="pdp-call">Потрібна порада? <a href="${escapeHtml(phoneLink)}" data-site-primary-phone>${escapeHtml(phone)}</a></p></div>
@@ -1368,7 +1392,7 @@
   }
 
   function renderPdpMobileBuybar(view) {
-    return `<div class="pdp-mobile-buybar" data-pdp-mobile-buybar aria-label="Швидка покупка"><div><span>${escapeHtml(view.purchase.statusLabel)}</span><strong>${view.purchase.amount ? money(view.purchase.amount) : "Ціну уточнюйте"}</strong></div>${renderPdpPrimaryAction(view, "pdp-buy--sticky")}</div>`;
+    return `<div class="pdp-mobile-buybar" data-pdp-mobile-buybar aria-label="Швидка покупка"><div><span>${escapeHtml(view.purchase.statusLabel)}</span><strong>${view.purchase.amount ? salesUnits.price(view.purchase.amount, view.product, money) : "Ціну уточнюйте"}</strong></div>${renderPdpPrimaryAction(view, "pdp-buy--sticky")}</div>`;
   }
 
   window.sofievkaPdpComponents = Object.freeze({
@@ -1520,7 +1544,7 @@
     const head = compatible.map(product => `<th>${product.image ? `<img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">` : ""}<span>${escapeHtml(product.brand)}</span><strong>${escapeHtml(product.shortTitle || product.title)}</strong><button class="compare-remove" type="button" data-compare-remove="${escapeHtml(product.id)}">Прибрати</button></th>`).join("");
     const rows = compareRows(compatible).map(([label, values]) => `<tr><th>${escapeHtml(label)}</th>${values.map(value => `<td>${escapeHtml(value)}</td>`).join("")}</tr>`).join("");
     const note = skipped ? `<p class="notice">${productCountLabel(skipped)} з іншої категорії не показано: порівнювати можна лише товари одного типу.</p>` : "";
-    return hero("Порівняння", escapeHtml(compatible[0].primaryCategoryName || "Порівняння товарів"), "Поруч показані характеристики, ціна й наявність.", true) + `<section class="page-section"><div class="container">${note}<div class="compare-scroll"><table class="compare-table"><thead><tr><th>Параметр</th>${head}</tr></thead><tbody>${compatible.some(product => displaySku(product)) ? `<tr><th>Код товару</th>${cells(product => escapeHtml(displaySku(product) || "—"))}</tr>` : ""}${rows}<tr><th>Наявність</th>${cells(product => escapeHtml(product.availabilityLabel || "Наявність уточнюйте"))}</tr><tr><th>Ціна</th>${cells(product => Number(product.price) > 0 ? `<strong>${money(product.price)}</strong>` : "Ціну уточнюйте")}</tr><tr><th>Дія</th>${cells(product => `<a class="button button--secondary" href="${productUrl(product)}">Переглянути</a>`)}</tr></tbody></table></div><button class="button button--secondary compare-clear" type="button" data-compare-clear>Очистити порівняння</button></div></section>`;
+    return hero("Порівняння", escapeHtml(compatible[0].primaryCategoryName || "Порівняння товарів"), "Поруч показані характеристики, ціна й наявність.", true) + `<section class="page-section"><div class="container">${note}<div class="compare-scroll"><table class="compare-table"><thead><tr><th>Параметр</th>${head}</tr></thead><tbody>${compatible.some(product => displaySku(product)) ? `<tr><th>Код товару</th>${cells(product => escapeHtml(displaySku(product) || "—"))}</tr>` : ""}${rows}<tr><th>Наявність</th>${cells(product => escapeHtml(product.availabilityLabel || "Наявність уточнюйте"))}</tr><tr><th>Ціна</th>${cells(product => Number(product.price) > 0 ? `<strong>${salesUnits.price(product.price, product, money)}</strong>` : "Ціну уточнюйте")}</tr><tr><th>Дія</th>${cells(product => `<a class="button button--secondary" href="${productUrl(product)}">Переглянути</a>`)}</tr></tbody></table></div><button class="button button--secondary compare-clear" type="button" data-compare-clear>Очистити порівняння</button></div></section>`;
   }
   function bindCompare() {
     document.querySelector("main")?.addEventListener("click", event => {

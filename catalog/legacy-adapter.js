@@ -42,6 +42,7 @@
         // Supabase mode passes no raw object and therefore cannot leak private evidence.
         ...raw,
         ...canonical,
+        pricing: Object.freeze({ ...canonical.pricing, unit: window.sofievkaSalesUnits.code(canonical) }),
         price: legacyPrice,
         oldPrice: legacyOldPrice,
         currency: canonical.pricing?.currency || "UAH",

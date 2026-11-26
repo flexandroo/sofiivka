@@ -512,6 +512,7 @@ function createProductCard(product, favoriteIds) {
   const price = Number(product.pricing?.amount ?? product.price);
   const oldPrice = Number(product.pricing?.oldAmount ?? product.oldPrice ?? 0);
   const money = amount => `${new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 0 }).format(Math.round(Number(amount) || 0))} грн`;
+  const unitPrice = amount => window.sofievkaSalesUnits.price(amount, product, money);
   const escapeMarkup = value => String(value ?? "").replace(/[&<>'"]/g, character => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
   })[character]);
@@ -526,7 +527,7 @@ function createProductCard(product, favoriteIds) {
     <h3><a href="${productHref(product)}">${escapeMarkup(productName)}</a></h3>
     <span class="product-card__code">${escapeMarkup(product.code || product.sku || product.id)}</span>
     <ul class="product-card__specs" aria-label="Дані товару"><li>${escapeMarkup(product.type || product.normalizedAttributes?.productType || "Інженерне обладнання")}</li></ul>
-    <div class="product-card__price-group">${oldPrice > price ? `<del class="product-card__old-price">${money(oldPrice)}</del>` : ""}<strong class="product-card__price">${money(price)}</strong></div>
+    <div class="product-card__price-group">${oldPrice > price ? `<del class="product-card__old-price">${unitPrice(oldPrice)}</del>` : ""}<strong class="product-card__price">${unitPrice(price)}</strong></div>
     <div class="product-card__actions">
       <button class="product-card__buy" type="button" data-buy="${escapeMarkup(product.id)}">До кошика</button>
       <button class="product-card__favorite${favoriteIds.has(product.id) ? " is-active" : ""}" type="button" data-favorite="${escapeMarkup(product.id)}" aria-label="Додати ${escapeMarkup(productName)} в обране" aria-pressed="${favoriteIds.has(product.id)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/></svg></button>
@@ -555,11 +556,12 @@ function setupProducts() {
   // Products that are no longer published stay in the saved cart but are not counted, as on /cart
   // (final audit AUD-058); with the database they are known once getProductsByIds has answered.
   const staleIds = new Set();
-  const countCart = () => Object.entries(storedCart).reduce((sum, [id, quantity]) => sum + (staleIds.has(id) ? 0 : Number(quantity || 0)), 0);
+  const cartSummary = () => window.sofievkaSalesUnits.basket(Object.entries(storedCart).filter(([id]) => !staleIds.has(id)).map(([id, quantity]) => ({ product: homepageProductById.get(id), quantity })));
+  const countCart = () => cartSummary().count;
   let cart = countCart();
   const showCartCount = () => {
     if (cartCount) cartCount.textContent = String(cart);
-    document.querySelector("[data-cart]")?.setAttribute("aria-label", `Кошик, ${cart} товарів`);
+    document.querySelector("[data-cart]")?.setAttribute("aria-label", `Кошик, ${cartSummary().label}`);
   };
   const showFavoriteCount = () => {
     const count = [...favoriteIds].filter(id => !staleIds.has(id)).length;
@@ -571,6 +573,7 @@ function setupProducts() {
   const savedIds = [...new Set([...Object.keys(storedCart), ...favoriteIds])].slice(0, 96);
   if (window.sofievkaCatalogScopedDataSource && savedIds.length) {
     window.sofievkaCatalogScopedDataSource.getProductsByIds(savedIds).then(result => {
+      (result?.products || []).forEach(product => homepageProductById.set(product.id, product));
       const known = new Set((result?.products || []).map(product => product.id));
       savedIds.filter(id => !known.has(id)).forEach(id => staleIds.add(id));
       cart = countCart();
@@ -608,7 +611,7 @@ function setupProducts() {
 
     if (buyButton) {
       staleIds.delete(buyButton.dataset.buy);
-      storedCart[buyButton.dataset.buy] = (storedCart[buyButton.dataset.buy] || 0) + 1;
+      storedCart[buyButton.dataset.buy] = window.sofievkaSalesUnits.wholeQuantity((Number(storedCart[buyButton.dataset.buy]) || 0) + 1);
       localStorage.setItem("sofievka-cart", JSON.stringify(storedCart));
       cart = countCart();
       showCartCount();

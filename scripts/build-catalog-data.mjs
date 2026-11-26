@@ -3,6 +3,7 @@ import path from "node:path";
 
 const root = path.resolve(import.meta.dirname, "..");
 const sources = [
+  "catalog/sales-units.js",
   "catalog/categories.js",
   "catalog/attribute-schema.js",
   "catalog/source-mappings.js",

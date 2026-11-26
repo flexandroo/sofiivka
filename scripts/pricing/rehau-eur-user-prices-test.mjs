@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import {approvedCurrency,convertAsQuotedToUah,documentedRehauMaterial,REHAU_WORKBOOK_SHA} from './currency-pricing-policy.mjs';
+import {makeRehauPricePlan,isHeldPipe} from './rehau-eur-user-prices.mjs';
+const reference=JSON.parse(await fs.readFile('imports/rehau-prices-2026-11-26/catalog-reference.json'));
+const policy=JSON.parse(await fs.readFile('imports/rehau-prices-2026-11-26/price-policy-reference.json'));
+const parsed=JSON.parse(await fs.readFile('imports/overnight-prices/parsed-rows.json'));
+const aliases=JSON.parse(await fs.readFile('imports/overnight-prices/rehau-name-compatible-aliases.json'));
+const manufacturerProducts=JSON.parse(await fs.readFile('imports/rehau-no-tools-2026-11-26.json')).products;
+const input={reference,policy,parsed,aliases,manufacturerProducts};
+const result=makeRehauPricePlan(input);assert.equal(result.items.length,458);assert.equal(result.summary.heldPipeRows,111);assert.equal(result.summary.expectedPositive,2419);
+assert.equal(isHeldPipe({category:'underfloor-heating',sourceEvidence:{sourceTitle:'Труба RAUTHERM SPEED 16 × 1,5',sourceEtim:{class:null}}}),true,'Cyrillic pipe noun cannot use JavaScript ASCII word boundaries');
+assert.equal(isHeldPipe({category:'pipe-fittings',sourceEvidence:{sourceTitle:'Трубка Т для радіатора',sourceEtim:{class:{name:'Fitting mit 3 Anschlüssen'}}}}),false);
+assert.equal(convertAsQuotedToUah('100','EUR',policy),5077);assert.equal(convertAsQuotedToUah('100','UAH',policy),100);
+assert.equal(convertAsQuotedToUah('1','EUR',policy),51);assert.throws(()=>convertAsQuotedToUah('100','PLN',policy),/NBU rate/);
+const next=structuredClone(policy);next.latestRates.push({currency:'PLN',source:'NBU',rate:'10',rate_date:'2026-11-26'});assert.equal(convertAsQuotedToUah('100','PLN',next),1025,'Future supported currency codes follow the same once-only rule');
+assert.throws(()=>convertAsQuotedToUah('100','REHAU',policy));const badMarkup=structuredClone(policy);badMarkup.settings.markup_percent=5;assert.throws(()=>convertAsQuotedToUah('100','EUR',badMarkup),/exactly2.5/);
+assert.equal(documentedRehauMaterial('123456789'),'11234561789');
+const quote=parsed.quotes.find(q=>q.quoteId===result.items[0].provenance.quoteId);assert.equal(approvedCurrency(quote),'EUR');
+assert.throws(()=>approvedCurrency({...quote,source:{...quote.source,fileSha256:'0'.repeat(64)}}),/Unapproved/);
+assert.equal(quote.source.fileSha256,REHAU_WORKBOOK_SHA);assert.ok(result.items.every(item=>item.afterSource.vatIncluded===null&&item.afterSource.currency==='EUR'&&item.after.oldAmount===null));
+// Three independently row-proven quotes for one material must quarantine it permanently, even with identical amounts/names.
+const three=structuredClone(parsed);const sourceAlias=aliases.find(a=>a.sourceSku===quote.sku);const duplicates=[0,1,2].map(index=>({...structuredClone(quote),quoteId:quote.quoteId+'-duplicate-'+index}));
+three.quotes=three.quotes.filter(q=>q.sku!==quote.sku).concat(duplicates);
+const threeAliases=aliases.filter(a=>a.sourceSku!==quote.sku).concat(duplicates.map(q=>({...sourceAlias,quoteId:q.quoteId})));
+const quarantined=makeRehauPricePlan({...input,parsed:three,aliases:threeAliases});assert.equal(quarantined.items.length,457);
+assert.ok(!quarantined.items.some(item=>item.sku===sourceAlias.catalogSku));assert.ok(quarantined.coverage.filter(q=>duplicates.some(d=>d.quoteId===q.quoteId)).every(q=>q.blockers.includes('multiple_quoted_rows_for_current_variant')));
+// Unproven duplicate source rows cannot borrow a source-SKU-only alias.
+const conflicting=structuredClone(parsed);conflicting.quotes.push({...quote,quoteId:quote.quoteId+'-different-variant',name:quote.name+' other variant',sourcePrice:'999.00'});
+assert.ok(makeRehauPricePlan({...input,parsed:conflicting}).coverage.filter(q=>q.sourceSku===quote.sku).every(q=>q.blockers.includes('duplicate_source_sku_requires_exact_quote_proof')));
+const priced=structuredClone(reference),index=priced.rows.findIndex(row=>row[priced.columns.indexOf('legacyId')]===result.items[0].legacyId);priced.rows[index][priced.columns.indexOf('amount')]=999;priced.rows[index][priced.columns.indexOf('priceStatus')]='known';
+assert.equal(makeRehauPricePlan({...input,reference:priced}).items.length,457,'A subsequent additive job cannot overwrite an existing REHAU price');
+const reviewed=JSON.parse(await fs.readFile('imports/rehau-prices-2026-11-26/reviewed-all-discrete-aliases.json'));const final=makeRehauPricePlan({...input,aliases:reviewed});assert.equal(final.items.length,923);assert.equal(final.summary.referenceOnlyRows,2);assert.equal(final.summary.expectedPositive,2884);
+const holds=JSON.parse(await fs.readFile('imports/rehau-prices-2026-11-26/reviewed-pipe-unit-holds.json'));assert.equal(holds.rows.length,151);const heldQuoteIds=new Set(holds.rows.map(row=>row.quoteId));
+assert.ok(final.items.every(item=>!heldQuoteIds.has(item.provenance.quoteId)),'None of the151 reviewed pipe rows can enter the discrete price job');
+assert.deepEqual(new Set(final.items.map(item=>item.sku)),new Set(reviewed.map(alias=>alias.catalogSku)),'Every selected material comes from the exact frozen finite alias set');
+console.log(JSON.stringify({status:'PASS',suite:'rehau-user-eur-policy',selectedDiscrete:923,originalHeldPipes:111,onceOnlyNbuMarkup:true,nullableVatAsQuoted:true,universalCurrencyFormula:true,threeDuplicateQuarantine:true,existingPricesPreserved:true,noStockOrPackageMultiplier:true,hostedConnections:0}));

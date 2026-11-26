@@ -1,4 +1,7 @@
 import { icon } from "/admin/admin-icons.mjs";
+import "/catalog/sales-units.js";
+
+const saleUnits = window.sofievkaSalesUnits;
 
 export const CRM_ROLES = Object.freeze(["owner", "admin", "manager"]);
 
@@ -47,7 +50,7 @@ export async function createOrdersListView({ api, search = location.search, sign
         placeholder: "№, ім’я, телефон або email",
         selects: [{ name: "status", label: "Статус", all: "Усі статуси", options: ORDER_STATUS }]
       })}
-      ${result.orders.length ? table(["Замовлення", "Клієнт", "Отримання", "Шт.", "Сума", "Статус", "Відповідальний"], rows, "admin-crm-table--orders")
+      ${result.orders.length ? table(["Замовлення", "Клієнт", "Отримання", "К-сть", "Сума", "Статус", "Відповідальний"], rows, "admin-crm-table--orders")
         : emptyState("Замовлень не знайдено", filters.query || filters.status ? "Змініть пошук або фільтр." : "Нові замовлення з сайту з’являться тут автоматично.")}
       ${pagination(result)}
       <div class="admin-toast" role="status" aria-live="polite" hidden></div>
@@ -89,7 +92,7 @@ function renderOrderDetail({ api, detail }) {
       <div class="admin-crm-layout">
         <div class="admin-crm-main">
           <section class="admin-panel" data-lines-panel>
-            <header class="admin-panel__head"><div><p class="admin-kicker">СКЛАД</p><h2>Товари · ${number(order.itemsCount)} шт.</h2></div>
+            <header class="admin-panel__head"><div><p class="admin-kicker">СКЛАД</p><h2>Товари · ${number(items.length)} поз.</h2></div>
               ${order.itemsEditable ? `<button class="admin-button admin-button--secondary" type="button" data-lines-edit>Редагувати склад</button>` : ""}</header>
             <div data-lines-view>
               <div class="admin-crm-items">
@@ -97,7 +100,7 @@ function renderOrderDetail({ api, detail }) {
                   <div class="admin-crm-item">
                     <div><strong>${item.productAvailable ? `<a href="/admin/products/${encodeURIComponent(item.legacyId)}" data-admin-link>${escape(item.title)}</a>` : escape(item.title)}</strong>
                       <small>${escape(itemMeta(item))}</small></div>
-                    <span class="admin-crm-num">${number(item.quantity)} × ${item.unitAmount === null ? `<em>${escape(unpricedLabel(item))}</em>` : money(item.unitAmount)}</span>
+                    <span class="admin-crm-num">${saleUnits.quantityLabel(number(item.quantity), item)} × ${item.unitAmount === null ? `<em>${escape(unpricedLabel(item))}</em>` : saleUnits.price(item.unitAmount, item, money)}</span>
                     <strong class="admin-crm-num">${item.lineTotal === null ? "—" : money(item.lineTotal)}</strong>
                   </div>`).join("")}
                 ${order.promoCode || Number(order.discountAmount) > 0 ? `<div class="admin-crm-item admin-crm-item--discount"><span>Знижка за промокодом <strong>${escape(order.promoCode)}</strong>${order.promoKind === "percent" ? ` (${number(order.promoValue)}%)` : ""}</span><span>${order.itemsEditable || order.status === "cancelled" ? `<button class="admin-button admin-button--ghost" type="button" data-promo-remove>Прибрати знижку</button>` : ""}</span><strong class="admin-crm-num">−${money(order.discountAmount)}</strong></div>` : ""}
@@ -185,7 +188,7 @@ function bindLinesEdit(container, { api, order, items }) {
       api,
       lines: items.map(item => ({
         id: item.id, legacyId: item.legacyId, title: item.title, sku: item.sku, brand: item.brand,
-        quantity: String(item.quantity), unitAmount: amountInput(item.unitAmount), priceStatus: item.priceStatus, custom: item.custom
+        quantity: String(item.quantity), unitAmount: amountInput(item.unitAmount), saleUnit: item.saleUnit, priceStatus: item.priceStatus, custom: item.custom
       })),
       notify: (message, error) => showToast(container, message, error)
     });
@@ -391,15 +394,15 @@ export async function createOrderPrintView({ api, orderNumber, signal }) {
                 <td>${index + 1}</td>
                 <td>${escape(item.title)}${item.brand ? `<small>${escape(item.brand)}</small>` : ""}</td>
                 <td>${escape(item.sku || "—")}</td>
-                <td class="admin-crm-num">${number(item.quantity)}</td>
-                <td class="admin-crm-num">${item.unitAmount === null ? "уточнюється" : plainMoney(item.unitAmount)}</td>
+                <td class="admin-crm-num">${saleUnits.quantityLabel(number(item.quantity), item)}</td>
+                <td class="admin-crm-num">${item.unitAmount === null ? "уточнюється" : saleUnits.price(item.unitAmount, item, plainMoney)}</td>
                 <td class="admin-crm-num">${item.lineTotal === null ? "—" : plainMoney(item.lineTotal)}</td>
               </tr>`).join("")}
             </tbody>
           </table>
         </div>
         <div class="admin-print-totals">
-          <div><span>Усього</span><strong>${number(items.length)} поз. · ${number(order.itemsCount)} шт.</strong></div>
+          <div><span>Усього</span><strong>${number(items.length)} поз.</strong></div>
           ${Number(order.discountAmount) > 0 ? `<div><span>Знижка (промокод ${escape(order.promoCode)})</span><strong>−${money(order.discountAmount)}</strong></div>` : ""}
           <div><span>Разом до сплати</span><strong>${money(Number(order.itemsTotal) - Number(order.discountAmount || 0))}</strong></div>
           <div><span>ПДВ</span><strong><span class="admin-print-placeholder">[ЗАПОВНИТИ: у т.ч. ПДВ / без ПДВ]</span></strong></div>
@@ -530,7 +533,7 @@ function createLinesEditor(root, { api, lines: initialLines, notify, onTotal = (
         <li role="option" aria-selected="false"><button type="button" data-pick="${index}">
           <span><strong>${escape(product.title)}</strong>
           <small>${escape([product.brand, product.sku, PUBLICATION_NOTE[product.publicationStatus]].filter(Boolean).join(" · "))}</small></span>
-          <span class="admin-crm-num">${product.amount === null ? escape(PRICE_STATUS[product.priceStatus] || "за запитом") : money(product.amount)}</span>
+          <span class="admin-crm-num">${product.amount === null ? escape(PRICE_STATUS[product.priceStatus] || "за запитом") : saleUnits.price(product.amount, product, money)}</span>
         </button></li>`).join("")
         : `<li class="admin-crm-picker__state">Нічого не знайдено. Додайте довільну позицію нижче.</li>`);
     } catch (error) {
@@ -559,7 +562,7 @@ function createLinesEditor(root, { api, lines: initialLines, notify, onTotal = (
       return;
     }
     lines.push({ productId: product.legacyId, legacyId: product.legacyId, title: product.title, sku: product.sku, brand: product.brand,
-      quantity: "1", unitAmount: amountInput(product.amount), priceStatus: product.priceStatus, custom: false });
+      quantity: "1", unitAmount: amountInput(product.amount), saleUnit: product.saleUnit, priceStatus: product.priceStatus, custom: false });
     search.value = "";
     render();
     rows.querySelector(`[data-line="${lines.length - 1}"] [data-line-qty]`)?.focus();
@@ -647,8 +650,8 @@ function lineRowHtml(line, index) {
   return `
     <div class="admin-crm-line" data-line="${index}">
       <div class="admin-crm-line__title"><strong>${escape(line.title)}</strong>${meta ? `<small>${escape(meta)}</small>` : ""}</div>
-      <label class="admin-crm-line__qty"><span>К-сть</span><input type="number" min="1" max="999" step="1" inputmode="numeric" value="${escape(line.quantity)}" data-line-qty></label>
-      <label class="admin-crm-line__price"><span>Ціна, грн</span><input inputmode="decimal" value="${escape(line.unitAmount)}" placeholder="уточнюється" autocomplete="off" data-line-price></label>
+      <label class="admin-crm-line__qty"><span>К-сть, ${saleUnits.label(line)}</span><input type="number" min="1" max="999" step="1" inputmode="numeric" value="${escape(line.quantity)}" data-line-qty></label>
+      <label class="admin-crm-line__price"><span>Ціна, грн${saleUnits.code(line) === "m" ? "/м" : ""}</span><input inputmode="decimal" value="${escape(line.unitAmount)}" placeholder="уточнюється" autocomplete="off" data-line-price></label>
       <strong class="admin-crm-line__sum admin-crm-num" data-line-sum>—</strong>
       <button class="admin-icon-button admin-crm-line__remove" type="button" data-line-remove aria-label="Видалити позицію «${escape(line.title)}»">${icon("close")}</button>
     </div>`;
@@ -712,14 +715,14 @@ const ORDER_CSV_COLUMNS = Object.freeze([
   ["Отримання", row => DELIVERY[row.deliveryMethod] || row.deliveryMethod],
   ["Місто", row => row.deliveryCity],
   ["Відділення / магазин", row => row.deliveryPoint],
-  ["Кількість, шт.", row => row.itemsCount],
+  ["Позицій", row => (row.items || []).length],
   ["Сума, грн", row => csvAmount(row.itemsTotal)],
   ["Промокод", row => row.promoCode || ""],
   ["Знижка, грн", row => csvAmount(row.discountAmount || 0)],
   ["До сплати, грн", row => csvAmount(Number(row.itemsTotal) - Number(row.discountAmount || 0))],
   ["Є позиції без ціни", row => row.hasUnpricedItems ? "так" : "ні"],
   ["Відповідальний", row => row.assignedTo],
-  ["Товари", row => (row.items || []).map(item => `${[item.sku, item.title].filter(Boolean).join(" ")} × ${item.quantity}${item.unitAmount === null ? " (ціна уточнюється)" : ` по ${csvAmount(item.unitAmount)}`}`).join(" | ")],
+  ["Товари", row => (row.items || []).map(item => `${[item.sku, item.title].filter(Boolean).join(" ")} × ${saleUnits.quantityLabel(item.quantity, item)}${item.unitAmount === null ? " (ціна уточнюється)" : ` по ${csvAmount(item.unitAmount)} грн${saleUnits.code(item) === "m" ? "/м" : ""}`}`).join(" | ")],
   ["Коментар клієнта", row => row.customerComment],
   ["Коментар менеджера", row => row.managerComment]
 ]);
@@ -1161,11 +1164,11 @@ function itemsDiff(data) {
   if (!items) return "";
   const price = value => value === null || value === undefined ? "уточнюється" : money(value);
   const rows = [
-    ...(items.added || []).map(line => `<li><b>+</b> ${escape(line.title)} × ${number(line.quantity)}, ${escape(price(line.unitAmount))}</li>`),
-    ...(items.removed || []).map(line => `<li><b>−</b> ${escape(line.title)} × ${number(line.quantity)}</li>`),
+    ...(items.added || []).map(line => `<li><b>+</b> ${escape(line.title)} × ${saleUnits.quantityLabel(number(line.quantity), line)}, ${escape(saleUnits.price(line.unitAmount, line, price))}</li>`),
+    ...(items.removed || []).map(line => `<li><b>−</b> ${escape(line.title)} × ${saleUnits.quantityLabel(number(line.quantity), line)}</li>`),
     ...(items.changed || []).map(line => {
       const changes = [];
-      if (line.from.quantity !== line.to.quantity) changes.push(`${number(line.from.quantity)} → ${number(line.to.quantity)} шт.`);
+      if (line.from.quantity !== line.to.quantity) changes.push(`${number(line.from.quantity)} → ${saleUnits.quantityLabel(number(line.to.quantity), line)}`);
       if (String(line.from.unitAmount) !== String(line.to.unitAmount)) changes.push(`${price(line.from.unitAmount)} → ${price(line.to.unitAmount)}`);
       return `<li><b>~</b> ${escape(line.title)}: ${escape(changes.join(", "))}</li>`;
     })

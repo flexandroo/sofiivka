@@ -21,9 +21,9 @@ const ROOT_PATTERN = /<div data-page-root><\/div>/;
 
 export async function prerenderCompanyPages({ outputDirectory, siteUrl, pages = PRERENDER_PAGES, log = () => {} }) {
   const read = name => fs.readFile(path.join(outputDirectory, name), "utf8");
-  const [siteSettings, pageShell] = await Promise.all([read("site-settings.js"), read("page-shell.js")]);
+  const [siteSettings, pageShell, salesUnits] = await Promise.all([read("site-settings.js"), read("page-shell.js"), read("catalog/sales-units.js")]);
   const brandsData = await read("brands-data.js").catch(() => "");
-  const scripts = [["site-settings.js", siteSettings], ["brands-data.js", brandsData], ["page-shell.js", pageShell]];
+  const scripts = [["catalog/sales-units.js", salesUnits], ["site-settings.js", siteSettings], ["brands-data.js", brandsData], ["page-shell.js", pageShell]];
   const results = [];
   // After writing the root, page-shell binds events on the stand-in DOM and may reject; that is expected here.
   const ignoreRejection = reason => { if (process.env.SOFIEVKA_PRERENDER_DEBUG) console.error("prerender rejection:", reason); };
@@ -87,9 +87,9 @@ function frameSkeleton(page) {
 
 export async function framePages({ outputDirectory, siteUrl, log = () => {} }) {
   const read = name => fs.readFile(path.join(outputDirectory, name), "utf8");
-  const [siteSettings, pageShell] = await Promise.all([read("site-settings.js"), read("page-shell.js")]);
+  const [siteSettings, pageShell, salesUnits] = await Promise.all([read("site-settings.js"), read("page-shell.js"), read("catalog/sales-units.js")]);
   const brandsData = await read("brands-data.js").catch(() => "");
-  const scripts = [["site-settings.js", siteSettings], ["brands-data.js", brandsData], ["page-shell.js", pageShell]];
+  const scripts = [["catalog/sales-units.js", salesUnits], ["site-settings.js", siteSettings], ["brands-data.js", brandsData], ["page-shell.js", pageShell]];
   const results = [];
   const ignoreRejection = reason => { if (process.env.SOFIEVKA_PRERENDER_DEBUG) console.error("frame rejection:", reason); };
   process.on("unhandledRejection", ignoreRejection);

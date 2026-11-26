@@ -205,6 +205,7 @@ window.sofievkaCatalogUIReady = (async function () {
 
   function renderProductCard(product, options = {}) {
     if (!product) return "";
+    const salesUnits = window.sofievkaSalesUnits;
     const variant = options.variant === "compact" ? "compact" : "standard";
     const attributeLimit = Number(options.attributeLimit) || (variant === "compact" ? 2 : 3);
     const favoriteActive = containsProduct(options.favoriteIds, product.id);
@@ -227,12 +228,12 @@ window.sofievkaCatalogUIReady = (async function () {
     const sku = displaySku(product);
     const showCompare = options.showCompare !== false;
     const priceMarkup = hasPrice
-      ? `<div class="product-card__price-group">${hasOldPrice ? `<del class="product-card__old-price">${money(oldAmount)}</del>` : ""}<strong class="product-card__price">${money(amount)}</strong></div>`
+      ? `<div class="product-card__price-group">${hasOldPrice ? `<del class="product-card__old-price">${salesUnits.price(oldAmount, product, money)}</del>` : ""}<strong class="product-card__price">${salesUnits.price(amount, product, money)}</strong></div>`
       : "";
     // An unconfirmed stock status can still be ordered: the manager confirms availability before payment.
     const purchasable = hasPrice && !["out_of_stock", "discontinued"].includes(status);
     const primaryAction = purchasable
-      ? `<button class="product-card__buy${cartQuantity ? " is-in-cart" : ""}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${escapeHtml(cartQuantity ? `У кошику ${cartQuantity} шт. Додати ще` : `Додати ${title} до кошика`)}">${cartQuantity ? `У кошику · ${cartQuantity}` : "До кошика"}</button>`
+      ? `<button class="product-card__buy${cartQuantity ? " is-in-cart" : ""}" type="button" data-add="${escapeHtml(product.id)}" aria-label="${escapeHtml(cartQuantity ? `У кошику ${salesUnits.quantityLabel(cartQuantity, product)} Додати ще` : `Додати ${title} до кошика`)}">${cartQuantity ? `У кошику · ${salesUnits.quantityLabel(cartQuantity, product)}` : "До кошика"}</button>`
       : `<a class="product-card__buy product-card__buy--consult" href="/contact?product=${encodeURIComponent(product.id)}#contact-form">${hasPrice ? "Уточнити наявність" : "Запитати ціну"}</a>`;
     // Without a price the card says it once, on the button; an unknown stock status is not repeated either.
     const statusMarkup = hasPrice || status === "in_stock" || status === "out_of_stock"

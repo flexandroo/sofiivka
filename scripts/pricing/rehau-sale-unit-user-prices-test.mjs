@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import {makeSaleUnitPricePlan,saleUnitPriceChunkSql} from './rehau-sale-unit-user-prices.mjs';
+import {convertAsQuotedToUah} from './currency-pricing-policy.mjs';
+const dir='imports/rehau-pipe-prices-2026-11-26/';
+const pipes=JSON.parse(await fs.readFile(dir+'reviewed-per-metre-pipe-aliases.json'));
+const caps=JSON.parse(await fs.readFile(dir+'reviewed-additional-endcap-aliases.json'));
+const aliases=[...pipes,...caps];assert.equal(pipes.length,129);assert.equal(caps.length,11);
+const parsed=JSON.parse(await fs.readFile('imports/overnight-prices/parsed-rows.json'));
+const policy=JSON.parse(await fs.readFile('imports/rehau-prices-2026-11-26/price-policy-reference.json'));
+// Pure fixture only: project the separately authorized unit repair; hosted references are exported by the parent afterward.
+const reference=JSON.parse(await fs.readFile('imports/rehau-prices-2026-11-26/catalog-reference.json'));
+const prepared=new Map(aliases.map(alias=>[alias.catalogSku,alias.expectedSaleUnit]));
+reference.columns.push('saleUnit');for(const row of reference.rows)row.push(prepared.get(row[reference.columns.indexOf('sku')])??'piece');
+const result=makeSaleUnitPricePlan({reference,policy,parsed,aliases});assert.equal(result.items.length,140);assert.equal(result.summary.perMetre,129);assert.equal(result.summary.pieceEndcaps,11);
+assert.ok(result.items.every(item=>item.after.amount===convertAsQuotedToUah(item.afterSource.baseAmount,'EUR',policy)&&item.afterSource.vatIncluded===null&&item.provenance.quantityOrPackConversionApplied===false));
+const changedStock=structuredClone(parsed);for(const quote of changedStock.quotes)quote.sourceStockQuantity='999999';
+const stockResult=makeSaleUnitPricePlan({reference,policy,parsed:changedStock,aliases});assert.deepEqual(stockResult.items.map(i=>i.after),result.items.map(i=>i.after),'Source stock/bundle quantity is not a price multiplier');
+const duplicate=[...aliases,aliases[0],aliases[0]];assert.throws(()=>makeSaleUnitPricePlan({reference,policy,parsed,aliases:duplicate}),/multiple rows/);
+const unprepared=structuredClone(reference),saleIndex=unprepared.columns.indexOf('saleUnit'),skuIndex=unprepared.columns.indexOf('sku');unprepared.rows.find(row=>row[skuIndex]===pipes[0].catalogSku)[saleIndex]='piece';
+assert.ok(makeSaleUnitPricePlan({reference:unprepared,policy,parsed,aliases}).coverage.some(row=>row.catalogSku===pipes[0].catalogSku&&row.blockers.includes('sale_unit_not_prepared')));
+const sample=result.items.slice(0,3),options={sourceRef:'sale-unit-qa/apply/001',jobId:'sale-unit-qa',planSha256:'0'.repeat(64),policy,productCount:reference.rows.length,activeVersion:'ae5db3f38bc5df72c2d0ea11bf95eefaf589867ff011bfa82dd17e1f3805e564'};
+const sql=saleUnitPriceChunkSql(sample,options);assert.equal(sql.split('do $rehau_sale_unit_guard$').length-1,2);assert.equal(sql.split('perform public._admin_refresh_catalog(').length-1,1);
+assert.ok(sql.indexOf('do $rehau_sale_unit_guard$')<sql.indexOf('do $user_price_chunk$'));
+assert.ok(sql.lastIndexOf('do $rehau_sale_unit_guard$')<sql.indexOf('\ncommit;'));
+assert.ok(sql.includes('for update of p')&&sql.includes("'{pricing,unit}'"));
+console.log(JSON.stringify({status:'PASS',suite:'rehau-sale-unit-price-policy',perMetre:129,pieceEndcaps:11,quotedAmountNotScaledByStockOrLength:true,explicitUnitsOnly:true,mixedUnitsGuardedInSameTransaction:true,oneCacheRefresh:true,hostedConnections:0}));
