@@ -1,5 +1,7 @@
 # TD Sofiivka — Project Design Rules
 
+> Start with `docs/HANDOFF.md`: stack, environments, the owner's rules (pricing, «пуш», imports) and where work stopped.
+
 ## Product positioning
 
 TD Sofiivka is a comprehensive engineering supplier and contractor.
