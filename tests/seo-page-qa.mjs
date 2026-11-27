@@ -215,7 +215,7 @@ assert.match(html, /id="schema-organization"/);
 assert.equal([...applyToShell(html, page).matchAll(/id="schema-product"/g)].length, 1);
 
 // HTTP behaviour of the handler.
-async function request(query, { apiFails = false, url = "/api/seo-page" } = {}) {
+async function request(query, { apiFails = false, url = "/api/seo-page", foundProduct = null } = {}) {
   resetMemory();
   const fetchImpl = async target => {
     const address = String(target);
@@ -223,7 +223,7 @@ async function request(query, { apiFails = false, url = "/api/seo-page" } = {}) 
       if (apiFails) return new Response("down", { status: 500 });
       const name = address.split("/").pop();
       if (name === "get_catalog_bootstrap") return Response.json(bootstrap);
-      if (name === "get_catalog_product_by_slug" || name === "get_catalog_product") return Response.json(null);
+      if (name === "get_catalog_product_by_slug" || name === "get_catalog_product") return Response.json(foundProduct ? { product: foundProduct } : null);
       return Response.json({ products: [], total: 0 });
     }
     return new Response(address.endsWith("/404.html") ? '<body data-page="not-found"><div data-page-root></div>' : shell, { status: address.endsWith("/404.html") ? 404 : 200 });
@@ -244,6 +244,13 @@ const missing = await request({ kind: "product", slug: "none" });
 assert.equal(missing.status, 404, "an unknown product answers 404");
 assert.match(missing.body, /data-page="not-found"/);
 assert.match(missing.headers["cache-control"], /s-maxage=60/);
+
+const legacyProduct = await request({ kind: "product", id: "P-1" }, {
+  url: "/api/seo-page?kind=product&id=P-1&legacyId=P-1&utm_source=qa",
+  foundProduct: product
+});
+assert.equal(legacyProduct.status, 301);
+assert.equal(legacyProduct.headers.location, "/product/kotel-1?utm_source=qa");
 
 const failed = await request({ kind: "product", slug: "kotel-1" }, { apiFails: true });
 assert.equal(failed.status, 503, "a temporary API failure is retryable");

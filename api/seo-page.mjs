@@ -508,6 +508,8 @@ export default async function handler(req, res, { fetchImpl = fetch, env = proce
   requestUrl.searchParams.delete("path");
   requestUrl.searchParams.delete("postKind");
   requestUrl.searchParams.delete("legacyPath");
+  requestUrl.searchParams.delete("legacyId");
+  requestUrl.searchParams.delete("legacyBrand");
   requestUrl.searchParams.delete("legacySection");
   requestUrl.searchParams.delete("legacyType");
   if (legacySection) requestUrl.searchParams.delete("category");

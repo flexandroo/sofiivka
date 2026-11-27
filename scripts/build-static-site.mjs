@@ -91,7 +91,8 @@ let removedFeedTags = 0;
 const siteUrl = resolveSiteUrl();
 // Pages whose content depends on the address (one template for many products, brands, posts, catalogue
 // sections) or that are private get the site-wide preview; the rest get their own title, description and URL.
-const templatePages = new Set(["404", "account", "brand", "cart", "checkout", "compare", "favorites", "post", "product", "search"]);
+const templatePages = new Set(["404", "brand", "post", "product"]);
+const servicePages = new Set(["account", "cart", "checkout", "compare", "favorites", "search"]);
 const siteTitle = "ТД «Софіївка» — опалення, водопостачання, водопідготовка";
 const attribute = value => String(value).replace(/&(?!#?\w+;)/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 for (const entry of await fs.readdir(outputDirectory, { withFileTypes: true })) {
@@ -126,7 +127,9 @@ for (const entry of await fs.readdir(outputDirectory, { withFileTypes: true })) 
   if (!templatePages.has(pageName)) {
     html = html.replace(/<link\b[^>]*\brel=["']canonical["'][^>]*>/gi, "")
       .replace(/<\/head>/i, `<link rel="canonical" href="${canonical}"></head>`);
-  } else if (!/<meta\b(?=[^>]*\bname=["']robots["'])(?=[^>]*\bcontent=["'][^"']*\bnoindex\b)[^>]*>/i.test(html)) {
+  }
+  if ((templatePages.has(pageName) || servicePages.has(pageName))
+    && !/<meta\b(?=[^>]*\bname=["']robots["'])(?=[^>]*\bcontent=["'][^"']*\bnoindex\b)[^>]*>/i.test(html)) {
     html = html.replace(/<meta\b[^>]*\bname=["']robots["'][^>]*>/gi, "");
     html = html.replace(/<\/head>/i, '<meta name="robots" content="noindex,follow"></head>');
   }

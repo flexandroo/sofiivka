@@ -50,9 +50,9 @@ try {
   resetMemory();
   let bootstrapCalls = 0, productCalls = 0;
   const shared = deferred();
-  const rpc = async name => {
+  const rpc = async (name, body) => {
     if (name === "get_catalog_bootstrap") { bootstrapCalls++; return shared.promise; }
-    if (name === "get_catalog_product_by_slug") { productCalls++; return { product }; }
+    if (name === "get_catalog_product_by_slug") { productCalls++; return { product: { ...product, slug: body.product_slug } }; }
     return null;
   };
   const pageOne = resolvePage({ kind: "product", slug: "one", rpc, origin: "https://shop.test", now: 1000 });
@@ -108,8 +108,8 @@ try {
   fallbackShell.resolve(new Response(shell));
   await fallback;
   assert.equal(shellCalls, 1);
-  assert.equal(fallbackResponse.statusCode, 200);
-  assert.match(fallbackResponse.headers["cache-control"], /s-maxage=30/);
+  assert.equal(fallbackResponse.statusCode, 503);
+  assert.equal(fallbackResponse.headers["cache-control"], "no-store");
   cases++;
 
   // The previous shell retry remains available if the first shell fetch itself fails.
@@ -123,8 +123,8 @@ try {
     return new Response(shell);
   } });
   assert.equal(shellAttempts, 2);
-  assert.equal(retryResponse.statusCode, 200);
-  assert.match(retryResponse.headers["cache-control"], /s-maxage=30/);
+  assert.equal(retryResponse.statusCode, 503);
+  assert.equal(retryResponse.headers["cache-control"], "no-store");
   cases++;
 
   const config = JSON.parse(await fs.readFile(new URL("../../vercel.json", import.meta.url), "utf8"));
