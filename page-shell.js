@@ -218,17 +218,27 @@
   function catalogFailureMarkup() {
     return `<section class="page-section"><div class="container"><div class="catalog-empty" role="alert"><span aria-hidden="true">!</span><h1>Каталог тимчасово недоступний</h1><p>Не вдалося завантажити каталог. Оновіть сторінку або зателефонуйте нам: <a href="tel:+380503582284">+38 (050) 358-22-84</a>.</p><button class="button button--primary" type="button" onclick="location.reload()">Спробувати ще раз</button></div></div></section>`;
   }
-  function money(value) { return new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 0 }).format(Math.round(Number(value) || 0)) + " грн"; }
+  function money(value) { return new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 2 }).format(Number(value) || 0) + " грн"; }
   function productCountLabel(count) { const value = Math.abs(Number(count) || 0); const ending = value % 10 === 1 && value % 100 !== 11 ? "товар" : [2, 3, 4].includes(value % 10) && ![12, 13, 14].includes(value % 100) ? "товари" : "товарів"; return `${value} ${ending}`; }
-  function setNoindex() { let meta = document.querySelector('meta[name="robots"]'); if (!meta) { meta = document.createElement("meta"); meta.name = "robots"; document.head.append(meta); } meta.content = "noindex, follow"; document.querySelector('link[rel="canonical"]')?.remove(); }
-  function setCanonical(path) { let link = document.querySelector('link[rel="canonical"]'); if (!link) { link = document.createElement("link"); link.rel = "canonical"; document.head.append(link); } link.href = `https://sofievka.vercel.app${path}`; }
+  function setNoindex() { if (document.head.hasAttribute?.("data-seo-rendered")) return; let meta = document.querySelector('meta[name="robots"]'); if (!meta) { meta = document.createElement("meta"); meta.name = "robots"; document.head.append(meta); } meta.content = "noindex, follow"; document.querySelector('link[rel="canonical"]')?.remove(); }
+  function setCanonical(path) { if (document.head.hasAttribute?.("data-seo-rendered")) return; let link = document.querySelector('link[rel="canonical"]'); if (!link) { link = document.createElement("link"); link.rel = "canonical"; document.head.append(link); } link.href = `https://sofievka.vercel.app${path}`; }
   // cart(), favorites() and compareSelection() list only products this page has loaded; every change starts
   // from the whole saved value (savedCart/savedList), so a product the page has not loaded is never dropped.
   function savedCart() { try { const value = JSON.parse(localStorage.getItem("sofievka-cart")); return value && typeof value === "object" && !Array.isArray(value) ? value : {}; } catch { return {}; } }
   function savedList(key) { try { const value = JSON.parse(localStorage.getItem(key)); return Array.isArray(value) ? value : []; } catch { return []; } }
   function cart() { return Object.fromEntries(Object.entries(savedCart()).filter(([id, quantity]) => productById(id) && Number(quantity) > 0).map(([id, quantity]) => [id, salesUnits.wholeQuantity(quantity)])); }
   function saveCart(value) { localStorage.setItem("sofievka-cart", JSON.stringify(value)); updateCounts(); }
-  function setCartQuantity(id, quantity) { const value = savedCart(); if (quantity > 0) value[id] = salesUnits.wholeQuantity(quantity); else delete value[id]; saveCart(value); }
+  function trackCartChange(id, delta) {
+    if (!delta) return;
+    window.sofievkaSiteSettings?.trackCommerce?.(delta > 0 ? "add_to_cart" : "remove_from_cart", [{ product: productById(id), quantity: Math.abs(delta) }]);
+  }
+  function setCartQuantity(id, quantity) {
+    const value = savedCart();
+    const previous = Number(value[id]) || 0;
+    if (quantity > 0) value[id] = salesUnits.wholeQuantity(quantity); else delete value[id];
+    saveCart(value);
+    trackCartChange(id, (value[id] || 0) - previous);
+  }
   function favorites() { return savedList("sofievka-favorites").filter(id => productById(id)); }
   function saveFavorites(value) { localStorage.setItem("sofievka-favorites", JSON.stringify(value)); updateCounts(); }
   function productById(id) { return SCOPED_PRODUCT_CACHE.get(id) || PRODUCTS.find(item => item.id === id) || null; }
@@ -272,7 +282,7 @@
     if (value.length >= 4) { toast("У порівнянні вже 4 товари"); return false; }
     saveCompare([...value, id]); toast("Додано до порівняння", { href: "/compare", label: `Порівняти (${value.length + 1})` }); return true;
   }
-  function addToCart(id, qty = 1) { const value = savedCart(); value[id] = salesUnits.wholeQuantity((Number(value[id]) || 0) + salesUnits.wholeQuantity(qty)); saveCart(value); toast("Товар додано до кошика", { href: "/cart", label: "Перейти до кошика" }); }
+  function addToCart(id, qty = 1) { setCartQuantity(id, (Number(savedCart()[id]) || 0) + salesUnits.wholeQuantity(qty)); toast("Товар додано до кошика", { href: "/cart", label: "Перейти до кошика" }); }
   function toggleFavorite(id) { const saved = savedList("sofievka-favorites"); const active = !saved.includes(id); saveFavorites(active ? [...saved, id] : saved.filter(item => item !== id)); toast(active ? "Додано в обране" : "Видалено з обраного"); return active; }
   // link: { href, label } opens a page, { action, label } runs a function (e.g. «Повернути» after a removal).
   function toast(message, link) { const el = document.querySelector("[data-page-toast]"); if (!el) return; el.textContent = message; if (link) { const control = document.createElement(link.action ? "button" : "a"); if (link.action) { control.type = "button"; control.addEventListener("click", () => { el.classList.remove("is-visible"); link.action(); }, { once: true }); } else control.href = link.href; control.textContent = link.label; el.append(" ", control); } el.classList.add("is-visible"); clearTimeout(window.pageToast); window.pageToast = setTimeout(() => el.classList.remove("is-visible"), link ? 4500 : 2400); }
@@ -432,6 +442,7 @@
         const entries = Object.entries(savedCart()).filter(([entryId]) => entryId !== id);
         entries.splice(Math.max(0, Math.min(savedPosition, entries.length)), 0, [id, quantity]);
         saveCart(Object.fromEntries(entries));
+        trackCartChange(id, quantity);
         render();
         view.querySelector(`[data-remove="${CSS.escape(id)}"]`)?.focus();
       } });
@@ -523,6 +534,7 @@
   function bindCheckout(){
     const form=document.querySelector("[data-checkout]");
     if(!form) return;
+    window.sofievkaSiteSettings?.trackCommerce?.("begin_checkout", Object.entries(cart()).map(([id, quantity]) => ({ product: productById(id), quantity })));
     const carrierFields=form.querySelector("[data-carrier-fields]");
     const pickupFields=form.querySelector("[data-pickup-fields]");
     // With a carrier the city is required (AUD-061); hidden fields are never required.
@@ -564,6 +576,7 @@
           comment:data.get("comment"), website:data.get("website"), items,
           ...(checkoutPromo?{ promoCode:checkoutPromo.code }:{})
         });
+        window.sofievkaSiteSettings?.trackCommerce?.("purchase", items.map(({ id, quantity }) => ({ product: productById(id), quantity })), result);
         saveCart({});
         checkoutPromo=null;
         const container=form.closest(".checkout-layout");
@@ -1415,18 +1428,21 @@
   function renderProductMaster() {
     const id = currentProductId();
     const product = productById(id);
+    const serverSeo = document.head.hasAttribute?.("data-seo-rendered");
     if (!product) {
-      document.title = "Товар не знайдено | ТД «Софіївка»";
+      if (!serverSeo) document.title = "Товар не знайдено | ТД «Софіївка»";
       setNoindex();
       window.sofievkaProductSchema = null;
       return `<section class="pdp-missing"><div class="container">${crumbs("Товар не знайдено")}<span class="pdp-missing__code">404</span><h1>Товар не знайдено</h1><p>${id || productPathSlug() ? "Товару за цим посиланням немає в каталозі. Можливо, його прибрали або перейменували." : "У посиланні немає ідентифікатора товару."}</p><div><a class="button button--primary" href="/catalog">До каталогу</a><button class="text-link pdp-back" type="button" data-history-back>← Повернутися назад</button></div></div></section>`;
     }
-    document.title = shortSeoTitle(product.seo?.title || product.seoTitle || `${product.title} | ТД «Софіївка»`);
-    const metaDescription = document.querySelector('meta[name="description"]');
-    const productDescription = product.seo?.description || product.seoDescription;
-    if (metaDescription && productDescription) metaDescription.setAttribute("content", productDescription);
     const canonicalPath = productUrl(product);
-    setCanonical(canonicalPath);
+    if (!serverSeo) {
+      document.title = shortSeoTitle(product.seo?.title || product.seoTitle || `${product.title} | ТД «Софіївка»`);
+      const metaDescription = document.querySelector('meta[name="description"]');
+      const productDescription = product.seo?.description || product.seoDescription;
+      if (metaDescription && productDescription) metaDescription.setAttribute("content", productDescription);
+      setCanonical(canonicalPath);
+    }
     if (product.slug && location.pathname !== canonicalPath) {
       const params = new URLSearchParams(location.search);
       params.delete("id");
@@ -1434,8 +1450,10 @@
       history.replaceState(history.state, "", `${canonicalPath}${query ? `?${query}` : ""}${location.hash}`);
     }
     const view = createPdpViewModel(product);
-    window.sofievkaProductSchema = productSchema(product, view, canonicalPath);
-    window.dispatchEvent(new Event("sofievka:product-schema"));
+    if (!serverSeo) {
+      window.sofievkaProductSchema = productSchema(product, view, canonicalPath);
+      window.dispatchEvent(new Event("sofievka:product-schema"));
+    }
     const specificationCount = view.groups.reduce((total, group) => total + group.items.length, 0);
     const navItems = [
       ...(view.description ? [["overview", "Опис"]] : []),
@@ -1466,6 +1484,7 @@
     const pick = (...values) => values.find(value => value !== undefined && value !== null && String(value).trim() !== "");
     const positive = value => Number(value) > 0 ? Number(value) : undefined;
     const price = pick(positive(view.purchase?.amount), positive(product.price), positive(product.pricing?.amount), positive(adapted.price));
+    if (!price) return null;
     const status = pick(view.purchase?.status, product.availability, product.inventory?.status, adapted.availability);
     const availability = { in_stock: "InStock", out_of_stock: "OutOfStock", preorder: "PreOrder", discontinued: "Discontinued" }[status];
     const brand = pick(product.brand, adapted.brand, CATALOG?.brands?.find?.(item => item.id === product.brandId)?.name);
@@ -1755,7 +1774,7 @@
     const solutions = [
       ["heating-house", "/assets/images/solution-boiler-room.webp", "Котельня приватного будинку", "Обладнання для опалення й гарячої води, підібране під площу будинку та тип палива.", ["Котел або тепловий насос", "Бойлер чи буферна ємність", "Насосні групи й колектори", "Автоматика та група безпеки"], "/catalog/heating", "До каталогу опалення"],
       ["water-supply", "/assets/images/hero-water.webp", "Вода зі свердловини", "Стабільний тиск води в будинку від свердловини або колодязя.", ["Свердловинний чи поверхневий насос", "Гідроакумулятор і автоматика", "Запірна арматура", "Захист від сухого ходу"], "/catalog/water-supply", "До каталогу водопостачання"],
-      ["water-treatment", "/assets/images/home-hero-ecosoft-water-v1.jpg", "Чиста вода в домі", "Очищення від заліза, жорсткості й механічних домішок за результатами аналізу води.", ["Магістральні фільтри", "Пом’якшення та знезалізнення", "Зворотний осмос для питної води", "Картриджі й завантаження"], "/catalog/water-treatment", "До каталогу водопідготовки"],
+      ["water-treatment", "/assets/images/home-hero-ecosoft-water-v1.webp", "Чиста вода в домі", "Очищення від заліза, жорсткості й механічних домішок за результатами аналізу води.", ["Магістральні фільтри", "Пом’якшення та знезалізнення", "Зворотний осмос для питної води", "Картриджі й завантаження"], "/catalog/water-treatment", "До каталогу водопідготовки"],
       ["sewerage", "/assets/products/grundfos/97519841-main.webp", "Каналізація та дренаж", "Відведення стоків і ґрунтових вод там, де самопливом не вийде: підвал, котельня, санвузол нижче рівня каналізації.", ["Дренажні насоси", "Каналізаційні та фекальні насоси", "Каналізаційні установки", "Зворотні клапани й монтажні комплекти"], "/catalog/sewerage", "До каталогу каналізації", "co-photo--product"],
       ["smart-home", "/assets/images/home-hero-termojet-automation-v1.jpg", "Розумний будинок", "Світло, опалення, ролети й датчики безпеки в одній системі керування.", ["Центральний блок і панелі керування", "Освітлення, вимикачі й димери", "Керування ролетами та жалюзі", "Датчики, захист від протікання й терморегуляція"], "/catalog/smart-home", "До каталогу розумного будинку"],
       ["climate", "/assets/images/hero-climate.webp", "Клімат у приміщенні", "Охолодження й обігрів для квартири, будинку чи офісу.", ["Кондиціонери", "Вентиляція", "Монтажні комплекти", "Сервіс після запуску"], "/catalog/climate", "До каталогу клімату"]
@@ -1986,6 +2005,8 @@
     }
     if (name === "product") {
       const id = currentProductId();
+      const viewedProduct = productById(id);
+      if (viewedProduct) window.sofievkaSiteSettings?.trackCommerce?.("view_item", [{ product: viewedProduct }]);
       bindPdpProductRails();
       if (id && productById(id)) { let viewed = []; try { viewed = JSON.parse(localStorage.getItem("sofievka-viewed")) || []; } catch {} localStorage.setItem("sofievka-viewed", JSON.stringify([id, ...(Array.isArray(viewed) ? viewed : []).filter(item => item !== id)].slice(0, VIEWED_HISTORY_LIMIT))); }
       const galleryMain = document.querySelector("[data-gallery-main]");

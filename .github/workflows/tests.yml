@@ -24,6 +24,7 @@ jobs:
         run: |
           node tests/seo-page-qa.mjs
           node tests/seo-qa.mjs
+          node tests/merchant-feed-qa.mjs
           node tests/pages-qa.mjs
           node tests/blog-qa.mjs
           node tests/menus-qa.mjs

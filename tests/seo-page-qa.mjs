@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import handler, { applyToShell, createTaxonomy, displaySku, hasFilterParams, productGtin, renderBrand, renderCategory, renderProduct, resetMemory, resolvePage, shortSeoTitle } from "../api/seo-page.mjs";
+import legacyCatalogRouting from "../catalog/routing.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = relative => fs.readFileSync(path.join(root, relative), "utf8");
@@ -73,7 +74,7 @@ assert.equal(schema.brand.name, "Wilo");
     assert.deepEqual(other.schemas["schema-product"].offers,schema.offers);
   }
   const unknown=renderProduct({product:{...product,pricing:{amount:null,priceStatus:"unknown",unit:"m"}},bootstrap,origin});
-  assert.equal(unknown.schemas["schema-product"].offers,undefined);
+  assert.equal(unknown.schemas["schema-product"],undefined);
 }
 const crumbs = JSON.parse(/id="schema-breadcrumbs">(.*?)<\/script>/.exec(html)[1]);
 assert.deepEqual(crumbs.itemListElement.map(item => item.name).slice(0, 4), ["Головна", "Каталог", "Опалення", "Котли"]);
@@ -111,13 +112,13 @@ assert.deepEqual(crumbs.itemListElement.map(item => item.name).slice(0, 4), ["Г
   for (const originalTag of attributeVariants.split("\n")) assert.ok(!variantsHtml.includes(originalTag), `stale tag removed: ${originalTag}`);
 
   const categoryPage = renderCategory({ category: categories[0], bootstrap, origin });
-  assert.equal(categoryPage.image, "");
+  assert.equal(categoryPage.image, "/assets/images/og-category-heating.jpg");
   const categoryHtml = applyToShell(compiledShell, categoryPage);
   const categorySocial = social(categoryHtml);
-  assert.equal(categorySocial.length, expected.length);
+  assert.equal(categorySocial.length, expected.length + 2);
   for (const [name, content] of [["og:title", categoryPage.title], ["og:description", categoryPage.description],
     ["og:type", "website"], ["og:url", categoryPage.canonical], ["og:locale", "uk_UA"],
-    ["og:image", "https://shop.test/assets/og-image.jpg"], ["twitter:card", "summary_large_image"]]) {
+    ["og:image", "https://shop.test/assets/images/og-category-heating.jpg"], ["twitter:card", "summary_large_image"]]) {
     assert.deepEqual(categorySocial.filter(([key]) => key === name), [[name, content]], `${name}: category uses its own metadata and company image`);
   }
   assert.deepEqual(social(applyToShell(rendered, categoryPage)), categorySocial,
@@ -148,7 +149,7 @@ assert.deepEqual(crumbs.itemListElement.map(item => item.name).slice(0, 4), ["Г
 
 // A product on request has no price in the schema or the page.
 const onRequest = renderProduct({ product: { ...product, pricing: { amount: null, priceStatus: "on_request" }, inventory: { status: "unknown" } }, bootstrap, origin });
-assert.equal(onRequest.schemas["schema-product"].offers, undefined);
+assert.equal(onRequest.schemas["schema-product"], undefined);
 assert.match(onRequest.body, /Ціну уточнюйте/);
 assert.match(onRequest.body, /Наявність уточнюйте/);
 
@@ -180,21 +181,38 @@ assert.equal((await resolve({ kind: "catalog", path: "heating/boilers" })).page.
 assert.equal((await resolve({ kind: "catalog", path: "heating/boilers", search: "?brand=wilo" })).page.robots, "noindex,follow");
 assert.equal((await resolve({ kind: "catalog", path: "heating/empty" })).page.robots, "noindex,follow");
 assert.match((await resolve({ kind: "catalog", path: "heating" })).page.body, /href="\/catalog\/heating\/boilers"/);
-assert.equal((await resolve({ kind: "catalog", path: "heating/gas-boilers" })).plainShell, true, "old addresses still resolve in the browser");
-assert.equal((await resolve({ kind: "catalog", path: "water-supply/water-treatment/anything" })).plainShell, true);
-assert.equal((await resolve({ kind: "catalog", path: ":path+" })).plainShell, true, "an unsubstituted rewrite is not a 404");
-assert.equal((await resolve({ kind: "catalog" })).plainShell, true);
+assert.equal((await resolve({ kind: "catalog", path: "water-supply/water-treatment/anything" })).missing, true);
+assert.equal((await resolve({ kind: "catalog", path: ":path+" })).missing, true);
+assert.equal((await resolve({ kind: "catalog" })).missing, true);
 assert.equal((await resolve({ kind: "brand", slug: "none" })).missing, true);
 assert.equal((await resolve({ kind: "brand", slug: "wilo" })).page.robots, "index,follow");
 assert.equal((await resolve({ kind: "brand", slug: "ghost" })).page.robots, "noindex,follow", "a brand without products stays out of the index");
 
-// Every old address catalog/routing.js resolves must not answer 404.
-const legacyInRouting = [...read("catalog/routing.js").matchAll(/"(\/catalog\/[^"]+)":\s*"/g)].map(match => match[1]);
+// All known aliases follow live category IDs, while a path that is canonical today still serves a page.
+const legacyInRouting = Object.entries(legacyCatalogRouting.legacyCategoryPaths);
+const relocated = [...new Set(legacyInRouting.map(([, id]) => id))].map(id => ({ id, slug: id, parentId: "heating", status: "active", visibility: "catalog" }));
+const legacyBootstrap = { ...bootstrap, categories: [...categories, ...relocated] };
 assert.ok(legacyInRouting.length > 20);
-for (const legacy of legacyInRouting) {
-  const result = await resolve({ kind: "catalog", path: legacy.slice("/catalog/".length) });
-  assert.notEqual(result.missing, true, `${legacy} answers 404`);
+for (const [legacy, id] of legacyInRouting) {
+  const result = await resolve({ kind: "catalog", path: legacy.slice("/catalog/".length), search: "?utm_source=test" }, {
+    get_catalog_bootstrap: () => legacyBootstrap
+  });
+  const canonical = `/catalog/heating/${id}`;
+  if (legacy === canonical) assert.equal(result.page.canonical, `${origin}${canonical}`);
+  else assert.equal(result.redirect, `${canonical}?utm_source=test`, legacy);
 }
+const landing = await resolve({ kind: "catalog", path: "heating" }, {
+  get_catalog_products: args => ({
+    total: 1,
+    products: [{ ...product, pricing: { ...product.pricing, amount: args.sort_mode === "price-asc" ? 289.5 : 1500 } }]
+  })
+});
+assert.match(landing.page.title, /від 289,5 грн/);
+assert.match(landing.page.body, /<details class="faq-item">/);
+assert.equal(landing.page.schemas["schema-faq"].mainEntity.length, 1);
+assert.equal(landing.page.schemas["schema-collection"].mainEntity.itemListElement[0].url, `${origin}/product/kotel-1`);
+assert.match(html, /id="schema-organization"/);
+assert.equal([...applyToShell(html, page).matchAll(/id="schema-product"/g)].length, 1);
 
 // HTTP behaviour of the handler.
 async function request(query, { apiFails = false, url = "/api/seo-page" } = {}) {
@@ -228,8 +246,9 @@ assert.match(missing.body, /data-page="not-found"/);
 assert.match(missing.headers["cache-control"], /s-maxage=60/);
 
 const failed = await request({ kind: "product", slug: "kotel-1" }, { apiFails: true });
-assert.equal(failed.status, 200, "an API failure is not a 404");
-assert.match(failed.headers["cache-control"], /s-maxage=30/);
+assert.equal(failed.status, 503, "a temporary API failure is retryable");
+assert.equal(failed.headers["cache-control"], "no-store");
+assert.equal(failed.headers["retry-after"], "60");
 assert.match(failed.body, /<div data-page-root><\/div>/, "an API failure serves the plain shell");
 
 const category = await request({ kind: "catalog", path: "heating/boilers" });
@@ -242,7 +261,7 @@ assert.match(multiSegment.body, /<h1>Котли<\/h1>/, "a path given as segment
 
 // Routing config.
 const vercel = JSON.parse(read("vercel.json"));
-const destination = source => vercel.rewrites.find(rule => rule.source === source)?.destination;
+const destination = source => vercel.rewrites.find(rule => rule.source === source && !rule.has)?.destination;
 assert.equal(destination("/product/:slug"), "/api/seo-page?kind=product&slug=:slug");
 assert.equal(destination("/brands/:slug"), "/api/seo-page?kind=brand&slug=:slug");
 assert.equal(destination("/catalog/:path(.+)"), "/api/seo-page?kind=catalog&path=:path");

@@ -53,6 +53,12 @@ function subjectText(value: unknown, max = 80) {
   return clip(String(value ?? "").replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " "), max);
 }
 
+function campaignText(utm: Record<string, unknown> | null | undefined) {
+  const fields = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
+  const values = fields.flatMap(key => utm?.[key] ? [`${key.slice(4)}=${html(clip(utm[key], 150))}`] : []);
+  return values.length ? `UTM: ${values.join(" · ")}` : "";
+}
+
 type Service = ReturnType<typeof createClient>;
 // body: Telegram-flavoured HTML (<b>, <a href>, newlines), every customer value already escaped.
 type Message = { subject: string; body: string };
@@ -78,6 +84,7 @@ async function orderMessage(service: Service, number: number, base: string): Pro
       discount > 0 ? `Промокод: ${html(order.promo_code)} · знижка ${html(money(discount))}` : "",
       `Отримання: ${delivery}`,
       order.customer_comment ? `Коментар: ${html(clip(order.customer_comment))}` : "",
+      campaignText(order.utm),
       `<a href="${html(`${base}/admin/orders/${order.number}`)}">Відкрити в адмінці</a>`
     ].filter(Boolean).join("\n")
   };
@@ -85,7 +92,7 @@ async function orderMessage(service: Service, number: number, base: string): Pro
 
 async function leadMessage(service: Service, number: number, base: string): Promise<Message> {
   const { data: lead, error } = await service.from("crm_leads")
-    .select("number, type, contact_name, contact_phone, contact_email, company, subject, message, page_url")
+    .select("number, type, contact_name, contact_phone, contact_email, company, subject, message, page_url, utm")
     .eq("number", number).maybeSingle();
   if (error) throw new Error(`Не вдалося прочитати заявку: ${error.message}`);
   if (!lead) throw new Error(`Заявку №${number} не знайдено.`);
@@ -97,6 +104,7 @@ async function leadMessage(service: Service, number: number, base: string): Prom
       lead.company ? `Компанія: ${html(lead.company)}` : "",
       lead.subject ? `Тема: ${html(clip(lead.subject, 200))}` : "",
       lead.message ? `Повідомлення: ${html(clip(lead.message))}` : "",
+      campaignText(lead.utm),
       `<a href="${html(`${base}/admin/leads/${lead.number}`)}">Відкрити в адмінці</a>`
     ].filter(Boolean).join("\n")
   };

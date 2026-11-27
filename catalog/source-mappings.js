@@ -293,7 +293,7 @@
     return Object.freeze({ ...configured, supplier, sourceCategory, categoryId });
   }
 
-  window.sofievkaSourceMappings = Object.freeze({
+  const sourceMappings = Object.freeze({
     suppliers,
     categoryMappings,
     supplierLabelMappings,
@@ -303,4 +303,6 @@
     sourceCategoryFor,
     resolve
   });
+  if (typeof module !== "undefined" && module.exports) module.exports = sourceMappings;
+  else window.sofievkaSourceMappings = sourceMappings;
 })();

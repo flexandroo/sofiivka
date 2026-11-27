@@ -1,8 +1,11 @@
 // Checks the live site after a deploy, over plain HTTP: what a crawler and a link preview receive. It reads the public
 // catalogue API, then compares every page with it, so an address that answers 200 with the wrong content fails too.
 // It only reads. Run: node tests/live-smoke.mjs  (SMOKE_BASE_URL overrides the address).
+import { productPath } from "../lib/catalog-seo-source.mjs";
+
 const BASE = String(process.env.SMOKE_BASE_URL || "https://sofievka.vercel.app").replace(/\/+$/, "");
 const MAX_PRICE_RUN_AGE_DAYS = 5;
+const MAX_SITEMAP_DRIFT = 0.05;
 const failures = [];
 let checks = 0;
 
@@ -20,12 +23,15 @@ const pick = (html, pattern) => decode(pattern.exec(html)?.[1] ?? "").trim();
 const fresh = path => `${BASE}${path}${path.includes("?") ? "&" : "?"}utm_source=live-smoke-${Date.now()}`;
 
 async function page(path, options = {}) {
-  const response = await fetch(options.exact ? `${BASE}${path}` : fresh(path), { redirect: "manual", signal: AbortSignal.timeout(20000) });
+  const response = await fetch(options.exact ? `${BASE}${path}` : fresh(path), { redirect: "manual", signal: AbortSignal.timeout(options.timeout ?? 20000) });
   const html = response.status >= 300 && response.status < 400 ? "" : await response.text();
   return {
     path,
     status: response.status,
     location: response.headers.get("location") || "",
+    contentType: response.headers.get("content-type") || "",
+    robotsHeader: response.headers.get("x-robots-tag") || "",
+    strictTransport: response.headers.get("strict-transport-security") || "",
     html,
     h1: pick(html, /<h1[^>]*>([^<]*)/i),
     title: pick(html, /<title[^>]*>([^<]*)/i),
@@ -71,10 +77,20 @@ const ranks = firstPage.products.map(rank);
 check(ranks.every((value, index) => !index || ranks[index - 1] <= value), "products with a price are not listed first");
 
 // Static pages.
+let canonicalOrigin = BASE;
 for (const path of ["/", "/catalog", "/brands", "/contact", "/delivery", "/cart", "/checkout", "/search?q=wilo"]) {
   const result = await page(path);
   check(result.status === 200, `${path}: expected 200, got ${result.status}`);
   check(/Софіївка/.test(result.title), `${path}: not a page of the site, title is "${result.title}"`);
+  if (path === "/") {
+    if (result.canonical) canonicalOrigin = new URL(result.canonical).origin;
+    if (BASE.startsWith("https://")) check(/\bmax-age=[1-9]\d*/.test(result.strictTransport), "/: no HSTS response header");
+  }
+  const pathname = new URL(path, BASE).pathname;
+  check(result.canonical === `${canonicalOrigin}${pathname}`, `${path}: canonical is ${result.canonical}`);
+  if (["/cart", "/checkout", "/search"].includes(pathname)) {
+    check(/\bnoindex\b/.test(result.robots) && /\bnoindex\b/.test(result.robotsHeader), `${path}: the service page needs noindex in the HTML and response`);
+  }
 }
 
 // Categories: each page shows its own heading. A wrong shell once gave every category the same one.
@@ -99,12 +115,18 @@ for (const category of [...sections, ...children]) {
   check(result.robots === "index,follow", `${path}: robots is "${result.robots}"`);
   check(schemaOf(result.html, "schema-breadcrumbs"), `${path}: no breadcrumb data`);
 }
+if (sections[0]) {
+  const path = categoryPath(sections[0]);
+  const filtered = await page(`${path}?min=100`);
+  check(filtered.status === 200 && /\bnoindex\b/.test(filtered.robots) && filtered.canonical === `${canonicalOrigin}${path}`,
+    `${path}: a filtered listing needs noindex and the clean canonical`);
+}
 
 // Products: one with a price, one on request.
 const priced = firstPage.products.find(product => rank(product) === 0);
 const onRequestList = await rpc("get_catalog_products", { scope_brand: "focus", page_size: 1 });
 for (const product of [priced, onRequestList.products?.[0]].filter(Boolean)) {
-  const path = `/product/${encodeURIComponent(product.slug)}`;
+  const path = productPath(product);
   const result = await page(path);
   if (!check(result.status === 200, `${path}: expected 200, got ${result.status}`)) continue;
   check(result.prerendered, `${path}: no server content`);
@@ -113,11 +135,9 @@ for (const product of [priced, onRequestList.products?.[0]].filter(Boolean)) {
   check(result.canonical.endsWith(path), `${path}: canonical is ${result.canonical}`);
   check(/property="og:title"/.test(result.html), `${path}: no link preview data`);
   const schema = schemaOf(result.html, "schema-product");
-  if (check(schema, `${path}: no product data for search engines`)) {
-    const amount = product.pricing?.priceStatus === "known" ? Number(product.pricing.amount) : null;
-    if (amount) check(Number(schema.offers?.price) === amount, `${path}: schema price ${schema.offers?.price}, catalogue price ${amount}`);
-    else check(!schema.offers, `${path}: a product on request has a price in its schema`);
-  }
+  const amount = product.pricing?.priceStatus === "known" ? Number(product.pricing.amount) : null;
+  if (amount > 0) check(Number(schema?.offers?.price) === amount, `${path}: schema price ${schema?.offers?.price}, catalogue price ${amount}`);
+  else check(!schema, `${path}: a product on request has Product structured data without an offer`);
 }
 
 // Brands.
@@ -166,23 +186,75 @@ for (const scope of facetScopes) {
 }
 
 // Unknown addresses are real 404s; old product links lead to the current address.
-for (const path of ["/product/live-smoke-missing", "/catalog/live-smoke-missing", "/brands/live-smoke-missing", "/live-smoke-missing"]) {
+for (const path of ["/product/live-smoke-missing", "/product?id=live-smoke-missing", "/catalog/live-smoke-missing", "/brands/live-smoke-missing", "/blog/live-smoke-missing", "/portfolio/live-smoke-missing", "/live-smoke-missing", "/live-smoke-missing.html", "/live-smoke-missing.xml"]) {
   const result = await page(path);
   check(result.status === 404, `${path}: expected 404, got ${result.status}`);
   check(!result.prerendered, `${path}: a missing page has server content`);
 }
-if (priced && priced.id !== priced.slug) {
-  const result = await page(`/product/${encodeURIComponent(priced.id)}`, { exact: true });
-  check(result.status === 308 && result.location.endsWith(`/product/${encodeURIComponent(priced.slug)}`), `/product/${priced.id}: expected a redirect, got ${result.status} ${result.location}`);
+if (priced?.slug) {
+  const oldPaths = [`/product?id=${encodeURIComponent(priced.id)}&utm_source=live-smoke`, `/products/${encodeURIComponent(priced.slug)}`];
+  if (priced.id !== priced.slug) oldPaths.push(`/product/${encodeURIComponent(priced.id)}`);
+  for (const path of oldPaths) {
+    const result = await page(path, { exact: true });
+    const target = productPath(priced) + (path.includes("utm_source=") ? "?utm_source=live-smoke" : "");
+    check(result.status === 301 && new URL(result.location, BASE).href === new URL(target, BASE).href, `${path}: expected 301 to ${target}, got ${result.status} ${result.location}`);
+  }
 }
-const legacy = await page("/catalog/heating/gas-boilers");
-check(legacy.status === 200, `an old catalogue address answers ${legacy.status}`);
+const gasBoilers = byId.get("gas-boilers");
+if (gasBoilers && visible(gasBoilers)) {
+  const alias = "/catalog/heating/gas-boilers";
+  const target = categoryPath(gasBoilers);
+  const result = await page(alias, { exact: true });
+  check(alias === target ? result.status === 200 : result.status === 301 && new URL(result.location, BASE).pathname === target, `${alias}: expected ${target}, got ${result.status} ${result.location}`);
+}
 
 // Files search engines read.
+const merchant = await page("/google-merchant.xml", { exact: true, timeout: 55000 });
+if (check(merchant.status === 200 && /application\/xml/i.test(merchant.contentType), `Google Merchant: expected XML, got ${merchant.status} ${merchant.contentType}`)) {
+  const offers = [...merchant.html.matchAll(/<item>(.*?)<\/item>/gs)].map(match => ({
+    id: pick(match[1], /<g:id>([^<]+)<\/g:id>/),
+    link: pick(match[1], /<g:link>([^<]+)<\/g:link>/),
+    price: pick(match[1], /<g:sale_price>([^<]+)<\/g:sale_price>/) || pick(match[1], /<g:price>([^<]+)<\/g:price>/)
+  }));
+  check(offers.length > 0 && new Set(offers.map(offer => offer.id)).size === offers.length,
+    "Google Merchant: the feed is empty or has duplicate offer IDs");
+  check(offers.every(offer => offer.id && offer.link.startsWith(`${canonicalOrigin}/product/`) && /^\d+\.\d{2} UAH$/.test(offer.price)),
+    "Google Merchant: invalid offer identity, link or UAH price");
+  const samples = [...new Set([offers[0], offers[Math.floor(offers.length / 2)], offers.at(-1)].filter(Boolean))];
+  await Promise.all(samples.map(async offer => {
+    if (!offer.link.startsWith(`${canonicalOrigin}/product/`)) return;
+    const target = await page(new URL(offer.link).pathname, { exact: true });
+    check(target.status === 200 && target.canonical === offer.link && !/\bnoindex\b/.test(`${target.robots} ${target.robotsHeader}`),
+      `Google Merchant: ${offer.link} is not an indexable canonical page`);
+    const schema = schemaOf(target.html, "schema-product");
+    check(Number(schema?.offers?.price) === parseFloat(offer.price), `Google Merchant: ${offer.id} price differs from the landing page`);
+  }));
+}
 const sitemap = await page("/sitemap.xml", { exact: true });
-check(sitemap.status === 200 && sitemap.html.includes("/product/"), "sitemap.xml has no products");
+check(sitemap.status === 200 && /\b(?:application|text)\/xml\b/i.test(sitemap.contentType), `sitemap.xml: expected XML, got ${sitemap.status} ${sitemap.contentType}`);
+const locs = [...sitemap.html.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => decode(match[1]));
+check(locs.length === new Set(locs).size, "sitemap.xml has duplicate URLs");
+const paths = locs.filter(loc => loc.startsWith(`${canonicalOrigin}/`)).map(loc => loc.slice(canonicalOrigin.length));
+check(locs.length > 0 && paths.length === locs.length, "sitemap.xml lists URLs on the wrong canonical origin");
+check(paths.every(path => !/^\/(admin|cart|checkout|account|search|compare|favorites|brand|post)(?:\/|\?|$)/.test(path)), "sitemap.xml lists service or template routes");
+const productLocs = paths.filter(path => /^\/product(?:\/[^/?]+$|\?id=[^&]+$)/.test(path));
+check(productLocs.length > 0 && Math.abs(productLocs.length - bootstrap.totalProducts) <= Math.ceil(bootstrap.totalProducts * MAX_SITEMAP_DRIFT),
+  `sitemap.xml has ${productLocs.length} products vs ${bootstrap.totalProducts} in the live catalogue`);
+const samples = ["/", "/catalog", "/brands", ...sections.slice(0, 3).map(categoryPath), ...(priced ? [productPath(priced)] : [])];
+for (const [kind, base] of [["article", "/blog"], ["case", "/portfolio"]]) {
+  const published = await rpc("get_site_posts", { post_kind: kind, page_size: 1 });
+  if (published?.posts?.[0]) samples.push(`${base}/${published.posts[0].slug}`);
+}
+for (const path of samples) {
+  const url = `${canonicalOrigin}${path}`;
+  check(locs.includes(url), `${url}: missing from sitemap.xml`);
+  const result = await page(path);
+  check(result.status === 200 && result.canonical === url, `${url}: sitemap destination is ${result.status}, canonical ${result.canonical}`);
+  check(!/\bnoindex\b/.test(`${result.robotsHeader},${result.robots}`), `${url}: the sitemap destination has noindex`);
+  check((result.html.match(/<link\b[^>]*\brel="canonical"/gi) || []).length === 1, `${url}: expected one canonical tag`);
+}
 const robots = await page("/robots.txt", { exact: true });
-check(robots.status === 200 && robots.html.includes("Sitemap:"), "robots.txt has no sitemap");
+check(robots.status === 200 && robots.html.includes(`Sitemap: ${canonicalOrigin}/sitemap.xml`), "robots.txt does not point to the canonical sitemap");
 
 if (failures.length) {
   console.error(`Live site check failed on ${BASE}: ${failures.length} of ${checks}`);

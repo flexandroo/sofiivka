@@ -118,6 +118,7 @@ function renderOrderDetail({ api, detail }) {
             </div>
           </section>
           ${order.customerComment ? `<section class="admin-panel"><header class="admin-panel__head"><div><p class="admin-kicker">КОМЕНТАР КЛІЄНТА</p></div></header><p class="admin-crm-text">${multiline(order.customerComment)}</p></section>` : ""}
+          ${attributionPanel(order.utm)}
           <form class="admin-panel" data-crm-form>
             <header class="admin-panel__head"><div><p class="admin-kicker">ОБРОБКА</p><h2>Статус і доставка</h2></div></header>
             <div class="admin-form-grid">
@@ -704,6 +705,15 @@ function amountInput(value) {
 // CSV export (UTF-8 with BOM, ";" separator — opens directly in Excel with a Ukrainian locale)
 // ---------------------------------------------------------------------------
 const EXPORT_ROW_CAP = 10_000;
+const UTM_FIELDS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
+const UTM_CSV_COLUMNS = UTM_FIELDS.map(key => [key, row => row.utm?.[key]]);
+
+function attributionPanel(utm) {
+  const values = UTM_FIELDS.filter(key => utm?.[key]);
+  if (!values.length) return "";
+  return `<section class="admin-panel"><header class="admin-panel__head"><div><p class="admin-kicker">ДЖЕРЕЛО ПЕРЕХОДУ</p></div></header>${values.map(key => `<p class="admin-crm-text"><code>${key}</code> · ${escape(utm[key])}</p>`).join("")}</section>`;
+}
+
 const ORDER_CSV_COLUMNS = Object.freeze([
   ["№", row => row.number],
   ["Дата", row => csvDate(row.createdAt)],
@@ -724,7 +734,19 @@ const ORDER_CSV_COLUMNS = Object.freeze([
   ["Відповідальний", row => row.assignedTo],
   ["Товари", row => (row.items || []).map(item => `${[item.sku, item.title].filter(Boolean).join(" ")} × ${saleUnits.quantityLabel(item.quantity, item)}${item.unitAmount === null ? " (ціна уточнюється)" : ` по ${csvAmount(item.unitAmount)} грн${saleUnits.code(item) === "m" ? "/м" : ""}`}`).join(" | ")],
   ["Коментар клієнта", row => row.customerComment],
-  ["Коментар менеджера", row => row.managerComment]
+  ["Коментар менеджера", row => row.managerComment],
+  ...UTM_CSV_COLUMNS
+]);
+const LEAD_CSV_COLUMNS = Object.freeze([
+  ["Заявка", row => row.number],
+  ["Створено", row => csvDate(row.createdAt)],
+  ["Тип", row => LEAD_TYPE[row.type] || row.type],
+  ["Статус", row => LEAD_STATUS[row.status]?.label || row.status],
+  ["Контакт", row => row.contactName],
+  ["Телефон", row => csvPhone(row.contactPhone)],
+  ["Компанія", row => row.company],
+  ["Запит", row => row.preview],
+  ...UTM_CSV_COLUMNS
 ]);
 const CUSTOMER_CSV_COLUMNS = Object.freeze([
   ["Ім’я", row => row.name],
@@ -836,7 +858,7 @@ export async function createLeadsListView({ api, search = location.search, signa
     </tr>`).join("");
   const html = `
     <section class="admin-crm-page">
-      ${pageHead("ПРОДАЖІ", "Заявки", `${number(result.total)} за поточними умовами.`)}
+      ${pageHead("ПРОДАЖІ", "Заявки", `${number(result.total)} за поточними умовами.`, '<button type="button" class="admin-button admin-button--secondary" data-crm-export>Експорт CSV</button>')}
       ${filterBar(filters, {
         placeholder: "№, ім’я, телефон, компанія або текст",
         selects: [
@@ -847,8 +869,19 @@ export async function createLeadsListView({ api, search = location.search, signa
       ${result.leads.length ? table(["Заявка", "Тип", "Контакт", "Запит", "Статус", "Відповідальний"], rows, "admin-crm-table--leads")
         : emptyState("Заявок не знайдено", "Звернення з форм сайту з’являться тут автоматично.")}
       ${pagination(result)}
+      <div class="admin-toast" role="status" aria-live="polite" hidden></div>
     </section>`;
-  return { html, bind: container => bindList(container) };
+  return { html, bind: container => {
+    bindList(container);
+    bindExport(container, {
+      fetchPage: async page => {
+        const { total, leads } = await api.crm.listLeads({ ...filters, page, pageSize: 100 });
+        return { total, rows: leads };
+      },
+      filename: "zaiavky",
+      columns: LEAD_CSV_COLUMNS
+    });
+  } };
 }
 
 export async function createLeadDetailView({ api, leadNumber, signal }) {
@@ -871,6 +904,7 @@ export async function createLeadDetailView({ api, leadNumber, signal }) {
             <header class="admin-panel__head"><div><p class="admin-kicker">ЗАПИТ</p><h2>${escape(lead.subject || "Без теми")}</h2></div></header>
             <p class="admin-crm-text">${lead.message ? multiline(lead.message) : `<span class="admin-muted">Без тексту</span>`}</p>
           </section>
+          ${attributionPanel(lead.utm)}
           ${lead.specLines.length ? `
             <section class="admin-panel">
               <header class="admin-panel__head"><div><p class="admin-kicker">СПЕЦИФІКАЦІЯ</p><h2>${number(lead.specLines.length)} позицій</h2></div>

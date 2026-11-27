@@ -41,12 +41,16 @@ export async function run(db) {
   // 1. Anonymous order: server-side pricing.
   const order = await as(db, "anon", null, () => one(db, "select public.crm_submit_order($1) as r", [{
     name: "Іван Петренко", phone: "050 123 45 67", email: "Ivan@Example.com", delivery: "carrier", city: "Київ",
-    deliveryPoint: "НП 12", comment: "Передзвоніть", items: [{ id: "p-known", quantity: 2, price: 1 }, { id: "p-unknown", quantity: 1 }]
+    deliveryPoint: "НП 12", comment: "Передзвоніть", items: [{ id: "p-known", quantity: 2, price: 1 }, { id: "p-unknown", quantity: 1 }],
+    utm: { utm_source: " Google\n ", utm_campaign: "x".repeat(170), utm_term: false, internal: "ignore" }
   }]));
   assert.equal(order.r.number, 1001);
   assert.equal(Number(order.r.itemsTotal), 2501);
   assert.equal(order.r.hasUnpricedItems, true);
   assert.equal(order.r.itemsCount, 3);
+  const orderAttribution = { utm_source: "Google", utm_campaign: "x".repeat(150) };
+  assert.deepEqual((await one(db, "select utm from public.crm_orders where number = 1001")).utm, orderAttribution);
+  assert.equal(order.r.utm, undefined, "public checkout does not return attribution");
   const customer = await one(db, "select * from public.crm_customers");
   assert.equal(customer.phone, "+380501234567");
   assert.equal(customer.email, "ivan@example.com");
@@ -78,10 +82,12 @@ export async function run(db) {
   // 6. Leads.
   const lead = await as(db, "anon", null, () => one(db, "select public.crm_submit_lead($1) as r", [{
     type: "partner_spec", name: "ТОВ Монтаж", phone: "+380671234567", company: "Монтаж", message: "Прорахуйте",
-    specLines: [{ code: "SKU-1", quantity: 10 }, { code: "  ", quantity: 1 }, { code: "ABC", quantity: "x" }]
+    specLines: [{ code: "SKU-1", quantity: 10 }, { code: "  ", quantity: 1 }, { code: "ABC", quantity: "x" }],
+    utm: { utm_medium: "cpc", utm_content: { unexpected: true } }
   }]));
   assert.equal(lead.r.number, 1001);
-  const leadRow = await one(db, "select spec_lines from public.crm_leads");
+  const leadRow = await one(db, "select spec_lines, utm from public.crm_leads");
+  assert.deepEqual(leadRow.utm, { utm_medium: "cpc" });
   assert.equal(leadRow.spec_lines.length, 2);
   await expectError(as(db, "anon", null, () => db.query("select public.crm_submit_lead($1)", [{ type: "contact", name: "Олег", phone: "0931234567" }])), /Опишіть/, "empty lead");
   const callback = await as(db, "anon", null, () => one(db, "select public.crm_submit_lead($1) as r", [{ type: "callback", name: "Олег", phone: "0931234567" }]));
@@ -107,6 +113,11 @@ export async function run(db) {
   assert.equal(Number(detail.r.items[0].lineTotal), 2501);
   assert.equal(detail.r.items[1].lineTotal, null);
   assert.equal(detail.r.staff.length, 2);
+  assert.deepEqual(detail.r.order.utm, orderAttribution);
+  const orderExport = await as(db, "authenticated", STAFF.manager, () => one(db, "select public.admin_crm_export_orders('1001') as r"));
+  assert.deepEqual(orderExport.r.rows[0].utm, orderAttribution);
+  const leadList = await as(db, "authenticated", STAFF.manager, () => one(db, "select public.admin_crm_list_leads('1001') as r"));
+  assert.deepEqual(leadList.r.leads[0].utm, { utm_medium: "cpc" });
 
   const updated = await as(db, "authenticated", STAFF.manager, () => one(db, "select public.admin_crm_update_order(1001, $1, $2) as r", [
     { status: "confirmed", managerComment: "Погоджено", assignedTo: STAFF.manager }, detail.r.order.updatedAt

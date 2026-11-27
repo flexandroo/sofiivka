@@ -52,17 +52,22 @@ const categories = [
 ];
 const paths = catalogPaths({
   categories,
-  brands: [{ id: "wilo", visibility: "catalog" }, { id: "service", visibility: "service" }, { id: "nobody", visibility: "catalog" }],
+  brands: [{ id: "wilo", visibility: "catalog" }, { id: "service", type: "service" }, { id: "off", status: "inactive" }, { id: "nobody", visibility: "catalog" }],
   categoryCounts: { heating: 2, boilers: 2, empty: 0, svc: 1, "under-svc": 1 },
-  brandCounts: { wilo: 2, service: 1 },
+  brandCounts: { wilo: 2, service: 1, off: 1 },
   productIds: ["a&b", "p-2"]
 });
 assert.deepEqual(paths, ["/catalog", "/catalog/heating", "/catalog/heating/boilers", "/brands/wilo", "/product?id=a%26b", "/product?id=p-2"]);
-const xml = renderSitemap("https://x.test", ["/", "/", "/product?id=1&x=2"]);
+const xml = renderSitemap("https://x.test", ["/", "/", "/product?id=1&x=2"], new Map([
+  ["/", "2026-02-30"], ["/product?id=1&x=2", "2026-11-27T11:11:00Z"]
+]));
 assert.equal((xml.match(/<url>/g) || []).length, 2);
 assert.match(xml, /<loc>https:\/\/x\.test\/product\?id=1&amp;x=2<\/loc>/);
+assert.match(xml, /<loc>https:\/\/x\.test\/product\?id=1&amp;x=2<\/loc><lastmod>2026-11-27<\/lastmod>/);
+assert.equal((xml.match(/<lastmod>/g) || []).length, 1, "invalid dates do not turn into a sitemap modification date");
 const robots = renderRobots("https://x.test");
-for (const blocked of ["/admin", "/cart", "/checkout", "/account", "/search", "/compare", "/favorites"]) assert.match(robots, new RegExp(`^Disallow: ${blocked}$`, "m"));
+assert.match(robots, /^Disallow: \/api\/$/m);
+for (const route of ["/admin", "/cart", "/checkout", "/account", "/search", "/compare", "/favorites"]) assert.ok(!robots.includes(`Disallow: ${route}`), `${route} is crawlable so bots can read noindex`);
 assert.match(robots, /^Sitemap: https:\/\/x\.test\/sitemap\.xml$/m);
 assert.match(renderRobots("https://x.test", { indexable: false }), /^Disallow: \/$/m);
 
@@ -74,7 +79,7 @@ fs.mkdirSync(site);
 fs.mkdirSync(out);
 fs.writeFileSync(path.join(site, "about.html"), "<!doctype html><html><head><title>Про нас</title></head></html>");
 fs.writeFileSync(path.join(site, "cart.html"), "<!doctype html><html><head></head></html>");
-fs.writeFileSync(path.join(site, "hidden.html"), '<!doctype html><html><head><meta name="robots" content="noindex,nofollow"></head></html>');
+fs.writeFileSync(path.join(site, "hidden.html"), `<!doctype html><html><head><!-- ${"x".repeat(4100)} --><meta content="noindex,nofollow" name="robots"></head></html>`);
 fs.writeFileSync(path.join(out, "index.html"), "<!doctype html><html><head><title>Головна</title></head></html>");
 const calls = [];
 const realFetch = globalThis.fetch;
@@ -139,7 +144,7 @@ async function productionFixture({ intercept = () => null, expectedError = null,
     if (intercepted) return intercepted;
     if (name === "get_catalog_bootstrap") return ok({ categories: [], brands: [], totalProducts: total });
     if (name === "get_catalog_products") return ok(productPage(body.page_number, total));
-    if (name === "get_site_posts") return ok({ posts: [], hasMore: false });
+    if (name === "get_site_posts") return ok({ posts: [], hasMore: false, total: 0 });
     return ok({});
   };
   const run = () => writeSeoFiles({ root: site, outputDirectory: out, config, env: {}, log: () => {}, fetchImpl, waitImpl: async delay => { waits.push(delay); } });
@@ -190,6 +195,10 @@ await productionFixture({ expectedError: /duplicate product URL/, intercept: (na
   return ok(page);
 } });
 await productionFixture({ expectedError: /Catalogue totals differ/, intercept: name => name === "get_catalog_bootstrap" ? ok({ categories: [], totalProducts: 201 }) : null });
+await productionFixture({ expectedError: /Production Supabase posts incomplete.*truncated posts/, intercept: name => name === "get_site_posts" ? ok({ posts: [], hasMore: false, total: 1 }) : null });
+const publishedArticle = await productionFixture({ intercept: (name, body) => name === "get_site_posts" && body.post_kind === "article"
+  ? ok({ posts: [{ kind: "article", slug: "heat-pumps", publishedAt: "2026-11-25T10:30:00Z" }], hasMore: false, total: 1 }) : null });
+assert.match(publishedArticle.xml, /\/blog\/heat-pumps<\/loc><lastmod>2026-11-25<\/lastmod>/);
 await productionFixture({ expectedError: /exceeds sitemap page cap/, total: 96 * 400 + 1 });
 await productionFixture({ expectedError: /missing valid total/, intercept: (name, body) => {
   if (name !== "get_catalog_products") return null;

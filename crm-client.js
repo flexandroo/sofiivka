@@ -9,6 +9,10 @@
 
   const config = window.SOFIEVKA_CATALOG_CONFIG;
   const supabase = config && config.supabase && config.supabase.url ? config.supabase : null;
+  const withAttribution = payload => {
+    const utm = window.sofievkaSiteSettings?.attribution?.();
+    return utm ? { ...payload, utm } : payload;
+  };
 
   class CrmSubmitError extends Error {
     constructor(message, code) {
@@ -55,14 +59,18 @@
     submitOrder: async payload => {
       const account = window.sofievkaAccount;
       const accessToken = account && account.currentUser() ? await account.getFreshAccessToken().catch(() => null) : null;
-      const result = await call("crm_submit_order", payload, accessToken);
+      const result = await call("crm_submit_order", withAttribution(payload), accessToken);
       // A promo code the server no longer accepts comes back as { accepted:false, promoError }: no order was created.
       if (result && result.accepted === false) {
         throw new CrmSubmitError(result.promoError || "Не вдалося надіслати. Спробуйте ще раз або зателефонуйте нам.", result.promoError ? "promo" : "submit_error");
       }
       return result;
     },
-    submitLead: payload => call("crm_submit_lead", payload),
+    submitLead: async payload => {
+      const result = await call("crm_submit_lead", withAttribution(payload));
+      if (result?.number) window.sofievkaSiteSettings?.trackLead?.(payload.type || "contact");
+      return result;
+    },
     // { code, items:[{id, quantity}] } → { available, valid, code, kind, value, discount, itemsTotal, message };
     // an empty code only asks whether the shop has active promo codes.
     checkPromo: payload => call("crm_check_promo_code", payload),

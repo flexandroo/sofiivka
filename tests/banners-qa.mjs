@@ -44,7 +44,8 @@ for (const text of ["Насоси для стабільної роботи си�
   "Чиста вода у вашому домі", "Комфорт у будь-який сезон", "assets/images/home-hero-termojet-pumps-v1.jpg",
   "assets/products/ecosoft/mo650mecostd/01.webp", "assets/images/hero-climate.webp"]) {
   assert.ok(migration.includes(text), `seed has ${text}`);
-  assert.ok(index.includes(text), `index.html still has ${text}`);
+  const storefrontText = text === "assets/images/home-hero-termojet-pumps-v1.jpg" ? text.replace(/\.jpg$/, ".webp") : text;
+  assert.ok(index.includes(storefrontText), `index.html still has ${storefrontText}`);
 }
 // The promo product (MO650MECOSTD in the seed) is linked by its slug since 20261002002000.
 assert.ok(migration.includes("MO650MECOSTD"));

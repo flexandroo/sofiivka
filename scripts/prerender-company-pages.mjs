@@ -10,11 +10,10 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import vm from "node:vm";
 
-// Pages page-shell renders without the catalogue. Blog/cases are filled from /admin/blog and account is private,
-// so they keep the client-only render.
+// Pages page-shell renders without the catalogue. Published blog/case links are filled during the SEO build.
 export const PRERENDER_PAGES = Object.freeze([
-  "about", "buyers", "contact", "delivery", "faq", "installation", "partnership", "privacy",
-  "returns", "service-center", "services", "solutions", "terms", "warranty"
+  "about", "blog", "buyers", "contact", "delivery", "faq", "installation", "partnership", "portfolio",
+  "privacy", "returns", "service-center", "services", "solutions", "terms", "warranty"
 ]);
 
 const ROOT_PATTERN = /<div data-page-root><\/div>/;

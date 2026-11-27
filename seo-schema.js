@@ -1,13 +1,8 @@
-/* Structured data (schema.org JSON-LD) for search engines, added on every page by the build.
- * - BreadcrumbList from the visible breadcrumbs (company pages, catalogue, brands), kept in sync when a page re-renders.
- * - FAQPage from the questions on /faq.
- * - Organization with both stores on the home, about and contact pages (from site settings).
- * - Product on the product page: page-shell.js fills window.sofievkaProductSchema and fires "sofievka:product-schema".
- * Google reads JSON-LD added by JavaScript; messengers and other crawlers need prerendered HTML (stage 5). */
+/* Enhances static pages and unrendered local shells. Server-rendered routes own their tags. */
 (function () {
   "use strict";
 
-  const ORIGIN = location.origin;
+  const ORIGIN = new URL(document.querySelector('link[rel="canonical"]')?.href || location.href).origin;
   const absolute = href => { try { return new URL(href, ORIGIN).href; } catch { return ""; } };
 
   function put(id, data) {
@@ -30,7 +25,7 @@
     for (const node of nav.querySelectorAll("a, [aria-current]")) {
       const name = node.textContent.replace(/\s+/g, " ").trim();
       if (!name) continue;
-      const url = node.tagName === "A" ? absolute(node.getAttribute("href")) : location.href.split("#")[0];
+      const url = node.tagName === "A" ? absolute(node.getAttribute("href")) : absolute(location.pathname);
       if (url) items.push({ "@type": "ListItem", position: items.length + 1, name, item: url });
     }
     return items.length > 1 ? { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: items } : null;
@@ -85,6 +80,7 @@
     return {
       "@context": "https://schema.org",
       "@type": "Organization",
+      "@id": `${ORIGIN}/#organization`,
       name,
       url: `${ORIGIN}/`,
       logo: `${ORIGIN}/assets/icon-512.png`,
@@ -112,7 +108,8 @@
   function update() {
     queued = false;
     put("schema-breadcrumbs", breadcrumbs());
-    put("schema-organization", organization());
+    const company = organization();
+    if (company) put("schema-organization", company);
     put("schema-product", product());
     put("schema-faq", faq());
   }
@@ -123,6 +120,7 @@
   }
 
   function start() {
+    if (document.head.hasAttribute?.("data-seo-rendered")) return;
     schedule();
     new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
     window.addEventListener("sofievka:product-schema", schedule);

@@ -1,7 +1,7 @@
 /* Blog articles and cases, edited in /admin/blog and served by the public RPCs get_site_posts /
  * get_site_post. blog.html and portfolio.html render their built-in cards first (and keep them when
  * the database is unreachable); this script then shows the published posts with links to
- * /blog/<slug> and /portfolio/<slug>, which post.html renders.
+ * /blog/<slug> and /portfolio/<slug>, which are rendered on the server and adopted here.
  * Content is structured blocks, never HTML: every string goes through textContent, [label](url)
  * links become <a> only for site paths, https, mailto and tel, and images only load from https or
  * site paths. */
@@ -57,7 +57,7 @@
   function formatDate(value) {
     const date = new Date(value);
     if (!value || Number.isNaN(date.valueOf())) return "";
-    try { return new Intl.DateTimeFormat("uk-UA", { day: "numeric", month: "long", year: "numeric" }).format(date); } catch { return ""; }
+    try { return new Intl.DateTimeFormat("uk-UA", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Kyiv" }).format(date); } catch { return ""; }
   }
 
   function element(tag, className, content) {
@@ -331,7 +331,7 @@
     document.title = `${unavailable ? "Матеріал недоступний" : "Матеріал не знайдено"} | ТД «Софіївка»`;
   }
 
-  function renderPost(root, post) {
+  function renderPost(root, post, { keepMetadata = false } = {}) {
     if (!isPost(post)) return;
     const kind = post.kind;
     const node = selector => root.querySelector(selector);
@@ -344,7 +344,7 @@
     if (meta) {
       const date = formatDate(post.publishedAt);
       const tags = Array.isArray(post.tags) ? post.tags.filter(tag => typeof tag === "string" && tag) : [];
-      meta.replaceChildren();
+      meta.replaceChildren(element("span", "", "ТД «Софіївка»"));
       if (date) { const time = element("time", "", date); time.setAttribute("datetime", text(post.publishedAt)); meta.append(time); }
       tags.forEach(tag => {
         const link = element("a", "", tag);
@@ -407,11 +407,13 @@
       more.hidden = !others.length;
     }
 
-    const seo = post.seo && typeof post.seo === "object" ? post.seo : {};
-    document.title = text(seo.title) || `${post.title} | ТД «Софіївка»`;
-    const description = text(seo.description) || text(post.excerpt);
-    if (description) setMeta("description", description);
-    setCanonical(postUrl(post));
+    if (!keepMetadata) {
+      const seo = post.seo && typeof post.seo === "object" ? post.seo : {};
+      document.title = text(seo.title) || `${post.title} | ТД «Софіївка»`;
+      const description = text(seo.description) || text(post.excerpt);
+      if (description) setMeta("description", description);
+      setCanonical(postUrl(post));
+    }
   }
 
   async function applyPost(root) {
@@ -419,6 +421,17 @@
     setListLinks(root, kind);
     if (!slug) { renderMissing(root, kind, false); return; }
     const cacheKey = `post.${kind}.${slug}`;
+    const serverData = document.querySelector("#ssr-post-data")?.textContent;
+    if (serverData) {
+      try {
+        const post = JSON.parse(serverData);
+        if (isPost(post) && post.kind === kind && post.slug === slug) {
+          write(CACHE_PREFIX + cacheKey, serverData);
+          renderPost(root, post, { keepMetadata: true });
+          return;
+        }
+      } catch { /* fall through to the public RPC */ }
+    }
     const cached = readCache(cacheKey);
     if (isPost(cached)) renderPost(root, cached);
     const fresh = await rpc("get_site_post", { post_kind: kind, post_slug: slug });

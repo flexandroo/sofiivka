@@ -59,7 +59,7 @@ assert.match(fn, /crm_notification_log/);
 // Plain-text subject lines aside, customer values only reach the HTML body through html().
 const fnBodies = fn.split("\n").filter(line => !line.includes("subjectText(")).join("\n");
 assert.doesNotMatch(fnBodies, /\$\{order\.contact_name\}|\$\{lead\.message\}/, "customer text is always escaped");
-assert.match(config, /\[functions\.crm-notify\]\s*\n(#.*\n)?verify_jwt = false/);
+assert.match(config, /\[functions\.crm-notify\]\r?\n(?:#[^\r\n]*\r?\n)?verify_jwt = false/);
 
 // Admin: real status instead of the old "not connected" note, test button, no innerHTML writes.
 assert.match(api, /"admin_notifications_status"/);
@@ -100,7 +100,8 @@ try {
   const sent = [];
   globalThis.Deno = { env: { get: name => env[name] }, serve: fn => { handler = fn; } };
   const order = { number: 42, source: "site", contact_name: "Іван <b>Петренко</b>", contact_phone: "+380501112233", contact_email: "",
-    delivery_method: "carrier", delivery_city: "Київ", delivery_point: "НП №1", customer_comment: "Подзвоніть & уточніть", items_count: 2, items_total: 1500, has_unpriced_items: false };
+    delivery_method: "carrier", delivery_city: "Київ", delivery_point: "НП №1", customer_comment: "Подзвоніть & уточніть", items_count: 2, items_total: 1500, has_unpriced_items: false,
+    utm: { utm_source: "Google & Shopping", utm_campaign: "<test>" } };
   globalThis.__crmNotifyCreateClient = () => ({
     from(table) {
       const query = {
@@ -136,6 +137,7 @@ try {
     assert.match(logUpdate.reason, /Email пропущено: не задано секрети RESEND_API_KEY і NOTIFY_EMAIL_FROM/);
     assert.equal(sent.length, 1);
     assert.match(sent[0].body.text, /Іван &lt;b&gt;Петренко&lt;\/b&gt;/, "telegram text escaped");
+    assert.match(sent[0].body.text, /UTM: source=Google &amp; Shopping · campaign=&lt;test&gt;/);
 
     // Both channels: one Resend request with the same escaped content as HTML and as plain text.
     sent.length = 0;

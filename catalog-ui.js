@@ -333,6 +333,7 @@ window.sofievkaCatalogUIReady = (async function () {
   }
 
   function applyMetadata(ctx, hasFilters = false) {
+    if (document.head.hasAttribute?.("data-seo-rendered")) return;
     const title = ctx.notFound
       ? "Категорію не знайдено | ТД «Софіївка»"
       : ctx.isBrand
@@ -420,12 +421,21 @@ window.sofievkaCatalogUIReady = (async function () {
       const logo = ctx.brand.logo ? `<div class="catalog-brand-mark${darkLogo ? " catalog-brand-mark--dark" : ""}"><img src="/${ctx.brand.logo.replace(/^\//, "")}" alt="${escapeHtml(ctx.brand.name)}"></div>` : `<div class="catalog-brand-mark catalog-brand-mark--text" aria-hidden="true">${escapeHtml(ctx.brand.name.slice(0, 2).toUpperCase())}</div>`;
       return `<section class="catalog-intro catalog-intro--brand"><div class="container">${breadcrumb(ctx)}<div class="catalog-intro__line">${logo}<div><p class="page-kicker">Виробник</p><h1>${escapeHtml(ctx.brand.name)}</h1><p>${escapeHtml(ctx.brand.description || `Товари ${ctx.brand.name} у каталозі інженерного обладнання.`)}</p></div><strong>${countLabel(total)}</strong></div></div></section>`;
     }
-    // Category pages open with the breadcrumbs and the section tabs: the headline is only for search engines and screen
-    // readers, the count is in the toolbar, the description in the meta tags and the server first paint.
     const title = ctx.currentCategory?.name || ctx.section.title;
+    const landing = window.sofievkaCategoryEditorial?.landings[ctx.currentCategory?.id];
+    if (landing && total > 0) {
+      return `<section class="catalog-intro catalog-intro--editorial"><div class="container">${breadcrumb(ctx)}<div class="catalog-intro__line"><div><h1>${escapeHtml(title)}</h1><p>${escapeHtml(landing.intro)}</p></div></div></div></section>`;
+    }
     return `<section class="catalog-intro"><div class="container">${breadcrumb(ctx)}<h1 class="sr-only">${escapeHtml(title)}</h1></div></section>`;
   }
 
+  function editorialMarkup(ctx, total) {
+    const editorial = window.sofievkaCategoryEditorial;
+    const landing = editorial?.landings[ctx.currentCategory?.id];
+    const content = landing && total > 0 ? editorial.markup(landing, escapeHtml)
+      : `<h2>${escapeHtml(ctx.currentCategory?.name || ctx.section.name)}: підбір за технічними параметрами</h2><p>${escapeHtml(ctx.currentCategory?.description || ctx.section.description)} Перед замовленням звірте робочу точку, приєднання та умови монтажу з документацією моделі — менеджер допоможе з підбором.</p>`;
+    return `<section class="catalog-seo"><div class="container">${content}</div></section>`;
+  }
   function render({ pageName = "catalog" } = {}) {
     const ctx = context(pageName);
     const total = scopeCount(ctx);
@@ -434,7 +444,7 @@ window.sofievkaCatalogUIReady = (async function () {
     if (ctx.currentCategory?.status === "future") return `${introMarkup(ctx, 0)}<section class="catalog-workspace catalog-workspace--state"><div class="container"><div class="catalog-state"><p class="page-kicker">Асортимент готується</p><h2>Розділ готується до наповнення</h2><p>Тут з’являться товари після перевірки категорій, характеристик і доступності.</p><a class="button button--secondary" href="/catalog">Перейти до каталогу</a></div></div></section>`;
     if (ctx.currentCategory?.visibility === "service") return `${introMarkup(ctx, 0)}<section class="catalog-workspace catalog-workspace--state"><div class="container"><div class="catalog-state"><p class="page-kicker">Сервісна послуга</p><h2>Пусконалагодження не є товаром каталогу</h2><p>Умови, виїзд і вартість погоджуються сервісним центром після перевірки обладнання та об’єкта.</p><a class="button button--primary" href="/service-center">Звернутися до сервісного центру</a></div></div></section>`;
     const skeletons = Array.from({ length: 6 }, () => `<div class="product-skeleton" aria-hidden="true"><i></i><b></b><span></span><span></span></div>`).join("");
-    return `${introMarkup(ctx, total)}<section class="catalog-workspace"><div class="container">${selectorMarkup(ctx)}${subcategoryMarkup(ctx)}<div class="catalog-mobile-tools"><button class="button button--secondary mobile-filter-button" type="button" data-filter-toggle aria-expanded="false" aria-controls="catalog-filter-panel">Фільтри</button><span data-mobile-result-count>${countLabel(total)}</span></div><div class="catalog-layout"><div class="catalog-filter-backdrop" data-filter-backdrop hidden></div><div class="catalog-filter" id="catalog-filter-panel" data-filter role="region" aria-label="Фільтри каталогу"><div class="catalog-filter__head"><div><span>Параметри вибору</span><h2>Фільтри</h2></div><button type="button" data-filter-close aria-label="Закрити фільтри">Закрити</button></div><div data-facet-root></div><div class="catalog-filter__footer"><button class="button button--primary" type="button" data-filter-apply>Показати <span data-drawer-count>${countLabel(total)}</span></button></div></div><div class="catalog-results"><div class="catalog-toolbar"><div><p><strong data-result-count>${total}</strong> <span data-result-label>${countLabel(total).replace(/^\d+\s+/, "")}</span></p><div class="active-filters" data-active-filters></div></div><label>Сортування<select data-catalog-sort><option value="default">За замовчуванням</option><option value="price-asc">За ціною ↑</option><option value="price-desc">За ціною ↓</option></select></label></div><div class="catalog-products is-loading" data-catalog-products>${skeletons}</div><div class="catalog-more"><p class="catalog-more__error" data-load-more-error role="alert" hidden></p><button class="button button--secondary" type="button" data-load-more>Показати ще</button></div></div></div></div></section><section class="catalog-seo"><div class="container"><h2>${escapeHtml(ctx.currentCategory?.name || ctx.section.name)}: підбір за технічними параметрами</h2><p>${escapeHtml(ctx.currentCategory?.description || ctx.section.description)} Перед замовленням звірте робочу точку, приєднання та умови монтажу з документацією моделі — менеджер допоможе з підбором.</p></div></section>`;
+    return `${introMarkup(ctx, total)}<section class="catalog-workspace"><div class="container">${selectorMarkup(ctx)}${subcategoryMarkup(ctx)}<div class="catalog-mobile-tools"><button class="button button--secondary mobile-filter-button" type="button" data-filter-toggle aria-expanded="false" aria-controls="catalog-filter-panel">Фільтри</button><span data-mobile-result-count>${countLabel(total)}</span></div><div class="catalog-layout"><div class="catalog-filter-backdrop" data-filter-backdrop hidden></div><div class="catalog-filter" id="catalog-filter-panel" data-filter role="region" aria-label="Фільтри каталогу"><div class="catalog-filter__head"><div><span>Параметри вибору</span><h2>Фільтри</h2></div><button type="button" data-filter-close aria-label="Закрити фільтри">Закрити</button></div><div data-facet-root></div><div class="catalog-filter__footer"><button class="button button--primary" type="button" data-filter-apply>Показати <span data-drawer-count>${countLabel(total)}</span></button></div></div><div class="catalog-results"><div class="catalog-toolbar"><div><p><strong data-result-count>${total}</strong> <span data-result-label>${countLabel(total).replace(/^\d+\s+/, "")}</span></p><div class="active-filters" data-active-filters></div></div><label>Сортування<select data-catalog-sort><option value="default">За замовчуванням</option><option value="price-asc">За ціною ↑</option><option value="price-desc">За ціною ↓</option></select></label></div><div class="catalog-products is-loading" data-catalog-products>${skeletons}</div><div class="catalog-more"><p class="catalog-more__error" data-load-more-error role="alert" hidden></p><button class="button button--secondary" type="button" data-load-more>Показати ще</button></div></div></div></div></section>${editorialMarkup(ctx, total)}`;
   }
 
   function readState(ctx) {
@@ -1254,7 +1264,7 @@ window.sofievkaCatalogUIReady = (async function () {
   }
 
   function homeCards() {
-    const imageBySection = { heating: "assets/images/solution-boiler-room.webp", "water-supply": "assets/images/hero-water.webp", "water-treatment": "assets/images/home-hero-ecosoft-water-v1.jpg", "smart-home": "assets/images/home-hero-termojet-automation-v1.jpg", climate: "assets/images/hero-climate.webp" };
+    const imageBySection = { heating: "assets/images/solution-boiler-room.webp", "water-supply": "assets/images/hero-water.webp", "water-treatment": "assets/images/home-hero-ecosoft-water-v1.webp", "smart-home": "assets/images/home-hero-termojet-automation-v1.webp", climate: "assets/images/hero-climate.webp" };
     const homeSections = catalog.activeSections;
     return homeSections.map(section => {
       const children = catalog.availableCategories(section.id).slice(0, 4);

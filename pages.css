@@ -440,6 +440,7 @@ body[data-page="brand"] { background: var(--canvas); }
 .catalog-intro__line > div:not(.catalog-brand-mark) { min-width: 0; }
 .catalog-intro h1 { margin: 0 0 5px; font-size: clamp(30px, 2.75vw, 39px); line-height: 1; letter-spacing: -.04em; text-wrap: balance; }
 .catalog-intro p { display: -webkit-box; max-width: 760px; overflow: hidden; color: var(--text-secondary); font-size: 12px; line-height: 1.45; text-wrap: pretty; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+.catalog-intro--editorial p { display: block; }
 .catalog-intro__line > strong { flex: 0 0 auto; padding-bottom: 4px; color: var(--text-secondary); font-size: 13px; font-variant-numeric: tabular-nums; }
 .catalog-intro--state { padding-bottom: 20px; }
 .catalog-intro--state .catalog-intro__line { min-height: 72px; }
@@ -1532,6 +1533,7 @@ body[data-page="product"] {
 /* First paint of the pages the browser draws (catalogue, product, cart …): the build puts the real header and
    footer around these placeholders (scripts/prerender-company-pages.mjs), page-shell.js replaces them. */
 .page-frame { min-height: 72vh; padding-top: 14px; padding-bottom: 64px; }
+[data-page-frame] [data-catalog-index] { display: none; }
 .page-frame span { display: block; border-radius: 4px; background: linear-gradient(90deg, rgba(32,32,32,.06) 25%, rgba(32,32,32,.025) 45%, rgba(32,32,32,.06) 65%); background-size: 260% 100%; animation: water-skeleton 1.2s infinite; }
 .page-frame__bar--crumbs { width: 190px; height: 10px; }
 .page-frame__bar--title { width: min(420px, 70%); height: 34px; margin-top: 18px; }

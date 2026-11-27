@@ -52,13 +52,16 @@ class FakeElement {
   remove() { this.removed = true; }
 }
 
-function boot({ cache = null, consent = null } = {}) {
+function boot({ cache = null, consent = null, search = "", savedAttribution = null } = {}) {
   const storage = new Map();
   if (cache) storage.set("sofievka.siteSettings.v1", JSON.stringify(cache));
   if (consent) storage.set("sofievka.cookieConsent.v1", JSON.stringify({ choice: consent }));
+  if (savedAttribution) storage.set("sofievka.attribution.v1", JSON.stringify(savedAttribution));
   const head = new FakeElement("head");
   const body = new FakeElement("body");
   const documentListeners = {};
+  const interactions = new Map();
+  const scheduled = [];
   const document = {
     readyState: "complete",
     head, body, title: "",
@@ -69,9 +72,12 @@ function boot({ cache = null, consent = null } = {}) {
   };
   const window = {
     localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, String(value)) },
-    SOFIEVKA_CATALOG_CONFIG: null
+    SOFIEVKA_CATALOG_CONFIG: null,
+    addEventListener: (type, listener) => interactions.set(type, listener),
+    removeEventListener: type => interactions.delete(type),
+    setTimeout: (callback, timeout) => scheduled.push({ callback, timeout })
   };
-  const context = { window, document, location: { pathname: "/payment" }, console, Date, JSON, Object, Array, String, Set, Map, Promise, AbortSignal, Number, RegExp };
+  const context = { window, document, location: { pathname: "/payment", search }, console, Date, JSON, Object, Array, String, Set, Map, Promise, AbortSignal, Number, RegExp, URLSearchParams };
   window.window = window;
   vm.createContext(context);
   vm.runInContext(read("site-settings.js"), context, { filename: "site-settings.js" });
@@ -81,7 +87,7 @@ function boot({ cache = null, consent = null } = {}) {
     const target = { closest: selector => (selector === "[data-cookie-choice]" ? { dataset: { cookieChoice: choice } } : null) };
     banner().listeners.click.forEach(listener => listener({ target }));
   };
-  return { window, storage, scripts, banner, choose, api: window.sofievkaSiteSettings };
+  return { window, storage, scripts, banner, choose, scheduled, interact: () => interactions.get("pointerdown")?.(), api: window.sofievkaSiteSettings };
 }
 
 // Defaults = seeds; the runtime has no innerHTML and re-checks links from the client-side cache.
@@ -109,13 +115,48 @@ assert.equal(page.api.current.cookies.privacyHref, "", "unsafe privacy link drop
 page = boot({ cache: { menus: { header: [], footer: [] } } });
 assert.deepEqual(JSON.parse(JSON.stringify(page.api.current.menus)), { header: [], footer: [] }, "saved empty menus stay empty");
 
-// Consent: banner off -> tags load at once and no consent commands (behaviour before this change).
+// First interaction starts the deferred trackers, with GTM taking precedence over direct GA4.
 const ids = { ga4MeasurementId: "G-ABC123DEF4", gtmContainerId: "GTM-K7XQ2P", metaPixelId: "123456789012345", searchConsoleToken: "" };
 const consentCommands = window => [...(window.dataLayer || [])].filter(entry => entry && entry[0] === "consent").map(entry => [entry[1], entry[2].analytics_storage]);
 page = boot({ cache: { integrations: ids, cookies: { enabled: false, text: "x" } } });
-assert.equal(page.scripts().length, 3, "GTM, GA4 and Pixel load when the banner is off");
+assert.equal(page.scripts().length, 0, "trackers are deferred when the banner is off");
+assert.equal(page.scheduled[0].timeout, 2500);
+const product = { id: "p-1", title: "Клапан", price: 120.75 };
+page.api.trackCommerce("view_item", [{ product }]);
+page.interact();
+page.scheduled[0].callback();
+assert.equal(page.scripts().length, 2, "GTM and Pixel load once");
+assert.ok(page.scripts().some(src => src.includes("gtm.js")));
+assert.ok(!page.scripts().some(src => src.includes("gtag/js")));
+assert.deepEqual(JSON.parse(JSON.stringify(page.window.dataLayer.slice(1))), [
+  { ecommerce: null }, { event: "view_item", ecommerce: { currency: "UAH", value: 120.75, items: [{ item_id: "p-1", item_name: "Клапан", price: 120.75 }] } }
+]);
+page.api.trackCommerce("purchase", [{ product, quantity: 2 }], { number: 1001, total: 225, currency: "UAH" });
+page.api.trackCommerce("purchase", [{ product, quantity: 2 }], { number: 1001, total: 225, currency: "UAH" });
+assert.equal(page.window.dataLayer.filter(entry => entry.event === "purchase").length, 1, "purchase uses server transaction identity once");
+assert.equal(page.window.dataLayer.find(entry => entry.event === "purchase").ecommerce.value, 225, "purchase reports the server total after discount");
 assert.deepEqual(consentCommands(page.window), []);
 assert.equal(page.banner(), null);
+
+const utmCache = { integrations: ids, cookies: { enabled: true } };
+page = boot({ cache: utmCache, search: "?utm_source=Google&utm_campaign=Hydronic%20%26%20water&email=ignore" });
+assert.equal(page.api.attribution(), null, "no campaign storage before consent");
+page.choose("all");
+const firstTouch = JSON.parse(page.storage.get("sofievka.attribution.v1"));
+assert.deepEqual(firstTouch.values, { utm_source: "Google", utm_campaign: "Hydronic & water" });
+page = boot({ cache: utmCache, consent: "all", search: "?utm_source=Other", savedAttribution: firstTouch });
+assert.deepEqual(JSON.parse(JSON.stringify(page.api.attribution())), firstTouch.values, "later clicks preserve the first touch");
+page.api.openCookieSettings();
+page.choose("necessary");
+assert.equal(page.api.attribution(), null);
+assert.equal(page.storage.get("sofievka.attribution.v1"), "null");
+
+page = boot({ cache: { integrations: { ga4MeasurementId: ids.ga4MeasurementId } } });
+page.api.trackLead("callback");
+page.scheduled[0].callback();
+assert.equal(page.scripts().length, 1);
+assert.ok(page.scripts()[0].includes("gtag/js"));
+assert.ok(page.window.dataLayer.some(entry => entry[0] === "event" && entry[1] === "form_submit" && entry[2].form_type === "callback"));
 
 // Banner on, no choice yet: defaults denied, nothing loads, the banner shows.
 page = boot({ cache: { integrations: ids, cookies: { enabled: true, text: "Згода", privacyHref: "/privacy.html" } } });
@@ -134,7 +175,9 @@ page.api.openCookieSettings();
 assert.ok(page.banner(), "banner reopens");
 page.choose("all");
 assert.deepEqual(consentCommands(page.window), [["default", "denied"], ["update", "denied"], ["update", "granted"]]);
-assert.equal(page.scripts().length, 3, "tags load after accept");
+assert.equal(page.scripts().length, 0, "accept schedules a deferred start");
+page.interact();
+assert.equal(page.scripts().length, 2, "tags load after accept and startup");
 assert.ok(page.window.fbq.queue.some(entry => entry[0] === "consent" && entry[1] === "grant"), "Pixel told consent is granted");
 const gtmIndex = page.window.dataLayer.findIndex(entry => entry && entry.event === "gtm.js");
 const grantIndex = page.window.dataLayer.findIndex(entry => entry && entry[0] === "consent" && entry[1] === "update" && entry[2].analytics_storage === "granted");
@@ -143,13 +186,15 @@ assert.ok(grantIndex >= 0 && grantIndex < gtmIndex, "consent update reaches the 
 // A returning visitor who accepted: default denied, update granted, then the tags, without a banner.
 page = boot({ cache: { integrations: ids, cookies: { enabled: true, text: "Згода" } }, consent: "all" });
 assert.deepEqual(consentCommands(page.window), [["default", "denied"], ["update", "granted"]]);
-assert.equal(page.scripts().length, 3);
+page.interact();
+assert.equal(page.scripts().length, 2);
 assert.equal(page.banner(), null);
 
 // Pixel only, banner on: Pixel waits for accept even without Google tags.
 page = boot({ cache: { integrations: { metaPixelId: "123456789012345" }, cookies: { enabled: true, text: "Згода" } } });
 assert.equal(page.scripts().length, 0);
 page.choose("all");
+page.interact();
 assert.deepEqual(page.scripts(), ["https://connect.facebook.net/en_US/fbevents.js"]);
 
 // ---------------------------------------------------------------------------

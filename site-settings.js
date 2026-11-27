@@ -111,7 +111,10 @@
     });
   }
 
-  let current = normalize((() => { try { return JSON.parse(read(CACHE_KEY) || "null"); } catch { return null; } })());
+  const cachedSettings = (() => { try { return JSON.parse(read(CACHE_KEY) || "null"); } catch { return null; } })();
+  let current = normalize(cachedSettings);
+  const publicConfig = window.SOFIEVKA_CATALOG_CONFIG?.supabase;
+  let consentPolicyKnown = Boolean(cachedSettings || !publicConfig?.url || !publicConfig?.publishableKey);
 
   const phoneHref = phone => `tel:+${String(phone || "").replace(/\D/g, "").replace(/^0/, "380")}`;
   const mapEmbed = query => `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
@@ -246,8 +249,8 @@
     });
   }
 
-  // Cookie consent (/admin/settings → Cookie). Off: tags load as soon as their ids are set, as before.
-  // On: Google Consent Mode starts with everything denied, and GA4 / GTM / Meta Pixel load only after
+  // Cookie consent (/admin/settings → Cookie). Google Consent Mode starts with everything denied,
+  // and when the banner is enabled, GA4 / GTM / Meta Pixel load only after
   // «Прийняти всі»; «Лише необхідні» loads none of them. The choice lives in this browser only.
   function storedConsent() {
     try {
@@ -255,13 +258,41 @@
       return value && (value.choice === "all" || value.choice === "necessary") ? value.choice : null;
     } catch { return null; }
   }
-  const analyticsAllowed = () => !current.cookies.enabled || storedConsent() === "all";
+  const analyticsAllowed = () => consentPolicyKnown && (!current.cookies.enabled || storedConsent() === "all");
+  const UTM_KEY = "sofievka.attribution.v1";
+  const UTM_FIELDS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
+  const UTM_TTL = 30 * 24 * 60 * 60 * 1000;
+  const entryParams = new URLSearchParams(location.search || "");
+  const cleanAttribution = source => Object.fromEntries(UTM_FIELDS.flatMap(key => {
+    const raw = source[key];
+    const value = typeof raw === "string" ? raw.replace(/[\x00-\x1f\x7f]/g, "").trim().slice(0, 150) : "";
+    return value ? [[key, value]] : [];
+  }));
+  function attribution() {
+    if (!consentPolicyKnown || !analyticsAllowed()) return null;
+    try {
+      const saved = JSON.parse(read(UTM_KEY) || "null");
+      if (saved?.expires > Date.now() && saved.values) {
+        const values = cleanAttribution(saved.values);
+        if (Object.keys(values).length) return values;
+      }
+    } catch { /* ignore unreadable attribution */ }
+    const values = cleanAttribution(Object.fromEntries(entryParams));
+    if (!Object.keys(values).length) return null;
+    write(UTM_KEY, JSON.stringify({ expires: Date.now() + UTM_TTL, values }));
+    return values;
+  }
+  const googleTag = () => {
+    const { ga4MeasurementId, gtmContainerId } = current.integrations;
+    if (/^GTM-[A-Z0-9]{4,12}$/.test(gtmContainerId || "")) return { id: gtmContainerId, manager: true };
+    return /^G-[A-Z0-9]{4,16}$/.test(ga4MeasurementId || "") ? { id: ga4MeasurementId, manager: false } : null;
+  };
+  const dataLayer = window.dataLayer = window.dataLayer || [];
   const GRANTED = Object.freeze({ ad_storage: "granted", ad_user_data: "granted", ad_personalization: "granted", analytics_storage: "granted" });
   const DENIED = Object.freeze({ ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied", analytics_storage: "denied" });
   let consentDefaultSent = false;
   function gtag() {
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = window.gtag || function gtag() { window.dataLayer.push(arguments); };
+    window.gtag = window.gtag || function gtag() { dataLayer.push(arguments); };
     window.gtag(...arguments);
   }
   // Must reach the dataLayer before gtm.js / gtag.js; sent once per page and only when the banner is on.
@@ -272,9 +303,55 @@
     if (storedConsent() === "all") gtag("consent", "update", GRANTED);
   }
 
-  // Analytics and verification tags from /admin/settings → Інтеграції. Nothing loads while the ids
-  // are empty; each id loads once per page. Ids are re-checked here because the cache is client-side.
+  const pendingAnalytics = [];
+  const purchaseIds = new Set();
+  let configuredGoogle = null;
+  function sendAnalytics(event, details) {
+    if (configuredGoogle?.manager) {
+      if (details.items) {
+        dataLayer.push({ ecommerce: null });
+        dataLayer.push({ event, ecommerce: details });
+      } else dataLayer.push({ event, ...details });
+    } else if (configuredGoogle) gtag("event", event, details);
+  }
+  function track(event, details) {
+    if (!analyticsAllowed()) return;
+    if (configuredGoogle) sendAnalytics(event, details);
+    else if (pendingAnalytics.length < 128) pendingAnalytics.push([event, details]);
+  }
+  function trackCommerce(event, lines, result) {
+    if (!analyticsAllowed()) return;
+    const items = lines.flatMap(({ product, quantity }) => {
+      if (!product?.id || !product.title) return [];
+      const price = Number(product.pricing?.amount ?? product.price);
+      const brand = typeof product.brand === "string" ? product.brand : product.brandName
+        || window.sofievkaCatalog?.brands?.find(brand => brand.id === product.brandId)?.name;
+      const category = product.primaryCategoryName || window.sofievkaCatalog?.categoryById?.[product.primaryCategoryId]?.name;
+      return [{
+        item_id: String(product.id), item_name: product.title,
+        ...(brand ? { item_brand: brand } : {}),
+        ...(category ? { item_category: category } : {}),
+        ...(Number.isFinite(price) && price > 0 ? { price } : {}),
+        ...(quantity > 0 ? { quantity } : {})
+      }];
+    });
+    if (!items.length) return;
+    const subtotal = items.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
+    if (event === "purchase") {
+      const transactionId = result?.number ? String(result.number) : "";
+      const value = result?.total ?? result?.itemsTotal;
+      if (!transactionId || purchaseIds.has(transactionId) || !Number.isFinite(value) || value < 0 || !subtotal) return;
+      purchaseIds.add(transactionId);
+      track(event, { transaction_id: transactionId, currency: result.currency || "UAH", value, items });
+      return;
+    }
+    track(event, { currency: "UAH", value: Math.round(subtotal * 100) / 100, items });
+  }
+
+  // Configured trackers wait for the document and load on interaction or idle, with a time limit.
   const loadedTags = new Set();
+  const START_EVENTS = ["pointerdown", "keydown", "touchstart", "scroll"];
+  let trackingScheduled = false;
   function addScript(src) {
     const script = document.createElement("script");
     script.async = true;
@@ -282,29 +359,55 @@
     document.head.append(script);
   }
   function applyIntegrations() {
-    const { ga4MeasurementId: ga4, gtmContainerId: gtm, metaPixelId: pixel, searchConsoleToken: token } = current.integrations;
+    const { metaPixelId: pixel, searchConsoleToken: token } = current.integrations;
     const once = (key, valid, load) => { if (valid && !loadedTags.has(key)) { loadedTags.add(key); load(); } };
     // The verification meta sets no cookies; it never waits for consent.
-    once(`gsc:${token}`, /^[A-Za-z0-9_-]{10,100}$/.test(token || "") && !document.querySelector(`meta[name="google-site-verification"][content="${token}"]`), () => {
+    once(`gsc:${token}`, /^[A-Za-z0-9_-]{10,100}$/.test(token || "") && !document.querySelector('meta[name="google-site-verification"]'), () => {
       const meta = document.createElement("meta");
       meta.name = "google-site-verification";
       meta.content = token;
       document.head.append(meta);
     });
-    const hasGoogle = /^GTM-[A-Z0-9]{4,12}$/.test(gtm || "") || /^G-[A-Z0-9]{4,16}$/.test(ga4 || "");
-    if (hasGoogle) sendConsentDefault();
-    if (!analyticsAllowed()) return;
-    once(`gtm:${gtm}`, /^GTM-[A-Z0-9]{4,12}$/.test(gtm || ""), () => {
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
-      addScript(`https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(gtm)}`);
-    });
-    once(`ga4:${ga4}`, /^G-[A-Z0-9]{4,16}$/.test(ga4 || ""), () => {
-      gtag("js", new Date());
-      gtag("config", ga4);
-      addScript(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ga4)}`);
-    });
-    once(`pixel:${pixel}`, /^\d{6,20}$/.test(pixel || ""), () => {
+    if (googleTag()) sendConsentDefault();
+    if (!analyticsAllowed()) { pendingAnalytics.length = 0; return; }
+    const hasNewGoogle = !configuredGoogle && googleTag();
+    const hasNewPixel = /^\d{6,20}$/.test(pixel || "") && !loadedTags.has(`pixel:${pixel}`);
+    if (trackingScheduled || (!hasNewGoogle && !hasNewPixel)) return;
+    trackingScheduled = true;
+    const schedule = () => {
+      let hasStarted = false;
+      const start = () => {
+        if (hasStarted) return;
+        hasStarted = true;
+        trackingScheduled = false;
+        START_EVENTS.forEach(event => window.removeEventListener(event, start, true));
+        loadTrackers();
+      };
+      START_EVENTS.forEach(event => window.addEventListener(event, start, { capture: true, passive: true }));
+      window.setTimeout(start, 2500);
+      if (window.requestIdleCallback) window.requestIdleCallback(start, { timeout: 2500 });
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", schedule, { once: true });
+    else schedule();
+  }
+  function loadTrackers() {
+    if (!analyticsAllowed()) { pendingAnalytics.length = 0; return; }
+    const google = googleTag();
+    if (google && !configuredGoogle) {
+      configuredGoogle = google;
+      if (google.manager) {
+        dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
+        addScript(`https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(google.id)}`);
+      } else {
+        gtag("js", new Date());
+        gtag("config", google.id);
+        addScript(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(google.id)}`);
+      }
+      pendingAnalytics.splice(0).forEach(([event, details]) => sendAnalytics(event, details));
+    }
+    const pixel = current.integrations.metaPixelId;
+    if (/^\d{6,20}$/.test(pixel || "") && !loadedTags.has(`pixel:${pixel}`)) {
+      loadedTags.add(`pixel:${pixel}`);
       if (!window.fbq) {
         const fbq = function () { fbq.callMethod ? fbq.callMethod.apply(fbq, arguments) : fbq.queue.push(arguments); };
         Object.assign(fbq, { push: fbq, loaded: true, version: "2.0", queue: [] });
@@ -315,11 +418,13 @@
       if (current.cookies.enabled) window.fbq("consent", "grant");
       window.fbq("init", pixel);
       window.fbq("track", "PageView");
-    });
+    }
   }
 
   function saveConsent(choice) {
     write(CONSENT_KEY, JSON.stringify({ choice, at: new Date().toISOString() }));
+    if (choice === "all") attribution();
+    else write(UTM_KEY, "null");
     if (consentDefaultSent) gtag("consent", "update", choice === "all" ? GRANTED : DENIED);
     // Tags already on the page (an earlier «accept») stop using cookies after «only necessary».
     if (choice !== "all" && typeof window.fbq === "function") window.fbq("consent", "revoke");
@@ -387,7 +492,7 @@
   }
 
   async function load() {
-    const config = window.SOFIEVKA_CATALOG_CONFIG?.supabase;
+    const config = publicConfig;
     if (!config?.url || !config?.publishableKey) return current;
     try {
       const response = await fetch(`${config.url}/rest/v1/rpc/get_site_settings`, {
@@ -399,6 +504,7 @@
       if (!response.ok) return current;
       const body = await response.json();
       if (!body || typeof body !== "object") return current;
+      consentPolicyKnown = true;
       const serialized = JSON.stringify(body);
       if (serialized !== read(CACHE_KEY)) {
         write(CACHE_KEY, serialized);
@@ -411,10 +517,13 @@
   window.sofievkaSiteSettings = Object.freeze({
     get current() { return current; },
     defaults: DEFAULTS,
-    ready: load(),
+    ready: load().then(settings => { attribution(); return settings; }),
     onChange(listener) { listeners.add(listener); return () => listeners.delete(listener); },
     applyHooks,
     openCookieSettings,
+    attribution,
+    trackCommerce,
+    trackLead(type) { track("form_submit", { form_type: type }); },
     phoneHref,
     mapEmbed,
     mapRoute
@@ -438,8 +547,9 @@
     input.value = formatPhone(input.value);
   });
 
-  // Tags start right away from the cached copy; title/description, menus and the banner wait for the DOM.
+  // Consent defaults and verification are immediate. Third-party scripts wait for a scheduled start.
   applyIntegrations();
+  attribution();
   const ready = () => { applySeo(); applyHooks(); renderConsentBanner(false); };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ready);
   else ready();

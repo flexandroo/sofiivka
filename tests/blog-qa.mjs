@@ -7,6 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import vm from "node:vm";
 import { fileURLToPath } from "node:url";
+import { applyToShell, resolvePage } from "../api/seo-page.mjs";
 import { postPaths, writeSeoFiles, SITEMAP_EXCLUDED_PAGES } from "../scripts/generate-sitemap.mjs";
 import { extractFallbackArticles, extractFallbackCase } from "./site-posts-fallback.mjs";
 
@@ -88,10 +89,11 @@ assert.match(shell, /site-posts\.js\?v=/);
 assert.match(shell, /post: renderPostTemplate/);
 const postHtml = read("post.html");
 assert.match(postHtml, /data-page="post"/);
+assert.match(postHtml, /name="robots" content="noindex,follow"/);
 assert.match(postHtml, /src="\/page-shell\.js/);
 const rewrite = source => vercel.rewrites.find(item => item.source === source)?.destination;
-assert.equal(rewrite("/blog/:slug"), "/post.html");
-assert.equal(rewrite("/portfolio/:slug"), "/post.html");
+assert.equal(rewrite("/blog/:slug"), "/api/seo-page?kind=post&postKind=article&slug=:slug");
+assert.equal(rewrite("/portfolio/:slug"), "/api/seo-page?kind=post&postKind=case&slug=:slug");
 assert.equal(rewrite("/post"), "/post.html");
 assert.equal(rewrite("/blog"), "/blog.html");
 assert.ok(SITEMAP_EXCLUDED_PAGES.has("post"), "the template is not in the sitemap");
@@ -168,17 +170,22 @@ class Node {
 }
 const meta = { description: new Node("meta"), robots: null };
 const canonical = new Node("link");
+const serverData = new Node("script");
+let fetchCount = 0;
 const context = {
-  window: { localStorage: { getItem: () => null, setItem() {}, removeItem() {} } },
+  window: {
+    localStorage: { getItem: () => null, setItem() {}, removeItem() {} },
+    SOFIEVKA_CATALOG_CONFIG: { supabase: { url: "https://stub.supabase.co", publishableKey: "sb_publishable_x" } }
+  },
   location: { origin: "https://shop.test", pathname: "/blog/x", search: "" },
   document: {
     title: "",
     head: { append() {} },
     createElement: tag => new Node(tag),
     createDocumentFragment: () => Object.assign(new Node("fragment"), { isFragment: true }),
-    querySelector: selector => (selector === 'meta[name="description"]' ? meta.description : selector === 'link[rel="canonical"]' ? canonical : null)
+    querySelector: selector => ({ 'meta[name="description"]': meta.description, 'link[rel="canonical"]': canonical, "#ssr-post-data": serverData })[selector] || null
   },
-  fetch: () => Promise.reject(new Error("offline")),
+  fetch: () => { fetchCount += 1; return Promise.reject(new Error("offline")); },
   AbortSignal: { timeout: () => undefined },
   URLSearchParams,
   Intl,
@@ -202,7 +209,7 @@ const nodes = Object.fromEntries(ids.map(id => [id, new Node("div")]));
 const moreList = new Node("div");
 nodes["[data-post-more]"].map = { "[data-post-more-list]": moreList, h2: new Node("h2") };
 const fakeRoot = { querySelector: selector => nodes[selector] || null, querySelectorAll: () => [] };
-posts.renderPost(fakeRoot, {
+const exampleCase = {
   kind: "case", slug: "kotelnia", title: "<img src=x onerror=alert(1)>", excerpt: "Коротко", category: "Комплексна задача",
   tags: ["Опалення"], publishedAt: "2026-09-30T07:00:00Z", cover: { url: "javascript:alert(1)", alt: "x" },
   body: [
@@ -217,7 +224,8 @@ posts.renderPost(fakeRoot, {
   case: { object: "Будинок", location: "Київ", year: 2025, equipment: ["Котел <b>"], photos: [{ url: "https://cdn.test/1.webp", alt: "Котельня" }, { url: "data:image/png;base64,AA" }] },
   seo: { title: "", description: "" },
   more: [{ kind: "case", slug: "other", title: "Інший", excerpt: "", category: "", cover: { url: "" } }, { kind: "bad", slug: "x", title: "x" }]
-});
+};
+posts.renderPost(fakeRoot, exampleCase);
 assert.equal(nodes["[data-post-title]"].textContent, "<img src=x onerror=alert(1)>");
 assert.equal(nodes["[data-post-current]"].textContent, "<img src=x onerror=alert(1)>");
 assert.equal(nodes["[data-post-kicker]"].textContent, "Комплексна задача");
@@ -243,6 +251,67 @@ assert.match(moreList.html(), /href="\/portfolio\/other"/);
 assert.equal(context.document.title, "<img src=x onerror=alert(1)> | ТД «Софіївка»", "title falls back to the post title");
 assert.equal(meta.description.attributes.content, "Коротко", "description falls back to the excerpt");
 assert.equal(canonical.attributes.href, "https://shop.test/portfolio/kotelnia");
+
+// Raw first paint and hydration use the same published payload. Unsafe content never becomes markup.
+const origin = "https://canonical.test";
+const requestPost = async (postKind, slug, post) => resolvePage({
+  kind: "post", postKind, slug, origin,
+  rpc: async (name, body) => {
+    assert.equal(name, "get_site_post");
+    assert.deepEqual(body, { post_kind: postKind, post_slug: slug });
+    return post;
+  }
+});
+const casePage = (await requestPost("case", "kotelnia", exampleCase)).page;
+const caseHtml = applyToShell(postHtml, casePage);
+assert.match(caseHtml, /<h1>&lt;img src=x onerror=alert\(1\)&gt;<\/h1>/);
+assert.match(caseHtml, /<h2>&lt;script&gt;alert\(1\)&lt;\/script&gt;<\/h2>/);
+assert.match(caseHtml, /<a href="\/delivery\.html">доставку<\/a>/);
+assert.match(caseHtml, /<a href="\/portfolio\/other">Інший<\/a>/);
+assert.match(caseHtml, /<dt>Рік<\/dt><dd>2025<\/dd>/);
+assert.match(caseHtml, /<time datetime="2026-09-30T07:00:00Z">/);
+assert.doesNotMatch(caseHtml, /<(?:a href|img src)="(?:javascript|data):/);
+assert.match(caseHtml, /<link rel="canonical" href="https:\/\/canonical\.test\/portfolio\/kotelnia">/);
+assert.match(caseHtml, /property="og:type" content="article"/);
+assert.match(caseHtml, /name="robots" content="index,follow"/);
+assert.doesNotMatch(caseHtml, /noindex/);
+const scriptJson = (html, id) => JSON.parse(new RegExp(`id="${id}">([^<]*)</script>`).exec(html)[1]);
+assert.equal(scriptJson(caseHtml, "schema-article")["@type"], "Article");
+assert.deepEqual(scriptJson(caseHtml, "ssr-post-data"), exampleCase);
+assert.equal(scriptJson(caseHtml, "schema-breadcrumbs").itemListElement.at(-1).item, `${origin}/portfolio/kotelnia`);
+
+const exampleArticle = { kind: "article", slug: "x", title: "Матеріал", excerpt: "Вступ", cover: { url: "assets/a.webp", alt: "Фото" },
+  publishedAt: "2026-10-01T09:00:00Z", updatedAt: "2026-10-02T09:00:00Z", seo: { title: "SEO матеріалу", description: "Опис матеріалу" },
+  body: [{ type: "paragraph", text: "Текст матеріалу" }] };
+const articlePage = (await requestPost("article", "x", exampleArticle)).page;
+const articleHtml = applyToShell(postHtml, articlePage);
+const articleSchema = scriptJson(articleHtml, "schema-article");
+assert.equal(articleSchema["@type"], "Article");
+assert.equal(articleSchema.author.name, "ТД «Софіївка»");
+assert.equal(articleSchema.image, `${origin}/assets/a.webp`);
+assert.equal(articleSchema.dateModified, exampleArticle.updatedAt);
+assert.match(articleHtml, /<title>SEO матеріалу<\/title>/);
+assert.match(articleHtml, /content="Опис матеріалу"/);
+assert.match(articleHtml, /<p>Текст матеріалу<\/p>/);
+assert.deepEqual(await requestPost("article", "missing", null), { missing: true });
+assert.deepEqual(await resolvePage({ kind: "post", postKind: "article", slug: "%2Fwrong", origin,
+  rpc: () => assert.fail("malformed slug must not make an RPC request") }), { missing: true });
+
+const framed = postHtml.replace("<div data-page-root></div>", "<div data-page-root data-page-frame><main><!--first-paint--></main></div>");
+const renderedTwice = applyToShell(applyToShell(framed, articlePage), articlePage);
+assert.match(renderedTwice, /<main><article class="ssr-page">/);
+for (const marker of ["data-seo-rendered", 'rel="canonical"', 'name="robots"', 'id="schema-article"', 'id="schema-organization"', 'id="ssr-post-data"']) {
+  assert.equal(renderedTwice.split(marker).length - 1, 1, marker);
+}
+
+serverData.textContent = JSON.stringify(scriptJson(articleHtml, "ssr-post-data"));
+canonical.href = articlePage.canonical;
+context.document.title = articlePage.title;
+await posts.apply("post", fakeRoot);
+assert.equal(nodes["[data-post-body]"].textContent, "Текст матеріалу");
+assert.equal(canonical.href, `${origin}/blog/x`, "hydration retains the server's canonical origin");
+assert.equal(context.document.title, articlePage.title);
+assert.equal(fetchCount, 0, "the client's first render reuses the server payload");
 
 // Blog list: cards link to /blog/<slug>; empty list shows the empty state, not the built-in cards.
 const grid = new Node("div");

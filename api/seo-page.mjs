@@ -4,9 +4,14 @@
 // from the same public RPCs the storefront uses, and an unknown address answers 404. The client still renders the
 // page as before and replaces this markup.
 //
-// Any failure of the catalogue API falls back to the plain shell with a 200 and a short cache: a database hiccup must
-// never turn real pages into 404s for visitors or search engines.
-const SITE_NAME = "ТД «Софіївка»";
+// A temporary data failure keeps the shell available for the browser and gives crawlers a retryable response.
+import legacyCatalogRouting from "../catalog/routing.js";
+import sourceMappings from "../catalog/source-mappings.js";
+import categoryEditorial from "../catalog/category-editorial.js";
+import { isPostSlug, renderPostPage } from "../lib/seo-post.mjs";
+import { escapeHtml, faqSchema, jsonForScript, organizationSchema, schemaMarkup, seoText as clean, SITE_NAME, snippetTitle } from "../lib/seo-meta.mjs";
+
+export { escapeHtml };
 const REQUEST_TIMEOUT_MS = 4000;
 const BOOTSTRAP_TTL_MS = 5 * 60 * 1000;
 const SHELL_TTL_MS = 5 * 60 * 1000;
@@ -15,80 +20,24 @@ const MAX_SPECIFICATIONS = 40;
 const MAX_PARAGRAPHS = 8;
 const CACHE_PAGE = "public, max-age=0, s-maxage=300, stale-while-revalidate=86400";
 const CACHE_MISSING = "public, max-age=0, s-maxage=60";
-const CACHE_FALLBACK = "public, max-age=0, s-maxage=30";
-const TRACKING_PARAM = /^(utm_|gclid$|fbclid$|gad_source$|srsltyid$)/;
-
-// Old catalogue addresses that catalog/routing.js still resolves and redirects in the browser (tests/seo-page-qa.mjs
-// keeps this list equal to routing.js). They must not answer 404.
-const LEGACY_CATALOG_PATHS = new Set([
-  "/catalog/heating/boiler-accessories",
-  "/catalog/heating/circulation-pumps",
-  "/catalog/heating/circulation-pumps/dhw-recirculation",
-  "/catalog/heating/circulation-pumps/system-circulation",
-  "/catalog/heating/gas-boilers",
-  "/catalog/heating/heat-accumulators",
-  "/catalog/heating/hot-water-tanks",
-  "/catalog/heating/industrial-heating",
-  "/catalog/heating/pellet-boilers",
-  "/catalog/heating/pellet-burners",
-  "/catalog/heating/solid-fuel-boilers",
-  "/catalog/heating/valves",
-  "/catalog/water-supply/components",
-  "/catalog/water-supply/components/pressure-tanks",
-  "/catalog/water-supply/components/pump-accessories",
-  "/catalog/water-supply/components/pump-automation",
-  "/catalog/water-supply/components/pump-services",
-  "/catalog/water-supply/drainage-pumps",
-  "/catalog/water-supply/sewage-lifting-units",
-  "/catalog/water-supply/sewage-pumps",
-  "/catalog/water-supply/system-circulation",
-  "/catalog/water-supply/water-pumps",
-  "/catalog/water-supply/water-pumps/borehole-pumps",
-  "/catalog/water-supply/water-pumps/drainage-pumps",
-  "/catalog/water-supply/water-pumps/multistage-pumps",
-  "/catalog/water-supply/water-pumps/pool-pumps-filtration",
-  "/catalog/water-supply/water-pumps/pressure-boosting",
-  "/catalog/water-supply/water-pumps/sewage-lifting-units",
-  "/catalog/water-supply/water-pumps/sewage-pumps",
-  "/catalog/water-supply/water-pumps/surface-pumps",
-  "/catalog/water-supply/water-supply-components",
-  "/catalog/water-supply/water-supply-components/pump-services",
-  "/catalog/water-supply/water-treatment",
-  "/catalog/water-treatment/chlorine-odor-removal",
-  "/catalog/water-treatment/complex-treatment",
-  "/catalog/water-treatment/disinfection",
-  "/catalog/water-treatment/disinfection/uv-c-lamps",
-  "/catalog/water-treatment/drinking-system-cartridges",
-  "/catalog/water-treatment/filter-media",
-  "/catalog/water-treatment/flow-filters",
-  "/catalog/water-treatment/mainline-cartridges",
-  "/catalog/water-treatment/mainline-filters-housings",
-  "/catalog/water-treatment/materials-reagents",
-  "/catalog/water-treatment/materials-reagents/filter-media",
-  "/catalog/water-treatment/mechanical-treatment",
-  "/catalog/water-treatment/replacement-elements",
-  "/catalog/water-treatment/replacement-elements/drinking-system-cartridges",
-  "/catalog/water-treatment/reverse-osmosis",
-  "/catalog/water-treatment/water-softening"
-]);
+const CACHE_FALLBACK = "no-store";
+const TRACKING_PARAM = /^(utm_|gclid$|dclid$|fbclid$|gad_source$|gad_campaignid$|gbraid$|wbraid$|msclkid$|srsltyid$)/i;
 
 // In a framed shell (header, placeholders and footer from the build) the content waits hidden for the client
 // render; the shell's <noscript> style shows it to visitors without JavaScript.
 const FIRST_PAINT_STYLE = `<style>[data-page-frame] .ssr-page{display:none}.ssr-page{min-height:100vh;padding:132px 0 48px;line-height:1.5}.ssr-page h1{margin:12px 0}.ssr-page img{display:block;max-width:320px;height:auto;margin:16px 0}.ssr-page dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 16px;max-width:720px}.ssr-page dd{margin:0}.ssr-page ul{padding-left:20px}.ssr-price{font-size:24px;font-weight:700}</style>`;
 
-export const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, character => ({
-  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-})[character]);
+const money = amount => `${new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 2 }).format(Number(amount) || 0)} грн`;
 
-// JSON inside <script>: "<" is escaped so catalogue text cannot close the tag.
-const jsonForScript = data => JSON.stringify(data).replace(/</g, "\\u003c");
+function knownPrice(pricing) {
+  const amount = Number(pricing?.amount);
+  return pricing?.priceStatus === "known" && Number.isFinite(amount) && amount > 0 ? amount : null;
+}
 
-const clean = (value, limit = Infinity) => {
-  const text = String(value ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-  return text.length > limit ? `${text.slice(0, limit - 1).trimEnd()}…` : text;
-};
-
-const money = amount => `${new Intl.NumberFormat("uk-UA", { maximumFractionDigits: 0 }).format(Math.round(Number(amount) || 0))} грн`;
+function titleWithPrice(template, price, fallback) {
+  if (!template.includes("{min}")) return template;
+  return price ? template.replaceAll("{min}", price) : fallback;
+}
 
 export function resolveSiteOrigin(env = process.env) {
   const candidate = String(env.SOFIEVKA_SITE_URL || "").trim()
@@ -155,7 +104,7 @@ function categoryCrumbs(taxonomy, category) {
 }
 
 function priceLabel(pricing) {
-  if (pricing?.priceStatus === "known" && Number(pricing.amount) > 0) return `${money(pricing.amount)}${pricing.unit === "m" ? "/м" : ""}`;
+  if (knownPrice(pricing)) return `${money(pricing.amount)}${pricing.unit === "m" ? "/м" : ""}`;
   return "Ціну уточнюйте";
 }
 
@@ -219,15 +168,16 @@ export function renderProduct({ product, relatedProducts = [], bootstrap, origin
   const taxonomy = createTaxonomy(bootstrap.categories);
   const brand = (bootstrap.brands || []).find(item => item.id === product.brandId);
   const category = taxonomy.byId.get(product.primaryCategoryId);
-  const path = `/product/${encodeURIComponent(product.slug)}`;
+  const path = product.slug ? `/product/${encodeURIComponent(product.slug)}` : `/product?id=${encodeURIComponent(product.id)}`;
   const url = absolute(path, origin);
-  const title = shortSeoTitle(clean(product.seo?.title) || `${clean(product.title)} | ${SITE_NAME}`);
-  const description = clean(product.seo?.description || product.shortDescription || product.description, 300);
+  const pricing = product.pricing || {};
+  const price = knownPrice(pricing);
+  const fallbackTitle = `${clean(product.title)} | ${SITE_NAME}`;
+  const title = snippetTitle(shortSeoTitle(titleWithPrice(clean(product.seo?.title) || fallbackTitle, price && priceLabel(pricing), fallbackTitle)), clean(product.model) || displaySku(product));
+  const description = clean(product.seo?.description || product.shortDescription || product.description || product.title, 160);
   const sku = displaySku(product);
   const gtin = productGtin(product);
   const images = (product.images || []).map(image => absolute(typeof image === "string" ? image : image?.url || image?.src, origin)).filter(Boolean);
-  const pricing = product.pricing || {};
-  const price = pricing.priceStatus === "known" && Number(pricing.amount) > 0 ? Number(pricing.amount) : null;
   const status = product.inventory?.status;
   const crumbs = [...categoryCrumbs(taxonomy, category), { name: clean(product.title), href: path }];
   const availability = { in_stock: "InStock", out_of_stock: "OutOfStock", preorder: "PreOrder", discontinued: "Discontinued" }[status];
@@ -245,6 +195,7 @@ export function renderProduct({ product, relatedProducts = [], bootstrap, origin
     ...(price ? { offers: {
       "@type": "Offer", url, price: String(price), priceCurrency: pricing.currency || "UAH",
       itemCondition: "https://schema.org/NewCondition",
+      seller: { "@id": `${origin}/#organization` },
       ...(pricing.unit === "m" ? { priceSpecification: {
         "@type": "UnitPriceSpecification", price: String(price), priceCurrency: pricing.currency || "UAH",
         referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitText: "м" }
@@ -258,7 +209,7 @@ export function renderProduct({ product, relatedProducts = [], bootstrap, origin
   const body = `<article class="ssr-page"><div class="container">${crumbsMarkup(crumbs)}
 <h1>${escapeHtml(product.title)}</h1>
 <p>${brand ? `<a href="/brands/${escapeHtml(encodeURIComponent(brand.id))}">${escapeHtml(brand.name)}</a> · ` : ""}${sku ? `Артикул: ${escapeHtml(sku)}` : ""}</p>
-${images[0] ? `<img src="${escapeHtml(images[0])}" alt="${escapeHtml(clean(product.title))}" width="320" height="320">` : ""}
+${images[0] ? `<img src="${escapeHtml(images[0])}" alt="${escapeHtml(clean(product.title))}" width="320" height="320" fetchpriority="high" decoding="async">` : ""}
 <p class="ssr-price">${oldPrice}${escapeHtml(priceLabel(pricing))}</p>
 <p>${escapeHtml(availabilityLabel(status))}</p>
 ${paragraphsOf(product).map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join("\n")}
@@ -267,7 +218,7 @@ ${related.length ? `<h2>Схожі товари</h2><ul>${related.map(item => `<
 </div></article>`;
   return {
     title, description, canonical: url, robots: "index,follow", ogType: "product", image: images[0] || "",
-    schemas: { "schema-product": productSchema, "schema-breadcrumbs": breadcrumbSchema(crumbs, origin) },
+    schemas: { ...(price ? { "schema-product": productSchema } : {}), "schema-breadcrumbs": breadcrumbSchema(crumbs, origin) },
     body
   };
 }
@@ -277,28 +228,53 @@ function listingMarkup(products) {
   return `<h2>Товари</h2><ul>${products.filter(item => item?.slug).map(item => `<li><a href="/product/${escapeHtml(encodeURIComponent(item.slug))}">${escapeHtml(item.title)}</a> — ${escapeHtml(priceLabel(item.pricing))}</li>`).join("")}</ul>`;
 }
 
-export function renderCategory({ category, products = [], total = 0, bootstrap, origin, filtered = false }) {
+function collectionSchema(url, name, description, products, origin) {
+  const items = products.filter(product => product?.slug).map((product, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: clean(product.title),
+    url: absolute(`/product/${encodeURIComponent(product.slug)}`, origin)
+  }));
+  return {
+    "@context": "https://schema.org", "@type": "CollectionPage", url, name, description,
+    ...(items.length ? { mainEntity: { "@type": "ItemList", itemListElement: items } } : {})
+  };
+}
+
+export function renderCategory({ category, products = [], minimumPricing, total = 0, bootstrap, origin, filtered = false }) {
   const taxonomy = createTaxonomy(bootstrap.categories);
   const path = taxonomy.pathOf(category);
+  const canonical = absolute(path, origin);
   const crumbs = categoryCrumbs(taxonomy, category);
   const heading = clean(category.title || category.name);
-  const description = clean(category.seo?.description || category.description, 300);
+  const landing = categoryEditorial.landings[category.id];
+  const intro = landing?.intro || clean(category.description || category.seo?.description);
+  const description = clean(category.seo?.description || intro || heading, 160);
+  const fallbackTitle = `${heading} | ${SITE_NAME}`;
+  const configuredTitle = clean(category.seo?.title || category.metaTitle);
+  const minimum = knownPrice(minimumPricing) ? priceLabel(minimumPricing) : null;
+  const template = configuredTitle.includes("{min}") ? configuredTitle : (minimum && landing?.titleWithPrice) || configuredTitle || fallbackTitle;
+  const title = snippetTitle(titleWithPrice(template, minimum, fallbackTitle));
   const children = taxonomy.childrenOf(category.id);
   const count = bootstrap.categoryCounts ? Number(bootstrap.categoryCounts[category.id]) || 0 : total;
   const body = `<section class="ssr-page"><div class="container">${crumbsMarkup(crumbs)}
 <h1>${escapeHtml(heading)}</h1>
-${description ? `<p>${escapeHtml(description)}</p>` : ""}
-${children.length ? `<h2>Розділи</h2><ul>${children.map(child => `<li><a href="${escapeHtml(taxonomy.pathOf(child))}">${escapeHtml(child.title)}</a></li>`).join("")}</ul>` : ""}
+${intro ? `<p>${escapeHtml(intro)}</p>` : ""}
+${children.length ? `<h2>Розділи</h2><ul>${children.map(child => `<li><a href="${escapeHtml(taxonomy.pathOf(child))}">${escapeHtml(child.title)}</a>${child.description ? `<p>${escapeHtml(clean(child.description))}</p>` : ""}</li>`).join("")}</ul>` : ""}
 ${listingMarkup(products)}
+${landing ? categoryEditorial.markup(landing, escapeHtml) : ""}
 </div></section>`;
   return {
-    title: clean(category.seo?.title || category.metaTitle) || `${heading} | ${SITE_NAME}`,
-    description,
-    canonical: absolute(path, origin),
+    title, description, canonical,
     robots: filtered || count === 0 ? "noindex,follow" : "index,follow",
     ogType: "website",
-    image: "",
-    schemas: { "schema-breadcrumbs": breadcrumbSchema(crumbs, origin) },
+    image: landing?.image || "",
+    imageSize: landing?.image ? { width: 1200, height: 630 } : null,
+    schemas: {
+      "schema-breadcrumbs": breadcrumbSchema(crumbs, origin),
+      "schema-collection": collectionSchema(canonical, heading, description, products, origin),
+      ...(landing?.faq.length ? { "schema-faq": faqSchema(landing.faq) } : {})
+    },
     body
   };
 }
@@ -306,7 +282,8 @@ ${listingMarkup(products)}
 export function renderBrand({ brand, products = [], bootstrap, origin, filtered = false }) {
   const path = `/brands/${encodeURIComponent(brand.id)}`;
   const crumbs = [{ name: "Головна", href: "/" }, { name: "Бренди", href: "/brands" }, { name: brand.name, href: path }];
-  const description = clean(brand.seo?.description || brand.description, 300) || `${brand.name}: категорії та товари у каталозі ${SITE_NAME}.`;
+  const description = clean(brand.seo?.description || brand.description, 160) || `${brand.name}: категорії та товари у каталозі ${SITE_NAME}.`;
+  const canonical = absolute(path, origin);
   const count = Number(bootstrap.brandCounts?.[brand.id] ?? 0) || 0;
   const body = `<section class="ssr-page"><div class="container">${crumbsMarkup(crumbs)}
 <h1>${escapeHtml(brand.name)}</h1>
@@ -314,13 +291,13 @@ export function renderBrand({ brand, products = [], bootstrap, origin, filtered 
 ${listingMarkup(products)}
 </div></section>`;
   return {
-    title: clean(brand.seo?.title) || `${brand.name} — товари та категорії | ${SITE_NAME}`,
+    title: snippetTitle(clean(brand.seo?.title) || `${brand.name} — товари та категорії | ${SITE_NAME}`),
     description,
-    canonical: absolute(path, origin),
+    canonical,
     robots: filtered || count === 0 ? "noindex,follow" : "index,follow",
     ogType: "website",
     image: brand.logo ? absolute(`/${String(brand.logo).replace(/^\/+/, "")}`, origin) : "",
-    schemas: { "schema-breadcrumbs": breadcrumbSchema(crumbs, origin) },
+    schemas: { "schema-breadcrumbs": breadcrumbSchema(crumbs, origin), "schema-collection": collectionSchema(canonical, brand.name, description, products, origin) },
     body
   };
 }
@@ -328,17 +305,18 @@ ${listingMarkup(products)}
 // Puts the rendered page into a shell (product.html, catalog.html, brand.html). Unknown shells stay untouched.
 export function applyToShell(shell, page) {
   const tag = (attribute, name, content) => `<meta ${attribute}="${name}" content="${escapeHtml(content)}">`;
-  // Build shells already contain company social tags. Replace the whole owned set, including stale image
-  // dimensions, before adding page metadata; attribute order and quote style do not change ownership.
-  const preparedShell = shell.replace(/<head\b[^>]*>[\s\S]*?<\/head>/i, head => head.replace(/<meta\b(?:[^"'<>]|"[^"]*"|'[^']*')*>/gi, meta => {
-    for (const [, name, doubleQuoted, singleQuoted, unquoted] of meta.matchAll(/\s+([^\s"'<>/=]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g)) {
-      if (/^(?:property|name)$/i.test(name) && /^(?:og|twitter):/i.test((doubleQuoted ?? singleQuoted ?? unquoted).trim())) return "";
+  const attribute = (markup, name) => {
+    for (const [, key, quoted, singleQuoted, unquoted] of markup.matchAll(/\s+([^\s"'<>/=]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g)) {
+      if (key.toLowerCase() === name) return (quoted ?? singleQuoted ?? unquoted).trim().toLowerCase();
     }
-    return meta;
-  }));
+    return "";
+  };
   // Derive the company fallback from this page's origin, never from a previous page's product image.
   const image = absolute(page.image || "/assets/og-image.jpg", page.canonical);
+  const imageSize = page.imageSize || (!page.image ? { width: 1200, height: 630 } : null);
   const head = [
+    `<title>${escapeHtml(page.title)}</title>`,
+    tag("name", "description", page.description),
     `<link rel="canonical" href="${escapeHtml(page.canonical)}">`,
     tag("name", "robots", page.robots),
     tag("property", "og:site_name", SITE_NAME),
@@ -348,19 +326,33 @@ export function applyToShell(shell, page) {
     tag("property", "og:description", page.description),
     tag("property", "og:url", page.canonical),
     tag("property", "og:image", image),
+    ...(imageSize ? [tag("property", "og:image:width", imageSize.width), tag("property", "og:image:height", imageSize.height)] : []),
     tag("name", "twitter:card", image ? "summary_large_image" : "summary"),
-    ...Object.entries(page.schemas).map(([id, data]) => `<script type="application/ld+json" id="${id}">${jsonForScript(data)}</script>`),
-    FIRST_PAINT_STYLE
+    schemaMarkup("schema-organization", organizationSchema(new URL(page.canonical).origin)),
+    ...Object.entries(page.schemas).map(([id, data]) => schemaMarkup(id, data)),
+    ...(page.postData ? [`<script type="application/json" id="ssr-post-data">${jsonForScript(page.postData)}</script>`] : []),
+    ...(shell.includes(FIRST_PAINT_STYLE) ? [] : [FIRST_PAINT_STYLE])
   ].filter(Boolean).join("");
-  return preparedShell
-    .replace(/<title>[\s\S]*?<\/title>/i, () => `<title>${escapeHtml(page.title)}</title>`)
-    .replace(/<meta\s+name="description"[^>]*>/i, () => tag("name", "description", page.description))
-    .replace(/<link\s+rel="canonical"[^>]*>/i, "")
-    .replace(/<meta\s+name="robots"[^>]*>/i, "")
-    .replace(/<\/head>/i, () => `${head}</head>`)
+  return shell
+    .replace(/<head\b([^>]*)>([\s\S]*?)<\/head>/i, (match, attributes, content) => {
+      const retained = content
+        .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, "")
+        .replace(/<(?:meta|link)\b(?:[^"'<>]|"[^"]*"|'[^']*')*>/gi, markup => {
+          const name = attribute(markup, "name");
+          return /^(?:description|robots)$/.test(name) || /^(?:og|twitter):/.test(name)
+            || /^(?:og|twitter):/.test(attribute(markup, "property"))
+            || attribute(markup, "rel") === "canonical" ? "" : markup;
+        })
+        .replace(/(<script\b[^>]*>)[\s\S]*?<\/script>/gi, (markup, opening) => {
+          const id = attribute(opening, "id");
+          return id.startsWith("schema-") || id === "ssr-post-data" ? "" : markup;
+        });
+      const owner = /\bdata-seo-rendered\b/.test(attributes) ? "" : " data-seo-rendered";
+      return `<head${attributes}${owner}>${retained}${head}</head>`;
+    })
     .replace(/<div data-page-root><\/div>/, () => `<div data-page-root data-prerendered>${page.body}</div>`)
     // A framed shell (scripts/prerender-company-pages.mjs) takes the content at its slot inside <main>.
-    .replace(/<div data-page-root data-page-frame>([\s\S]*?)<!--first-paint-->/, (match, frame) => `<div data-page-root data-prerendered data-page-frame>${frame}${page.body}`);
+    .replace(/<div data-page-root data-page-frame>([\s\S]*?)<!--first-paint-->(?:<!--catalog-index-->[\s\S]*?<!--\/catalog-index-->)?/, (match, frame) => `<div data-page-root data-prerendered data-page-frame>${frame}${page.body}`);
 }
 
 function createCatalogApi({ url, key, fetchImpl }) {
@@ -417,48 +409,85 @@ async function loadShell(path, requestOrigin, fetchImpl, now) {
 }
 
 const single = value => Array.isArray(value) ? value.join("/") : String(value ?? "");
-const SHELL_BY_KIND = { product: "/product", catalog: "/catalog", brand: "/brand" };
+const SHELL_BY_KIND = { product: "/product", catalog: "/catalog", brand: "/brand", post: "/post" };
 
 function safeDecode(value) {
   try { return decodeURIComponent(value); } catch { return value; }
 }
 
 // Decides what a request gets. Pure of the HTTP response, so tests drive it directly.
-export async function resolvePage({ kind, slug, path, search = "", rpc, origin, now = Date.now() }) {
+export async function resolvePage({ kind, slug, id, path, postKind, legacyPath = false, legacySection, legacyType, search = "", rpc, origin, now = Date.now() }) {
   const filtered = hasFilterParams(search);
+  if (kind === "post") {
+    const requested = safeDecode(single(slug));
+    const value = requested.toLowerCase();
+    if (!["article", "case"].includes(postKind) || !isPostSlug(value)) return { missing: true };
+    const post = await rpc("get_site_post", { post_kind: postKind, post_slug: value });
+    if (!post || post.kind !== postKind || post.slug !== value) return { missing: true };
+    const page = renderPostPage({ post, origin, crumbsMarkup, breadcrumbSchema });
+    if (requested !== value) return { redirect: `${new URL(page.canonical).pathname}${search}` };
+    return { page };
+  }
   if (kind === "product") {
-    const value = safeDecode(single(slug)).toLowerCase();
+    const legacyId = single(id);
+    const value = safeDecode(single(slug));
     // These reads do not depend on each other. Still decide missing products/legacy redirects from the
     // product response alone: unavailable metadata must not turn an unknown product into a 200 fallback.
-    const bootstrapRequest = value ? loadBootstrap(rpc, now) : null;
+    const bootstrapRequest = value || legacyId ? loadBootstrap(rpc, now) : null;
     bootstrapRequest?.catch(() => {});
-    let result = value ? await rpc("get_catalog_product_by_slug", { product_slug: value }) : null;
-    if (!result?.product && value) {
+    let result = legacyId ? await rpc("get_catalog_product", { legacy_id: legacyId }) : null;
+    if (!legacyId && value) {
+      result = await rpc("get_catalog_product_by_slug", { product_slug: value.toLowerCase() });
       // /product/<legacy id> from old links: the id keeps its case, so ask with the original spelling.
-      const byId = await rpc("get_catalog_product", { legacy_id: safeDecode(single(slug)) });
-      if (byId?.product?.slug) return { redirect: `/product/${encodeURIComponent(byId.product.slug)}${search}` };
+      if (!result?.product) result = await rpc("get_catalog_product", { legacy_id: value });
     }
     if (!result?.product) return { missing: true };
+    const product = result.product;
+    if (product.slug && (legacyId || legacyPath || product.slug !== value)) {
+      return { redirect: `/product/${encodeURIComponent(product.slug)}${search}` };
+    }
+    if (!product.slug && !legacyId) {
+      return { redirect: `/product?id=${encodeURIComponent(product.id)}${search ? `&${search.slice(1)}` : ""}` };
+    }
     const bootstrap = await bootstrapRequest;
-    return { page: renderProduct({ product: result.product, relatedProducts: result.relatedProducts || [], bootstrap, origin }) };
+    return { page: renderProduct({ product, relatedProducts: result.relatedProducts || [], bootstrap, origin }) };
   }
   if (kind === "catalog") {
-    const segments = safeDecode(single(path)).split("/").filter(Boolean);
-    // No usable path means the rewrite did not pass it: never answer 404 for a page that may exist.
-    if (!segments.length || segments[0].startsWith(":")) return { plainShell: true };
-    const requested = `/catalog/${segments.join("/")}`.replace(/\.html$/i, "");
-    if (LEGACY_CATALOG_PATHS.has(requested) || /^\/catalog\/water-supply\/water-treatment\/[^/]+$/.test(requested)) return { plainShell: true };
+    const parts = single(path).split("/").filter(Boolean);
+    const segments = parts.map(safeDecode);
+    if ((!segments.length && !legacySection) || segments[0]?.startsWith(":")) return { missing: true };
     const bootstrap = await loadBootstrap(rpc, now);
-    const category = createTaxonomy(bootstrap.categories).resolve(segments);
-    if (!category) return { missing: true };
-    const listing = await rpc("get_catalog_products", { scope_category: category.id, page_size: LISTING_SIZE });
-    return { page: renderCategory({ category, products: listing?.products || [], total: listing?.total || 0, bootstrap, origin, filtered }) };
+    const taxonomy = createTaxonomy(bootstrap.categories);
+    const normalized = segments.join("/").replace(/\.html$/i, "");
+    const category = taxonomy.resolve(normalized.split("/"));
+    if (!category || legacySection || legacyType) {
+      const aliasId = (legacySection && legacyCatalogRouting.legacyQuerySections[legacySection])
+        || (legacyType && sourceMappings.categoryMappings.ecosoft[legacyType]?.categoryId)
+        || legacyCatalogRouting.legacyCategoryPaths[`/catalog/${normalized}`];
+      const historicalWaterSlug = /^water-supply\/water-treatment\/([^/]+)$/.exec(normalized)?.[1];
+      const alias = taxonomy.byId.get(aliasId) || (historicalWaterSlug && bootstrap.categories.find(item =>
+        (item.slug === historicalWaterSlug || item.id === historicalWaterSlug) && taxonomy.chain(item).some(node => node.id === "water-treatment")));
+      if (alias?.visibility === "service") return { redirect: `/service-center${search}` };
+      const target = alias && taxonomy.pathOf(alias);
+      return target && taxonomy.resolve(target.slice("/catalog/".length).split("/").map(safeDecode))
+        ? { redirect: `${target}${search}` }
+        : { missing: true };
+    }
+    if (legacyPath || normalized !== segments.join("/")) return { redirect: `${taxonomy.pathOf(category)}${search}` };
+    const scope = { scope_category: category.id };
+    const needsMinimum = !filtered && (categoryEditorial.landings[category.id] || (category.seo?.title || category.metaTitle || "").includes("{min}"));
+    const [listing, lowest] = await Promise.all([
+      rpc("get_catalog_products", { ...scope, page_size: LISTING_SIZE }),
+      needsMinimum ? rpc("get_catalog_products", { ...scope, page_size: 1, sort_mode: "price-asc", minimum_price: 0.01 }).catch(() => null) : null
+    ]);
+    return { page: renderCategory({ category, products: listing?.products || [], minimumPricing: lowest?.products?.[0]?.pricing, total: listing?.total || 0, bootstrap, origin, filtered }) };
   }
   if (kind === "brand") {
     const value = safeDecode(single(slug));
     const bootstrap = await loadBootstrap(rpc, now);
     const brand = (bootstrap.brands || []).find(item => item.id === value);
     if (!brand) return { missing: true };
+    if (legacyPath) return { redirect: `/brands/${encodeURIComponent(brand.id)}${search}` };
     const listing = await rpc("get_catalog_products", { scope_brand: brand.id, page_size: LISTING_SIZE });
     return { page: renderBrand({ brand, products: listing?.products || [], bootstrap, origin, filtered }) };
   }
@@ -466,7 +495,7 @@ export async function resolvePage({ kind, slug, path, search = "", rpc, origin, 
 }
 
 export default async function handler(req, res, { fetchImpl = fetch, env = process.env } = {}) {
-  const { kind, slug, path } = req.query || {};
+  const { kind, slug, id, path, postKind, legacyPath, legacySection, legacyType } = req.query || {};
   const send = (status, cache, html) => {
     res.statusCode = status;
     res.setHeader("Content-Type", "text/html; charset=utf-8");
@@ -477,11 +506,18 @@ export default async function handler(req, res, { fetchImpl = fetch, env = proce
   requestUrl.searchParams.delete("kind");
   requestUrl.searchParams.delete("slug");
   requestUrl.searchParams.delete("path");
+  requestUrl.searchParams.delete("postKind");
+  requestUrl.searchParams.delete("legacyPath");
+  requestUrl.searchParams.delete("legacySection");
+  requestUrl.searchParams.delete("legacyType");
+  if (legacySection) requestUrl.searchParams.delete("category");
+  if (legacyType) requestUrl.searchParams.delete("type");
+  if (kind === "product" && id) requestUrl.searchParams.delete("id");
   const search = requestUrl.search;
   const host = req.headers?.["x-forwarded-host"] || req.headers?.host;
   const requestOrigin = `https://${String(host).split(",")[0].trim()}`;
   const now = Date.now();
-  const shellPath = SHELL_BY_KIND[kind];
+  const shellPath = Object.hasOwn(SHELL_BY_KIND, kind) ? SHELL_BY_KIND[kind] : null;
   let shellRequest = null;
 
   try {
@@ -493,9 +529,9 @@ export default async function handler(req, res, { fetchImpl = fetch, env = proce
     // network round trip after the product/listing is ready. Redirects and 404s still choose their own shell.
     shellRequest = loadShell(shellPath, requestOrigin, fetchImpl, now);
     shellRequest.catch(() => {});
-    const result = await resolvePage({ kind, slug, path, search, rpc, origin: resolveSiteOrigin(env), now });
+    const result = await resolvePage({ kind, slug, id, path, postKind, legacyPath: legacyPath === "1", legacySection, legacyType, search, rpc, origin: resolveSiteOrigin(env), now });
     if (result.redirect) {
-      res.statusCode = 308;
+      res.statusCode = 301;
       res.setHeader("Location", result.redirect);
       res.setHeader("Cache-Control", CACHE_PAGE);
       res.end();
@@ -506,16 +542,13 @@ export default async function handler(req, res, { fetchImpl = fetch, env = proce
       return;
     }
     const shell = await shellRequest;
-    if (result.plainShell) {
-      send(200, CACHE_PAGE, shell);
-      return;
-    }
     send(200, CACHE_PAGE, applyToShell(shell, result.page));
   } catch (error) {
     console.error("seo-page:", error?.message || error);
     try {
       const retryShell = () => loadShell(shellPath || SHELL_BY_KIND.catalog, requestOrigin, fetchImpl, now);
-      send(200, CACHE_FALLBACK, await (shellRequest ? shellRequest.catch(retryShell) : retryShell()));
+      res.setHeader("Retry-After", "60");
+      send(503, CACHE_FALLBACK, await (shellRequest ? shellRequest.catch(retryShell) : retryShell()));
     } catch {
       send(503, "no-store", `<!doctype html><html lang="uk"><meta charset="utf-8"><title>${SITE_NAME}</title><p>Сторінка тимчасово недоступна. Оновіть її за хвилину.</p></html>`);
     }

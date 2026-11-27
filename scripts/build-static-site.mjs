@@ -3,8 +3,9 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { transform } from "esbuild";
-import { resolveSiteUrl, writeSeoFiles } from "./generate-sitemap.mjs";
+import { POST_BASES, resolveSiteUrl, staticPagePaths, writeSeoFiles } from "./generate-sitemap.mjs";
 import { framePages, prerenderCompanyPages } from "./prerender-company-pages.mjs";
+import { escapeHtml, faqSchema, organizationSchema, schemaMarkup, seoText, snippetTitle } from "../lib/seo-meta.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputArgument = process.argv.find(argument => argument.startsWith("--output-dir="))?.split("=").slice(1).join("=") || "dist";
@@ -90,13 +91,18 @@ let removedFeedTags = 0;
 const siteUrl = resolveSiteUrl();
 // Pages whose content depends on the address (one template for many products, brands, posts, catalogue
 // sections) or that are private get the site-wide preview; the rest get their own title, description and URL.
-const templatePages = new Set(["404", "account", "brand", "cart", "catalog", "checkout", "compare", "favorites", "post", "product", "search"]);
+const templatePages = new Set(["404", "account", "brand", "cart", "checkout", "compare", "favorites", "post", "product", "search"]);
 const siteTitle = "ТД «Софіївка» — опалення, водопостачання, водопідготовка";
 const attribute = value => String(value).replace(/&(?!#?\w+;)/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 for (const entry of await fs.readdir(outputDirectory, { withFileTypes: true })) {
   if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== ".html") continue;
   const filePath = path.join(outputDirectory, entry.name);
   let html = await fs.readFile(filePath, "utf8");
+  const pageName = entry.name.slice(0, -".html".length);
+  const canonical = attribute(`${siteUrl}${pageName === "index" ? "/" : `/${pageName}`}`);
+  if (pageName === "catalog") {
+    html = html.replace(/<script src="\/catalog-ui\.js/, '<script src="/catalog/category-editorial.js" defer></script><script src="/catalog-ui.js');
+  }
   if (!/catalog-runtime-config\.js/i.test(html)) html = html.replace(/<head>/i, '<head><script src="/catalog-runtime-config.js"></script>');
   // Shop settings render synchronously (defaults + cached copy) before the deferred page scripts.
   if (!/site-settings\.js/i.test(html)) html = html.replace(/<script src="\/catalog-runtime-config\.js"><\/script>/i, match => `${match}<script src="/site-settings.js?v=20261002-stage4-1"></script>`);
@@ -106,24 +112,25 @@ for (const entry of await fs.readdir(outputDirectory, { withFileTypes: true })) 
   // Icons, link previews (Open Graph) and schema.org data for search engines.
   if (!/rel=["']icon["']/i.test(html)) html = html.replace(/<\/head>/i, '<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"><meta name="theme-color" content="#202020"></head>');
   if (!/property=["']og:/i.test(html)) {
-    const page = entry.name.slice(0, -".html".length);
-    const isTemplate = templatePages.has(page);
+    const isTemplate = templatePages.has(pageName);
     const title = isTemplate ? siteTitle : (html.match(/<title>([^<]*)<\/title>/i)?.[1] || siteTitle);
     const description = html.match(/<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i)?.[1] || "";
     const tags = [
       ["og:site_name", "ТД «Софіївка»"], ["og:locale", "uk_UA"], ["og:type", "website"], ["og:title", title],
       ...(description ? [["og:description", description]] : []),
-      ...(isTemplate ? [] : [["og:url", `${siteUrl}${page === "index" ? "/" : `/${page}`}`]]),
+      ...(isTemplate ? [] : [["og:url", canonical]]),
       ["og:image", `${siteUrl}/assets/og-image.jpg`], ["og:image:width", "1200"], ["og:image:height", "630"]
     ];
     html = html.replace(/<\/head>/i, `${tags.map(([property, content]) => `<meta property="${property}" content="${attribute(content)}">`).join("")}<meta name="twitter:card" content="summary_large_image"></head>`);
   }
-  // One canonical per indexable static page (no query string). Template pages (product, category, brand, post …)
-  // set theirs at run time from the address; pages that already declare one keep it.
-  const pageName = entry.name.slice(0, -".html".length);
-  if (!templatePages.has(pageName) && !/<link\b[^>]*\brel=["']canonical["']/i.test(html)) {
-    html = html.replace(/<\/head>/i, `<link rel="canonical" href="${attribute(`${siteUrl}${pageName === "index" ? "/" : `/${pageName}`}`)}"></head>`);
+  if (!templatePages.has(pageName)) {
+    html = html.replace(/<link\b[^>]*\brel=["']canonical["'][^>]*>/gi, "")
+      .replace(/<\/head>/i, `<link rel="canonical" href="${canonical}"></head>`);
+  } else if (!/<meta\b(?=[^>]*\bname=["']robots["'])(?=[^>]*\bcontent=["'][^"']*\bnoindex\b)[^>]*>/i.test(html)) {
+    html = html.replace(/<meta\b[^>]*\bname=["']robots["'][^>]*>/gi, "");
+    html = html.replace(/<\/head>/i, '<meta name="robots" content="noindex,follow"></head>');
   }
+  html = html.replace(/<\/head>/i, () => `${schemaMarkup("schema-organization", organizationSchema(siteUrl))}</head>`);
   if (!/seo-schema\.js/i.test(html)) html = html.replace(/<\/head>/i, '<script src="/seo-schema.js?v=20261002-stage4-1" defer></script></head>');
   // page-shell.js loads brands-data.js, catalog-data.js and catalog-ui.js one after another before it renders;
   // preloading them (same URLs, stamped below) lets the browser fetch all three in parallel with page-shell.js.
@@ -252,7 +259,57 @@ const prerendered = skipPrerender ? [] : await prerenderCompanyPages({ outputDir
 // The remaining page-shell pages open with the real header and footer around placeholders (same module).
 const framed = skipPrerender ? [] : await framePages({ outputDirectory, siteUrl, log: message => console.warn(message) });
 
-const seo = await writeSeoFiles({ root, outputDirectory, config });
+if (!skipPrerender) {
+  const file = path.join(outputDirectory, "faq.html");
+  const html = await fs.readFile(file, "utf8");
+  const questions = [...html.matchAll(/<details class="faq-item"><summary>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/g)]
+    .map(([, question, answer]) => [seoText(question), seoText(answer)]);
+  if (questions.length) await fs.writeFile(file, html.replace("</head>", () => `${schemaMarkup("schema-faq", faqSchema(questions))}</head>`), "utf8");
+}
+
+async function addPublicIndexContent({ catalog, posts, settings }) {
+  const publicPaths = new Set([...(await staticPagePaths(root)), "/catalog"]);
+  const overrides = Array.isArray(settings?.seo?.pages) ? settings.seo.pages : [];
+  for (const override of overrides) {
+    if (!publicPaths.has(override?.path)) continue;
+    const filename = override.path === "/" ? "index.html" : `${override.path.slice(1)}.html`;
+    const file = path.join(outputDirectory, filename);
+    let html = await fs.readFile(file, "utf8");
+    const title = escapeHtml(snippetTitle(override.title));
+    const description = escapeHtml(seoText(override.description, 160));
+    if (title) html = html.replace(/<title>[^<]*<\/title>/i, () => `<title>${title}</title>`)
+      .replace(/<meta property="og:title" content="[^"]*">/i, () => `<meta property="og:title" content="${title}">`);
+    if (description) {
+      for (const [attribute, name] of [["name", "description"], ["property", "og:description"]]) {
+        const pattern = new RegExp(`<meta ${attribute}="${name}" content="[^"]*">`, "i");
+        const meta = `<meta ${attribute}="${name}" content="${description}">`;
+        html = pattern.test(html) ? html.replace(pattern, () => meta) : html.replace("</head>", () => `${meta}</head>`);
+      }
+    }
+    await fs.writeFile(file, html, "utf8");
+  }
+  const add = async (name, content, slot) => {
+    const file = path.join(outputDirectory, `${name}.html`);
+    const html = await fs.readFile(file, "utf8");
+    if (html.includes(slot)) await fs.writeFile(file, html.replace(slot, () => content(slot)), "utf8");
+  };
+
+  const sections = (catalog.categories || [])
+    .filter(item => !item.parentId && item.status === "active" && (item.visibility || "catalog") === "catalog" && Number(catalog.categoryCounts?.[item.id]) > 0)
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+  if (sections.length) {
+    const links = sections.map(item => `<li><a href="/catalog/${encodeURIComponent(item.slug)}">${escapeHtml(item.title || item.name)}</a></li>`).join("");
+    await add("catalog", slot => `${slot}<!--catalog-index--><section class="ssr-page" data-catalog-index><div class="container"><h1>Каталог інженерного обладнання</h1><ul>${links}</ul></div></section><!--/catalog-index-->`, "<!--first-paint-->");
+  }
+  for (const [kind, base] of Object.entries(POST_BASES)) {
+    const published = posts.filter(post => post.kind === kind && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(post.slug) && post.title);
+    if (!published.length) continue;
+    const links = published.slice(0, 24).map(post => `<li><a href="${base}/${post.slug}">${escapeHtml(post.title)}</a></li>`).join("");
+    await add(base.slice(1), slot => `<section class="page-section"><div class="container prose"><h2>Опубліковані матеріали</h2><ul>${links}</ul></div></section>${slot}`, "</main>");
+  }
+}
+
+const seo = await writeSeoFiles({ root, outputDirectory, config, onPublicPaths: skipPrerender ? undefined : addPublicIndexContent });
 
 const manifest = {
   version: "sofievka-controlled-cutover-v1",

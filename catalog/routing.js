@@ -1,12 +1,6 @@
 (function () {
   "use strict";
 
-  // Starts with the bundled taxonomy; installCatalogSnapshot swaps in the live one so categories
-  // created in the admin resolve without a rebuild.
-  let taxonomy = window.sofievkaTaxonomy;
-  const sourceMappings = window.sofievkaSourceMappings;
-  if (!taxonomy) throw new Error("Catalog taxonomy must be initialized before routing.");
-
   const rootPath = "/catalog";
   const legacySectionAliases = Object.freeze({
     "/heating": "heating",
@@ -74,6 +68,18 @@
     "/catalog/water-supply/sewage-pumps": "sewage-pumps",
     "/catalog/water-supply/sewage-lifting-units": "sewage-lifting-units"
   });
+
+  // The server routes historical URLs through the same IDs as the storefront.
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = { legacyCategoryPaths, legacyQuerySections, legacySectionAliases };
+    return;
+  }
+
+  // Starts with the bundled taxonomy; installCatalogSnapshot swaps in the live one so categories
+  // created in the admin resolve without a rebuild.
+  let taxonomy = window.sofievkaTaxonomy;
+  const sourceMappings = window.sofievkaSourceMappings;
+  if (!taxonomy) throw new Error("Catalog taxonomy must be initialized before routing.");
 
   function normalizePathname(pathname = rootPath) {
     let value = String(pathname || rootPath).split("?")[0] || rootPath;

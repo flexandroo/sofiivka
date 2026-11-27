@@ -610,9 +610,13 @@ function setupProducts() {
     const favoriteButton = event.target.closest("[data-favorite]");
 
     if (buyButton) {
-      staleIds.delete(buyButton.dataset.buy);
-      storedCart[buyButton.dataset.buy] = window.sofievkaSalesUnits.wholeQuantity((Number(storedCart[buyButton.dataset.buy]) || 0) + 1);
+      const id = buyButton.dataset.buy;
+      const previous = Number(storedCart[id]) || 0;
+      staleIds.delete(id);
+      storedCart[id] = window.sofievkaSalesUnits.wholeQuantity(previous + 1);
       localStorage.setItem("sofievka-cart", JSON.stringify(storedCart));
+      const quantity = storedCart[id] - previous;
+      if (quantity > 0) window.sofievkaSiteSettings?.trackCommerce?.("add_to_cart", [{ product: homepageProductById.get(id), quantity }]);
       cart = countCart();
       showCartCount();
       showToast("Товар додано до кошика");
@@ -1227,7 +1231,10 @@ function bannerFocus(value) {
 // The banner image, wrapped in <picture> when a separate phone image is set.
 function bannerImage(banner, className, { eager = false, lazy = !eager, focus = true } = {}) {
   const image = bannerElement("img", className);
-  image.src = bannerSafeUrl(banner.imageUrl);
+  const original = bannerSafeUrl(banner.imageUrl);
+  const localHero = /^\/assets\/images\/home-hero-(?:termojet-pumps|ecosoft-water|termojet-automation)-v1\.jpg$/.test(original);
+  image.src = localHero ? original.replace(/\.jpg$/, ".webp") : original;
+  if (localHero) { image.width = 1536; image.height = 1024; }
   image.alt = banner.imageAlt || "";
   if (!banner.imageAlt) image.setAttribute("aria-hidden", "true");
   if (eager) image.setAttribute("fetchpriority", "high");
